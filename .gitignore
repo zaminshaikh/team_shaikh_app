@@ -9,6 +9,11 @@
 .history
 .svn/
 migrate_working_dir/
+.vscode/
+ios/Flutter/Generated 2.xcconfig
+ios/Flutter/flutter_export_environment 2.sh
+macos/Flutter/ephemeral/
+macos/Flutter/GeneratedPluginRegistrant.swift
 
 # IntelliJ related
 *.iml
@@ -30,6 +35,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+
 
 # Symbolication related
 app.*.symbols
