@@ -90,5 +90,11 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+  fonts:
+    - family: Titillium Web
+      fonts:
+        - asset: fonts/TitilliumWeb-Regular.ttf
+        - asset: fonts/TitilliumWeb-Bold.ttf
+          weight: 700
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
