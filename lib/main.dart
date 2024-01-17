@@ -1,23 +1,11 @@
-// Import Flutter Library
 import 'package:flutter/material.dart';
-
-// Import firebase_core
 import 'package:firebase_core/firebase_core.dart';
-
-// Import our firebase dart file
 import 'package:team_shaikh_app/firebase_options.dart';
-
-// Import Create Account Page
-import 'screens/Welcome/createAccount.dart';
-
-// Import Login Page
-import 'screens/Welcome/Login/login.dart';
-
-// Import Forgot Password Page
-import 'screens/Welcome/Login/forgotPassword.dart';
-
-// Import Forgot Password Page
-import 'screens/Dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/wrapper.dart';
+import 'screens/authenticate/create_account.dart';
+import 'screens/authenticate/login/login.dart';
+import 'screens/authenticate/login/forgot_password.dart';
+import 'screens/dashboard/dashboard.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,15 +23,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // Title of the application
-      title: 'Mansa',
+      title: 'Team Shaikh Investments',
 
       // Theme data for styling the general background
       theme: ThemeData(
         scaffoldBackgroundColor: const Color.fromARGB(255, 22, 42, 77),
       ),
 
-      // Initial route so the app navigates to the create_account page when the app starts
-      initialRoute: '/create_account',
+      // When the app first starts, call the wrapper class which will
+      // determine whether to show the home page or the authenticate page
+      home: Wrapper(),
 
       // Routes for different pages in the app
       routes: {
