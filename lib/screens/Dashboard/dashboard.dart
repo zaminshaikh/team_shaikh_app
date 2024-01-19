@@ -136,40 +136,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               
-              const SizedBox(height: 10),
+              const SizedBox(height: 32),
 
-              GestureDetector(
-
-  // Set the behavior to HitTestBehavior.translucent to capture taps on transparent areas
-                          behavior: HitTestBehavior.translucent,
-
-  // Navigate to the forgot_password screen using the route
-                          onTap: () {
-                            Navigator.pushNamed(context, '/drop');
-                          },
-
-  // TextButton containing the "Forgot Password?" text
-                          child: const TextButton(
-
-  // Set onPressed to null as the onTap callback handles the action
-                            onPressed: null,
-
-  // Text widget displaying "Forgot Password?"
-                            child: Text(
-                              "Dropdown",
-
-  // TextStyle to define text appearance
-                              style: TextStyle(
-                                fontSize: 16, 
-                                fontWeight: FontWeight.bold, 
-                                color: Colors.blue, 
-                                fontFamily: 'Titillium Web'
-                                ),
-
-  // Closing the properties for the button
-                            ),
-                          ),
-                        ),
 
               Container(
                 width: 400,
