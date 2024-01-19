@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:team_shaikh_app/firebase_options.dart';
-import 'package:team_shaikh_app/screens/wrapper.dart';
+import '/firebase_options.dart';
+import '/screens/wrapper.dart';
 import 'screens/authenticate/create_account.dart';
 import 'screens/authenticate/login/login.dart';
 import 'screens/authenticate/login/forgot_password.dart';
