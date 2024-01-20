@@ -25,7 +25,7 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 37, 58, 86),
         toolbarHeight: 90,
-        title: const Row(
+        title: Row(
           children: [
             SizedBox(width: 10),
             Column( 
@@ -138,6 +138,13 @@ class _DashboardPageState extends State<DashboardPage> {
               
               const SizedBox(height: 32),
 
+              Text('$selectedIndex',
+                                style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                  ),
+),
 
               Container(
                 width: 400,
@@ -545,42 +552,61 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
 
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Material(
-          elevation: 10,
-          borderRadius: BorderRadius.circular(20),
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
+        
+        height: 80,
+        padding: const EdgeInsets.only(right: 30, left: 30),
+        decoration: BoxDecoration(
           color: const Color.fromARGB(255, 37, 58, 86),
-          child: Container(
-            height: 80,
-            width: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(
-                data.length,
-                (i) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = i;
-                      });
-                    },
-                    child: Icon(
-                      data[i],
-                      size: 35,
-                      color: i == selectedIndex ? Colors.white : Colors.blueGrey,
-                    ),
-                  ),
-                ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(
+            data.length,
+            (i) => GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedIndex = i;
+                });
+
+                // Check if the person outline icon is clicked
+                if (data[i] == Icons.search) {
+                  Navigator.pushNamed(context, '/analytics');
+                }
+
+                if (data[i] == Icons.home_outlined) {
+                  Navigator.pushNamed(context, '/dashboard');
+                }
+
+                if (data[i] == Icons.add_box_outlined) {
+                  Navigator.pushNamed(context, '/activity');
+                }
+
+                if (data[i] == Icons.person_outline_sharp) {
+                  Navigator.pushNamed(context, '/profile');
+                }
+
+              },
+              child: Icon(
+                data[i],
+                size: 35,
+                color: i == selectedIndex ? Colors.white : Colors.blueGrey,
               ),
             ),
           ),
         ),
       ),
-
-
+          
     );
   }
 }
