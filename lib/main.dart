@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
 import '/firebase_options.dart';
 import '/screens/wrapper.dart';
 import 'screens/authenticate/create_account.dart';
@@ -40,7 +43,11 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/forgot_password': (context) => ForgotPasswordPage(),
         '/dashboard': (context) => DashboardPage(),
+        '/analytics': (context) => AnalyticsPage(),
+        '/activity': (context) => ActivityPage(),
+        '/profile': (context) => ProfilePage(),
       },
+
     );
   }
 }
