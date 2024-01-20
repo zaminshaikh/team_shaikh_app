@@ -50,3 +50,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 chat_prompts.txt
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+pubspec.lock
