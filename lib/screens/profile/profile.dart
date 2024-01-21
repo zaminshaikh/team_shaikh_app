@@ -5,7 +5,6 @@ import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
-
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
   @override
@@ -13,21 +12,20 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
   void signUserOut(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
 
     // Navigate to the login screen and clear the existing routes
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return child;
-            },
-          ),
-        );
-      }
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return child;
+        },
+      ),
+    );
+  }
 
   int selectedIndex = 0;
   List<IconData> data = [
@@ -37,66 +35,66 @@ class _ProfilePageState extends State<ProfilePage> {
     Icons.person_outline_sharp
   ];
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 37, 58, 86),
         toolbarHeight: 90,
-        title:          
-          const Row(
-            children: [
-              SizedBox(width: 20),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Profile',
-                  style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        automaticallyImplyLeading: false,
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-
-        // Making a Logout button
-        child: ElevatedButton(
-          onPressed: () => signUserOut(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Logout",
+        title: const Row(
+          children: [
+            SizedBox(width: 20),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Profile',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 25,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Titillium Web',
                 ),
               ),
-              SizedBox(width: 10),
+            ),
+          ],
+        ),
+        automaticallyImplyLeading: false,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => signUserOut(context),
+                    child: Container(
+                      height: 55,
+                      decoration: BoxDecoration(
+                        color:  const Color.fromARGB(255, 149, 28, 28),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Logout",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-
       ),
-
       bottomNavigationBar: Container(
         margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
         height: 80,
@@ -127,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
@@ -151,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
@@ -163,28 +161,23 @@ class _ProfilePageState extends State<ProfilePage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
                     ),
                   );
                 }
-
               },
               child: Icon(
                 data[i],
                 size: 35,
-                color: data[i] == Icons.person_outline_sharp
-                ? Colors.white 
-                : Colors.blueGrey,
+                color: data[i] == Icons.person_outline_sharp ? Colors.white : Colors.blueGrey,
               ),
             ),
           ),
         ),
       ),
-          
     );
   }
 }
-
