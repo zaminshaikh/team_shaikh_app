@@ -907,7 +907,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+                          pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
                           transitionsBuilder: (context, animation, secondaryAnimation, child) {
                             return child;
                           },

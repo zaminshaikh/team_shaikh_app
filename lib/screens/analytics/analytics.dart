@@ -28,10 +28,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         backgroundColor: const Color.fromARGB(255, 37, 58, 86),
         toolbarHeight: 90,
         title:          
-          Row(
+          const Row(
             children: [
               SizedBox(width: 20),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Analytics',
@@ -84,7 +84,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
@@ -108,7 +108,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
@@ -120,7 +120,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },

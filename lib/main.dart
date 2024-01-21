@@ -39,13 +39,13 @@ class MyApp extends StatelessWidget {
 
       // Routes for different pages in the app
       routes: {
-        '/create_account': (context) => CreateAccountPage(),
+        '/create_account': (context) => const CreateAccountPage(),
         '/login': (context) => const LoginPage(),
-        '/forgot_password': (context) => ForgotPasswordPage(),
+        '/forgot_password': (context) => const ForgotPasswordPage(),
         '/dashboard': (context) => DashboardPage(),
-        '/analytics': (context) => AnalyticsPage(),
-        '/activity': (context) => ActivityPage(),
-        '/profile': (context) => ProfilePage(),
+        '/analytics': (context) => const AnalyticsPage(),
+        '/activity': (context) => const ActivityPage(),
+        '/profile': (context) => const ProfilePage(),
       },
 
     );
