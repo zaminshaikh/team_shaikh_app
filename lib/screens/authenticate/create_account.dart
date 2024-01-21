@@ -1,5 +1,6 @@
 // Import Flutter Library
 import 'package:flutter/material.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 
 
 // Making a StatefulWidget representing the Create Account page
@@ -871,7 +872,15 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
 // onTap navigation to the login screen
                     onTap: () {
-                      Navigator.pushReplacementNamed(context, '/login');
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return child;
+                          },
+                        ),
+                      );
                     },
 
 // TextButton widget styled as a link for navigating to the login screen

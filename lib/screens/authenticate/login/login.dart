@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:custom_signin_buttons/custom_signin_buttons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
 
 // Creating a stateful widget for the Login page
@@ -29,12 +31,23 @@ class _LoginPageState extends State<LoginPage> {
   String errorMessage = '';
 
 // Sign user in method
-  void signUserIn(BuildContext context) async {
+  void signUserIn(context) async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
+
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+        ),
+      );
+
       // Successfully signed in, you can navigate to the next screen or perform other actions.
     } catch (e) {
       // Handle errors and show an error message.
@@ -599,7 +612,15 @@ class _LoginPageState extends State<LoginPage> {
 
 // Adding an onTap method so it navigates to the create_account page
                     onTap: () {
-                      Navigator.pushReplacementNamed(context, '/create_account');
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => CreateAccountPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return child;
+                          },
+                        ),
+                      );
                     },
 
 // TextButton representing the "Sign Up" button
