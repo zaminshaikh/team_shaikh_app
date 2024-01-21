@@ -1,6 +1,9 @@
 // Import Flutter Library
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+
 
 
 // Making a StatefulWidget representing the Create Account page
@@ -26,6 +29,35 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   String createAccountPasswordString = '/';
   String confirmcreateAccountPasswordString = '';
 
+// Initializing text editing controllers to hold user inputs
+  TextEditingController clientIDController = TextEditingController();
+  TextEditingController createAccountEmailController = TextEditingController();
+  TextEditingController createAccountPasswordController = TextEditingController();
+  TextEditingController confirmcreateAccountPasswordController = TextEditingController();
+
+  void signUserUp(context) async {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: createAccountEmailController.text,
+        password: createAccountPasswordController.text,
+      );
+
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return child;
+          },
+        ),
+      );
+
+      // Successfully signed in, you can navigate to the next screen or perform other actions.
+      } catch (e) {
+    }
+  }
+
+
 /*
 
   To make the Password security indicator we make an integer to 
@@ -45,7 +77,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   int conditionsMet = 0;
 
   // Condition 1: Check if the length of createAccountPasswordString is greater than 8 characters
-  if (createAccountPasswordString.length > 8) {
+  if (createAccountPasswordString.length > 7) {
     conditionsMet++;
   }
 
@@ -88,6 +120,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   void updatecreateAccountPasswordString(String value) {
     setState(() {
       createAccountPasswordString = value;
+      createAccountPasswordController.text = value;
     });
   }
 
@@ -232,6 +265,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 // Update the clientIDString with the new value inputted from the user
                         onChanged: (value) {
                           setState(() {
+                            clientIDController.text = value;
                             clientIDString = value;
                           });
                         },
@@ -317,6 +351,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       onChanged: (value){
                         setState(() {
                           emailString = value;
+                          createAccountEmailController.text = value;
                         });
                       },
 
@@ -598,7 +633,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   children: [
 
 // Making a conditional statement that changes the icon to a green checkmark when the passwword is at least 8 characters
-                    createAccountPasswordString.length > 8
+                    createAccountPasswordString.length > 7
                         ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) 
                         : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), 
 
@@ -782,6 +817,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       onChanged: (value) {
                         setState(() {
                           confirmcreateAccountPasswordString = value;
+                          confirmcreateAccountPasswordController.text =value;
                         });
                       },
 
@@ -797,21 +833,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 // Adding some space here
               const SizedBox(height: 16.0),
 
-// Making a "Next" button
+              // Making a "Next" button
               GestureDetector(
 
-// Execute onTap logic only if the passwords match                
-                onTap: createAccountPasswordString == confirmcreateAccountPasswordString
-                  ? () {
-                      Navigator.pushNamed(context, '/dashboard');                    
-                    }
-                  : null,
+                // Execute onTap
+                onTap: () => signUserUp(context),
 
-// Container holding the "Next" button
+                // Container holding the "Next" button
                 child: Container(
                   height: 50,
 
-// Decoration based on password match status
+                  // Decoration based on password match status
                   decoration: BoxDecoration(
                     color: createAccountPasswordString == confirmcreateAccountPasswordString
                         ? const Color.fromARGB(255, 30, 75, 137) // Color when passwords match
@@ -819,14 +851,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
 
-// Row to contain "Next" text and arrow icon
+                  // Row to contain "Next" text and arrow icon
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "Next",
 
-// TextStyle to define text appearance
+                        // TextStyle to define text appearance
                         style: TextStyle(
                           fontSize: 18, 
                           color: Colors.white, 
@@ -835,13 +867,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         ),
                       ),
 
-// Adding some space here
+                      // Adding some space here
                       SizedBox(width: 10),
 
-// Adding a white arrow
+                      // Adding a white arrow
                       Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 15),
 
-// Closing properties for the Next button
+                      // Closing properties for the Next button
                     ],
                   ),
                 ),
