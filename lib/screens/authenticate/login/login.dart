@@ -1,6 +1,8 @@
 // Importing Flutter Library & Google button Library
 import 'package:flutter/material.dart';
 import 'package:custom_signin_buttons/custom_signin_buttons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 // Creating a stateful widget for the Login page
 class LoginPage extends StatefulWidget {
@@ -19,9 +21,45 @@ class _LoginPageState extends State<LoginPage> {
 // Boolean variable to set the remember me checkbox to unchecked, and initializing that the user does not want the app to remember them
   bool rememberMe = false;
   
-// Strings to store login email and password
-  String loginEmailString = '';
-  String loginPasswordString = '';
+// Controllers to store login email and password
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+// String to hold error message  
+  String errorMessage = '';
+
+// Sign user in method
+  void signUserIn(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      // Successfully signed in, you can navigate to the next screen or perform other actions.
+    } catch (e) {
+      // Handle errors and show an error message.
+      String errorMessage = 'Error signing in. Please check your email and password.';
+      // Display the error message using a dialog.
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Sign-In Error'),
+            content: Text(errorMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
 
 // Making a build method to contain the entire login UI
   @override
@@ -119,6 +157,9 @@ class _LoginPageState extends State<LoginPage> {
 // TextField widget for the user to Enter their email
                     TextField(
 
+// Assign the controller to the TextField
+                    controller: emailController,
+
 // TextStyle to define text appearance of the user's input
                       style: const TextStyle(
                         fontSize: 16, 
@@ -157,7 +198,7 @@ class _LoginPageState extends State<LoginPage> {
 // Update the emailString when the value inputted from the user
                       onChanged: (value){
                         setState(() {
-                          loginEmailString = value;
+                          emailController.text = value;
                         });
                       },
 
@@ -202,6 +243,9 @@ class _LoginPageState extends State<LoginPage> {
 
 // TextField widget for the user to create a password
                     TextField(
+
+// Assign the controller to the TextField
+                    controller: passwordController,
 
 // TextStyle to define text appearance of the user's input
                       style: const TextStyle(
@@ -270,7 +314,7 @@ class _LoginPageState extends State<LoginPage> {
 // Update loginPasswordString whenever the text changes
                       onChanged: (value) {
                         setState(() {
-                          loginPasswordString = value;
+                          passwordController.text = value;
                         });
                       },
 // Closing the Password Field properties
@@ -393,7 +437,7 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: BoxDecoration(
 
 // Making conditional statements to change the color of the button
-                    color: loginEmailString.isNotEmpty && loginPasswordString.isNotEmpty
+                    color: passwordController.text.isNotEmpty && emailController.text.isNotEmpty
                         ? const Color.fromARGB(255, 30, 75, 137)
                         : const Color.fromARGB(255, 85, 86, 87),
 
