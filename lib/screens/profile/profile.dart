@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -8,13 +14,28 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
-    int selectedIndex = 0;
-    List<IconData> data = [
-      Icons.home_outlined,
-      Icons.search,
-      Icons.add_box_outlined,
-      Icons.person_outline_sharp
-    ];
+  void signUserOut(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+
+    // Navigate to the login screen and clear the existing routes
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+          ),
+        );
+      }
+
+  int selectedIndex = 0;
+  List<IconData> data = [
+    Icons.home_outlined,
+    Icons.search,
+    Icons.add_box_outlined,
+    Icons.person_outline_sharp
+  ];
 
 
   @override
@@ -25,10 +46,10 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: const Color.fromARGB(255, 37, 58, 86),
         toolbarHeight: 90,
         title:          
-          Row(
+          const Row(
             children: [
               SizedBox(width: 20),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Profile',
@@ -45,9 +66,34 @@ class _ProfilePageState extends State<ProfilePage> {
         automaticallyImplyLeading: false,
       ),
 
-      body: const Padding(
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
 
+        // Making a Logout button
+        child: ElevatedButton(
+          onPressed: () => signUserOut(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Logout",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
+        ),
 
       ),
 
@@ -78,26 +124,60 @@ class _ProfilePageState extends State<ProfilePage> {
                 });
 
                 if (data[i] == Icons.search) {
-                  Navigator.pushNamed(context, '/analytics');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.home_outlined) {
-                  Navigator.pushNamed(context, '/dashboard');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.add_box_outlined) {
-                  Navigator.pushNamed(context, '/activity');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.person_outline_sharp) {
-                  Navigator.pushNamed(context, '/profile');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
               },
               child: Icon(
                 data[i],
                 size: 35,
-                color: selectedIndex == 0 ? Colors.white : Colors.blueGrey,
+                color: data[i] == Icons.person_outline_sharp
+                ? Colors.white 
+                : Colors.blueGrey,
               ),
             ),
           ),

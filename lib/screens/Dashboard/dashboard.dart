@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 
 class DashboardPage extends StatefulWidget {
@@ -138,13 +141,6 @@ class _DashboardPageState extends State<DashboardPage> {
               
               const SizedBox(height: 32),
 
-              Text('$selectedIndex',
-                                style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-),
 
               Container(
                 width: 400,
@@ -554,7 +550,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
       bottomNavigationBar: Container(
         margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-        
         height: 80,
         padding: const EdgeInsets.only(right: 30, left: 30),
         decoration: BoxDecoration(
@@ -579,28 +574,61 @@ class _DashboardPageState extends State<DashboardPage> {
                   selectedIndex = i;
                 });
 
-                // Check if the person outline icon is clicked
                 if (data[i] == Icons.search) {
-                  Navigator.pushNamed(context, '/analytics');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.home_outlined) {
-                  Navigator.pushNamed(context, '/dashboard');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.add_box_outlined) {
-                  Navigator.pushNamed(context, '/activity');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.person_outline_sharp) {
-                  Navigator.pushNamed(context, '/profile');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
               },
               child: Icon(
                 data[i],
                 size: 35,
-                color: i == selectedIndex ? Colors.white : Colors.blueGrey,
+                color: data[i] == Icons.home_outlined
+                ? Colors.white 
+                : Colors.blueGrey,
               ),
             ),
           ),

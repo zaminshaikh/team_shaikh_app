@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 class ActivityPage extends StatefulWidget {
   const ActivityPage({Key? key}) : super(key: key);
@@ -77,28 +80,61 @@ class _ActivityPageState extends State<ActivityPage> {
                   selectedIndex = i;
                 });
 
-                // Check if the person outline icon is clicked
                 if (data[i] == Icons.search) {
-                  Navigator.pushNamed(context, '/analytics');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.home_outlined) {
-                  Navigator.pushNamed(context, '/dashboard');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.add_box_outlined) {
-                  Navigator.pushNamed(context, '/activity');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
                 if (data[i] == Icons.person_outline_sharp) {
-                  Navigator.pushNamed(context, '/profile');
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return child;
+                      },
+                    ),
+                  );
                 }
 
               },
               child: Icon(
                 data[i],
                 size: 35,
-                color: i == selectedIndex ? Colors.white : Colors.blueGrey,
+                color: data[i] == Icons.add_box_outlined
+                ? Colors.white 
+                : Colors.blueGrey,
               ),
             ),
           ),
