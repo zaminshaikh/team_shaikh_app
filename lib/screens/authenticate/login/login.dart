@@ -59,14 +59,14 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Sign-In Error'),
+            title: const Text('Sign-In Error'),
             content: Text(errorMessage),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -403,7 +403,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => ForgotPasswordPage(),
+                              pageBuilder: (context, animation, secondaryAnimation) => const ForgotPasswordPage(),
                               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                 return child;
                               },
@@ -625,7 +625,7 @@ class _LoginPageState extends State<LoginPage> {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => CreateAccountPage(),
+                          pageBuilder: (context, animation, secondaryAnimation) => const CreateAccountPage(),
                           transitionsBuilder: (context, animation, secondaryAnimation, child) {
                             return child;
                           },

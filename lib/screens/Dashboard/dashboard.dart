@@ -28,7 +28,7 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 37, 58, 86),
         toolbarHeight: 90,
-        title: Row(
+        title: const Row(
           children: [
             SizedBox(width: 10),
             Column( 
@@ -578,7 +578,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
@@ -602,7 +602,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
@@ -614,7 +614,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return child;
                       },
