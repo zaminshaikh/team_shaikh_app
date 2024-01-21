@@ -425,9 +425,7 @@ class _LoginPageState extends State<LoginPage> {
               GestureDetector(
 
 // onTap callback to define logic for handling login
-                onTap: () {
-                      Navigator.pushNamed(context, '/dashboard');                    
-                },
+                onTap: () => signUserIn(context),
 
 // Container representing the login button
                 child: Container(
