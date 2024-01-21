@@ -4,6 +4,7 @@ import 'package:custom_signin_buttons/custom_signin_buttons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
 
@@ -399,7 +400,15 @@ class _LoginPageState extends State<LoginPage> {
 
 // Navigate to the forgot_password screen using the route
                         onTap: () {
-                          Navigator.pushNamed(context, '/forgot_password');
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => ForgotPasswordPage(),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                return child;
+                              },
+                            ),
+                          );                        
                         },
 
 // TextButton containing the "Forgot Password?" text
