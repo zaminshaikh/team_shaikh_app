@@ -1,5 +1,6 @@
 // Import Flutter Library
 import 'package:flutter/material.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 
 // Creating a stateful widget for the Forgot Password page
 class ForgotPasswordPage extends StatefulWidget {
@@ -245,7 +246,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
 // onTap callback to define navigation logic
                     onTap: () {
-                      Navigator.pop(context, '/login');
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return child;
+                          },
+                        ),
+                      );
                     },
 
 // TextButton representing the "Sign In" link
