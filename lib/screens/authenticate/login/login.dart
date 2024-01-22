@@ -29,9 +29,6 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-// String to hold error message  
-  String errorMessage = '';
-
 // Sign user in method
   void signUserIn(context) async {
     try {
