@@ -1,11 +1,12 @@
 // Import Flutter Library
+// ignore_for_file: library_private_types_in_public_api
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-
+import 'package:team_shaikh_app/screens/database.dart';
 
 
 // Making a StatefulWidget representing the Create Account page
@@ -39,10 +40,30 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
   void signUserUp(context) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: createAccountEmailController.text,
+      String email = createAccountEmailController.text;
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
         password: createAccountPasswordController.text,
       );
+      
+      if (userCredential.user != null) {
+        User user = userCredential.user!;
+        String uid = user.uid;
+        String cid = clientIDController.text;
+
+      DatabaseService(cid, uid).updateUserData(email);  
+
+      log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
+
+      } else {
+        log('User is null. Sign up did not create a new user in Firebase');
+      }
+
+      
+      
+
+
+
 
       Navigator.push(
         context,
@@ -56,6 +77,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
       // Successfully signed in, you can navigate to the next screen or perform other actions.
       } catch (e) {
+        log("Error signing user in: $e", stackTrace: StackTrace.current);
     }
   }
 
