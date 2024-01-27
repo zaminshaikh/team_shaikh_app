@@ -1,6 +1,8 @@
 // Import Flutter Library
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 // Creating a stateful widget for the Forgot Password page
 class ForgotPasswordPage extends StatefulWidget {
@@ -183,9 +185,57 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
 // GestureDetector for handling taps on the submit button
               GestureDetector(
-                // onTap callback to define logic for handling submit
-                onTap: () {
-                  // Add your logic for handling submit here
+                onTap: () async {
+                  try {
+                    // Send a password reset email to the user's email address
+                    await FirebaseAuth.instance.sendPasswordResetEmail(email: ForgotPasswordEmailString);
+
+                    // Show a success message or navigate to a success screen
+                    print("Password reset email sent successfully!");
+
+                    // Show a dialog to inform the user
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Success"),
+                          content: const Text("Password reset email sent successfully!"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                // Navigate back to the login page
+                                Navigator.popUntil(context, ModalRoute.withName('/login'));
+                              },
+                              child: const Text("OK"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                  } catch (e) {
+                    // Handle errors, you can display them to the user or log them
+                    print("Error sending password reset email: $e");
+
+                    // Show an error dialog
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Error"),
+                          content: const Text("Failed to send password reset email. Please try again."),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text("OK"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
                 },
                 // Container representing the submit button
                 child: Container(
@@ -250,9 +300,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         context,
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return child;
-                          },
                         ),
                       );
                     },
