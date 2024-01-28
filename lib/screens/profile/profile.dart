@@ -258,8 +258,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                               context: context,
                                               builder: (BuildContext context) {
                                                 return AlertDialog(
-                                                  title: Text('Email Change Requested'),
-                                                  content: Text(
+                                                  title: const Text('Email Change Requested'),
+                                                  content: const Text(
                                                     'Please check your email for a verification link. You need to verify the new email address before it takes effect.',
                                                   ),
                                                   actions: [
@@ -267,7 +267,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                       onPressed: () {
                                                         Navigator.pop(context);
                                                       },
-                                                      child: Text('OK'),
+                                                      child: const Text('OK'),
                                                     ),
                                                   ],
                                                 );
@@ -283,14 +283,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                               context: context,
                                               builder: (BuildContext context) {
                                                 return AlertDialog(
-                                                  title: Text('Error'),
+                                                  title: const Text('Error'),
                                                   content: Text('Error updating email: $e'),
                                                   actions: [
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.pop(context);
                                                       },
-                                                      child: Text('OK'),
+                                                      child: const Text('OK'),
                                                     ),
                                                   ],
                                                 );
@@ -420,6 +420,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
                             },
                           );
+                        
                         },
                         child: Container(
                           height: 55,

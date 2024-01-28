@@ -1,6 +1,7 @@
 // Import Flutter Library
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +24,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 // Boolean to switch password visibility, init as true  
   bool hidePassword = true;
 
+  bool isEmailVerified = false;
+
 // Initializing strings to hold all of the user inputs
   String clientIDString = '';
   String emailString = '';
@@ -37,29 +40,279 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController createAccountPasswordController = TextEditingController();
   TextEditingController confirmcreateAccountPasswordController = TextEditingController();
 
-  void signUserUp(context) async {
+late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Set up a timer to check email verification status every 5 seconds
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      checkEmailVerificationStatus();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // Cancel the timer when the widget is disposed
+    _timer.cancel();
+  }
+
+  void checkEmailVerificationStatus() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      await user.reload();
+      user = FirebaseAuth.instance.currentUser;
+
+      setState(() {
+        isEmailVerified = user?.emailVerified ?? false;
+      });
+
+      print("Email verification status: $isEmailVerified");
+
+      if (isEmailVerified) {
+        // Stop the timer if email is verified
+        _timer.cancel();
+
+        // Navigate to the dashboard or perform desired action
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+          ),
+        );
+      }
+    }
+  }
+
+
+  void signUserUp(BuildContext context) async {
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: createAccountEmailController.text,
         password: createAccountPasswordController.text,
       );
 
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return child;
-          },
-        ),
+      // Send email verification
+      await FirebaseAuth.instance.currentUser!.sendEmailVerification();
+
+      // Show a dialog to inform the user
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: const Color.fromARGB(255, 37, 58, 86),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              height: 500,
+              width: 1000,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 80),
+                  const Text(
+                    'ICON ART',
+                    style: TextStyle(
+                      fontSize: 40,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 80),
+                  const Text(
+                    'Verfiy your Email Address',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  const Center(
+                    child: Text(
+                      "You will recieve an Email with a link to verify your email. Please check your inbox.",
+                      style: TextStyle(
+                        fontSize: 16,
+                        
+                        color: Colors.white,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 70),
+
+                  GestureDetector(
+                    onTap: () {
+                      if (isEmailVerified) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false, // Prevents the dialog from being dismissed by tapping outside
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(
+                                "Verifying Email",
+                                style: TextStyle(
+                                  fontFamily: 'Titillium Web',
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    "Please wait...",
+                                    style: TextStyle(
+                                      fontFamily: 'Titillium Web',
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+
+                        // Simulate a delay, you can replace this with your actual verification logic
+                        Future.delayed(Duration(seconds: 2));
+
+                        // After the verification, pop the loading dialog
+                        Navigator.pop(context);
+
+                        // Navigate to the dashboard or perform desired action
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              return child;
+                            },
+                          ),
+                        );
+                      } else {
+                        // Show a message or take appropriate action for unverified email
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(
+                                "Error",
+                                style: TextStyle(
+                                  fontFamily: 'Titillium Web',
+                                  color: Colors.blue, // You can change this to your desired color
+                                ),
+                              ),
+                              content: Text(
+                                "Email not verified. Please check your inbox for the verification link.",
+                                style: TextStyle(
+                                  fontFamily: 'Titillium Web',
+                                  color: Colors.blue, // You can change this to your desired color
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    "OK",
+                                    style: TextStyle(
+                                      fontFamily: 'Titillium Web',
+                                      color: Colors.blue, // You can change this to your desired color
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+                    child: Container(
+                      height: 55,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Continue",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                                                          
+                ],
+              ),
+            ),
+          );
+        },
       );
 
-      // Successfully signed in, you can navigate to the next screen or perform other actions.
+    checkEmailVerificationStatus();
+                        
       } catch (e) {
-    }
+        // Handle errors
+        print("Error signing up user: $e");
+
+        // Show an error dialog with a specific message based on the error code
+        String errorMessage = "Failed to sign up. Please try again.";
+
+        if (e is FirebaseAuthException) {
+          switch (e.code) {
+            case 'email-already-in-use':
+              errorMessage = "This email address is already in use by another account.";
+              break;
+            // Add more cases for other error codes if needed
+          }
+        }
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: Text(errorMessage),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
   }
 
-
+  
 /*
 
   To make the Password security indicator we make an integer to 
@@ -132,6 +385,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       updatecreateAccountPasswordString(value);
       updatePasswordSecurityIndicator();
     }
+
 
 // Making a build method for creating the UI
   @override
