@@ -186,12 +186,6 @@ late Timer _timer;
                           },
                         );
 
-                        // Simulate a delay, you can replace this with your actual verification logic
-                        Future.delayed(Duration(seconds: 2));
-
-                        // After the verification, pop the loading dialog
-                        Navigator.pop(context);
-
                         // Navigate to the dashboard or perform desired action
                         Navigator.push(
                           context,
@@ -270,6 +264,7 @@ late Timer _timer;
               ),
             ),
           );
+        
         },
       );
 

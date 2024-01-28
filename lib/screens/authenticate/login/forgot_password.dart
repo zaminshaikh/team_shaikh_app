@@ -204,8 +204,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             TextButton(
                               onPressed: () {
                                 // Navigate back to the login page
-                                Navigator.popUntil(context, ModalRoute.withName('/login'));
-                              },
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      return child;
+                                    },
+                                  ),
+                                );                              },
                               child: const Text("OK"),
                             ),
                           ],

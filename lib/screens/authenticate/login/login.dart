@@ -51,22 +51,73 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       // Handle errors and show an error message.
       String errorMessage = 'Error signing in. Please check your email and password.';
+
+      if (e is FirebaseAuthException) {
+        // Check if the error is due to the email not being found
+        if (e.code == 'user-not-found') {
+          errorMessage = 'Email not found. Please check your email or sign up for a new account.';
+        } else {
+          errorMessage = 'Error signing in. Please check your email and password. $e';
+        }
+      }
+
       // Display the error message using a dialog.
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Sign-In Error'),
-            content: Text(errorMessage),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
+          return Dialog(
+            backgroundColor: const Color.fromARGB(255, 37, 58, 86),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              height: 500,
+              width: 1000,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 80),
+                  const Text(
+                    'ICON ART',
+                    style: TextStyle(
+                      fontSize: 40,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 80),
+                  const Text(
+                    'Error Signing In',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                   Center(
+                    child: Text(
+                      "$errorMessage",
+                      style: TextStyle(
+                        fontSize: 16,
+                        
+                        color: Colors.white,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 70),
+                                                          
+                ],
               ),
-            ],
+            ),
           );
+        
         },
       );
     }

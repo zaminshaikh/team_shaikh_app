@@ -350,77 +350,93 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),                      const SizedBox(height: 16),
                                             
                       GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                backgroundColor: const Color.fromARGB(255, 37, 58, 86),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  height: 550,
-                                  width: 1000,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                        onTap: () async {
+                          try {
+                            // Get the user's email
+                            String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+
+                            // Check if the user has provided an email
+                            if (userEmail.isNotEmpty) {
+                              // Send a password reset email to the user's email address
+                              await FirebaseAuth.instance.sendPasswordResetEmail(email: userEmail);
+
+                              // Show a success message or navigate to a success screen
+                              await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    backgroundColor: const Color.fromARGB(255, 37, 58, 86),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(16),
+                                      height: 550,
+                                      width: 1000,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Icon(
-                                              Icons.close,
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 100),
+                                          const Text(
+                                            'ICON ART',
+                                            style: TextStyle(
+                                              fontSize: 40,
+                                              color: Colors.blue,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Titillium Web',
+                                            ),
+                                          ),
+                                          const SizedBox(height: 80),
+                                          const Text(
+                                            'Change Password',
+                                            style: TextStyle(
+                                              fontSize: 20,
                                               color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Titillium Web',
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          const Center(
+                                            child: Text(
+                                              "You will receive an Email with a link to reset your password. Please check your inbox.",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 100),
-                                      const Text(
-                                        'ICON ART',
-                                        style: TextStyle(
-                                          fontSize: 40,
-                                          color: Colors.blue,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Titillium Web',
-                                        ),
-                                      ),
-                                      const SizedBox(height: 80),
-                                      const Text(
-                                        'Change Password',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Titillium Web',
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      
-                                      const Center(
-                                        child: Text(
-                                          "You will recieve an Email with a link to reset your password. Please check your inbox.",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            
-                                            color: Colors.white,
-                                            fontFamily: 'Titillium Web',
-                                          ),
-                                        ),
-                                      ),
-                                                                              
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                  );
+                                },
                               );
-                            },
-                          );
-                        
+
+                              // Now you can navigate to another page or perform other actions
+                            } else {
+                              // Handle the case where the user's email is empty
+                              print("User email is empty.");
+                            }
+                          } catch (e) {
+                            // Handle errors, you can display them to the user or log them
+                            print("Error sending password reset email: $e");
+                          }
                         },
                         child: Container(
                           height: 55,
@@ -428,8 +444,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: Colors.transparent,
                             borderRadius: BorderRadius.circular(25),
                             border: Border.all(
-                              color: Colors.blue, // Set the color of the border
-                              width: 2, // Set the width of the border
+                              color: Colors.blue,
+                              width: 2,
                             ),
                           ),
                           child: const Center(
@@ -445,7 +461,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 20),
                     ],
                   ),
