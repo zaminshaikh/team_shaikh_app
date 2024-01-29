@@ -1,6 +1,4 @@
 // Import Flutter Library
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'dart:async';
 // ignore_for_file: library_private_types_in_public_api
 import 'dart:developer';
@@ -29,8 +27,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   bool isEmailVerified = false;
 
 // Initializing strings to hold all of the user inputs
-  String clientIDString = '';
-  String emailString = '';
+  String cid = '';
+  String email = '';
 
 // Initializing this one with a / instead so the createAccountPasswordString doesnt equal confirmcreateAccountPasswordString off the bat
   String createAccountPasswordString = '/';
@@ -95,20 +93,18 @@ late Timer _timer;
 
   void signUserUp(BuildContext context) async {
     try {
-      String email = createAccountEmailController.text;
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
+        email: createAccountEmailController.text,
         password: createAccountPasswordController.text,
       );
       
       if (userCredential.user != null) {
         User user = userCredential.user!;
         String uid = user.uid;
-        String cid = clientIDController.text;
 
-      DatabaseService(cid, uid).updateUserData(email);  
+        DatabaseService(cid, uid).updateUserData(user.email!);  
 
-      log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
+        log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
 
       } else {
         log('User is null. Sign up did not create a new user in Firebase');
@@ -527,11 +523,11 @@ late Timer _timer;
                         contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
                       ),
 
-// Update the clientIDString with the new value inputted from the user
+// Update the cid with the new value inputted from the user
                         onChanged: (value) {
                           setState(() {
                             clientIDController.text = value;
-                            clientIDString = value;
+                            cid = value;
                           });
                         },
 
@@ -612,10 +608,10 @@ late Timer _timer;
                         contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
                       ),
 
-// Update the emailString when the value inputted from the user
+// Update the email when the value inputted from the user
                       onChanged: (value){
                         setState(() {
-                          emailString = value;
+                          email = value;
                           createAccountEmailController.text = value;
                         });
                       },
