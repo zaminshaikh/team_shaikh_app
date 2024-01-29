@@ -59,12 +59,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         log('User is null. Sign up did not create a new user in Firebase');
       }
 
-      
-      
-
-
-
-
       Navigator.push(
         context,
         PageRouteBuilder(

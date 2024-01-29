@@ -38,4 +38,8 @@ class DatabaseService {
       log('Error creating/updating: $e', stackTrace: StackTrace.current);
     }
   }
+
+  Stream<QuerySnapshot> get users {
+    return usersCollection.snapshots();
+  }
 }
