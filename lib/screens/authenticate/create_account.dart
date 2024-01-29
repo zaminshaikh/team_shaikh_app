@@ -2,11 +2,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:async';
+// ignore_for_file: library_private_types_in_public_api
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-
+import 'package:team_shaikh_app/screens/database.dart';
 
 
 // Making a StatefulWidget representing the Create Account page
@@ -93,10 +95,24 @@ late Timer _timer;
 
   void signUserUp(BuildContext context) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: createAccountEmailController.text,
+      String email = createAccountEmailController.text;
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
         password: createAccountPasswordController.text,
       );
+      
+      if (userCredential.user != null) {
+        User user = userCredential.user!;
+        String uid = user.uid;
+        String cid = clientIDController.text;
+
+      DatabaseService(cid, uid).updateUserData(email);  
+
+      log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
+
+      } else {
+        log('User is null. Sign up did not create a new user in Firebase');
+      }
 
       // Send email verification
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
@@ -271,8 +287,7 @@ late Timer _timer;
     checkEmailVerificationStatus();
                         
       } catch (e) {
-        // Handle errors
-        print("Error signing up user: $e");
+        log("Error signing user in: $e", stackTrace: StackTrace.current);
 
         // Show an error dialog with a specific message based on the error code
         String errorMessage = "Failed to sign up. Please try again.";
@@ -307,7 +322,6 @@ late Timer _timer;
 
   }
 
-  
 /*
 
   To make the Password security indicator we make an integer to 
