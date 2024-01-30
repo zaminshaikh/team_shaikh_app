@@ -40,53 +40,26 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController createAccountPasswordController = TextEditingController();
   TextEditingController confirmcreateAccountPasswordController = TextEditingController();
 
-late Timer _timer;
-
   @override
   void initState() {
     super.initState();
-
-    // Set up a timer to check email verification status every 5 seconds
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      checkEmailVerificationStatus();
-    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    // Cancel the timer when the widget is disposed
-    _timer.cancel();
   }
 
-  void checkEmailVerificationStatus() async {
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user != null) {
-      await user.reload();
-      user = FirebaseAuth.instance.currentUser;
-
-      setState(() {
-        isEmailVerified = user?.emailVerified ?? false;
-      });
-
-      log("Email verification status: $isEmailVerified");
-
-      if (isEmailVerified) {
-        // Stop the timer if email is verified
-        _timer.cancel();
-
-        // Navigate to the dashboard or perform desired action
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return child;
-            },
-          ),
-        );
-      }
+  Future<bool> checkEmailVerificationStatus() async {
+    while (true) {
+      User? user = FirebaseAuth.instance.currentUser;
+        await user?.reload();
+        if (user != null && user.emailVerified) {
+          log("Email verified");
+          return true;
+        }
+        log("Email not verified yet. Waiting 5 seconds...");
+        await Future.delayed(Duration(seconds: 5));
     }
   }
 
@@ -103,7 +76,8 @@ late Timer _timer;
 
       // Send email verification
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
-
+      // Wait for the user to verify their email
+      
       // Show a dialog to inform the user
       showDialog(
         context: context,
@@ -270,20 +244,31 @@ late Timer _timer;
         },
       );
 
-    checkEmailVerificationStatus();
+      if (await checkEmailVerificationStatus())
+      {
+        if (userCredential.user != null) {
+          User user = userCredential.user!;
+          String uid = user.uid;
 
-    if (userCredential.user != null) {
-      User user = userCredential.user!;
-      String uid = user.uid;
+          DatabaseService(cid, uid).updateUserData(user.email!);  
 
-      DatabaseService(cid, uid).updateUserData(user.email!);  
+          log("User $uid connected to Client ID $cid");
 
-      log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
+        } else {
+          log('User is null. Sign up did not create a new user in Firebase');
+        }
 
-    } else {
-      log('User is null. Sign up did not create a new user in Firebase');
-    }
-                        
+        Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return child;
+                },
+              ),
+            );
+      }
+      
     } on FirebaseAuthException catch (e) {
       log("Error signing user in: $e", stackTrace: StackTrace.current);
 
