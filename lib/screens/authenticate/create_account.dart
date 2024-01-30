@@ -70,7 +70,7 @@ late Timer _timer;
         isEmailVerified = user?.emailVerified ?? false;
       });
 
-      print("Email verification status: $isEmailVerified");
+      log("Email verification status: $isEmailVerified");
 
       if (isEmailVerified) {
         // Stop the timer if email is verified
@@ -92,23 +92,14 @@ late Timer _timer;
 
 
   void signUserUp(BuildContext context) async {
+    // Delete any users in the buffer that are unconnected.
+    // This is to prevent users from creating multiple accounts with the same email.
+    FirebaseAuth.instance.currentUser?.delete();
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: createAccountEmailController.text,
         password: createAccountPasswordController.text,
       );
-      
-      if (userCredential.user != null) {
-        User user = userCredential.user!;
-        String uid = user.uid;
-
-        DatabaseService(cid, uid).updateUserData(user.email!);  
-
-        log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
-
-      } else {
-        log('User is null. Sign up did not create a new user in Firebase');
-      }
 
       // Send email verification
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
@@ -141,7 +132,7 @@ late Timer _timer;
                   ),
                   const SizedBox(height: 80),
                   const Text(
-                    'Verfiy your Email Address',
+                    'Verify your Email Address',
                     style: TextStyle(
                       fontSize: 20,
                       color: Colors.white,
@@ -156,7 +147,6 @@ late Timer _timer;
                       "You will recieve an Email with a link to verify your email. Please check your inbox.",
                       style: TextStyle(
                         fontSize: 16,
-                        
                         color: Colors.white,
                         fontFamily: 'Titillium Web',
                       ),
@@ -281,42 +271,56 @@ late Timer _timer;
       );
 
     checkEmailVerificationStatus();
+
+    if (userCredential.user != null) {
+      User user = userCredential.user!;
+      String uid = user.uid;
+
+      DatabaseService(cid, uid).updateUserData(user.email!);  
+
+      log("User $uid with Client ID $cid connected to their account in Cloud Firestore");
+
+    } else {
+      log('User is null. Sign up did not create a new user in Firebase');
+    }
                         
-      } catch (e) {
-        log("Error signing user in: $e", stackTrace: StackTrace.current);
+    } on FirebaseAuthException catch (e) {
+      log("Error signing user in: $e", stackTrace: StackTrace.current);
 
-        // Show an error dialog with a specific message based on the error code
-        String errorMessage = "Failed to sign up. Please try again.";
+      // Show an error dialog with a specific message based on the error code
+      String errorMessage = "Failed to sign up. Please try again.";
 
-        if (e is FirebaseAuthException) {
-          switch (e.code) {
-            case 'email-already-in-use':
-              errorMessage = "This email address is already in use by another account.";
-              break;
-            // Add more cases for other error codes if needed
-          }
-        }
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Error"),
-              content: Text(errorMessage),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("OK"),
-                ),
-              ],
-            );
-          },
-        );
+      if (e.code == 'email-already-in-use') {
+        errorMessage = "Email is already in use. Please use a different email.";
+        log('Email is already connected to a different cid.');
+      } else {
+        log ('FirebaseAuthException: $e');
       }
 
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Error"),
+            content: Text(errorMessage),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+
+    } catch (e) {
+      log("Error signing user in: $e", stackTrace: StackTrace.current);
+    }      
   }
+
+
 
 /*
 

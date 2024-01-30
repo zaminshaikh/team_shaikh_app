@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class DatabaseService {
   final String cid;
   final String uid;
@@ -42,4 +44,7 @@ class DatabaseService {
   Stream<QuerySnapshot> get users {
     return usersCollection.snapshots();
   }
+
+  
 }
+
