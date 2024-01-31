@@ -591,7 +591,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           const SizedBox(height: 5),
                           const Text(
-                            'Let me know when i recieve a new statement.',
+                            'Let me know when I recieve a new statement.',
                             style: TextStyle(
                               fontSize: 15,
                               color: Colors.white,
