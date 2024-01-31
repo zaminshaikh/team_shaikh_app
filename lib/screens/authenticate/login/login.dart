@@ -100,8 +100,8 @@ class _LoginPageState extends State<LoginPage> {
                   
                    Center(
                     child: Text(
-                      "$errorMessage",
-                      style: TextStyle(
+                      errorMessage,
+                      style: const TextStyle(
                         fontSize: 16,
                         
                         color: Colors.white,
