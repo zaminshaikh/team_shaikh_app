@@ -141,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "AGQ",
+                  'AGQ',
                   style: TextStyle(
                     fontSize: 40, 
                     color: Colors.white, 
@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
               
               // Title for the login section
               const Text(
-                "Login to Your Account",
+                'Login to Your Account',
                 style: TextStyle(
                   fontSize: 26, 
                   color: Colors.white, 
@@ -173,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      "Email",
+                      'Email',
                       style: TextStyle(
                         fontSize: 16, 
                         color: Colors.white, 
@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      "Password",
+                      'Password',
                       style: TextStyle(
                         fontSize: 16, 
                         color: Colors.white, 
@@ -330,7 +330,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: const TextButton(
                           onPressed: null,
                           child: Text(
-                            "Forgot Password?",
+                            'Forgot Password?',
                             style: TextStyle(
                               fontSize: 16, 
                               fontWeight: FontWeight.bold, 
@@ -360,7 +360,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: const Center(
                     child: Text(
-                      "Login",
+                      'Login',
                       style: TextStyle(
                         fontSize: 18, 
                         color: Colors.white, 
@@ -391,7 +391,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     SizedBox(width: 15),
                     Text(
-                      "Sign in with Google",
+                      'Sign in with Google',
                       style: TextStyle(
                         fontSize: 18, 
                         color: Colors.blue, 
@@ -418,7 +418,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Row(
                         children: [
                           Text(
-                            "Login with Face ID",
+                            'Login with Face ID',
                             style: TextStyle(
                               fontSize: 18, 
                               fontWeight: FontWeight.bold, 
@@ -469,7 +469,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: const TextButton(
                       onPressed: null,
                       child: Text(
-                        "Sign Up",
+                        'Sign Up',
                         style: TextStyle(
                           fontSize: 18, 
                           color: Colors.blue, 

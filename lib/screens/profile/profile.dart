@@ -5,6 +5,7 @@ import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'dart:developer';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -105,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Slider Section
                   const Text(
-                    "Sliders will be here.",
+                    'Sliders will be here.',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white,
@@ -206,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const Text(
-                                            "Email",
+                                            'Email',
                                             style: TextStyle(
                                               fontSize: 16,
                                               color: Colors.white,
@@ -275,8 +276,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                             );
 
                                           } catch (e) {
-                                            // Print the error for debugging
-                                            print('Error updating email: $e');
+                                            // log the error for debugging
+                                            log('Error updating email: $e');
 
                                             // Handle error, display a message, etc.
                                             showDialog(
@@ -307,7 +308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                           child: const Center(
                                             child: Text(
-                                              "Continue",
+                                              'Continue',
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 color: Colors.white,
@@ -337,7 +338,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           child: const Center(
                             child: Text(
-                              "Change Email",
+                              'Change Email',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.blue,
@@ -413,7 +414,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           const SizedBox(height: 10),
                                           const Center(
                                             child: Text(
-                                              "You will receive an Email with a link to reset your password. Please check your inbox.",
+                                              'You will receive an Email with a link to reset your password. Please check your inbox.',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.white,
@@ -431,11 +432,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               // Now you can navigate to another page or perform other actions
                             } else {
                               // Handle the case where the user's email is empty
-                              print("User email is empty.");
+                              log('User email is empty.');
                             }
                           } catch (e) {
                             // Handle errors, you can display them to the user or log them
-                            print("Error sending password reset email: $e");
+                            log('Error sending password reset email: $e');
                           }
                         },
                         child: Container(
@@ -450,7 +451,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           child: const Center(
                             child: Text(
-                              "Change Password",
+                              'Change Password',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.blue,
@@ -675,7 +676,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           child: const Center(
                             child: Text(
-                              "Logout",
+                              'Logout',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,

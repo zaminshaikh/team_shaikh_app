@@ -5,6 +5,8 @@ import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
 // Return either home or authenticate
 class Wrapper extends StatelessWidget {
+  const Wrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,8 +1,5 @@
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// A class that provides database operations for managing users.
@@ -14,6 +11,8 @@ class DatabaseService {
   String? cid;
   final String uid;
   static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
+  CollectionReference? assetsSubCollection;
+
 
 
   /// A new instance of [DatabaseService] with the given [cid] and [uid].
@@ -34,7 +33,7 @@ class DatabaseService {
   DatabaseService.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
-  static Future<DatabaseService> fetchCID(String uid) async {
+  static Future<DatabaseService> fetchCID(String uid, int code) async {
     DatabaseService service = DatabaseService(uid);
 
     // Access Firestore and get the document
@@ -43,6 +42,14 @@ class DatabaseService {
     if (querySnapshot.size > 0) {
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
+      switch (code) {
+        case 1:
+          service.assetsSubCollection = FirebaseFirestore.instance.collection('testUsers').doc(service.cid).collection('assets');
+          log('Assets subcollection set to $usersCollection/{service.cid}/assets');
+          break; 
+        default:
+          log('Invalid code');
+      }
       // Now you can use 'cid' in your code
       log('CID: ${service.cid}');
     } else {
@@ -173,8 +180,12 @@ class DatabaseService {
     return data['uid'] != '';
   }
 
-  
-
-
+  /// Returns a stream of [QuerySnapshot] containing all the asset documents in the assets subcollection.
+  Stream<QuerySnapshot> get getAssets {
+    if (assetsSubCollection == null) {
+      throw Exception('Assets subcollection not set');
+    }
+    return assetsSubCollection!.snapshots();
+  }
   
 }

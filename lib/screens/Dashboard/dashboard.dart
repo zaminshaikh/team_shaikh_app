@@ -8,6 +8,7 @@ import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'package:intl/intl.dart';
 
 
 
@@ -34,38 +35,54 @@ class _DashboardPageState extends State<DashboardPage> {
     String uid = user.uid;
 
     // Fetch CID using async constructor
-    _databaseService = await DatabaseService.fetchCID(uid);
-    log("Database Service has been initialized with CID: ${_databaseService.cid}");
+    _databaseService = await DatabaseService.fetchCID(uid, 1);
+    log('Database Service has been initialized with CID: ${_databaseService.cid}');
   }
 
   @override
   Widget build(BuildContext context) {
-    // Use FutureBuilder to allow async initialization of the database service
     return FutureBuilder(
       future: _initData(),
       builder: (context, snapshot) {
-        // while we are waiting, show a loading indicator
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // once the future is complete, show the app
         return StreamBuilder<DocumentSnapshot>(
-          // Stream of the user's data
           stream: _databaseService.getUser,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
+          builder: (context, userSnapshot) {
+            if (!userSnapshot.hasData) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
 
+            // Access user data here
+            Map<String, dynamic> userData = userSnapshot.data!.data() as Map<String, dynamic>;
+
+            return StreamBuilder<QuerySnapshot>(
+              stream: _databaseService.getAssets,
+              builder: (context, assetsSnapshot) {
+                if (!assetsSnapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                // Access assets data here
+                List<DocumentSnapshot> assetsDocs = assetsSnapshot.data!.docs;
+
             // Get the user's name and CID
-            String userName = snapshot.data!['name']['first'] + ' ' + snapshot.data!['name']['last'];
+            String userName = userData['name']['first'] + ' ' + userData['name']['last'];
             String? cid = _databaseService.cid;
-            
+            double totalAssets = 0.00;
+            for (var doc in assetsDocs) {
+              totalAssets += doc.get('total');
+            }
+            log('Total assets for CID $cid: \$$totalAssets');
+
             return Scaffold(
           
               appBar: AppBar(
@@ -105,7 +122,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     SizedBox(width: 105),
 
                     Column(
-                      children: [
+                      children: const [
                         Icon(
                           Icons.notifications_none_rounded,
                           color: Colors.white,
@@ -136,7 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           color: Colors.blue,
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,7 +169,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  '\$1,000,000.00',
+                                  NumberFormat.currency(
+                                      symbol: '\$',
+                                      decimalDigits: 2,
+                                      locale: 'en_US',
+                                    ).format(totalAssets),
                                   style: TextStyle(
                                     fontSize: 35,
                                     fontWeight: FontWeight.w600,
@@ -323,7 +344,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         Row(
                                           children: [
                                             Text(
-                                              '$i',
+                                              i,
                                               style: const TextStyle(
                                                 fontSize: 18,
                                                 color: Colors.white,
@@ -672,11 +693,13 @@ class _DashboardPageState extends State<DashboardPage> {
                         color: data[i] == Icons.home_outlined
                         ? Colors.white 
                         : Colors.blueGrey,
+                       ),
                       ),
                     ),
-                  ),
+                 ),
                 ),
-              ),
+               );
+              }
             );
           }
         );
@@ -684,4 +707,3 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
-

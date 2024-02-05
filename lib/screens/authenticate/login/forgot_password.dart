@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer';
 
 
 // Creating a stateful widget for the Forgot Password page
@@ -44,13 +45,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 // Adding some space here
               const SizedBox(height: 40.0),
 
-// Adding an align widget to put the text "AGQ" at the top left of the screen
+// Adding an align widget to put the text 'AGQ' at the top left of the screen
               const Align(
                 alignment: Alignment.centerLeft,
 
-// Text widget to display "AGQ"                
+// Text widget to display 'AGQ'                
                 child: Text(
-                  "AGQ",
+                  'AGQ',
                   
 // TextStyle to define text appearance
                   style: TextStyle(
@@ -65,9 +66,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 // Adding some space here
               const SizedBox(height: 100.0),
 
-// Text widget to display "Forgot Password?"
+// Text widget to display 'Forgot Password?'
               const Text(
-                "Forgot Password?",
+                'Forgot Password?',
 
 // TextStyle to define text appearance
                 style: TextStyle(
@@ -83,7 +84,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
 // Text widget to display instructions for the user
               const Text(
-                "Enter your email. We will email instructions on how to reset your password.",
+                'Enter your email. We will email instructions on how to reset your password.',
 
 // Text alignment set to center
                 textAlign: TextAlign.center,
@@ -114,9 +115,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 // Defining the children (email text box with its title) 
                   children: [
 
-// Text widget to display "Email"                
+// Text widget to display 'Email'                
                     const Text(
-                      "Email",
+                      'Email',
                       
 // TextStyle to define text appearance
                       style: TextStyle(
@@ -191,15 +192,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     await FirebaseAuth.instance.sendPasswordResetEmail(email: ForgotPasswordEmailString);
 
                     // Show a success message or navigate to a success screen
-                    print("Password reset email sent successfully!");
+                    log('Password reset email sent successfully!');
 
                     // Show a dialog to inform the user
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: const Text("Success"),
-                          content: const Text("Password reset email sent successfully!"),
+                          title: const Text('Success'),
+                          content: const Text('Password reset email sent successfully!'),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -213,7 +214,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     },
                                   ),
                                 );                              },
-                              child: const Text("OK"),
+                              child: const Text('OK'),
                             ),
                           ],
                         );
@@ -222,21 +223,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                   } catch (e) {
                     // Handle errors, you can display them to the user or log them
-                    print("Error sending password reset email: $e");
+                    log('Error sending password reset email: $e');
 
                     // Show an error dialog
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: const Text("Error"),
-                          content: const Text("Failed to send password reset email. Please try again."),
+                          title: const Text('Error'),
+                          content: const Text('Failed to send password reset email. Please try again.'),
                           actions: [
                             TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
                               },
-                              child: const Text("OK"),
+                              child: const Text('OK'),
                             ),
                           ],
                         );
@@ -261,9 +262,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Text widget displaying "Submit"
+                      // Text widget displaying 'Submit'
                       Text(
-                        "Submit",
+                        'Submit',
                         // TextStyle to define text appearance
                         style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web'),
                       )
@@ -287,7 +288,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 // List of widgets representing the content
                 children: [
 
-// Text widget displaying "Back to"
+// Text widget displaying 'Back to'
                   const Text(
                     'Back to',
 
@@ -311,15 +312,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       );
                     },
 
-// TextButton representing the "Sign In" link
+// TextButton representing the 'Sign In' link
                     child: const TextButton(
 
 // Set onPressed to null or add your logic inside the GestureDetector
                       onPressed: null,
 
-// Text widget displaying "Sign In"
+// Text widget displaying 'Sign In'
                       child: Text(
-                        "Sign In",
+                        'Sign In',
 
 // TextStyle to define text appearance
                         style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web'),

@@ -53,8 +53,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// This method continuously checks if the user's email has been verified.
   /// It uses the [FirebaseAuth] instance to get the current user and reloads
   /// the user's data. If the user is not null and their email is verified,
-  /// it logs "Email verified" and returns true. Otherwise, it logs
-  /// "Email not verified yet. Waiting 5 seconds..." and waits for 5 seconds
+  /// it logs 'Email verified' and returns true. Otherwise, it logs
+  /// 'Email not verified yet. Waiting 5 seconds...' and waits for 5 seconds
   /// before checking again.
   ///
   /// Returns a [Future<bool>] that resolves to true when the user's email
@@ -64,10 +64,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       User? user = FirebaseAuth.instance.currentUser;
       await user?.reload();
       if (user != null && user.emailVerified) {
-        log("Email verified");
+        log('Email verified');
         return true;
       }
-      log("Email not verified yet. Waiting 5 seconds...");
+      log('Email not verified yet. Waiting 5 seconds...');
       await Future.delayed(Duration(seconds: 5));
     }
   }
@@ -100,21 +100,21 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         email: createAccountEmailController.text,
         password: createAccountPasswordController.text,
       );
-      log("UserCredential created: $userCredential. In buffer.");
+      log('UserCredential created: $userCredential. In buffer.');
 
       // Create a new database service for our new user
       DatabaseService databaseService = DatabaseService.withCID(cid, userCredential.user!.uid);
       
       // If the user inputs a CID that is not in the database or is already linked to a user, show an error dialog and return.
       if (! (await databaseService.docExists(cid)) ){
-        CustomAlertDialog.showAlertDialog(context, "Error", "There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.");
+        CustomAlertDialog.showAlertDialog(context, 'Error', 'There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.');
         FirebaseAuth.instance.currentUser?.delete();
-        log("No document for cid: $cid.");
+        log('No document for cid: $cid.');
         return;
       } else if (await databaseService.docLinked(cid)) {
-        CustomAlertDialog.showAlertDialog(context, "Error", "User already exists for given Client ID $cid. Please log in instead.");
+        CustomAlertDialog.showAlertDialog(context, 'Error', 'User already exists for given Client ID $cid. Please log in instead.');
         FirebaseAuth.instance.currentUser?.delete();
-        log("User already exists for given cid $cid.");
+        log('User already exists for given cid $cid.');
         return;
       }
 
@@ -136,10 +136,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
           await databaseService.linkNewUser(user.email!);
 
-          log("User $uid connected to Client ID $cid");
+          log('User $uid connected to Client ID $cid');
         } else {
-          log("User is null");
-          throw FirebaseAuthException(code: "user-null", message: "User is null");
+          log('User is null');
+          throw FirebaseAuthException(code: 'user-null', message: 'User is null');
         }
         // Navigate to the dashboard after successful email verification
         Navigator.push(
@@ -159,7 +159,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       handleFirebaseAuthException(context, e);
       FirebaseAuth.instance.currentUser?.delete();
     } catch (e) {
-      log("Error signing user in: $e", stackTrace: StackTrace.current);
+      log('Error signing user in: $e', stackTrace: StackTrace.current);
       FirebaseAuth.instance.currentUser?.delete();
     }
   }
@@ -201,7 +201,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   
                   const Center(
                     child: Text(
-                      "You will recieve an Email with a link to verify your email. Please check your inbox.",
+                      'You will recieve an Email with a link to verify your email. Please check your inbox.',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -221,7 +221,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: Text(
-                                "Verifying Email",
+                                'Verifying Email',
                                 style: TextStyle(
                                   fontFamily: 'Titillium Web',
                                   color: Colors.blue,
@@ -229,11 +229,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                               ),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
+                                children: const [
                                   CircularProgressIndicator(),
                                   SizedBox(height: 10),
                                   Text(
-                                    "Please wait...",
+                                    'Please wait...',
                                     style: TextStyle(
                                       fontFamily: 'Titillium Web',
                                       color: Colors.blue,
@@ -262,14 +262,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: Text(
-                                "Error",
+                                'Error',
                                 style: TextStyle(
                                   fontFamily: 'Titillium Web',
                                   color: Colors.blue, // You can change this to your desired color
                                 ),
                               ),
                               content: Text(
-                                "Email not verified. Please check your inbox for the verification link.",
+                                'Email not verified. Please check your inbox for the verification link.',
                                 style: TextStyle(
                                   fontFamily: 'Titillium Web',
                                   color: Colors.blue, // You can change this to your desired color
@@ -281,7 +281,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                                     Navigator.pop(context);
                                   },
                                   child: Text(
-                                    "OK",
+                                    'OK',
                                     style: TextStyle(
                                       fontFamily: 'Titillium Web',
                                       color: Colors.blue, // You can change this to your desired color
@@ -306,7 +306,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       child: Center(
                         child: Text(
-                          "Continue",
+                          'Continue',
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.blue,
@@ -386,22 +386,22 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// The [e] parameter is the [FirebaseAuthException] that occurred.
   void handleFirebaseAuthException(BuildContext context, FirebaseAuthException e) {
     // Log the error message and stack trace
-    log("Error signing user in: $e", stackTrace: StackTrace.current);
+    log('Error signing user in: $e', stackTrace: StackTrace.current);
 
-    String errorMessage = "Failed to sign up. Please try again.";
+    String errorMessage = 'Failed to sign up. Please try again.';
 
     // Check the error code and set the appropriate error message
     switch (e.code) {
       case 'email-already-in-use':
-        errorMessage = "Email $email is already in use. Please use a different email.";
+        errorMessage = 'Email $email is already in use. Please use a different email.';
         log('$e: Email is already connected to a different cid.');
         break;
       case 'document-not-found':
-        errorMessage = "There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.";
+        errorMessage = 'There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.';
         log('No document for cid: $cid');
         break;
       case 'user-already-exists':
-        errorMessage = "User already exists for given Client ID $cid. Please log in instead.";
+        errorMessage = 'User already exists for given Client ID $cid. Please log in instead.';
         log('$e');
         break;
       default:
@@ -409,7 +409,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }    
 
     // Show an error dialog with the error message
-    CustomAlertDialog.showAlertDialog(context, "Error", errorMessage);
+    CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage);
   }
   
   /// Builds the create account screen widget.
@@ -427,7 +427,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "AGQ",
+                  'AGQ',
                   style: TextStyle(
                     fontSize: 40,
                     color: Colors.white,
@@ -440,7 +440,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               const SizedBox(height: 60.0),
 
               const Text(
-                "Create An Account",
+                'Create An Account',
                 style: TextStyle(
                   fontSize: 26,
                   color: Colors.white,
@@ -458,7 +458,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      "Client ID",
+                      'Client ID',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -508,7 +508,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      "Email",
+                      'Email',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -558,7 +558,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      "Password",
+                      'Password',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -799,9 +799,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
 
-                    // Text widget for displaying "Confirm Password"
+                    // Text widget for displaying 'Confirm Password'
                     Text(
-                      "Confirm Password",
+                      'Confirm Password',
                       // TextStyle conditionally set based on password security indicator
                       style: passwordSecurityIndicator == 4
                           ? const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web') // Style for valid condition
@@ -853,12 +853,12 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               // Adding space
               const SizedBox(height: 16.0),
 
-              // "Next" button
+              // 'Next' button
               GestureDetector(
                 // Execute onTap
                 onTap: () => signUserUp(context),
 
-                // Container holding the "Next" button
+                // Container holding the 'Next' button
                 child: Container(
                   height: 50,
 
@@ -870,12 +870,12 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
 
-                  // Row to contain "Next" text and arrow icon
+                  // Row to contain 'Next' text and arrow icon
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Next",
+                        'Next',
 
                         // TextStyle to define text appearance
                         style: TextStyle(
@@ -917,7 +917,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Titillium Web'),
                   ),
 
-                  // GestureDetector for handling taps on the "Login" text
+                  // GestureDetector for handling taps on the 'Login' text
                   GestureDetector(
                     behavior: HitTestBehavior.translucent,
 
@@ -938,7 +938,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     child: const TextButton(
                       onPressed: null, // Set onPressed to null or add your logic inside the GestureDetector
                       child: Text(
-                        "Login",
+                        'Login',
 
                         // TextStyle to define text appearance
                         style: TextStyle(
