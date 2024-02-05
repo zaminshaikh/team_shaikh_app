@@ -25,6 +25,7 @@ class _DashboardPageState extends State<DashboardPage> {
       Icons.person_outline_sharp
     ];
 
+  // database service instance
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
@@ -37,32 +38,22 @@ class _DashboardPageState extends State<DashboardPage> {
     log("Database Service has been initialized with CID: ${_databaseService.cid}");
   }
 
-  double calculateTotal(DocumentSnapshot snapshot) {
-    double total = 0.0;
-    if (snapshot.exists) {
-      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-      data.values.forEach((value) {
-        if (value is num) {
-          total += value;
-        }
-      });
-    }
-    return total;
-  }
-
-
   @override
   Widget build(BuildContext context) {
+    // Use FutureBuilder to allow async initialization of the database service
     return FutureBuilder(
       future: _initData(),
       builder: (context, snapshot) {
+        // while we are waiting, show a loading indicator
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
+        // once the future is complete, show the app
         return StreamBuilder<DocumentSnapshot>(
+          // Stream of the user's data
           stream: _databaseService.getUser,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -71,8 +62,10 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
+            // Get the user's name and CID
             String userName = snapshot.data!['name']['first'] + ' ' + snapshot.data!['name']['last'];
             String? cid = _databaseService.cid;
+            
             return Scaffold(
           
               appBar: AppBar(

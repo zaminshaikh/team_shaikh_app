@@ -54,93 +54,94 @@ class DatabaseService {
 
 
   /// Links a new user to the database using the provided email.
-    ///
-    /// This method fetches the existing data for the user with the given [cid] (Client ID) from the database. 
-    /// Each [cid] corresponds to a document in the 'users' collection in the database.
-    /// If the user already exists (determined by the presence of a [uid] in the existing data), an exception is thrown.
-    /// Otherwise, the method updates the existing data with the new user's [uid] and [email] and sets the document in the database with the updated data.
-    ///
-    /// Throws a [FirebaseException] if:
-    /// - **No document found**
-    ///   - The document does not exist for the given [cid]
-    /// - **User already exists**
-    ///   - The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid]
-    /// 
-    /// Catches any other unhandled exceptions and logs an error message.
-    /// 
-    /// Parameters:
-    /// - [email]: The email of the new user to be linked to the database.
-    ///
-    /// Usage:
-    /// ```dart
-    /// try {
-    ///   DatabaseService db = new DatabaseService(cid, uid);
-    ///   await db.linkUserToDatabase(email, cid);
-    ///   print('User linked to database successfully.');
-    /// } catch (e) {
-    ///   print('Error linking user to database: $e');
-    /// }
-    /// ```
-    ///
-    /// Returns a [Future] that completes when the document is successfully set in the database.
-    Future linkNewUser(String email) async {
-      try {
-        // Fetch existing data
-        DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
-        
-        // Check if the document exists
-        if (userSnapshot.exists) {
+  ///
+  /// This method fetches the existing data for the user with the given [cid] (Client ID) from the database. 
+  /// Each [cid] corresponds to a document in the 'users' collection in the database.
+  /// If the user already exists (determined by the presence of a [uid] in the existing data), an exception is thrown.
+  /// Otherwise, the method updates the existing data with the new user's [uid] and [email] and sets the document in the database with the updated data.
+  ///
+  /// Throws a [FirebaseException] if:
+  /// - **No document found**
+  ///   - The document does not exist for the given [cid]
+  /// - **User already exists**
+  ///   - The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid]
+  /// 
+  /// Catches any other unhandled exceptions and logs an error message.
+  /// 
+  /// Parameters:
+  /// - [email]: The email of the new user to be linked to the database.
+  ///
+  /// Usage:
+  /// ```dart
+  /// try {
+  ///   DatabaseService db = new DatabaseService(cid, uid);
+  ///   await db.linkUserToDatabase(email, cid);
+  ///   print('User linked to database successfully.');
+  /// } catch (e) {
+  ///   print('Error linking user to database: $e');
+  /// }
+  /// ```
+  ///
+  /// Returns a [Future] that completes when the document is successfully set in the database.
+  Future linkNewUser(String email) async {
+    try {
+      // Fetch existing data
+      DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
+      
+      // Check if the document exists
+      if (userSnapshot.exists) {
 
-          // Get existing data
-          Map<String, dynamic> existingData = userSnapshot.data() as Map<String, dynamic>;
+        // Get existing data
+        Map<String, dynamic> existingData = userSnapshot.data() as Map<String, dynamic>;
 
-          // If the document we pulled has a UID, then the user already exists
-          if (existingData['uid'] != '') {
-            throw FirebaseAuthException(
-              code: 'user-already-exists',
-              message: 'User already exists for cid: $cid'
-            );
-          }
-          
-          // Update new fields and keep old ones from snapshot
-          Map<String, dynamic> updatedData = {
-            'uid': uid,
-            'email': email,
-            'name': existingData['name'],
-            'hapticsOn': existingData['hapticsOn'],
-            'notif': existingData['notif'],
-            'connectedUsers': existingData['connectedUsers'],
-          };
-
-          // Set the document with the updated data
-          return await usersCollection.doc(cid).set(updatedData);
-
-        } else {
+        // If the document we pulled has a UID, then the user already exists
+        if (existingData['uid'] != '') {
           throw FirebaseAuthException(
-            code: 'document-not-found',
-            message: 'Document does not exist for cid: $cid'
+            code: 'user-already-exists',
+            message: 'User already exists for cid: $cid'
           );
         }
-        // This throws the exception to the calling method
-      } on FirebaseAuthException catch (e) {
-        // Handle FirebaseAuth exceptions
-        log('FirebaseAuthException: $e');
-        rethrow; // Rethrow to propagate the exception to the caller
+        
+        // Update new fields and keep old ones from snapshot
+        Map<String, dynamic> updatedData = {
+          'uid': uid,
+          'email': email,
+          'name': existingData['name'],
+          'hapticsOn': existingData['hapticsOn'],
+          'notif': existingData['notif'],
+          'connectedUsers': existingData['connectedUsers'],
+        };
 
-      } on FirebaseException catch (e) {
-        // Handle Firebase exceptions
-        log('FirebaseException: $e');
-        rethrow; // Rethrow to propagate the exception to the caller
+        // Set the document with the updated data
+        return await usersCollection.doc(cid).set(updatedData);
 
-      } catch (e) {
-        // Catch any other exceptions
-        log('Error creating/updating: $e', stackTrace: StackTrace.current);
-        rethrow; // Rethrow to propagate the exception to the caller
+      } else {
+        throw FirebaseAuthException(
+          code: 'document-not-found',
+          message: 'Document does not exist for cid: $cid'
+        );
       }
-    }
+      // This throws the exception to the calling method
+    } on FirebaseAuthException catch (e) {
+      // Handle FirebaseAuth exceptions
+      log('FirebaseAuthException: $e');
+      rethrow; // Rethrow to propagate the exception to the caller
 
-  /// Returns a stream of [DocumentSnapshot] containing the users collection.
-  /// This stream will emit a new [DocumentSnapshot] whenever the users collection is updated.
+    } on FirebaseException catch (e) {
+      // Handle Firebase exceptions
+      log('FirebaseException: $e');
+      rethrow; // Rethrow to propagate the exception to the caller
+
+    } catch (e) {
+      // Catch any other exceptions
+      log('Error creating/updating: $e', stackTrace: StackTrace.current);
+      rethrow; // Rethrow to propagate the exception to the caller
+    }
+  }
+
+  /// Returns a stream of [DocumentSnapshot] containing a single user document.
+  /// 
+  /// This stream will emit a new [DocumentSnapshot] whenever the user document is updated.
   Stream<DocumentSnapshot> get getUser {
     return usersCollection.doc(cid).snapshots();
   }
