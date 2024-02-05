@@ -5,7 +5,7 @@ import 'package:team_shaikh_app/alert_dialog.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/screens/database.dart';
+import 'package:team_shaikh_app/database.dart';
 
 // StatefulWidget representing the Create Account page
 class CreateAccountPage extends StatefulWidget {
@@ -103,7 +103,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       log("UserCredential created: $userCredential. In buffer.");
 
       // Create a new database service for our new user
-      DatabaseService databaseService = DatabaseService(cid, userCredential.user!.uid);
+      DatabaseService databaseService = DatabaseService.withCID(cid, userCredential.user!.uid);
       
       // If the user inputs a CID that is not in the database or is already linked to a user, show an error dialog and return.
       if (! (await databaseService.docExists(cid)) ){
@@ -409,23 +409,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }    
 
     // Show an error dialog with the error message
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: Text(errorMessage),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
+    CustomAlertDialog.showAlertDialog(context, "Error", errorMessage);
   }
   
   /// Builds the create account screen widget.
