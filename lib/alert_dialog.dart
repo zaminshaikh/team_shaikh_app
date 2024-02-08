@@ -14,12 +14,10 @@ import 'package:flutter/material.dart';
 /// CustomAlertDialog.showAlertDialog(context, 'Alert', 'This is an alert message');
 /// ```
 class CustomAlertDialog {
-  static Future<void> showAlertDialog(BuildContext context, String title, String message) async {
-    return showDialog<void>(
+  static Future<void> showAlertDialog(BuildContext context, String title, String message) async => showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
+      builder: (BuildContext context) => AlertDialog(
           title: Text(title),
           content: SingleChildScrollView(
             child: ListBody(
@@ -30,14 +28,12 @@ class CustomAlertDialog {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Okay'),
+              child: const Text('Okay'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
           ],
-        );
-      },
+        ),
     );
-  }
 }

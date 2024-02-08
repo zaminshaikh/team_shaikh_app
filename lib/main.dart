@@ -23,8 +23,7 @@ class MyApp extends StatelessWidget {
 
   // The build method to define the structure of the app
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context) => MaterialApp(
       // Title of the application
       title: 'Team Shaikh Investments',
 
@@ -35,7 +34,7 @@ class MyApp extends StatelessWidget {
 
       // When the app first starts, call the wrapper class which will
       // determine whether to show the home page or the authenticate page
-      home: Wrapper(),
+      home: const Wrapper(),
 
       // Routes for different pages in the app
       routes: {
@@ -49,5 +48,4 @@ class MyApp extends StatelessWidget {
       },
 
     );
-  }
 }

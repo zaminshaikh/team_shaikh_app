@@ -21,8 +21,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 37, 58, 86),
@@ -85,9 +84,7 @@ class _ActivityPageState extends State<ActivityPage> {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                     ),
                   );
                 }
@@ -97,9 +94,7 @@ class _ActivityPageState extends State<ActivityPage> {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                     ),
                   );
                 }
@@ -109,9 +104,7 @@ class _ActivityPageState extends State<ActivityPage> {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                     ),
                   );
                 }
@@ -121,9 +114,7 @@ class _ActivityPageState extends State<ActivityPage> {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                     ),
                   );
                 }
@@ -142,6 +133,5 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
           
     );
-  }
 }
 

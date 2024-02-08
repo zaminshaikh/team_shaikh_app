@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 /// This class is responsible for linking new users to the database and retrieving user data from the database.
 /// It interacts with the 'users' collection in the Firestore database.
 class DatabaseService {
-  
   String? cid;
   final String uid;
   static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
@@ -45,7 +44,7 @@ class DatabaseService {
       switch (code) {
         case 1:
           service.assetsSubCollection = FirebaseFirestore.instance.collection('testUsers').doc(service.cid).collection('assets');
-          log('Assets subcollection set to $usersCollection/{service.cid}/assets');
+          log('Assets subcollection set to $usersCollection/${service.cid}/assets');
           break; 
         default:
           log('Invalid code');
@@ -149,9 +148,7 @@ class DatabaseService {
   /// Returns a stream of [DocumentSnapshot] containing a single user document.
   /// 
   /// This stream will emit a new [DocumentSnapshot] whenever the user document is updated.
-  Stream<DocumentSnapshot> get getUser {
-    return usersCollection.doc(cid).snapshots();
-  }
+  Stream<DocumentSnapshot> get getUser => usersCollection.doc(cid).snapshots();
 
   /// Checks if a document with the given [cid] exists in the users collection.
   /// Returns a [Future] that completes with a boolean value indicating whether the document exists or not.
@@ -187,5 +184,35 @@ class DatabaseService {
     }
     return assetsSubCollection!.snapshots();
   }
-  
+
+  Stream<UserWithAssets> get getUserWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
+      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+      QuerySnapshot assetsSnapshot = await assetsSubCollection!.get();
+      List<Map<String, dynamic>> assets = assetsSnapshot.docs.map((asset) => asset.data() as Map<String, dynamic>).toList();
+      return UserWithAssets(info, assets);
+    });
+
+  Stream<List<UserWithAssets>> get getConnectedUsersWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
+      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+      List<String> connectedUsers = info['connectedUsers'].cast<String>();
+      if (connectedUsers.isEmpty) {
+        return [];
+      }
+      List<UserWithAssets> connectedUsersWithAssets = [];
+      for (String connectedUser in connectedUsers) {
+        DocumentSnapshot connectedUserSnapshot = await usersCollection.doc(connectedUser).get();
+        Map<String, dynamic> connectedUserData = connectedUserSnapshot.data() as Map<String, dynamic>;
+        QuerySnapshot connectedUserAssetsSnapshot = await usersCollection.doc(connectedUser).collection('assets').get();
+        List<Map<String, dynamic>> connectedUserAssets = connectedUserAssetsSnapshot.docs.map((asset) => asset.data() as Map<String, dynamic>).toList();
+        connectedUsersWithAssets.add(UserWithAssets(connectedUserData, connectedUserAssets));
+      }
+      return connectedUsersWithAssets;
+    });  
+}
+
+class UserWithAssets {
+  final Map<String, dynamic> info;
+  final List<Map<String, dynamic>> assets;
+
+  UserWithAssets(this.info, this.assets);
 }

@@ -21,9 +21,28 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    prefer_const_constructors : false
-    avoid_print: true  # Uncomment to disable the `avoid_print` rule
-    prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    - avoid_relative_lib_imports
+    - avoid_return_types_on_setters
+    - avoid_unused_constructor_parameters
+    - constant_identifier_names
+    - control_flow_in_finally
+    - prefer_adjacent_string_concatenation
+    - prefer_constructors_over_static_methods
+    - prefer_expression_function_bodies
+    - prefer_single_quotes
+    - sort_pub_dependencies
+    - type_init_formals
+    - unawaited_futures
+    - unnecessary_const
+    - unnecessary_getters_setters
+    - flutter_style_todos
+    - package_api_docs
+    - package_prefixed_library_names
+    - sort_child_properties_last
+    - sized_box_for_whitespace
+    - prefer_const_constructors : false
+    - avoid_print: true  # Uncomment to disable the `avoid_print` rule
+    - prefer_single_quotes: true # Uncomment to enable the `prefer_single_quotes` rule
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
