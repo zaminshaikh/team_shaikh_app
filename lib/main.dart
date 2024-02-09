@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
 
       // Theme data for styling the general background
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 22, 42, 77),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
       ),
 
       // When the app first starts, call the wrapper class which will
