@@ -103,7 +103,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       log('UserCredential created: $userCredential. In buffer.');
 
       // Create a new database service for our new user
-      DatabaseService databaseService = DatabaseService.withCID(cid, userCredential.user!.uid);
+      DatabaseService databaseService = DatabaseService.withCID(userCredential.user!.uid, cid);
       
       // If the user inputs a CID that is not in the database or is already linked to a user, show an error dialog and return.
       if (! (await databaseService.docExists(cid)) ){
