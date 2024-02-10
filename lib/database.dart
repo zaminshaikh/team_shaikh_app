@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 /// A class that provides database operations for managing users.
 ///
@@ -30,7 +31,7 @@ class DatabaseService {
   DatabaseService.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
-  static Future<DatabaseService> fetchCID(String uid, int code) async {
+  static Future<DatabaseService?> fetchCID(String uid, int code) async {
     DatabaseService service = DatabaseService(uid);
 
     // Access Firestore and get the document
@@ -51,6 +52,7 @@ class DatabaseService {
       log('CID: ${service.cid}');
     } else {
       log('Document with UID $uid not found in Firestore.');
+      return null;
     }
 
     return service;
@@ -227,6 +229,44 @@ class DatabaseService {
     }
     return connectedUsersWithAssets;
   });
+
+  Future<void> duplicateDocument(String newDocId) async {
+    // Get a reference to the old document
+    DocumentReference oldDoc = usersCollection.doc(cid);
+
+    // Read the data from the old document
+    Map<String, dynamic>? oldData = (await oldDoc.get()).data() as Map<String, dynamic>?;
+
+    // Check if the old document exists
+    if (oldData != null) {
+      // Get a reference to the new document
+      DocumentReference newDoc = usersCollection.doc(newDocId);
+
+      // Write the data to the new document
+      await newDoc.set(oldData);
+
+      // List of subcollections to duplicate
+      List<String> subcollections = ['assets', 'notifications', 'activities'];
+
+      // Duplicate each subcollection
+      for (String subcollection in subcollections) {
+        // Get a reference to the old subcollection
+        CollectionReference oldSubcollection = oldDoc.collection(subcollection);
+
+        // Get all documents in the old subcollection
+        QuerySnapshot querySnapshot = await oldSubcollection.get();
+
+        // Duplicate each document in the subcollection
+        for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+          // Get a reference to the new subcollection
+          CollectionReference newSubcollection = newDoc.collection(subcollection);
+
+          // Write the data to the new document in the subcollection
+          await newSubcollection.doc(doc.id).set(doc.data());
+        }
+      }
+    }
+  }
 }
 
 /// Represents a user with their information and assets.

@@ -8,8 +8,7 @@ class Wrapper extends StatelessWidget {
   const Wrapper({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(), 
         builder: (context, snapshot) {
@@ -26,5 +25,4 @@ class Wrapper extends StatelessWidget {
         }
       ),
     );
-  }
 }

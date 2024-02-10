@@ -34,8 +34,13 @@ class _DashboardPageState extends State<DashboardPage> {
     String uid = user.uid;
 
     // Fetch CID using async constructor
-    _databaseService = await DatabaseService.fetchCID(uid, 1);
-    log('Database Service has been initialized with CID: ${_databaseService.cid}');
+    DatabaseService? service = await DatabaseService.fetchCID(uid, 1);
+    if (_databaseService == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      _databaseService = service!;
+      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+    }
   }
 
   String _currencyFormat(double amount) => NumberFormat.currency(
@@ -66,9 +71,10 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (context, connectedUsersSnapshot) {
                 if (!connectedUsersSnapshot.hasData) {
                   log('Connected users snapshot has no data');
+                  _databaseService.duplicateDocument('12345670');
                   return _dashboardSingleUser(userSnapshot);
                 }
-              return dashboardWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
+                return dashboardWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
               }
             );
           }
@@ -150,7 +156,7 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(height: 32),
 
               // User breakdown section
-              _buildUserBreakdownSection2(userName, totalUserAssets, latestIncome),
+              _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
               
               const SizedBox(height: 32),
 
@@ -432,7 +438,11 @@ class _DashboardPageState extends State<DashboardPage> {
     ),
   );
   
-  Widget _buildUserBreakdownSection2(String userName, double totalUserAssets, double latestIncome) => ExpansionTile(
+  Widget _buildUserBreakdownSection(String userName, double totalUserAssets, double latestIncome) => Theme(
+    data: ThemeData(
+      splashColor: Colors.transparent, // removes splash effect
+    ),
+    child: ExpansionTile(
       title: Text(
         userName,
         style: TextStyle(
@@ -463,81 +473,56 @@ class _DashboardPageState extends State<DashboardPage> {
       iconColor: Colors.white,
       collapsedIconColor: Colors.white,
       children: <Widget>[
-        // Add the breakdown of the user's assets here.
-        // For example:
+        Divider(color: Colors.grey[300]), // Add a light divider bar
         ListTile(
-          title: Text('Asset 1: ${_currencyFormat(12000)}'),
+          leading: Icon(Icons.account_balance, color: Colors.white), // Add an icon
+          title: Text(
+            'Asset 1',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          trailing: Text(
+            _currencyFormat(12000),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
         ),
+        Divider(
+          color: Colors.grey[300], // Light grey color
+          thickness: 0.5, // Thinner line
+          indent: 16, // Indent from the left
+          endIndent: 16, // Indent from the right
+        ), // Add a light divider bar
         ListTile(
-          title: Text('Asset 2: ${_currencyFormat(46000)}'),
+          leading: Icon(Icons.account_balance, color: Colors.white), // Add an icon
+          title: Text(
+            'Asset 2',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          trailing: Text(
+            _currencyFormat(46000),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
         ),
         // Add more ListTiles for more assets
-      ],
-    );
-
-  Widget _buildUserBreakdownSection(String userName, double totalUserAssets, double latestIncome) => Container(
-    width: 400,
-    height: 90,
-    padding: const EdgeInsets.all(15),
-    decoration: BoxDecoration(
-      color: const Color.fromARGB(255, 30, 41, 59),
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: Row(
-      children: [
-        SizedBox(width: 3),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 3),
-            Row(
-              children: [
-                Text(
-                  userName,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-
-                SizedBox(width: 10),
-
-                Icon(Icons.abc),
-
-                SizedBox(width: 5),
-
-                Text(
-                  _currencyFormat(latestIncome),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ],
-            ),
-            
-            SizedBox(height: 7),
-
-            Text(
-              _currencyFormat(totalUserAssets),
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-
-          ],
-        ),
-        SizedBox(width: 170),
-        Icon(
-        Icons.arrow_forward_ios_rounded,
-        color: Colors.white,
-        size: 25)
       ],
     ),
   );
