@@ -18,11 +18,11 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int selectedIndex = 0;
-  List<IconData> data = [
-    Icons.home_outlined,
-    Icons.search,
-    Icons.add_box_outlined,
-    Icons.person_outline_sharp
+  List<String> data = [
+    'assets/icons/dashboard_hollowed.png',
+    'assets/icons/analytics_hollowed.png',
+    'assets/icons/activity_hollowed.png',
+    'assets/icons/profile_hollowed.png',
   ];
 
   // database service instance
@@ -71,14 +71,13 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (context, connectedUsersSnapshot) {
                 if (!connectedUsersSnapshot.hasData) {
                   log('Connected users snapshot has no data');
-                  _databaseService.duplicateDocument('12345670');
                   return _dashboardSingleUser(userSnapshot);
                 }
                 return dashboardWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
               }
             );
           }
-        );
+        );      
       }
     );
 
@@ -139,42 +138,43 @@ class _DashboardPageState extends State<DashboardPage> {
 
     
 
-    return Scaffold(
-      // Top bar
-      appBar: _buildAppBar(userName, cid),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-               // Total assets section
-              _buildTotalAssetsSection(totalUserAssets, latestIncome),
-              
-              const SizedBox(height: 32),
-
-              // User breakdown section
-              _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
-              
-              const SizedBox(height: 32),
-
-              // Assets structure section
-              _buildAssetsStructureSection(totalUserAssets, percentageAGQ, percentageAK1),
-              
-              const SizedBox(height: 30),
-
-            ],
-          ),
+      return Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: <Widget>[
+                _buildAppBar(userName, cid),
+                SliverPadding(
+                  padding: const EdgeInsets.all(16.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        // Total assets section
+                        _buildTotalAssetsSection(totalUserAssets, latestIncome),
+                        const SizedBox(height: 32),
+                        // User breakdown section
+                        _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
+                        const SizedBox(height: 32),
+                        // Assets structure section
+                        _buildAssetsStructureSection(totalUserAssets, percentageAGQ, percentageAK1),
+                        const SizedBox(height: 132),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomNavigationBar(),
+            ),
+          ],
         ),
-      ),
-
-      bottomNavigationBar: _buildBottomNavigationBar(),
       );
-    
   }
-  
+
   Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> user, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
     int numConnectedUsers = connectedUsers.data!.length;
     String userName = 'test';
@@ -187,203 +187,110 @@ class _DashboardPageState extends State<DashboardPage> {
 
 
     return Scaffold(
-      appBar: _buildAppBar(userName, cid),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTotalAssetsSection(totalAssets, latestIncome),
-              
-              const SizedBox(height: 32),
-
-
-              _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
-              
-              const SizedBox(height: 40),
-
-              Row(
-                children: [
-
-                  Text(
-                    'Connected Users',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          _buildAppBar(userName, cid),
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  _buildTotalAssetsSection(totalAssets, latestIncome),
+                  const SizedBox(height: 32),
+                  _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
+                  const SizedBox(height: 40),
+                  Row(
+                    children: [
+                      Text(
+                        'Connected Users',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                      SizedBox(width: 220),
+                      Text(
+                        '$numConnectedUsers',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                    ],
                   ),
-
-                  SizedBox(width: 220),
-
-                  Text(
-                    '$numConnectedUsers',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-
+                  const SizedBox(height: 20),
+                  _buildConnectedUsersSection(),
+                  const SizedBox(height: 80),
+                  _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
+                  const SizedBox(height: 30),
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              _buildConnectedUsersSection(),
-
-              const SizedBox(height: 80),
-
-              _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
-              
-              const SizedBox(height: 30),
-
-              
-
-            ],
+            ),
           ),
+        ],
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );  
+  }
+    
+  SliverAppBar _buildAppBar(String userName, String? cid) => SliverAppBar(
+    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+    automaticallyImplyLeading: false,
+    toolbarHeight: 80,
+    expandedHeight: 0,
+    snap: false,
+    floating: true,
+    pinned: true,
+    flexibleSpace: SafeArea(
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome Back, $userName!',
+                  style: TextStyle(
+                    fontSize: 23,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Client ID: $cid',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+        ],
+      ),
+    ),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(right: 10.0),
+        child: Icon(
+          Icons.notifications_none_rounded,
+          color: Colors.white,
+          size: 32,
         ),
       ),
-
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-        height: 80,
-        padding: const EdgeInsets.only(right: 30, left: 30),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 37, 58, 86),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            data.length,
-            (i) => GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedIndex = i;
-                });
-
-                if (data[i] == Icons.search) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                    ),
-                  );
-                }
-
-                if (data[i] == Icons.home_outlined) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                    ),
-                  );
-                }
-
-                if (data[i] == Icons.add_box_outlined) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                    ),
-                  );
-                }
-
-                if (data[i] == Icons.person_outline_sharp) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                    ),
-                  );
-                }
-
-              },
-              child: Icon(
-                data[i],
-                size: 35,
-                color: data[i] == Icons.home_outlined
-                ? Colors.white 
-                : Colors.blueGrey,
-              ),
-              ),
-            ),
-        ),
-        ),
-      );
-  }
-  
-  AppBar _buildAppBar(String userName, String? cid) => AppBar(
-    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-    toolbarHeight: 90,
-    title: Row(
-      children: [
-        SizedBox(width: 10),
-        Column( 
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            Text(
-              'Welcome Back, $userName!',
-              style: TextStyle(
-                fontSize: 23,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-
-            SizedBox(height: 5),
-
-            Text(
-              'Client ID: $cid',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-
-          ]
-        ),
-
-        SizedBox(width: 105),
-
-        Column(
-          children: const [
-            Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.white,
-              size: 32
-            ),
-
-            SizedBox(height: 20)
-          ],
-        )
-
-      ],
-    ),
-    automaticallyImplyLeading: false,
+    ],
   );
-
+    
   Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) => Container(
     width: 400,
     height: 160,
@@ -419,7 +326,10 @@ class _DashboardPageState extends State<DashboardPage> {
             SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.abc),
+                Image.asset(
+                  'assets/icons/green_arrow_up.png',
+                  height: 20,
+                ),
                 SizedBox(width: 5),
                 Text(
                   _currencyFormat(latestIncome),
@@ -443,14 +353,33 @@ class _DashboardPageState extends State<DashboardPage> {
       splashColor: Colors.transparent, // removes splash effect
     ),
     child: ExpansionTile(
-      title: Text(
-        userName,
-        style: TextStyle(
-          fontSize: 18,
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Titillium Web',
-        ),
+      title: Row(
+        children: [
+          Text(
+            userName,
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          SizedBox(width: 10),
+          Image.asset(
+                  'assets/icons/green_arrow_up.png',
+                  height: 20,
+                ),
+          SizedBox(width: 5),
+          Text(
+            _currencyFormat(latestIncome),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+        ],
       ),
       subtitle: Text(
         _currencyFormat(totalUserAssets),
@@ -627,28 +556,25 @@ class _DashboardPageState extends State<DashboardPage> {
             SizedBox(width: 30),
             Text(
               'Type',
-
               style: TextStyle(
                 fontSize: 16, 
                 color: Color.fromARGB(255, 216, 216, 216), 
                 fontFamily: 'Titillium Web', 
               ),
             ),
-
-            SizedBox(width: 280),
-
+            Spacer(), // This will push the following widgets to the right
             Text(
               '%',
-            style: TextStyle(
+              style: TextStyle(
                 fontSize: 16, 
                 color: Color.fromARGB(255, 216, 216, 216), 
                 fontFamily: 'Titillium Web', 
               ),
             ),
+            SizedBox(width: 10),
           ],
-
         ),
-
+                
         const SizedBox(height: 5),
 
         const Divider(
@@ -662,78 +588,67 @@ class _DashboardPageState extends State<DashboardPage> {
 
         Column(
           
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 20,
-                  color: Color.fromARGB(255,12,94,175),
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.circle,
+                size: 20,
+                color: Color.fromARGB(255,12,94,175),
+              ),
+              SizedBox(width: 10),
+              Text('AGQ Fixed Income',
+                style: TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
                 ),
-
-                SizedBox(width: 10),
-                
-                Text('AGQ Fixed Income',
-                  style: TextStyle(
-                    fontSize: 15, 
-                    color: Colors.white, 
-                    fontWeight: FontWeight.w600, 
-                    fontFamily: 'Titillium Web', 
-                  ),
+              ),
+              Spacer(), // This will push the following widgets to the right
+              Text('${percentageAGQ.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
                 ),
-
-                SizedBox(width: 50),
-
-                Text('${percentageAGQ.toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    fontSize: 15, 
-                    color: Colors.white, 
-                    fontWeight: FontWeight.w600, 
-                    fontFamily: 'Titillium Web', 
-                  ),
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Icon(
+                Icons.circle,
+                size: 20,
+                color: Color.fromARGB(255,49,153,221),
+              ),
+              SizedBox(width: 10),
+              Text('AK1 Holdings LP',
+                style: TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
                 ),
-
-
-              ],
-
-            ),
-
-            SizedBox(height: 20),
-
-            Row(
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 20,
-                  color: Color.fromARGB(255,49,153,221),
+              ),
+              Spacer(), // This will push the following widgets to the right
+              Text('${percentageAK1.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
                 ),
-                SizedBox(width: 10),
-                
-                Text('AK1 Holdings LP',
-                  style: TextStyle(
-                    fontSize: 15, 
-                    color: Colors.white, 
-                    fontWeight: FontWeight.w600, 
-                    fontFamily: 'Titillium Web', 
-                  ),
-                ),
-
-                SizedBox(width: 50),
-
-                Text('${percentageAK1.toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    fontSize: 15, 
-                    color: Colors.white, 
-                    fontWeight: FontWeight.w600, 
-                    fontFamily: 'Titillium Web', 
-                  ),
-                ),
-
-
-              ],
-            ),
-          ],
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
+        ],        
         )
+              
       ],
     ),
   );
@@ -748,8 +663,8 @@ class _DashboardPageState extends State<DashboardPage> {
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.2),
-          spreadRadius: 2,
-          blurRadius: 5,
+          spreadRadius: 8,
+          blurRadius: 8,
           offset: const Offset(0, 3),
         ),
       ],
@@ -764,7 +679,7 @@ class _DashboardPageState extends State<DashboardPage> {
               selectedIndex = i;
             });
 
-            if (data[i] == Icons.search) {
+            if (data[i] == 'assets/icons/analytics_hollowed.png') {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -774,7 +689,7 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
-            if (data[i] == Icons.home_outlined) {
+            if (data[i] == 'assets/icons/dashboard_hollowed.png') {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -784,7 +699,7 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
-            if (data[i] == Icons.add_box_outlined) {
+            if (data[i] == 'assets/icons/activity_hollowed.png') {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -794,7 +709,7 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
-            if (data[i] == Icons.person_outline_sharp) {
+            if (data[i] == 'assets/icons/profile_hollowed.png') {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -805,17 +720,17 @@ class _DashboardPageState extends State<DashboardPage> {
             }
 
           },
-          child: Icon(
-            data[i],
-            size: 35,
-            color: data[i] == Icons.home_outlined
-            ? Colors.white 
-            : Colors.blueGrey,
-          ),
-          ),
+
+          child: Image.asset(
+            i == selectedIndex && data[i] == 'assets/icons/dashboard_hollowed.png'
+              ? 'assets/icons/dashboard_filled.png'
+              : data[i],
+            height: 50,
+          ),       
         ),
-    ),
-    );
+      ),
+    ),    
+  );
 
   Widget _buildConnectedUsersSection() => CarouselSlider(
     options: CarouselOptions(
