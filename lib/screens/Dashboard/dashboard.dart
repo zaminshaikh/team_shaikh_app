@@ -35,10 +35,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(uid, 1);
-    if (_databaseService == null) {
+    if (service == null) {
       Navigator.pushReplacementNamed(context, '/login');
     } else {
-      _databaseService = service!;
+      _databaseService = service;
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
@@ -86,57 +86,27 @@ class _DashboardPageState extends State<DashboardPage> {
     UserWithAssets user = userSnapshot.data!;
     String userName = user.info['name']['first'] + ' ' + user.info['name']['last'];
     String? cid = _databaseService.cid;
-    double totalUserAGQ = 0.00, totalUserAK1 = 0.00;
+    double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
     double latestIncome = 0.00;
-    // Create a date object with the earliest possible date in 1970
-    DateTime latestIncomeDate = DateTime(0);
-
+   
     // We don't know the order of the funds, and perhaps the
     // length could change in the future, so we'll loop through
     for (var asset in user.assets) {
       switch (asset['fund']) {
         case 'AGQ Consulting LLC':
           totalUserAGQ += asset['total'];
-          Map<String, dynamic> agq = asset;
-          // Remove any zero values from the map
-          agq.removeWhere((key, value) => value is num && value == 0.0);
-          // Check if the latest income date is after the current latest income date
-          DateTime latestIncomeDateAGQ = (agq['latestIncome']['time']).toDate();
-          // Set the time to 00:00:00 to compare the dates
-          latestIncomeDateAGQ = DateTime(latestIncomeDateAGQ.year, latestIncomeDateAGQ.month, latestIncomeDateAGQ.day, 0, 0, 0, 0, 0);
-          if (latestIncomeDateAGQ.isAfter(latestIncomeDate)) {
-            latestIncomeDate = latestIncomeDateAGQ;
-            latestIncome = agq['latestIncome']['amount'];
-          } else if (latestIncomeDateAGQ.isAtSameMomentAs(latestIncomeDate)) {
-            latestIncome += agq['latestIncome']['amount'];
-          }
-
           break;
         case 'AK1 Holdings LP':
           totalUserAK1 += asset['total'];
-          Map<String, dynamic> ak1 = asset;
-          // Remove any zero values from the map
-          ak1.removeWhere((key, value) => value is num && value == 0.0);
-
-          // Check if the latest income date is after the current latest income date
-          DateTime latestIncomeDateAK1 = (ak1['latestIncome']['time']).toDate();
-          // Set the time to 00:00:00 to compare the dates
-          latestIncomeDateAK1 = DateTime(latestIncomeDateAK1.year, latestIncomeDateAK1.month, latestIncomeDateAK1.day, 0, 0, 0, 0, 0);
-          if (latestIncomeDateAK1.isAfter(latestIncomeDate)) {
-            latestIncomeDate = latestIncomeDateAK1;
-            latestIncome = ak1['latestIncome']['amount'];
-          } else if (latestIncomeDateAK1.isAtSameMomentAs(latestIncomeDate)) {
-            latestIncome += ak1['latestIncome']['amount'];
-          }
-
           break;
+        default:
+          latestIncome = asset['latestIncome']['amount'];
+          totalUserAssets += asset['total'];
       }
     }
-    double totalUserAssets = totalUserAGQ + totalUserAK1; // Total assets of one user
+    // Total assets of one user
     double percentageAGQ = totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
-
-    
 
       return Scaffold(
         body: Stack(
@@ -175,16 +145,49 @@ class _DashboardPageState extends State<DashboardPage> {
       );
   }
 
-  Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> user, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
+  Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
     int numConnectedUsers = connectedUsers.data!.length;
-    String userName = 'test';
+    UserWithAssets user = userSnapshot.data!;
+    String userName = user.info['name']['first'] + ' ' + user.info['name']['last'];
     String? cid = _databaseService.cid;
-    double totalUserAssets = 0.00;
-    double totalAssets = 0.00;
+    double totalUserAssets = 0.00, totalAGQ = 0.00, totalAK1 = 0.00, totalAssets = 0.00;
     double latestIncome = 0.00;
-    double percentageAGQ = 0.00;
-    double percentageAK1 = 0.00;
 
+    // This is a calculation of the total assets of the user only
+    for (var asset in user.assets) {
+      switch (asset['fund']) {
+        case 'AGQ Consulting LLC':
+          totalAGQ += asset['total'];
+          break;
+        case 'AK1 Holdings LP':
+          totalAK1 += asset['total'];
+          break;
+        default:
+          latestIncome = asset['latestIncome']['amount'];
+          totalAssets += asset['total'];
+          totalUserAssets += asset['total'];
+      }
+    }
+
+    // This calculation is for the total assets of all connected users combined
+    for (var user in connectedUsers.data!) {
+      for (var asset in user.assets) {
+        switch (asset['fund']) {
+          case 'AGQ Consulting LLC':
+            totalAGQ += asset['total'];
+            break;
+          case 'AK1 Holdings LP':
+            totalAK1 += asset['total'];
+            break;
+          default:
+            totalAssets += asset['total'];
+        }
+      }
+    }
+
+    double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
+    double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
+    log('Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
 
     return Scaffold(
       body: CustomScrollView(
@@ -223,7 +226,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  _buildConnectedUsersSection(),
+                  _buildConnectedUsersSection(connectedUsers.data!),
                   const SizedBox(height: 80),
                   _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
                   const SizedBox(height: 30),
@@ -732,85 +735,128 @@ class _DashboardPageState extends State<DashboardPage> {
     ),    
   );
 
-  Widget _buildConnectedUsersSection() => CarouselSlider(
-    options: CarouselOptions(
-      height: 90.0,
-      aspectRatio: 16 / 9,
-      viewportFraction: 1,
-      initialPage: 0,
-      enableInfiniteScroll: false,
-      reverse: true,
-      autoPlay: false,
-      enlargeCenterPage: true,
-      enlargeFactor: 0.2,
-      onPageChanged: (index, reason) {
-        // Your callback function for page changes
-      },
-      scrollDirection: Axis.horizontal,
-    ),
-    items: ['Jane Doe', 'Kristin Watson', 'Floyd Miles'].map((i) => Builder(
-        builder: (BuildContext context) => Container(
-            padding: const EdgeInsets.all(15),
-            width: MediaQuery.of(context).size.width,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              border: Border.all(
-                color: Colors.white,
-              ),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Text(
-                          i,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Icon(Icons.abc),
-                        const SizedBox(width: 5),
-                        const Text(
-                          '\$1,816',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      '\$500,000.00',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                  ],
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 25,
-                ),
-              ],
-            ),
-          ),
-      )).toList(),
-  );
+  // Widget _buildConnectedUsersSection() => CarouselSlider(
+  //   options: CarouselOptions(
+  //     height: 90.0,
+  //     aspectRatio: 16 / 9,
+  //     viewportFraction: 1,
+  //     initialPage: 0,
+  //     enableInfiniteScroll: false,
+  //     reverse: true,
+  //     autoPlay: false,
+  //     enlargeCenterPage: true,
+  //     enlargeFactor: 0.2,
+  //     onPageChanged: (index, reason) {
+  //       // Your callback function for page changes
+  //     },
+  //     scrollDirection: Axis.horizontal,
+  //   ),
+  //   items: ['Jane Doe', 'Kristin Watson', 'Floyd Miles'].map((i) => Builder(
+  //       builder: (BuildContext context) => Container(
+  //           padding: const EdgeInsets.all(15),
+  //           width: MediaQuery.of(context).size.width,
+  //           decoration: BoxDecoration(
+  //             color: Colors.transparent,
+  //             border: Border.all(
+  //               color: Colors.white,
+  //             ),
+  //             borderRadius: BorderRadius.circular(15),
+  //           ),
+  //           child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   const SizedBox(height: 3),
+  //                   Row(
+  //                     children: [
+  //                       Text(
+  //                         i,
+  //                         style: const TextStyle(
+  //                           fontSize: 18,
+  //                           color: Colors.white,
+  //                           fontWeight: FontWeight.bold,
+  //                           fontFamily: 'Titillium Web',
+  //                         ),
+  //                       ),
+  //                       const SizedBox(width: 10),
+  //                       const Icon(Icons.abc),
+  //                       const SizedBox(width: 5),
+  //                       const Text(
+  //                         '\$1,816',
+  //                         style: TextStyle(
+  //                           fontSize: 16,
+  //                           fontWeight: FontWeight.bold,
+  //                           color: Colors.white,
+  //                           fontFamily: 'Titillium Web',
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                   const SizedBox(height: 5),
+  //                   const Text(
+  //                     '\$500,000.00',
+  //                     style: TextStyle(
+  //                       fontSize: 16,
+  //                       color: Colors.white,
+  //                       fontFamily: 'Titillium Web',
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //               const Icon(
+  //                 Icons.arrow_forward_ios_rounded,
+  //                 color: Colors.white,
+  //                 size: 25,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //     )).toList(),
+  // );
+
+  Widget _buildConnectedUsersSection(List<UserWithAssets> usersWithAssets) => CarouselSlider(
+      options: CarouselOptions(
+        height: 90.0,
+        aspectRatio: 16 / 9,
+        viewportFraction: 1,
+        initialPage: 0,
+        enableInfiniteScroll: false,
+        reverse: true,
+        autoPlay: false,
+        enlargeCenterPage: true,
+        enlargeFactor: 0.2,
+        onPageChanged: (index, reason) {
+          // Your callback function for page changes
+        },
+        scrollDirection: Axis.horizontal,
+      ),
+      items: usersWithAssets.map((user) {
+        String userName = user.info['name']['first'] + ' ' + user.info['name']['last'];
+        double totalUserAssets = 0.00, latestIncome = 0.00;
+        for (var asset in user.assets) {
+          switch (asset['fund']) {
+            case 'AGQ Consulting LLC':
+              break;
+            case 'AK1 Holdings LP':
+              break;
+            default:
+              latestIncome = asset['latestIncome']['amount'];
+              totalUserAssets += asset['total'];
+          }
+        }
+
+        return Builder(
+          builder: (BuildContext context) {
+            return _buildUserBreakdownSection(
+              userName,
+              totalUserAssets,
+              latestIncome,
+            );
+          },
+        );
+      }).toList(),
+    );
 
 }
