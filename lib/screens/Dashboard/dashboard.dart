@@ -35,7 +35,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(uid, 1);
-    if (_databaseService == null) {
+    if (service == null) {
       Navigator.pushReplacementNamed(context, '/login');
     } else {
       _databaseService = service!;
@@ -293,11 +293,18 @@ class _DashboardPageState extends State<DashboardPage> {
     
   Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) => Container(
     width: 400,
+
     height: 160,
     padding: const EdgeInsets.all(15),
     decoration: BoxDecoration(
       color: Colors.blue,
       borderRadius: BorderRadius.circular(15),
+      image: DecorationImage(
+        image: AssetImage('assets/icons/total_assets_gradient.png'),
+        fit: BoxFit.cover,
+        alignment: Alignment.centerRight,
+        colorFilter: ColorFilter.mode(Colors.blue.withOpacity(0.9), BlendMode.dstATop),
+      ),
     ),
     child: Row(
       children: [
@@ -346,9 +353,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ],
     ),
-  );
-  
-  Widget _buildUserBreakdownSection(String userName, double totalUserAssets, double latestIncome) => Theme(
+  );  Widget _buildUserBreakdownSection(String userName, double totalUserAssets, double latestIncome) => Theme(
     data: ThemeData(
       splashColor: Colors.transparent, // removes splash effect
     ),
