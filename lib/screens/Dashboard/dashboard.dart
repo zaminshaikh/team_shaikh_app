@@ -1,5 +1,4 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +10,8 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
 
+
+/// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
   @override
   _DashboardPageState createState() => _DashboardPageState();
@@ -29,20 +30,25 @@ class _DashboardPageState extends State<DashboardPage> {
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
-    // Get the current user
-    User user = FirebaseAuth.instance.currentUser!;
-    String uid = user.uid;
 
+    User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        log('User is not logged in');
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 1);
+    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    // If there is no matching CID, redirect to login page
     if (service == null) {
       Navigator.pushReplacementNamed(context, '/login');
     } else {
+      // Otherwise set the database service instance
       _databaseService = service;
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
-
+  
+  /// Formats the given amount as a currency string.
   String _currencyFormat(double amount) => NumberFormat.currency(
       symbol: '\$',
       decimalDigits: 2,
@@ -51,7 +57,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initData(),
+      future: _initData(), // Initialize the database service
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -61,18 +67,21 @@ class _DashboardPageState extends State<DashboardPage> {
         return StreamBuilder<UserWithAssets>(
           stream: _databaseService.getUserWithAssets,
           builder: (context, userSnapshot) {
+            // Wait for the user snapshot to have data
             if (!userSnapshot.hasData) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
+            // Once we have the user snapshot, we can build the dashboard
             return StreamBuilder<List<UserWithAssets>>(
               stream: _databaseService.getConnectedUsersWithAssets,
               builder: (context, connectedUsersSnapshot) {
                 if (!connectedUsersSnapshot.hasData) {
-                  log('Connected users snapshot has no data');
+                  // If there is no connected users, we build the dashboard for a single user
                   return _dashboardSingleUser(userSnapshot);
                 }
+                // Otherwise, we build the dashboard with connected users
                 return dashboardWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
               }
             );
@@ -84,8 +93,12 @@ class _DashboardPageState extends State<DashboardPage> {
   Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
     
     UserWithAssets user = userSnapshot.data!;
-    String userName = user.info['name']['first'] + ' ' + user.info['name']['last'];
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
     String? cid = _databaseService.cid;
+    // Total assets of one user
     double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
     double latestIncome = 0.00;
    
@@ -104,10 +117,11 @@ class _DashboardPageState extends State<DashboardPage> {
           totalUserAssets += asset['total'];
       }
     }
-    // Total assets of one user
     double percentageAGQ = totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
 
+    log('Connected users snapshot has no data');
+    
       return Scaffold(
         body: Stack(
           children: [
@@ -123,7 +137,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         _buildTotalAssetsSection(totalUserAssets, latestIncome),
                         const SizedBox(height: 32),
                         // User breakdown section
-                        _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
+                        _buildUserBreakdownSection(userName, totalUserAssets, latestIncome, user.assets),
                         const SizedBox(height: 32),
                         // Assets structure section
                         _buildAssetsStructureSection(totalUserAssets, percentageAGQ, percentageAK1),
@@ -143,12 +157,16 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
       );
+      
   }
 
   Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
     int numConnectedUsers = connectedUsers.data!.length;
     UserWithAssets user = userSnapshot.data!;
-    String userName = user.info['name']['first'] + ' ' + user.info['name']['last'];
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
     String? cid = _databaseService.cid;
     double totalUserAssets = 0.00, totalAGQ = 0.00, totalAK1 = 0.00, totalAssets = 0.00;
     double latestIncome = 0.00;
@@ -190,57 +208,67 @@ class _DashboardPageState extends State<DashboardPage> {
     log('Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: <Widget>[
-          _buildAppBar(userName, cid),
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                [
-                  _buildTotalAssetsSection(totalAssets, latestIncome),
-                  const SizedBox(height: 32),
-                  _buildUserBreakdownSection(userName, totalUserAssets, latestIncome),
-                  const SizedBox(height: 40),
-                  Row(
-                    children: [
-                      Text(
-                        'Connected Users',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontFamily: 'Titillium Web',
-                        ),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(userName, cid),
+              SliverPadding(
+                padding: const EdgeInsets.all(16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      _buildTotalAssetsSection(totalAssets, latestIncome),
+                      const SizedBox(height: 32),
+                      _buildUserBreakdownSection(userName, totalUserAssets, latestIncome, user.assets),
+                      const SizedBox(height: 40),
+                      Row(
+                        children: [
+                          Text(
+                            'Connected Users',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          Spacer(),
+                          Text(
+                            '($numConnectedUsers)',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 220),
-                      Text(
-                        '$numConnectedUsers',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
+                      const SizedBox(height: 20),
+                      _buildConnectedUsersSection(connectedUsers.data!),
+                      const SizedBox(height: 80),
+                      _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
+                      const SizedBox(height: 130),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  _buildConnectedUsersSection(connectedUsers.data!),
-                  const SizedBox(height: 80),
-                  _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
-                  const SizedBox(height: 30),
-                ],
+                ),
               ),
-            ),
+            ],
+          ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildBottomNavigationBar(),
           ),
         ],
-      ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      ),    
     );  
   }
     
-  SliverAppBar _buildAppBar(String userName, String? cid) => SliverAppBar(
+  SliverAppBar _buildAppBar(Map<String, String> userName, String? cid) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
     toolbarHeight: 80,
@@ -258,7 +286,7 @@ class _DashboardPageState extends State<DashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome Back, $userName!',
+                  'Welcome Back, ${userName['first']} ${userName['last']}!',
                   style: TextStyle(
                     fontSize: 23,
                     color: Colors.white,
@@ -356,41 +384,48 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ],
     ),
-  );  Widget _buildUserBreakdownSection(String userName, double totalUserAssets, double latestIncome) => Theme(
-    data: ThemeData(
-      splashColor: Colors.transparent, // removes splash effect
-    ),
-    child: ExpansionTile(
-      title: Row(
-        children: [
-          Text(
-            userName,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-          SizedBox(width: 10),
-          Image.asset(
-                  'assets/icons/green_arrow_up.png',
-                  height: 20,
-                ),
-          SizedBox(width: 5),
-          Text(
-            _currencyFormat(latestIncome),
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ],
-      ),
-      subtitle: Text(
-        _currencyFormat(totalUserAssets),
+  );  
+
+  ListTile _buildAssetTile(String fieldName, double amount, {String? companyName}) {
+    String sectionName = '';
+    switch (fieldName) {
+      case 'nuviewTrad':
+        sectionName = 'Nuview Cash IRA';
+        break;
+      case 'nuviewRoth':
+        sectionName = 'Nuview Cash Roth IRA';
+        break;
+      case 'nuviewSepIRA':
+        sectionName = 'Nuview Cash SEP IRA';
+        break;
+      case 'roth':
+        sectionName = 'Roth IRA';
+        break;
+      case 'trad':
+        sectionName = 'Traditional IRA';
+        break;
+      case 'sep':
+        sectionName = 'SEP IRA';
+        break;
+      case 'personal':
+        sectionName = 'Personal';
+        break;
+      case 'company':
+        try {
+          sectionName = companyName!;
+        } catch (e) {
+          log('Error building asset tile for company: $e');
+          sectionName = '';
+        }
+        break;
+      default:
+        sectionName = fieldName;
+    }
+
+    return ListTile(
+      leading: Icon(Icons.account_balance, color: Colors.white),
+      title: Text(
+        sectionName,
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.normal,
@@ -398,71 +433,258 @@ class _DashboardPageState extends State<DashboardPage> {
           fontFamily: 'Titillium Web',
         ),
       ),
-      maintainState: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+      trailing: Text(
+        _currencyFormat(amount),
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.normal,
+          color: Colors.white,
+          fontFamily: 'Titillium Web',
+        ),
       ),
-      collapsedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+    );
+  }
+
+  Widget _buildUserBreakdownSection(Map<String,String> userName, double totalUserAssets, double latestIncome, List<Map<String, dynamic>> assets) {
+    // Initialize empty lists for the tiles
+    List<ListTile> assetTilesAGQ = [];
+    List<ListTile> assetTilesAK1 = [];
+
+    // For each document in assets subcollection
+    for (var asset in assets) {
+      switch (asset['fund']) {
+        case 'AGQ Consulting LLC':
+          try {
+            asset.entries.where((entry) {
+              if (entry.key == 'company') {
+                return true;
+              }
+              return false;
+            }).forEach((entry) {
+              assetTilesAGQ.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+            });
+            // for each entry in the document that is not total, latestIncome, or fund
+            // create a ListTile and add it to the list
+            for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
+                assetTilesAGQ.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+              }}
+
+          } on TypeError catch (e) {
+            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+          }
+          break;
+        case 'AK1 Holdings LP':
+          try {
+            asset.entries.where((entry) {
+              if (entry.key == 'company') {
+                return true;
+              }
+              return false;
+            }).forEach((entry) {
+              assetTilesAK1.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+            });
+            // for each entry in the document that is not total, latestIncome, or fund
+            // create a ListTile and add it to the list
+            for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
+                assetTilesAK1.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+              }}
+
+          } on TypeError catch (e) {
+            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+          }
+          break;
+      }
+    }
+
+    log('Asset Tiles for AGQ Consulting LLC for ${userName['first']} ${userName['last']}: ${assetTilesAGQ.length}');
+    log('Asset Tiles for AK1 Holdings LP for ${userName['first']} ${userName['last']}: ${assetTilesAK1.length}');
+
+    return Theme(
+      data: ThemeData(
+        splashColor: Colors.transparent, // removes splash effect
       ),
-      collapsedBackgroundColor: const Color.fromARGB(255, 30, 41, 59),
-      backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-      iconColor: Colors.white,
-      collapsedIconColor: Colors.white,
-      children: <Widget>[
-        Divider(color: Colors.grey[300]), // Add a light divider bar
-        ListTile(
-          leading: Icon(Icons.account_balance, color: Colors.white), // Add an icon
-          title: Text(
-            'Asset 1',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
+      child: ExpansionTile(
+        title: Row(
+          children: [
+            Text(
+              '${userName['first']} ${userName['last']}',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
             ),
-          ),
-          trailing: Text(
-            _currencyFormat(12000),
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
+            SizedBox(width: 10),
+            Image.asset(
+                    'assets/icons/green_arrow_up.png',
+                    height: 20,
+                  ),
+            SizedBox(width: 5),
+            Text(
+              _currencyFormat(latestIncome),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
             ),
+          ],
+        ),
+        subtitle: Text(
+          _currencyFormat(totalUserAssets),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            color: Colors.white,
+            fontFamily: 'Titillium Web',
           ),
         ),
-        Divider(
-          color: Colors.grey[300], // Light grey color
-          thickness: 0.5, // Thinner line
-          indent: 16, // Indent from the left
-          endIndent: 16, // Indent from the right
-        ), // Add a light divider bar
-        ListTile(
-          leading: Icon(Icons.account_balance, color: Colors.white), // Add an icon
-          title: Text(
-            'Asset 2',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
-            ),
+        maintainState: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        collapsedBackgroundColor: const Color.fromARGB(255, 30, 41, 59),
+        backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+        iconColor: Colors.white,
+        collapsedIconColor: Colors.white,
+        children: <Widget>[
+          Divider(color: Colors.grey[300]), // Add a light divider bar
+          Column(
+            children: assetTilesAK1,
           ),
-          trailing: Text(
-            _currencyFormat(46000),
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
+          Column(
+            children: assetTilesAGQ,
+          ),
+        ],
+      ),
+    );      
+  }
+
+  Widget _buildConnectedUserBreakdownSection(Map<String, String> userName, double totalUserAssets, double latestIncome, List<Map<String, dynamic>> assets) {
+    // Initialize empty lists for the tiles
+    List<ListTile> assetTilesAGQ = [];
+    List<ListTile> assetTilesAK1 = [];
+
+    for (var asset in assets) {
+      switch (asset['fund']) {
+        case 'AGQ Consulting LLC':
+          try {
+            asset.entries.where((entry) {
+              if (entry.key == 'company') {
+                return true;
+              }
+              return false;
+            }).forEach((entry) {
+              assetTilesAGQ.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+            });
+            // for each entry in the document that is not total, latestIncome, or fund
+            // create a ListTile and add it to the list
+            for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
+                assetTilesAGQ.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+              }}
+
+          } on TypeError catch (e) {
+            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+          }
+          break;
+        case 'AK1 Holdings LP':
+          try {
+            asset.entries.where((entry) {
+              if (entry.key == 'company') {
+                return true;
+              }
+              return false;
+            }).forEach((entry) {
+              assetTilesAK1.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+            });
+            // for each entry in the document that is not total, latestIncome, or fund
+            // create a ListTile and add it to the list
+            for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
+                assetTilesAK1.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+              }}
+
+          } on TypeError catch (e) {
+            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+          }
+          break;
+      }
+    }
+
+    log('Asset Tiles for AGQ Consulting LLC for ${userName['first']} ${userName['last']}: ${assetTilesAGQ.length}');
+    log('Asset Tiles for AK1 Holdings LP for ${userName['first']} ${userName['last']}: ${assetTilesAK1.length}');
+
+    return Theme(
+      data: ThemeData(
+        splashColor: Colors.transparent, // removes splash effect
+      ),
+      child: ExpansionTile(
+        title: Row(
+          children: [
+            Text(
+              '${userName['first']} ${userName['last']}',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
             ),
+            SizedBox(width: 10),
+            Image.asset(
+              'assets/icons/green_arrow_up.png',
+              height: 20,
+            ),
+            SizedBox(width: 5),
+            Text(
+              _currencyFormat(latestIncome),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+          ],
+        ),
+        subtitle: Text(
+          _currencyFormat(totalUserAssets),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            color: Colors.white,
+            fontFamily: 'Titillium Web',
           ),
         ),
-        // Add more ListTiles for more assets
-      ],
-    ),
-  );
+        maintainState: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(color: Colors.white), // Add this line
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(color: Colors.white), // And this line
+        ),
+        collapsedBackgroundColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        iconColor: Colors.white,
+        collapsedIconColor: Colors.white,
+        children: <Widget>[
+          Divider(color: Colors.grey[300]), // Add a light divider bar
+          Column(
+            children: assetTilesAK1,
+          ),
+          Column(
+            children: assetTilesAGQ,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildAssetsStructureSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Container(
     width: 400,
@@ -740,128 +962,77 @@ class _DashboardPageState extends State<DashboardPage> {
     ),    
   );
 
-  // Widget _buildConnectedUsersSection() => CarouselSlider(
-  //   options: CarouselOptions(
-  //     height: 90.0,
-  //     aspectRatio: 16 / 9,
-  //     viewportFraction: 1,
-  //     initialPage: 0,
-  //     enableInfiniteScroll: false,
-  //     reverse: true,
-  //     autoPlay: false,
-  //     enlargeCenterPage: true,
-  //     enlargeFactor: 0.2,
-  //     onPageChanged: (index, reason) {
-  //       // Your callback function for page changes
-  //     },
-  //     scrollDirection: Axis.horizontal,
-  //   ),
-  //   items: ['Jane Doe', 'Kristin Watson', 'Floyd Miles'].map((i) => Builder(
-  //       builder: (BuildContext context) => Container(
-  //           padding: const EdgeInsets.all(15),
-  //           width: MediaQuery.of(context).size.width,
-  //           decoration: BoxDecoration(
-  //             color: Colors.transparent,
-  //             border: Border.all(
-  //               color: Colors.white,
-  //             ),
-  //             borderRadius: BorderRadius.circular(15),
-  //           ),
-  //           child: Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   const SizedBox(height: 3),
-  //                   Row(
-  //                     children: [
-  //                       Text(
-  //                         i,
-  //                         style: const TextStyle(
-  //                           fontSize: 18,
-  //                           color: Colors.white,
-  //                           fontWeight: FontWeight.bold,
-  //                           fontFamily: 'Titillium Web',
-  //                         ),
-  //                       ),
-  //                       const SizedBox(width: 10),
-  //                       const Icon(Icons.abc),
-  //                       const SizedBox(width: 5),
-  //                       const Text(
-  //                         '\$1,816',
-  //                         style: TextStyle(
-  //                           fontSize: 16,
-  //                           fontWeight: FontWeight.bold,
-  //                           color: Colors.white,
-  //                           fontFamily: 'Titillium Web',
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                   const SizedBox(height: 5),
-  //                   const Text(
-  //                     '\$500,000.00',
-  //                     style: TextStyle(
-  //                       fontSize: 16,
-  //                       color: Colors.white,
-  //                       fontFamily: 'Titillium Web',
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //               const Icon(
-  //                 Icons.arrow_forward_ios_rounded,
-  //                 color: Colors.white,
-  //                 size: 25,
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //     )).toList(),
-  // );
+  Widget _buildConnectedUsersSection(List<UserWithAssets> connectedUsers) {
+    int current = 0;
 
-  Widget _buildConnectedUsersSection(List<UserWithAssets> usersWithAssets) => CarouselSlider(
-      options: CarouselOptions(
-        height: 90.0,
-        aspectRatio: 16 / 9,
-        viewportFraction: 1,
-        initialPage: 0,
-        enableInfiniteScroll: false,
-        reverse: true,
-        autoPlay: false,
-        enlargeCenterPage: true,
-        enlargeFactor: 0.2,
-        onPageChanged: (index, reason) {
-          // Your callback function for page changes
-        },
-        scrollDirection: Axis.horizontal,
-      ),
-      items: usersWithAssets.map((user) {
-        String userName = user.info['name']['first'] + ' ' + user.info['name']['last'];
-        double totalUserAssets = 0.00, latestIncome = 0.00;
-        for (var asset in user.assets) {
-          switch (asset['fund']) {
-            case 'AGQ Consulting LLC':
-              break;
-            case 'AK1 Holdings LP':
-              break;
-            default:
-              latestIncome = asset['latestIncome']['amount'];
-              totalUserAssets += asset['total'];
-          }
-        }
+    return Stack(
+      children: [
+        CarouselSlider(
+          options: CarouselOptions(
+            aspectRatio: 16 / 9,
+            viewportFraction: 1,
+            initialPage: 0,
+            enableInfiniteScroll: false,
+            reverse: false,
+            autoPlay: false,
+            enlargeCenterPage: true,
+            enlargeFactor: 0.2,
+            onPageChanged: (index, reason) {
+              current = index;
+            },
+            scrollDirection: Axis.horizontal,
+          ),
+          items: connectedUsers.map((user) {
+            String firstName = user.info['name']['first'] as String;
+            String lastName = user.info['name']['last'] as String;
+            String companyName = user.info['name']['company'] as String;
+            Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
+            double totalUserAssets = 0.00, latestIncome = 0.00;
+            for (var asset in user.assets) {
+              switch (asset['fund']) {
+                case 'AGQ Consulting LLC':
+                  break;
+                case 'AK1 Holdings LP':
+                  break;
+                default:
+                  latestIncome = asset['latestIncome']['amount'];
+                  totalUserAssets += asset['total'];
+              }
+            }
 
-        return Builder(
-          builder: (BuildContext context) {
-            return _buildUserBreakdownSection(
-              userName,
-              totalUserAssets,
-              latestIncome,
+            return Builder(
+              builder: (BuildContext context) => _buildConnectedUserBreakdownSection(
+                  userName,
+                  totalUserAssets,
+                  latestIncome,
+                  user.assets,
+                ),
             );
-          },
-        );
-      }).toList(),
+          }).toList(),
+        ),
+        Positioned(
+          bottom: 0.0,
+          left: 0.0,
+          right: 0.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: connectedUsers.map((user) {
+              int index = connectedUsers.indexOf(user);
+              return Container(
+                width: 8.0,
+                height: 8.0,
+                margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: current == index
+                      ? Color.fromRGBO(0, 0, 0, 0.9)
+                      : Color.fromRGBO(0, 0, 0, 0.4),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
-
+  }
 }

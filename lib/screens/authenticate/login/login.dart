@@ -40,9 +40,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return child;
-          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
         ),
       );
 
@@ -63,8 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       // Display the error message using a dialog.
       showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return Dialog(
+        builder: (BuildContext context) => Dialog(
             backgroundColor: const Color.fromARGB(255, 37, 58, 86),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -115,9 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
             ),
-          );
-        
-        },
+          ),
       );
     }
   }
@@ -321,9 +316,7 @@ class _LoginPageState extends State<LoginPage> {
                             context,
                             PageRouteBuilder(
                               pageBuilder: (context, animation, secondaryAnimation) => const ForgotPasswordPage(),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                return child;
-                              },
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                             ),
                           );                        
                         },
@@ -382,7 +375,7 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
@@ -410,7 +403,7 @@ class _LoginPageState extends State<LoginPage> {
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
                 },
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
@@ -460,9 +453,7 @@ class _LoginPageState extends State<LoginPage> {
                         context,
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) => const CreateAccountPage(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return child;
-                          },
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                         ),
                       );
                     },

@@ -93,7 +93,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// ```
   void signUserUp(BuildContext context) async {
     // Delete any users currently in the buffer
-    FirebaseAuth.instance.currentUser?.delete();
+    await FirebaseAuth.instance.currentUser?.delete();
     try {
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -123,9 +123,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       // Display email verification dialog
       showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return emailVerificationDialog();
-        },
+        builder: (BuildContext context) => emailVerificationDialog(),
       );
 
       if (await checkEmailVerificationStatus()) {
@@ -141,6 +139,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           log('User is null');
           throw FirebaseAuthException(code: 'user-null', message: 'User is null');
         }
+        
         // Navigate to the dashboard after successful email verification
         Navigator.push(
           context,
@@ -148,9 +147,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             pageBuilder: (context, animation, secondaryAnimation) =>
                 DashboardPage(),
             transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return child;
-            },
+                (context, animation, secondaryAnimation, child) => child,
           ),
         );
       }
@@ -164,8 +161,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }
   }
 
-  Dialog emailVerificationDialog() {
-    return Dialog(
+  Dialog emailVerificationDialog() => Dialog(
             backgroundColor: const Color.fromARGB(255, 37, 58, 86),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -323,8 +319,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               ),
             ),
           );
-
-  }
   
 
   /// Password security indicator level
@@ -414,8 +408,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   
   /// Builds the create account screen widget.
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -962,5 +955,4 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ),
     );
-  }
 }
