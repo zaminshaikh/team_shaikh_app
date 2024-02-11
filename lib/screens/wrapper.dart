@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
@@ -8,21 +9,18 @@ class Wrapper extends StatelessWidget {
   const Wrapper({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      body: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(), 
-        builder: (context, snapshot) {
-          // user is logged in
-          if (snapshot.hasData) {
-            return DashboardPage();
-          }
+  Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+    log('UID: ${user?.uid}');
 
-          // user is not logged in
-          else {
-            return const LoginPage();
-          }
+    // user is logged in
+    if (user != null) {
+      return DashboardPage();
+    }
 
-        }
-      ),
-    );
+    // user is not logged in
+    else {
+      return const LoginPage();
+    }
+  }
 }
