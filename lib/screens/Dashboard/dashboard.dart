@@ -386,7 +386,9 @@ class _DashboardPageState extends State<DashboardPage> {
     ),
   );  
 
-  ListTile _buildAssetTile(String fieldName, double amount, {String? companyName}) {
+  // String fund
+  ListTile _buildAssetTile(String fieldName, double amount, String fund, {String? companyName}) {
+    // Icon icon = fund == agq ? agq.png : ak1.png;
     String sectionName = '';
     switch (fieldName) {
       case 'nuviewTrad':
@@ -461,12 +463,12 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAGQ.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+              assetTilesAGQ.add(_buildAssetTile(entry.key, (entry.value).toDouble(), 'agq', companyName: userName['company']));
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
-                assetTilesAGQ.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+                assetTilesAGQ.add(_buildAssetTile(entry.key, entry.value.toDouble(), 'agq'));
               }}
 
           } on TypeError catch (e) {
@@ -481,12 +483,12 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAK1.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+              assetTilesAK1.add(_buildAssetTile(entry.key, (entry.value).toDouble(), 'ak1', companyName: userName['company']));
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
-                assetTilesAK1.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+                assetTilesAK1.add(_buildAssetTile(entry.key, entry.value.toDouble(), 'ak1'));
               }}
 
           } on TypeError catch (e) {
@@ -580,12 +582,12 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAGQ.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+              assetTilesAGQ.add(_buildAssetTile(entry.key, (entry.value).toDouble(), 'agq', companyName: userName['company']));
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
-                assetTilesAGQ.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+                assetTilesAGQ.add(_buildAssetTile(entry.key, entry.value.toDouble(), 'agq'));
               }}
 
           } on TypeError catch (e) {
@@ -600,12 +602,12 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAK1.add(_buildAssetTile(entry.key, (entry.value).toDouble(), companyName: userName['company']));
+              assetTilesAK1.add(_buildAssetTile(entry.key, (entry.value).toDouble(), 'ak1', companyName: userName['company']));
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) { if (entry.value is num && entry.key != 'total' && entry.key != 'company') {
-                assetTilesAK1.add(_buildAssetTile(entry.key, entry.value.toDouble()));
+                assetTilesAK1.add(_buildAssetTile(entry.key, entry.value.toDouble(), 'ak1'));
               }}
 
           } on TypeError catch (e) {
