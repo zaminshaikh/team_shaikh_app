@@ -247,7 +247,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       const SizedBox(height: 20),
                       _buildConnectedUsersSection(connectedUsers.data!),
-                      const SizedBox(height: 80),
+                      const SizedBox(height: 50),
                       _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
                       const SizedBox(height: 130),
                     ],
@@ -388,7 +388,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // String fund
   ListTile _buildAssetTile(String fieldName, double amount, String fund, {String? companyName}) {
-    // Icon icon = fund == agq ? agq.png : ak1.png;
     String sectionName = '';
     switch (fieldName) {
       case 'nuviewTrad':
@@ -424,13 +423,22 @@ class _DashboardPageState extends State<DashboardPage> {
         sectionName = fieldName;
     }
 
+    Widget leadingIcon;
+    if (fund == 'agq') {
+      leadingIcon = Image.asset('assets/icons/agq_logo.png');
+    } else if (fund == 'ak1') {
+      leadingIcon = Image.asset('assets/icons/ak1_logo.png');
+    } else {
+      leadingIcon = Icon(Icons.account_balance, color: Colors.white);
+    }
+
     return ListTile(
-      leading: Icon(Icons.account_balance, color: Colors.white),
+      leading: leadingIcon,
       title: Text(
         sectionName,
         style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.normal,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
           color: Colors.white,
           fontFamily: 'Titillium Web',
         ),
@@ -438,8 +446,8 @@ class _DashboardPageState extends State<DashboardPage> {
       trailing: Text(
         _currencyFormat(amount),
         style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.normal,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
           color: Colors.white,
           fontFamily: 'Titillium Web',
         ),
@@ -555,7 +563,10 @@ class _DashboardPageState extends State<DashboardPage> {
         iconColor: Colors.white,
         collapsedIconColor: Colors.white,
         children: <Widget>[
-          Divider(color: Colors.grey[300]), // Add a light divider bar
+          Padding(
+            padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
+            child: Divider(color: Colors.grey[300]),
+          ), 
           Column(
             children: assetTilesAK1,
           ),
@@ -676,7 +687,10 @@ class _DashboardPageState extends State<DashboardPage> {
         iconColor: Colors.white,
         collapsedIconColor: Colors.white,
         children: <Widget>[
-          Divider(color: Colors.grey[300]), // Add a light divider bar
+          Padding(
+            padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
+            child: Divider(color: Colors.grey[300]),
+          ), // Add a light divider bar
           Column(
             children: assetTilesAK1,
           ),
@@ -965,76 +979,30 @@ class _DashboardPageState extends State<DashboardPage> {
   );
 
   Widget _buildConnectedUsersSection(List<UserWithAssets> connectedUsers) {
-    int current = 0;
+    // Display the first user in the list
+    UserWithAssets user = connectedUsers[0];
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
+    double totalUserAssets = 0.00, latestIncome = 0.00;
+    for (var asset in user.assets) {
+      switch (asset['fund']) {
+        case 'AGQ Consulting LLC':
+          break;
+        case 'AK1 Holdings LP':
+          break;
+        default:
+          latestIncome = asset['latestIncome']['amount'];
+          totalUserAssets += asset['total'];
+      }
+    }
 
-    return Stack(
-      children: [
-        CarouselSlider(
-          options: CarouselOptions(
-            aspectRatio: 16 / 9,
-            viewportFraction: 1,
-            initialPage: 0,
-            enableInfiniteScroll: false,
-            reverse: false,
-            autoPlay: false,
-            enlargeCenterPage: true,
-            enlargeFactor: 0.2,
-            onPageChanged: (index, reason) {
-              current = index;
-            },
-            scrollDirection: Axis.horizontal,
-          ),
-          items: connectedUsers.map((user) {
-            String firstName = user.info['name']['first'] as String;
-            String lastName = user.info['name']['last'] as String;
-            String companyName = user.info['name']['company'] as String;
-            Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
-            double totalUserAssets = 0.00, latestIncome = 0.00;
-            for (var asset in user.assets) {
-              switch (asset['fund']) {
-                case 'AGQ Consulting LLC':
-                  break;
-                case 'AK1 Holdings LP':
-                  break;
-                default:
-                  latestIncome = asset['latestIncome']['amount'];
-                  totalUserAssets += asset['total'];
-              }
-            }
-
-            return Builder(
-              builder: (BuildContext context) => _buildConnectedUserBreakdownSection(
-                  userName,
-                  totalUserAssets,
-                  latestIncome,
-                  user.assets,
-                ),
-            );
-          }).toList(),
-        ),
-        Positioned(
-          bottom: 0.0,
-          left: 0.0,
-          right: 0.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: connectedUsers.map((user) {
-              int index = connectedUsers.indexOf(user);
-              return Container(
-                width: 8.0,
-                height: 8.0,
-                margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: current == index
-                      ? Color.fromRGBO(0, 0, 0, 0.9)
-                      : Color.fromRGBO(0, 0, 0, 0.4),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+    return _buildConnectedUserBreakdownSection(
+      userName,
+      totalUserAssets,
+      latestIncome,
+      user.assets,
     );
   }
 }
