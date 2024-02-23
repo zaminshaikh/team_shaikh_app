@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
+import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
@@ -14,58 +16,238 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  bool switchValue = false;
 
-  void signUserOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
+  // database service instance
+  late DatabaseService _databaseService;
 
-    // Navigate to the login screen and clear the existing routes
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return child;
-        },
+  Future<void> _initData() async {
+
+    User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        log('User is not logged in');
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    // Fetch CID using async constructor
+    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    // If there is no matching CID, redirect to login page
+    if (service == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      // Otherwise set the database service instance
+      _databaseService = service;
+      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+    }
+  }
+  
+  /// Formats the given amount as a currency string.
+  String _currencyFormat(double amount) => NumberFormat.currency(
+    symbol: '\$',
+    decimalDigits: 2,
+    locale: 'en_US',
+  ).format(amount);
+
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder(
+    future: _initData(), // Initialize the database service
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+      return StreamBuilder<UserWithAssets>(
+        stream: _databaseService.getUserWithAssets,
+        builder: (context, userSnapshot) {
+          // Wait for the user snapshot to have data
+          if (!userSnapshot.hasData || userSnapshot.data == null) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          // Once we have the user snapshot, we can build the activity page
+          return buildActivityPage(userSnapshot);
+        }
+      );
+    }
+  );  
+  
+  Scaffold buildActivityPage(AsyncSnapshot<UserWithAssets> userSnapshot) {
+    
+    UserWithAssets user = userSnapshot.data!;
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
+       
+      return Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: <Widget>[
+                _buildAppBar(),
+                SliverPadding(
+                  padding: const EdgeInsets.all(0.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+
+
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomNavigationBar(context),
+            ),
+          ],
+        ),
+      );   
+  }
+}
+
+// This is the app bar 
+  SliverAppBar _buildAppBar() {
+    return SliverAppBar(
+    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+    automaticallyImplyLeading: false,
+    toolbarHeight: 80,
+    expandedHeight: 0,
+    snap: false,
+    floating: true,
+    pinned: true,
+    flexibleSpace: SafeArea(
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Profile',
+                  style: TextStyle(
+                    fontSize: 27,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+        ],
+      ),
+    ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+          child: Image.asset(
+            'assets/icons/notification_bell.png',
+            color: Colors.white,
+            height: 32,
+            width: 32,
+          ),
+        ),
+      ],
+    );
+  }
+
+// This is the bottom navigation bar 
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
+      height: 80,
+      padding: const EdgeInsets.only(right: 30, left: 30),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 30, 41, 59),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 8,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/dashboard_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/analytics_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );},
+            child: Image.asset(
+              'assets/icons/activity_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/profile_filled.png',
+              height: 50,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  int selectedIndex = 0;
 
-  List<IconData> data = [
-    Icons.home_outlined,
-    Icons.search,
-    Icons.add_box_outlined,
-    Icons.person_outline_sharp
-  ];
- 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 37, 58, 86),
-        toolbarHeight: 90,
-        title: const Row(
-          children: [
-            SizedBox(width: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Profile',
-                style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ),
-          ],
-        ),
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
+/*
+Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
@@ -697,91 +879,5 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
       ),
-
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-        height: 80,
-        padding: const EdgeInsets.only(right: 30, left: 30),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 37, 58, 86),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            data.length,
-            (i) => GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedIndex = i;
-                });
-
-                if (data[i] == Icons.search) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
-                    ),
-                  );
-                }
-
-                if (data[i] == Icons.home_outlined) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
-                    ),
-                  );
-                }
-
-                if (data[i] == Icons.add_box_outlined) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
-                    ),
-                  );
-                }
-
-                if (data[i] == Icons.person_outline_sharp) {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return child;
-                      },
-                    ),
-                  );
-                }
-              },
-              child: Icon(
-                data[i],
-                size: 35,
-                color: data[i] == Icons.person_outline_sharp ? Colors.white : Colors.blueGrey,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+      
+*/
