@@ -21,7 +21,7 @@ class ActivityPage extends StatefulWidget {
 
 class _ActivityPageState extends State<ActivityPage> {
   int selectedIndex = 0;
-  List<String> data = [
+  List<String> icons = [
     'assets/icons/dashboard_hollowed.png',
     'assets/icons/analytics_hollowed.png',
     'assets/icons/activity_filled.png',
