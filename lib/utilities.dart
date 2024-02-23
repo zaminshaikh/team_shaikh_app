@@ -1,4 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 /// A class that provides a custom alert dialog.
 ///   
@@ -37,3 +45,10 @@ class CustomAlertDialog {
         ),
     );
 }
+
+/// Formats the given amount as a currency string.
+String currencyFormat(double amount) => NumberFormat.currency(
+    symbol: '\$',
+    decimalDigits: 2,
+    locale: 'en_US',
+  ).format(amount);

@@ -11,6 +11,7 @@ class DatabaseService {
   final String uid;
   static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
   CollectionReference? assetsSubCollection;
+  CollectionReference? activitiesSubCollection; 
 
   /// A new instance of [DatabaseService] with the given [cid] and [uid].
   /// 
@@ -41,9 +42,12 @@ class DatabaseService {
       service.cid = querySnapshot.docs.first.id;
       switch (code) {
         case 1:
-          service.assetsSubCollection = FirebaseFirestore.instance.collection('testUsers').doc(service.cid).collection('assets');
+          service.assetsSubCollection = usersCollection.doc(service.cid).collection('assets');
           log('Assets subcollection set to $usersCollection/${service.cid}/assets');
-          break; 
+          break;
+        case 2:
+          service.activitiesSubCollection = usersCollection.doc(service.cid).collection('activities');
+          break;
         default:
           log('Invalid code');
       }
@@ -266,17 +270,32 @@ class DatabaseService {
       }
     }
   }
+
+  Stream<List<Map<String, dynamic>>> get getActivities => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
+    Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+
+    var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
+    var allUsers = [cid, ...connectedUsers];
+    var allActivities = await Future.wait(allUsers.map((userId) async {
+      var snapshots = await usersCollection.doc(userId).collection('activities').get();
+      return snapshots.docs.map((doc) => doc.data()).toList();
+    }));
+    return allActivities.expand((x) => x).toList();
+  });
+}
+
+class BasicUser {
+  /// The user's information.
+  final Map<String, dynamic> info;
+  BasicUser(this.info);
 }
 
 /// Represents a user with their information and assets.
-class UserWithAssets {
-  /// The user's information.
-  final Map<String, dynamic> info;
-
-  /// The user's assets.
+class UserWithAssets extends BasicUser{
   final List<Map<String, dynamic>> assets;
-
   /// Creates a new instance of [UserWithAssets].
-  UserWithAssets(this.info, this.assets);
+  UserWithAssets(Map<String, dynamic> info, this.assets) : super(info);
 }
+
+
 

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:team_shaikh_app/alert_dialog.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/utilities.dart';
 
 // StatefulWidget representing the Create Account page
 class CreateAccountPage extends StatefulWidget {

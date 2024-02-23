@@ -2,13 +2,13 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+// import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
-import 'package:intl/intl.dart';
+import 'package:team_shaikh_app/utilities.dart';
 
 
 /// Represents the dashboard page of the application.
@@ -19,7 +19,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int selectedIndex = 0;
-  List<String> data = [
+  List<String> icons = [
     'assets/icons/dashboard_hollowed.png',
     'assets/icons/analytics_hollowed.png',
     'assets/icons/activity_hollowed.png',
@@ -30,30 +30,22 @@ class _DashboardPageState extends State<DashboardPage> {
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
-
     User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        log('User is not logged in');
-        Navigator.pushReplacementNamed(context, '/login');
-      }
+    if (user == null) {
+      log('User is not logged in');
+      await Navigator.pushReplacementNamed(context, '/login');
+    }
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
     // If there is no matching CID, redirect to login page
     if (service == null) {
-      Navigator.pushReplacementNamed(context, '/login');
+      await Navigator.pushReplacementNamed(context, '/login');
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
-  
-  /// Formats the given amount as a currency string.
-  String _currencyFormat(double amount) => NumberFormat.currency(
-      symbol: '\$',
-      decimalDigits: 2,
-      locale: 'en_US',
-    ).format(amount);
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -119,8 +111,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     double percentageAGQ = totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
-
-    log('Connected users snapshot has no data');
     
       return Scaffold(
         body: Stack(
@@ -353,7 +343,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             SizedBox(height: 4),
             Text(
-              _currencyFormat(totalAssets),
+              currencyFormat(totalAssets),
               style: TextStyle(
                 fontSize: 35,
                 fontWeight: FontWeight.w600,
@@ -370,7 +360,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 SizedBox(width: 5),
                 Text(
-                  _currencyFormat(latestIncome),
+                  currencyFormat(latestIncome),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -444,7 +434,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
       trailing: Text(
-        _currencyFormat(amount),
+        currencyFormat(amount),
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
@@ -506,9 +496,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
-    log('Asset Tiles for AGQ Consulting LLC for ${userName['first']} ${userName['last']}: ${assetTilesAGQ.length}');
-    log('Asset Tiles for AK1 Holdings LP for ${userName['first']} ${userName['last']}: ${assetTilesAK1.length}');
-
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
@@ -532,7 +519,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
             SizedBox(width: 5),
             Text(
-              _currencyFormat(latestIncome),
+              currencyFormat(latestIncome),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -543,7 +530,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         subtitle: Text(
-          _currencyFormat(totalUserAssets),
+          currencyFormat(totalUserAssets),
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.normal,
@@ -628,9 +615,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
-    log('Asset Tiles for AGQ Consulting LLC for ${userName['first']} ${userName['last']}: ${assetTilesAGQ.length}');
-    log('Asset Tiles for AK1 Holdings LP for ${userName['first']} ${userName['last']}: ${assetTilesAK1.length}');
-
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
@@ -654,7 +638,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             SizedBox(width: 5),
             Text(
-              _currencyFormat(latestIncome),
+              currencyFormat(latestIncome),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -665,7 +649,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         subtitle: Text(
-          _currencyFormat(totalUserAssets),
+          currencyFormat(totalUserAssets),
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.normal,
@@ -780,7 +764,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   
                     Text(
-                      _currencyFormat(totalUserAssets),
+                      currencyFormat(totalUserAssets),
                       style: TextStyle(
                         fontSize: 22,
                         color: Colors.white,
@@ -918,59 +902,61 @@ class _DashboardPageState extends State<DashboardPage> {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(
-        data.length,
+        icons.length,
         (i) => GestureDetector(
           onTap: () {
             setState(() {
               selectedIndex = i;
             });
 
-            if (data[i] == 'assets/icons/analytics_hollowed.png') {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            }
+            switch (icons[i]) {
+              case 'assets/icons/analytics_hollowed.png':
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                  ),
+                );
+                break;
 
-            if (data[i] == 'assets/icons/dashboard_hollowed.png') {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            }
+              case 'assets/icons/dashboard_hollowed.png':
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                  ),
+                );
+                break;
 
-            if (data[i] == 'assets/icons/activity_hollowed.png') {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            }
+              case 'assets/icons/activity_hollowed.png':
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                  ),
+                );
+                break;
 
-            if (data[i] == 'assets/icons/profile_hollowed.png') {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
+              case 'assets/icons/profile_hollowed.png':
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                  ),
+                );
+                break;
             }
 
           },
 
           child: Image.asset(
-            i == selectedIndex && data[i] == 'assets/icons/dashboard_hollowed.png'
+            i == selectedIndex && icons[i] == 'assets/icons/dashboard_hollowed.png'
               ? 'assets/icons/dashboard_filled.png'
-              : data[i],
+              : icons[i],
             height: 50,
           ),       
         ),
