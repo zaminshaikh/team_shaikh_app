@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +18,7 @@ class ActivityPage extends StatefulWidget {
 }
 
 class _ActivityPageState extends State<ActivityPage> {
-  int selectedIndex = 0;
+
   List<String> icons = [
     'assets/icons/dashboard_hollowed.png',
     'assets/icons/analytics_hollowed.png',
@@ -29,6 +27,7 @@ class _ActivityPageState extends State<ActivityPage> {
   ];
 
   late DatabaseService _databaseService;
+  
 
   Future<void> _initData() async {
     // If the user is signed in (which should always be the case on this screen)
@@ -54,44 +53,117 @@ class _ActivityPageState extends State<ActivityPage> {
     }
   }
 
+  bool _isSameDay(DateTime date1, DateTime date2) => 
+    date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+    
   dynamic getActivityType(Map<String, dynamic> activity) {
-    switch(activity['type']){
-      case 'income':
-        if (activity['fund'] == 'AGQ Consulting LLC')
-          return 'Fixed Income';
-        return 'Dividend Payment';
-      case 'deposit':
-        return 'Deposit';
-      case 'withdrawal':
-        return 'Withdrawal';
-      case 'pendingWithdrawal':
-        return 'Pending Withdrawal...';
-      default:
-        return 'Error';
+      switch(activity['type']){
+        case 'income':
+          if (activity['fund'] == 'AGQ Consulting LLC')
+            return 'Fixed Income';
+          return 'Dividend Payment';
+        case 'deposit':
+          return 'Deposit';
+        case 'withdrawal':
+          return 'Withdrawal';
+        case 'pendingWithdrawal':
+          return 'Pending Withdrawal...';
+        default:
+          return 'Error';
+      }
+
     }
 
-  }
+  @override
+  Widget build(BuildContext context) => FutureBuilder(
+    future: _initData(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+
+      return StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _databaseService.getActivities,
+        builder: (context, activitiesSnapshot) {
+          if (activitiesSnapshot.hasData){
+            return _buildActivityScreen(activitiesSnapshot);
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } 
+      );
+    }
+  );
 
   Scaffold _buildActivityScreen(AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) => Scaffold(
-    body: CustomScrollView(
-      slivers: <Widget>[
-        _buildAppBar(),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final activities = activitiesSnapshot.data!;
-              activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
-              final activity = activities[index];
-              return _buildActivityWithDayHeader(activity, index, activities);
-            },
-            childCount: activitiesSnapshot.data!.length,
+      body: CustomScrollView(
+        slivers: <Widget>[
+          _buildAppBar(),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final activities = activitiesSnapshot.data!;
+                activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
+                final activity = activities[index];
+                return _buildActivityWithDayHeader(activity, index, activities);
+              },
+              childCount: activitiesSnapshot.data!.length,
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: _buildBottomNavBar(),
+    );
+
+  SliverAppBar _buildAppBar() => SliverAppBar(
+    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+    automaticallyImplyLeading: false,
+    toolbarHeight: 80,
+    expandedHeight: 0,
+    snap: false,
+    floating: true,
+    pinned: true,
+    flexibleSpace: const SafeArea(
+      child: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 20.0, right: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Activity',
+                  style: const TextStyle(
+                    fontSize: 27,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+        ],
+      ),
+    ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+          child: Image.asset(
+            'assets/icons/notification_bell.png',
+            color: Colors.white,
+            height: 32,
+            width: 32,
           ),
         ),
       ],
-    ),
-    bottomNavigationBar: _buildBottomNavBar(),
-  );
-
+    );
+  
   /// If the activity is on a new day, we create a header stating the day.
   Widget _buildActivityWithDayHeader(Map<String, dynamic> activity, int index, List<Map<String, dynamic>> activities) {
     final activityDate = (activity['time'] as Timestamp).toDate();
@@ -112,90 +184,6 @@ class _ActivityPageState extends State<ActivityPage> {
       return _buildActivity(activity);
     }
   }
-
-  bool _isSameDay(DateTime date1, DateTime date2) => 
-    date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
-  
-  Widget _buildBottomNavBar() => Container(
-    margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-        height: 80,
-        padding: const EdgeInsets.only(right: 30, left: 30),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 30, 41, 59),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 8,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            icons.length,
-            (i) => GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedIndex = i;
-                });
-
-                switch (icons[i]) {
-                  case 'assets/icons/analytics_hollowed.png':
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                      ),
-                    );
-                    break;
-
-                  case 'assets/icons/dashboard_hollowed.png':
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                      ),
-                    );
-                    break;
-
-                  case 'assets/icons/activity_hollowed.png':
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                      ),
-                    );
-                    break;
-
-                  case 'assets/icons/profile_hollowed.png':
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                      ),
-                    );
-                    break;
-                }
-
-              },
-
-              child: Image.asset(
-                i == selectedIndex && icons[i] == 'assets/icons/dashboard_hollowed.png'
-                  ? 'assets/icons/dashboard_hollowed.png'
-                  : icons[i],
-                height: 50,
-              ),       
-            ),
-          ),
-        ),    
-      );
 
   Widget _buildActivity(Map<String, dynamic> activity) { 
         // Assuming activity['time'] is a Timestamp object
@@ -296,72 +284,246 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  SliverAppBar _buildAppBar() => const SliverAppBar(
-    backgroundColor: Color.fromARGB(255, 30, 41, 59),
-    automaticallyImplyLeading: false,
-    expandedHeight: 80,
-    floating: true,
-    snap: true,
-    pinned: true,
-    flexibleSpace: SafeArea(
-      child: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left: 20.0, right: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Activity',
-                  style: TextStyle(
-                    fontSize: 23,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ],
+  Container _buildHorizontalButtonList(Map<String, String> userName) => Container(
+      height: 40.0, // Make the buttons a little shorter
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: <Widget>[
+          const SizedBox(width: 20.0), // Add some space before the first button
+          ElevatedButton(
+            child: const Text(
+              'All',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white, // Make the text white
+              ),
             ),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.transparent,
+              side: const BorderSide(color: Colors.grey),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+            onPressed: () {
+              // Implement your button functionality here
+            },
           ),
-          
+          const SizedBox(width: 10.0), // Add some space between the buttons
+          ElevatedButton(
+            child: Text(
+              '${userName['first']} ${userName['last']}',
+              style: const TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.transparent,
+              side: const BorderSide(color: Colors.grey),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+            onPressed: () {
+              // Implement your button functionality here
+            },
+          ),
+          const SizedBox(width: 10.0),
+          ElevatedButton(
+            child: const Text(
+              'Withdrawals',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.transparent,
+              side: const BorderSide(color: Colors.grey),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+            onPressed: () {
+              // Implement your button functionality here
+            },
+          ),
+          const SizedBox(width: 10.0),
+          ElevatedButton(
+            child: const Text(
+              'Pending',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.transparent,
+              side: const BorderSide(color: Colors.grey),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+            onPressed: () {
+              // Implement your button functionality here
+            },
+          ),
         ],
       ),
-    ),
-    actions: [
-      Padding(
-        padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 10.0),
-        child: Icon(
-          Icons.notifications_none_rounded,
-          color: Colors.white,
-          size: 32,
+    );
+
+  // This is the search bar area 
+  Padding _buildSearchBar() => Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Container(
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 50.0, // Set the height of the TextField
+                child: TextField(
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                  ),
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
+                    hintText: 'Search by title',
+                    hintStyle: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                    filled: true,
+                    fillColor: Colors.transparent,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    prefixIcon: Image.asset(
+                      'assets/icons/search_icon.png',
+                      color: Colors.white,
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Image.asset(
+                'assets/icons/filter.png',
+                color: Colors.white,
+                height: 24,
+                width: 24,
+              ),
+              onPressed: () {
+                // Implement your filter functionality here
+              },
+            ),
+            IconButton(
+              icon: Image.asset(
+                'assets/icons/sort.png',
+                color: Colors.white,
+                height: 24,
+                width: 24,
+              ),
+              onPressed: () {
+                // Implement your sort functionality here
+              },
+            ),
+          ],
         ),
       ),
-    ],
-  );
-  
-  @override
-  Widget build(BuildContext context) => FutureBuilder(
-    future: _initData(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      }
+    );
 
-      return StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _databaseService.getActivities,
-        builder: (context, activitiesSnapshot) {
-          if (activitiesSnapshot.hasData){
-            return _buildActivityScreen(activitiesSnapshot);
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } 
-      );
-    }
-  );
+  Widget _buildBottomNavBar() => Container(
+      margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
+      height: 80,
+      padding: const EdgeInsets.only(right: 30, left: 30),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 30, 41, 59),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 8,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/dashboard_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/analytics_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );},
+            child: Image.asset(
+              'assets/icons/activity_filled.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/profile_hollowed.png',
+              height: 50,
+            ),
+          ),
+        ],
+      ),
+    );
+
 }
+
+
 
