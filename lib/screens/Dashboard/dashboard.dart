@@ -113,7 +113,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalUserAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['latestIncome']['amount'];
+          latestIncome = asset['ytd'];
           totalUserAssets += asset['total'];
       }
     }
@@ -181,7 +181,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['latestIncome']['amount'];
+          latestIncome = asset['ytd'];
           totalAssets += asset['total'];
           totalUserAssets += asset['total'];
       }
@@ -577,6 +577,51 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );      
   }
+
+  Widget _buildConnectedUsersSection(List<UserWithAssets> connectedUsers) => Stack(
+      children: [
+        CarouselSlider(
+          options: CarouselOptions(
+            aspectRatio: 34 / 9,
+            viewportFraction: 1,
+            initialPage: 0,
+            enableInfiniteScroll: false,
+            reverse: false,
+            autoPlay: false,
+            enlargeCenterPage: true,
+            enlargeFactor: 0.2,
+            scrollDirection: Axis.horizontal,
+          ),
+          items: connectedUsers.map((user) {
+            String firstName = user.info['name']['first'] as String;
+            String lastName = user.info['name']['last'] as String;
+            String companyName = user.info['name']['company'] as String;
+            Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
+            double totalUserAssets = 0.00, latestIncome = 0.00;
+            for (var asset in user.assets) {
+              switch (asset['fund']) {
+                case 'AGQ Consulting LLC':
+                  break;
+                case 'AK1 Holdings LP':
+                  break;
+                default:
+                  latestIncome = asset['ytd'];
+                  totalUserAssets += asset['total'];
+              }
+            }
+            return Builder(
+              builder: (BuildContext context) => _buildConnectedUserBreakdownSection(
+                  userName,
+                  totalUserAssets,
+                  latestIncome,
+                  user.assets,
+                ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+
 
   Widget _buildConnectedUserBreakdownSection(Map<String, String> userName, double totalUserAssets, double latestIncome, List<Map<String, dynamic>> assets) {
     // Initialize empty lists for the tiles
@@ -978,31 +1023,5 @@ class _DashboardPageState extends State<DashboardPage> {
     ),    
   );
 
-  Widget _buildConnectedUsersSection(List<UserWithAssets> connectedUsers) {
-    // Display the first user in the list
-    UserWithAssets user = connectedUsers[0];
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
-    double totalUserAssets = 0.00, latestIncome = 0.00;
-    for (var asset in user.assets) {
-      switch (asset['fund']) {
-        case 'AGQ Consulting LLC':
-          break;
-        case 'AK1 Holdings LP':
-          break;
-        default:
-          latestIncome = asset['latestIncome']['amount'];
-          totalUserAssets += asset['total'];
-      }
-    }
 
-    return _buildConnectedUserBreakdownSection(
-      userName,
-      totalUserAssets,
-      latestIncome,
-      user.assets,
-    );
-  }
 }
