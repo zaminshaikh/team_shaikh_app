@@ -105,9 +105,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalUserAK1 += asset['total'];
           break;
         default:
-          if (asset['latestIncome'] != null) {
-            latestIncome = asset['latestIncome']['amount'];
-          }
+          latestIncome = asset['ytd'];
           totalUserAssets += asset['total'];
       }
     }
@@ -173,12 +171,12 @@ class _DashboardPageState extends State<DashboardPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          if (asset['latestIncome'] != null) {
-            latestIncome = asset['latestIncome']['amount'];
-          }
+          latestIncome = asset['ytd'];
+          totalAssets += asset['total'];
           totalUserAssets += asset['total'];
       }
     }
+
     // This calculation is for the total assets of all connected users combined
     for (var user in connectedUsers.data!) {
       for (var asset in user.assets) {
@@ -981,10 +979,8 @@ class _DashboardPageState extends State<DashboardPage> {
         case 'AK1 Holdings LP':
           break;
         default:
-        if (asset['latestIncome'] != null) {
-          latestIncome = asset['latestIncome']['amount'];
-        }
-        totalUserAssets += asset['total'];
+          latestIncome = asset['ytd'];
+          totalUserAssets += asset['total'];
       }
     }
 
