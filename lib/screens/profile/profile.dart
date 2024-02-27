@@ -85,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             CustomScrollView(
               slivers: <Widget>[
-                _buildAppBar(),
+                _buildAppBar(context),
                 SliverPadding(
                   padding: const EdgeInsets.all(0.0),
                   sliver: SliverList(
@@ -112,7 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 // This is the app bar 
-  SliverAppBar _buildAppBar() {
+  SliverAppBar _buildAppBar(context) {
     return SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
@@ -149,11 +149,16 @@ class _ProfilePageState extends State<ProfilePage> {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 10.0),
-          child: Image.asset(
-            'assets/icons/notification_bell.png',
-            color: Colors.white,
-            height: 32,
-            width: 32,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/notification');
+            },
+            child: Image.asset(
+              'assets/icons/notification_bell.png',
+              color: Colors.white,
+              height: 32,
+              width: 32,
+            ),
           ),
         ),
       ],

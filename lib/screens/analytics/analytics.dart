@@ -6,6 +6,7 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
+
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
   @override
@@ -82,7 +83,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           children: [
             CustomScrollView(
               slivers: <Widget>[
-                _buildAppBar(),
+                _buildAppBar(context),
                 SliverPadding(
                   padding: const EdgeInsets.all(0.0),
                   sliver: SliverList(
@@ -113,54 +114,57 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 }
 
 // This is the app bar 
-  SliverAppBar _buildAppBar() {
+  SliverAppBar _buildAppBar(BuildContext context) {
     return SliverAppBar(
-    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-    automaticallyImplyLeading: false,
-    toolbarHeight: 80,
-    expandedHeight: 0,
-    snap: false,
-    floating: true,
-    pinned: true,
-    flexibleSpace: SafeArea(
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Analytics',
-                  style: TextStyle(
-                    fontSize: 27,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
+      backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+      automaticallyImplyLeading: false,
+      toolbarHeight: 80,
+      expandedHeight: 0,
+      snap: false,
+      floating: true,
+      pinned: true,
+      flexibleSpace: SafeArea(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Analytics',
+                    style: TextStyle(
+                      fontSize: 27,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          
-        ],
+          ],
+        ),
       ),
-    ),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 10.0),
-          child: Image.asset(
-            'assets/icons/notification_bell.png',
-            color: Colors.white,
-            height: 32,
-            width: 32,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/notification');
+            },
+            child: Image.asset(
+              'assets/icons/notification_bell.png',
+              color: Colors.white,
+              height: 32,
+              width: 32,
+            ),
           ),
         ),
       ],
     );
-  }// This is the search bar and options 
-
+  }
 // This is the horizontal list of connected users
   Container buildHorizontalButtonList() {
     return Container(
