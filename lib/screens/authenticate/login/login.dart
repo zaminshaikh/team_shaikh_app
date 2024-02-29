@@ -33,14 +33,15 @@ class _LoginPageState extends State<LoginPage> {
   void signUserIn(context) async {
     // try login
     try {
+      // Create a new UserCredential from Firebase with given details 
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
       // Successfully signed in, you can navigate to the next screen or perform other actions.
       log('Signed in user ${userCredential.user!.uid}');
-      await userCredential.user!.reload();
-      Navigator.pop(context);
+      await userCredential.user!.reload(); // Trigger the stream to update in wrapper.dart
+      Navigator.pop(context); // Remove this context from the widget tree
     } on FirebaseAuthException catch (e) {
       // Handle errors and show an error message.
       String errorMessage = '';

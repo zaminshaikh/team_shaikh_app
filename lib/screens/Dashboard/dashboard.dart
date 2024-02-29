@@ -31,14 +31,19 @@ class _DashboardPageState extends State<DashboardPage> {
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
+    // Allow for user data changes to sync and update
+    // This will display circular progess indicator
     await Future.delayed(const Duration(seconds: 1));
+
     User? user = FirebaseAuth.instance.currentUser;
+    // If we do not have a user and the context is valid
     if (user == null && mounted) {
       log('User is not logged in');
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    
     // If there is no matching CID, redirect to login page
     if (service == null && mounted) {
       await Navigator.pushReplacementNamed(context, '/login');

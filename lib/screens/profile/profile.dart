@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:developer';
 
@@ -19,10 +18,13 @@ class _ProfilePageState extends State<ProfilePage> {
   void signUserOut(BuildContext context) async {
     log('profile.dart: Signing out...');
     await FirebaseAuth.instance.signOut();
+
+    // Async gap mounted widget check
     if (!mounted){
       log('profile.dart: No longer mounted!');
       return;
     }
+    // Pop the current page and go to login
     await Navigator.pushReplacementNamed(context, '/login');
   }
 

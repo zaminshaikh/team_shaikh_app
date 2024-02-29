@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/alert_dialog.dart';
@@ -17,25 +16,22 @@ class CreateAccountPage extends StatefulWidget {
 // Making a State class for the CreateAccountPage
 class _CreateAccountPageState extends State<CreateAccountPage> {
   // Boolean to switch password visibility, init as true
-  bool hidePassword = true;
-  late DatabaseService _databaseService;
-
-  // // Boolean to track email verification status
-  // bool isEmailVerified = false;
+  bool _hidePassword = true;
+  late DatabaseService _databaseService; 
 
   // User inputs
-  String cid = '';
-  String email = '';
-  String createAccountPasswordString = '/';
-  String confirmcreateAccountPasswordString = '';
+  String _cid = '';
+  String _email = '';
+  String _createAccountPasswordString = '/';
+  String _confirmCreateAccountPasswordString = '';
+   /// Password security indicator level
+  int _passwordSecurityIndicator = 0;
 
   // Text editing controllers for user inputs
-  TextEditingController clientIDController = TextEditingController();
-  TextEditingController createAccountEmailController = TextEditingController();
-  TextEditingController createAccountPasswordController =
-      TextEditingController();
-  TextEditingController confirmcreateAccountPasswordController =
-      TextEditingController();
+  final TextEditingController _clientIDController = TextEditingController();
+  final TextEditingController _createAccountEmailController = TextEditingController();
+  final TextEditingController _createAccountPasswordController = TextEditingController();
+  final TextEditingController _confirmCreateAccountPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -45,33 +41,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  // Stream<bool> get isEmailVerified => FirebaseAuth.instance.userChanges().map((User? user) => user?.emailVerified ?? false);
-
-  // Check and wait for email verification status
-  /// Checks the email verification status of the current user.
-  ///
-  /// This method continuously checks if the user's email has been verified.
-  /// It uses the [FirebaseAuth] instance to get the current user and reloads
-  /// the user's data. If the user is not null and their email is verified,
-  /// it logs 'Email verified' and returns true. Otherwise, it logs
-  /// 'Email not verified yet. Waiting 5 seconds...' and waits for 5 seconds
-  /// before checking again.
-  ///
-  /// Returns a [Future<bool>] that resolves to true when the user's email
-  /// is verified.
-  Future<bool> checkEmailVerificationStatus() async {
-    while (true) {
-      User? user = FirebaseAuth.instance.currentUser;
-      await user?.reload();
-      if (user != null && user.emailVerified) {
-        log('Email verified');
-        return true;
-      }
-      log('Email not verified yet. Waiting 2 seconds...');
-      await Future.delayed(const Duration(seconds: 2));
-    }
   }
 
   /// Signs up the user and handles email verification.
@@ -91,56 +60,56 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   ///
   /// Example usage:
   /// ```dart
-  /// signUserUp(context);
+  /// _signUserUp(context);
   /// ```
-  void signUserUp(BuildContext context) async {
+  void _signUserUp(BuildContext context) async {
     // Delete any users currently in the buffer
     await FirebaseAuth.instance.currentUser?.delete();  
-    log('User after delete: ${FirebaseAuth.instance.currentUser ?? 'deleted'}');
+    log('create_account.dart: User after delete: ${FirebaseAuth.instance.currentUser ?? 'deleted'}'); // Confirms delete
     try {
+      // Create a new UserCredential from Firebase with given details
       UserCredential userCredential =
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: createAccountEmailController.text,
-          password: createAccountPasswordController.text,
+          email: _createAccountEmailController.text,
+          password: _createAccountPasswordController.text,
       );
-
+      
+      // Null check
       if (userCredential.user == null) 
       {
         log('create_account.dart: ERROR: userCredential.user is null.');
-        return;
+        throw FirebaseAuthException(code:'operation-not-allowed');
       }
       
       log('create_account.dart: UserCredential created: ${userCredential.user!.uid}. In buffer.');
 
       // Create a new database service for our new user
-      _databaseService = DatabaseService.withCID(userCredential.user!.uid, cid);
+      _databaseService = DatabaseService.withCID(userCredential.user!.uid, _cid);
       
       // If the user inputs a CID that is not in the database or is already linked to a user, show an error dialog and return.
-      if (! (await _databaseService.docExists(cid)) ){
+      if (! (await _databaseService.docExists(_cid)) ){
         if (!mounted) {return;}
-        await CustomAlertDialog.showAlertDialog(context, 'Error', 'There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.');
+        await CustomAlertDialog.showAlertDialog(context, 'Error', 'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.');
         await FirebaseAuth.instance.currentUser?.delete();
-        log('create_account.dart: No document for cid: $cid.');
+        log('create_account.dart: No document for _cid: $_cid.');
         return;
-      } else if (await _databaseService.docLinked(cid)) {
+      } else if (await _databaseService.docLinked(_cid)) {
         if (!mounted) {return;}
-        await CustomAlertDialog.showAlertDialog(context, 'Error', 'User already exists for given Client ID $cid. Please log in instead.');
+        await CustomAlertDialog.showAlertDialog(context, 'Error', 'User already exists for given Client ID $_cid. Please log in instead.');
         await FirebaseAuth.instance.currentUser?.delete();
-        log('create_account.dart: User already exists for given cid $cid.');
+        log('create_account.dart: User already exists for given _cid $_cid.');
         return;
       }
 
+      // Send the email verification
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
 
       // Display email verification dialog
       if (!mounted) {return;}
       await showDialog(
         context: context,
-        builder: (BuildContext context) => emailVerificationDialog(email),
+        builder: (BuildContext context) => _emailVerificationDialog(),
       );
-
-      await FirebaseAuth.instance.currentUser?.reload().then((_) async {
-      });
       
     } on FirebaseAuthException catch (e) {
       if (!mounted) {return;}
@@ -153,7 +122,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }
   }
 
-  Dialog emailVerificationDialog(String email) => Dialog(
+  Dialog _emailVerificationDialog() => Dialog(
     backgroundColor: const Color.fromARGB(255, 37, 58, 86),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16),
@@ -202,29 +171,22 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
           TextButton(
             onPressed: () async {
-              // unawaited(showDialog(
-              //   context: context,
-              //   barrierDismissible: false, // Prevents the dialog from being dismissed by tapping outside
-              //   builder: (BuildContext context) => const AlertDialog(
-              //     content: CircularProgressIndicator(),
-              //   ),
-              // ));
 
               User? user = FirebaseAuth.instance.currentUser;
-              await user?.reload();
-              await Future.delayed(const Duration(seconds: 1)); // Add a delay
+              await user?.reload(); // Update to most current information
+              // await Future.delayed(const Duration(seconds: 1)); // Add a delay 
               user = FirebaseAuth.instance.currentUser; // Get the user object again after the delay
 
               if (user != null && user.emailVerified) {
                 String uid = user.uid;
-
+                // Link the UID to CID
                 await _databaseService.linkNewUser(user.email!);
+                log('create_account.dart: User $uid connected to Client ID $_cid');
 
-                log('create_account.dart: User $uid connected to Client ID $cid');
-                if (!mounted) {return;}
+                if (!mounted) {return;} // async gap widget mounting check
                 await Navigator.pushReplacementNamed(context, '/dashboard');
               } else {
-                if (!mounted) {return;}
+                if (!mounted) {return;} // async gap widget mounting check
                 await showDialog(
                   context: context,
                   builder: (BuildContext context) => AlertDialog(
@@ -259,33 +221,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   ),
                 );
               }
-                // showDialog(
-                //   context: context,
-                //   barrierDismissible: false, // Prevents the dialog from being dismissed by tapping outside
-                //   builder: (BuildContext context) => const AlertDialog(
-                //       title: Text(
-                //         'Verifying Email',
-                //         style: TextStyle(
-                //           fontFamily: 'Titillium Web',
-                //           color: Colors.blue,
-                //         ),
-                //       ),
-                //       content: Column(
-                //         mainAxisSize: MainAxisSize.min,
-                //         children: [
-                //           CircularProgressIndicator(),
-                //           SizedBox(height: 10),
-                //           Text(
-                //             'Please wait...',
-                //             style: TextStyle(
-                //               fontFamily: 'Titillium Web',
-                //               color: Colors.blue,
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                // );
             },
             child: Container(
               height: 55,
@@ -309,65 +244,58 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 ),
               ),
             ),
-          ),
-
-                                                  
+          ),                                  
         ],
       ),
     ),
   );
-  
 
-  /// Password security indicator level
-  int passwordSecurityIndicator = 0;
-
-
-  /// Updates the password security indicator based on the conditions met by the createAccountPasswordString.
-  void updatePasswordSecurityIndicator() {
+  /// Updates the password security indicator based on the conditions met by the _createAccountPasswordString.
+  void _updatePasswordSecurityIndicator() {
     int conditionsMet = 0;
 
-    if (createAccountPasswordString.length > 7) {
+    if (_createAccountPasswordString.length > 7) {
       conditionsMet++;
     }
 
-    if (createAccountPasswordString.contains(RegExp(r'\d'))) {
+    if (_createAccountPasswordString.contains(RegExp(r'\d'))) {
       conditionsMet++;
     }
 
-    if (createAccountPasswordString.contains(RegExp(r'[A-Z]'))) {
+    if (_createAccountPasswordString.contains(RegExp(r'[A-Z]'))) {
       conditionsMet++;
     }
 
-    if (createAccountPasswordString.contains(RegExp(r'[a-z]'))) {
+    if (_createAccountPasswordString.contains(RegExp(r'[a-z]'))) {
       conditionsMet++;
     }
 
-    // Update passwordSecurityIndicator based on the number of conditions met
+    // Update _passwordSecurityIndicator based on the number of conditions met
     if (conditionsMet == 0) {
-      passwordSecurityIndicator = 0;
+      _passwordSecurityIndicator = 0;
     } else if (conditionsMet == 1) {
-      passwordSecurityIndicator = 1;
+      _passwordSecurityIndicator = 1;
     } else if (conditionsMet == 2) {
-      passwordSecurityIndicator = 2;
+      _passwordSecurityIndicator = 2;
     } else if (conditionsMet == 3) {
-      passwordSecurityIndicator = 3;
+      _passwordSecurityIndicator = 3;
     } else if (conditionsMet == 4) {
-      passwordSecurityIndicator = 4;
+      _passwordSecurityIndicator = 4;
     }
   }
 
-  /// Updates the [createAccountPasswordString] and sets the value of [createAccountPasswordController.text].
-  void updatecreateAccountPasswordString(String value) {
+  /// Updates the [_createAccountPasswordString] and sets the value of [createAccountPasswordController.text].
+  void _updateCreateAccountPasswordString(String value) {
     setState(() {
-      createAccountPasswordString = value;
-      createAccountPasswordController.text = value;
+      _createAccountPasswordString = value;
+      _createAccountPasswordController.text = value;
     });
   }
 
   /// Updates the password string and security indicator.
-  void updateFields(String value) {
-    updatecreateAccountPasswordString(value);
-    updatePasswordSecurityIndicator();
+  void _updateFields(String value) {
+    _updateCreateAccountPasswordString(value);
+    _updatePasswordSecurityIndicator();
   }
 
   // TODO: Delete exceptions for Firebase and other errors and replace with boolean error handling
@@ -384,17 +312,20 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     // Check the error code and set the appropriate error message
     switch (e.code) {
       case 'email-already-in-use':
-        errorMessage = 'Email $email is already in use. Please use a different email.';
-        log('$e: Email is already connected to a different cid.');
+        errorMessage = 'Email $_email is already in use. Please use a different email.';
+        log('$e: Email is already connected to a different _cid.');
         break;
       case 'document-not-found':
-        errorMessage = 'There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.';
-        log('No document for cid: $cid');
+        errorMessage = 'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.';
+        log('No document for _cid: $_cid');
         break;
       case 'user-already-exists':
-        errorMessage = 'User already exists for given Client ID $cid. Please log in instead.';
+        errorMessage = 'User already exists for given Client ID $_cid. Please log in instead.';
         log('$e');
         break;
+      case 'invalid-email':
+        errorMessage = '"$_email is not a valid email format. Please try again';
+        log('$e');
       default:
         log('FirebaseAuthException: $e');
     }    
@@ -480,8 +411,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          clientIDController.text = value;
-                          cid = value;
+                          _clientIDController.text = value;
+                          _cid = value;
                         });
                       },
                     ),
@@ -530,8 +461,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          email = value;
-                          createAccountEmailController.text = value;
+                          _email = value;
+                          _createAccountEmailController.text = value;
                         });
                       },
                     ),
@@ -580,21 +511,21 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         suffixIcon: GestureDetector(
                           onTap: () {
                             setState(() {
-                              hidePassword = !hidePassword;
+                              _hidePassword = !_hidePassword;
                             });
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(0.0),
                             child: Icon(
-                              hidePassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded,
+                              _hidePassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded,
                               size: 25,
                               color: const Color.fromARGB(255, 154, 154, 154),
                             ),
                           ),
                         ),
                       ),
-                      obscureText: hidePassword,
-                      onChanged: updateFields,
+                      obscureText: _hidePassword,
+                      onChanged: _updateFields,
                     ),
                   ],
                 ),
@@ -614,11 +545,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         height: 5.5,
                         margin: const EdgeInsets.symmetric(horizontal: 4.4),
                         decoration: BoxDecoration(
-                          color: passwordSecurityIndicator == 1
+                          color: _passwordSecurityIndicator == 1
                               ? const Color.fromARGB(255, 149, 28, 28)
-                              : (passwordSecurityIndicator == 2 || passwordSecurityIndicator == 3)
+                              : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
                                   ? const Color.fromARGB(255, 219, 195, 60)
-                                  : (passwordSecurityIndicator == 4)
+                                  : (_passwordSecurityIndicator == 4)
                                       ? const Color.fromARGB(255, 47, 134, 47)
                                       : const Color.fromARGB(255, 100, 116, 139),
                           borderRadius: BorderRadius.circular(10.0),
@@ -635,11 +566,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         height: 5.5,
                         margin: const EdgeInsets.symmetric(horizontal: 4.4),
                         decoration: BoxDecoration(
-                          color: passwordSecurityIndicator == 1
+                          color: _passwordSecurityIndicator == 1
                               ? const Color.fromARGB(255, 100, 116, 139)
-                              : (passwordSecurityIndicator == 2 || passwordSecurityIndicator == 3)
+                              : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
                                   ? const Color.fromARGB(255, 219, 195, 60)
-                                  : (passwordSecurityIndicator == 4)
+                                  : (_passwordSecurityIndicator == 4)
                                       ? const Color.fromARGB(255, 47, 134, 47)
                                       : const Color.fromARGB(255, 100, 116, 139),
                           borderRadius: BorderRadius.circular(10.0),
@@ -660,7 +591,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 child: Row(
                   children: [
                     // Conditional statement that changes the icon to a green checkmark when the password is at least 8 characters
-                    createAccountPasswordString.length > 7
+                    _createAccountPasswordString.length > 7
                         ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) 
                         : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), 
 
@@ -695,7 +626,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 child: Row(
                   children: [
                     // Conditional statement to change the icon to a green checkmark when the password contains at least one digit
-                    createAccountPasswordString.contains(RegExp(r'\d'))
+                    _createAccountPasswordString.contains(RegExp(r'\d'))
                       ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
                       : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
 
@@ -727,7 +658,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 child: Row(
                   children: [
                     // Conditional statement to change the icon to a green checkmark when the password contains at least one uppercase character
-                    createAccountPasswordString.contains(RegExp(r'[A-Z]'))
+                    _createAccountPasswordString.contains(RegExp(r'[A-Z]'))
                       ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
                       : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
 
@@ -759,7 +690,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 child: Row(
                   children: [
                     // Conditional statement to change the icon to a green checkmark when the password contains at least one lowercase character
-                    createAccountPasswordString.contains(RegExp(r'[a-z]'))
+                    _createAccountPasswordString.contains(RegExp(r'[a-z]'))
                       ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
                       : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
 
@@ -793,7 +724,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     Text(
                       'Confirm Password',
                       // TextStyle conditionally set based on password security indicator
-                      style: passwordSecurityIndicator == 4
+                      style: _passwordSecurityIndicator == 4
                           ? const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web') // Style for valid condition
                           : const TextStyle(color: Color.fromARGB(255, 122, 122, 122), fontFamily: 'Titillium Web'), // Style for invalid condition
                     ),
@@ -826,13 +757,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       // onChanged callback to update the confirmation password string
                       onChanged: (value) {
                         setState(() {
-                          confirmcreateAccountPasswordString = value;
-                          confirmcreateAccountPasswordController.text =value;
+                          _confirmCreateAccountPasswordString = value;
+                          _confirmCreateAccountPasswordController.text = value;
                         });
                       },
 
                       // Enable the text field based on the password security indicator
-                      enabled: passwordSecurityIndicator == 4,
+                      enabled: _passwordSecurityIndicator == 4,
 
                       // Closing properties for the Confirm Password textfield
                     ),
@@ -846,7 +777,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               // 'Next' button
               GestureDetector(
                 // Execute onTap
-                onTap: () => signUserUp(context),
+                onTap: () => _signUserUp(context),
 
                 // Container holding the 'Next' button
                 child: Container(
@@ -854,7 +785,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
                   // Decoration based on password match status
                   decoration: BoxDecoration(
-                    color: createAccountPasswordString == confirmcreateAccountPasswordString
+                    color: _createAccountPasswordString == _confirmCreateAccountPasswordString
                         ? const Color.fromARGB(255, 30, 75, 137) // Color when passwords match
                         : const Color.fromARGB(255, 85, 86, 87),  // Color when passwords don't match
                     borderRadius: BorderRadius.circular(25),

@@ -1,26 +1,31 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
-// Return either home or authenticate
+// Return either dashboard or authenticate
 class Wrapper extends StatelessWidget {
   const Wrapper({super.key});
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    body: StreamBuilder(
-      stream: FirebaseAuth.instance.userChanges(),
+    body: StreamBuilder( 
+      stream: FirebaseAuth.instance.userChanges(), // Use stream to update on any changes to the user
       builder: (context, snapshot) {
+        // If data is still loading
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
-        } else if (snapshot.hasError) {
+        } 
+        // Error case
+        else if (snapshot.hasError) {
           log('StreamBuilder error: ${snapshot.error}');
           return Text('Error: ${snapshot.error}');
-        } else if (snapshot.hasData) {
+        } 
+        // User exists case
+        else if (snapshot.hasData) {
           final user = snapshot.data as User;
+          // Check verification status (create_account.dart case)
           if (user.emailVerified) {
             log('wrapper.dart: User email is verified. Returning dashboard...');
             return DashboardPage(key: UniqueKey());
@@ -29,6 +34,7 @@ class Wrapper extends StatelessWidget {
             return const CircularProgressIndicator();
           }
         } 
+        // Else return login
         log('wrapper.dart: User is not logged in yet.');
         return const LoginPage();
       },
