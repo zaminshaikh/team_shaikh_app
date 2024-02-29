@@ -18,6 +18,7 @@ class ActivityPage extends StatefulWidget {
 
 class _ActivityPageState extends State<ActivityPage> {
 
+  final TextEditingController _searchController = TextEditingController();
   List<String> icons = [
     'assets/icons/dashboard_hollowed.png',
     'assets/icons/analytics_hollowed.png',
@@ -137,6 +138,154 @@ class _ActivityPageState extends State<ActivityPage> {
     ),
   );  
   
+  // This is the search bar area 
+    Padding _buildSearchBar() => Padding(
+      padding: const EdgeInsets.fromLTRB(20.0,10,20,25),
+      child: Container(
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 50.0, // Set the height of the TextField
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                  ),
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
+                    hintText: 'Search by title',
+                    hintStyle: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                    filled: true,
+                    fillColor: Colors.transparent,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    prefixIcon: Image.asset(
+                      'assets/icons/search_icon.png',
+                      color: Colors.white,
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Image.asset(
+                'assets/icons/filter.png',
+                color: Colors.white,
+                height: 24,
+                width: 24,
+              ),
+              onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (BuildContext context) {
+                return Container(
+                  color: AppColors.defaultBlueGray800,
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text(
+                          'Title', // Your title here
+                          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: ListTile(
+                          title: Text('Filter Option 1', style: TextStyle(color: Colors.white, fontFamily: 'Titillium Web')),
+                          trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          onTap: () {
+                            // Implement your filter option 1 functionality here
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: ListTile(
+                          title: Text('Filter Option 2', style: TextStyle(color: Colors.white, fontFamily: 'Titillium Web')),
+                          trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          onTap: () {
+                            // Implement your filter option 2 functionality here
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: ListTile(
+                          title: Text('Filter Option 3', style: TextStyle(color: Colors.white, fontFamily: 'Titillium Web')),
+                          trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          onTap: () {
+                            // Implement your filter option 3 functionality here
+                          },
+                        ),
+                      ),
+                      Spacer(),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Container(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                child: Text('Apply', style: TextStyle(color: Colors.white, fontFamily: 'Titillium Web')),
+                                onPressed: () {
+                                  // Implement your apply functionality here
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          TextButton(
+                            child: Text('Cancel', style: TextStyle(color: Colors.white, fontFamily: 'Titillium Web')),
+                            onPressed: () {
+                              // Implement your cancel functionality here
+                              Navigator.pop(context);
+                            },
+                          ),
+                          const SizedBox(height: 25),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+            },
+            ),
+            IconButton(
+              icon: Image.asset(
+                'assets/icons/sort.png',
+                color: Colors.white,
+                height: 24,
+                width: 24,
+              ),
+              onPressed: () {
+                // Implement your sort functionality here
+              },
+            ),
+          ],
+        ),
+      ),
+      
+    );
+
+
   SliverAppBar _buildAppBar() => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
@@ -241,11 +390,13 @@ class _ActivityPageState extends State<ActivityPage> {
         Color getColorBasedOnActivityType(String activityType) {
           switch (activityType) {
             case 'deposit':
-              return Colors.green;
+              return AppColors.defaultGreen400;
             case 'withdrawal':
-              return Colors.red;
+              return AppColors.defaultRed400;
+            case 'pendingWithdrawal':
+              return AppColors.defaultYellow400;
             case 'income':
-              return Colors.blue;
+              return AppColors.defaultBlue300;
             default:
               return Colors.blue;
           }
@@ -366,12 +517,13 @@ class _ActivityPageState extends State<ActivityPage> {
             style: TextStyle(
               fontFamily: 'Titillium Web',
               fontSize: 16,
+              fontWeight: FontWeight.bold,
               color: Colors.white, // Make the text white
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            side: const BorderSide(color: Colors.grey),
+            backgroundColor: AppColors.defaultBlue500,
+            side: const BorderSide(color: AppColors.defaultBlue500),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20.0),
             ),
@@ -406,74 +558,6 @@ class _ActivityPageState extends State<ActivityPage> {
       ],
     ),
   );
-
-  // This is the search bar area 
-    Padding _buildSearchBar() => Padding(
-      padding: const EdgeInsets.fromLTRB(20.0,10,20,25),
-      child: Container(
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 50.0, // Set the height of the TextField
-                child: TextField(
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
-                    hintText: 'Search by title',
-                    hintStyle: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
-                    filled: true,
-                    fillColor: Colors.transparent,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Colors.grey),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: const BorderSide(color: Colors.grey),
-                    ),
-                    prefixIcon: Image.asset(
-                      'assets/icons/search_icon.png',
-                      color: Colors.white,
-                      height: 24,
-                      width: 24,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            IconButton(
-              icon: Image.asset(
-                'assets/icons/filter.png',
-                color: Colors.white,
-                height: 24,
-                width: 24,
-              ),
-              onPressed: () {
-                // Implement your filter functionality here
-              },
-            ),
-            IconButton(
-              icon: Image.asset(
-                'assets/icons/sort.png',
-                color: Colors.white,
-                height: 24,
-                width: 24,
-              ),
-              onPressed: () {
-                // Implement your sort functionality here
-              },
-            ),
-          ],
-        ),
-      ),
-    );
 
   Widget _buildBottomNavBar() => Container(
       margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
@@ -558,6 +642,4 @@ class _ActivityPageState extends State<ActivityPage> {
     );
 
 }
-
-
 
