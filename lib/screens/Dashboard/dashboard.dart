@@ -300,16 +300,22 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
     ),
-    actions: [
-      Padding(
-        padding: const EdgeInsets.only(right: 10.0),
-        child: Icon(
-          Icons.notifications_none_rounded,
-          color: Colors.white,
-          size: 32,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/notification');
+            },
+            child: Image.asset(
+              'assets/icons/notification_bell.png',
+              color: Colors.white,
+              height: 32,
+              width: 32,
+            ),
+          ),
         ),
-      ),
-    ],
+      ],
   );
     
   Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) => Container(
