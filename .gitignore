@@ -14,6 +14,8 @@ ios/Flutter/Generated 2.xcconfig
 ios/Flutter/flutter_export_environment 2.sh
 macos/Flutter/ephemeral/
 macos/Flutter/GeneratedPluginRegistrant.swift
+android/local.properties
+ios/Podfile.lock
 
 # IntelliJ related
 *.iml
@@ -47,3 +49,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+chat_prompts.txt
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+pubspec.lock
+pubspec.lock
+>>>>>>> 2df21ad (Edited wrapper.dart to properly merge and added a file to the gitignore file)
+android/.gradle/7.5/executionHistory/executionHistory.lock
+.gitignore
+android/.gradle/7.5/fileHashes/fileHashes.lock
+android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+.gitignore
+.gitignore
+.gitignore
