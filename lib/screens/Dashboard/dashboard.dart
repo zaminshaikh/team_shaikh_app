@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 
 /// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
+  const DashboardPage({Key? key}) : super(key: key);
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }
@@ -30,22 +31,23 @@ class _DashboardPageState extends State<DashboardPage> {
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
-
+    await Future.delayed(const Duration(seconds: 1));
     User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        log('User is not logged in');
-        Navigator.pushReplacementNamed(context, '/login');
-      }
+    if (user == null && mounted) {
+      log('User is not logged in');
+      await Navigator.pushReplacementNamed(context, '/login');
+    }
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
     // If there is no matching CID, redirect to login page
-    if (service == null) {
-      Navigator.pushReplacementNamed(context, '/login');
+    if (service == null && mounted) {
+      await Navigator.pushReplacementNamed(context, '/login');
     } else {
       // Otherwise set the database service instance
-      _databaseService = service;
+      _databaseService = service!;
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
     }
+    
   }
   
   /// Formats the given amount as a currency string.

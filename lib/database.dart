@@ -118,8 +118,12 @@ class DatabaseService {
         };
 
         // Set the document with the updated data
-        return await usersCollection.doc(cid).set(updatedData);
+        await usersCollection.doc(cid).set(updatedData);
 
+        log('database.dart: User $uid has been linked with document $cid in Firestore');
+
+        return;
+  
       } else {
         throw FirebaseAuthException(
           code: 'document-not-found',

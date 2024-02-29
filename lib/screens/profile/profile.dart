@@ -17,18 +17,13 @@ class _ProfilePageState extends State<ProfilePage> {
   bool switchValue = false;
 
   void signUserOut(BuildContext context) async {
+    log('profile.dart: Signing out...');
     await FirebaseAuth.instance.signOut();
-
-    // Navigate to the login screen and clear the existing routes
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return child;
-        },
-      ),
-    );
+    if (!mounted){
+      log('profile.dart: No longer mounted!');
+      return;
+    }
+    await Navigator.pushReplacementNamed(context, '/login');
   }
 
   int selectedIndex = 0;

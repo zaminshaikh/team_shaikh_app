@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/alert_dialog.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
 
 // StatefulWidget representing the Create Account page
@@ -19,9 +18,10 @@ class CreateAccountPage extends StatefulWidget {
 class _CreateAccountPageState extends State<CreateAccountPage> {
   // Boolean to switch password visibility, init as true
   bool hidePassword = true;
+  late DatabaseService _databaseService;
 
-  // Boolean to track email verification status
-  bool isEmailVerified = false;
+  // // Boolean to track email verification status
+  // bool isEmailVerified = false;
 
   // User inputs
   String cid = '';
@@ -47,6 +47,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     super.dispose();
   }
 
+  // Stream<bool> get isEmailVerified => FirebaseAuth.instance.userChanges().map((User? user) => user?.emailVerified ?? false);
+
   // Check and wait for email verification status
   /// Checks the email verification status of the current user.
   ///
@@ -67,8 +69,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         log('Email verified');
         return true;
       }
-      log('Email not verified yet. Waiting 5 seconds...');
-      await Future.delayed(const Duration(seconds: 5));
+      log('Email not verified yet. Waiting 2 seconds...');
+      await Future.delayed(const Duration(seconds: 2));
     }
   }
 
@@ -93,232 +95,227 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// ```
   void signUserUp(BuildContext context) async {
     // Delete any users currently in the buffer
-    await FirebaseAuth.instance.currentUser?.delete();
+    await FirebaseAuth.instance.currentUser?.delete();  
+    log('User after delete: ${FirebaseAuth.instance.currentUser ?? 'deleted'}');
     try {
       UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: createAccountEmailController.text,
-        password: createAccountPasswordController.text,
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: createAccountEmailController.text,
+          password: createAccountPasswordController.text,
       );
-      log('UserCredential created: $userCredential. In buffer.');
+
+      if (userCredential.user == null) 
+      {
+        log('create_account.dart: ERROR: userCredential.user is null.');
+        return;
+      }
+      
+      log('create_account.dart: UserCredential created: ${userCredential.user!.uid}. In buffer.');
 
       // Create a new database service for our new user
-      DatabaseService databaseService = DatabaseService.withCID(userCredential.user!.uid, cid);
+      _databaseService = DatabaseService.withCID(userCredential.user!.uid, cid);
       
       // If the user inputs a CID that is not in the database or is already linked to a user, show an error dialog and return.
-      if (! (await databaseService.docExists(cid)) ){
-        CustomAlertDialog.showAlertDialog(context, 'Error', 'There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.');
-        FirebaseAuth.instance.currentUser?.delete();
-        log('No document for cid: $cid.');
+      if (! (await _databaseService.docExists(cid)) ){
+        if (!mounted) {return;}
+        await CustomAlertDialog.showAlertDialog(context, 'Error', 'There is no record of the Client ID $cid in the database. Please contact support or re-enter your Client ID.');
+        await FirebaseAuth.instance.currentUser?.delete();
+        log('create_account.dart: No document for cid: $cid.');
         return;
-      } else if (await databaseService.docLinked(cid)) {
-        CustomAlertDialog.showAlertDialog(context, 'Error', 'User already exists for given Client ID $cid. Please log in instead.');
-        FirebaseAuth.instance.currentUser?.delete();
-        log('User already exists for given cid $cid.');
+      } else if (await _databaseService.docLinked(cid)) {
+        if (!mounted) {return;}
+        await CustomAlertDialog.showAlertDialog(context, 'Error', 'User already exists for given Client ID $cid. Please log in instead.');
+        await FirebaseAuth.instance.currentUser?.delete();
+        log('create_account.dart: User already exists for given cid $cid.');
         return;
       }
 
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
 
       // Display email verification dialog
-      showDialog(
+      if (!mounted) {return;}
+      await showDialog(
         context: context,
-        builder: (BuildContext context) => emailVerificationDialog(),
+        builder: (BuildContext context) => emailVerificationDialog(email),
       );
 
-      if (await checkEmailVerificationStatus()) {
-        // Update user data in the database
-        if (userCredential.user != null) {
-          User user = userCredential.user!;
-          String uid = user.uid;
-
-          await databaseService.linkNewUser(user.email!);
-
-          log('User $uid connected to Client ID $cid');
-        } else {
-          log('User is null');
-          throw FirebaseAuthException(code: 'user-null', message: 'User is null');
-        }
-        
-        // Navigate to the dashboard after successful email verification
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                DashboardPage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) => child,
-          ),
-        );
-      }
+      await FirebaseAuth.instance.currentUser?.reload().then((_) async {
+      });
+      
     } on FirebaseAuthException catch (e) {
+      if (!mounted) {return;}
       // Handle FirebaseAuth exceptions and display appropriate error messages
       handleFirebaseAuthException(context, e);
-      FirebaseAuth.instance.currentUser?.delete();
+      await FirebaseAuth.instance.currentUser?.delete();
     } catch (e) {
-      log('Error signing user in: $e', stackTrace: StackTrace.current);
-      FirebaseAuth.instance.currentUser?.delete();
+      log('create_account.dart: Error signing user in: $e', stackTrace: StackTrace.current);
+      await FirebaseAuth.instance.currentUser?.delete();
     }
   }
 
-  Dialog emailVerificationDialog() => Dialog(
-            backgroundColor: const Color.fromARGB(255, 37, 58, 86),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+  Dialog emailVerificationDialog(String email) => Dialog(
+    backgroundColor: const Color.fromARGB(255, 37, 58, 86),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      height: 500,
+      width: 1000,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 80),
+          const Text(
+            'ICON ART',
+            style: TextStyle(
+              fontSize: 40,
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
             ),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              height: 500,
-              width: 1000,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 80),
-                  const Text(
-                    'ICON ART',
-                    style: TextStyle(
-                      fontSize: 40,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 80),
-                  const Text(
-                    'Verify your Email Address',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  
-                  const Center(
-                    child: Text(
-                      'You will recieve an Email with a link to verify your email. Please check your inbox.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 70),
-
-                  GestureDetector(
-                    onTap: () {
-                      if (isEmailVerified) {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false, // Prevents the dialog from being dismissed by tapping outside
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text(
-                                'Verifying Email',
-                                style: TextStyle(
-                                  fontFamily: 'Titillium Web',
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  CircularProgressIndicator(),
-                                  SizedBox(height: 10),
-                                  Text(
-                                    'Please wait...',
-                                    style: TextStyle(
-                                      fontFamily: 'Titillium Web',
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-
-                        // Navigate to the dashboard or perform desired action
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              return child;
-                            },
-                          ),
-                        );
-                      } else {
-                        // Show a message or take appropriate action for unverified email
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text(
-                                'Error',
-                                style: TextStyle(
-                                  fontFamily: 'Titillium Web',
-                                  color: Colors.blue, // You can change this to your desired color
-                                ),
-                              ),
-                              content: Text(
-                                'Email not verified. Please check your inbox for the verification link.',
-                                style: TextStyle(
-                                  fontFamily: 'Titillium Web',
-                                  color: Colors.blue, // You can change this to your desired color
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    'OK',
-                                    style: TextStyle(
-                                      fontFamily: 'Titillium Web',
-                                      color: Colors.blue, // You can change this to your desired color
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    },
-                    child: Container(
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: Colors.blue,
-                          width: 2,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Continue',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                                                          
-                ],
+          ),
+          const SizedBox(height: 80),
+          const Text(
+            'Verify your Email Address',
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          const SizedBox(height: 10),
+          
+          const Center(
+            child: Text(
+              'You will recieve an Email with a link to verify your email. Please check your inbox.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
               ),
             ),
-          );
+          ),
+
+          const SizedBox(height: 70),
+
+          TextButton(
+            onPressed: () async {
+              // unawaited(showDialog(
+              //   context: context,
+              //   barrierDismissible: false, // Prevents the dialog from being dismissed by tapping outside
+              //   builder: (BuildContext context) => const AlertDialog(
+              //     content: CircularProgressIndicator(),
+              //   ),
+              // ));
+
+              User? user = FirebaseAuth.instance.currentUser;
+              await user?.reload();
+              await Future.delayed(const Duration(seconds: 1)); // Add a delay
+              user = FirebaseAuth.instance.currentUser; // Get the user object again after the delay
+
+              if (user != null && user.emailVerified) {
+                String uid = user.uid;
+
+                await _databaseService.linkNewUser(user.email!);
+
+                log('create_account.dart: User $uid connected to Client ID $cid');
+                if (!mounted) {return;}
+                await Navigator.pushReplacementNamed(context, '/dashboard');
+              } else {
+                if (!mounted) {return;}
+                await showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text(
+                      'Error',
+                      style: TextStyle(
+                        fontFamily: 'Titillium Web',
+                        color: Colors.blue, // You can change this to your desired color
+                      ),
+                    ),
+                    content: const Text(
+                      'Email not verified. Please check your inbox for the verification link.',
+                      style: TextStyle(
+                        fontFamily: 'Titillium Web',
+                        color: Colors.blue, // You can change this to your desired color
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(
+                            fontFamily: 'Titillium Web',
+                            color: Colors.blue, // You can change this to your desired color
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+                // showDialog(
+                //   context: context,
+                //   barrierDismissible: false, // Prevents the dialog from being dismissed by tapping outside
+                //   builder: (BuildContext context) => const AlertDialog(
+                //       title: Text(
+                //         'Verifying Email',
+                //         style: TextStyle(
+                //           fontFamily: 'Titillium Web',
+                //           color: Colors.blue,
+                //         ),
+                //       ),
+                //       content: Column(
+                //         mainAxisSize: MainAxisSize.min,
+                //         children: [
+                //           CircularProgressIndicator(),
+                //           SizedBox(height: 10),
+                //           Text(
+                //             'Please wait...',
+                //             style: TextStyle(
+                //               fontFamily: 'Titillium Web',
+                //               color: Colors.blue,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                // );
+            },
+            child: Container(
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: Colors.blue,
+                  width: 2,
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  'Continue',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+                                                  
+        ],
+      ),
+    ),
+  );
   
 
   /// Password security indicator level
@@ -920,9 +917,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         context,
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return child;
-                          },
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                         ),
                       );
                     },
