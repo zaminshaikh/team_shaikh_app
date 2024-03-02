@@ -64,13 +64,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             );
           }
           // Once we have the user snapshot, we can build the activity page
-          return buildActivityPage(userSnapshot);
+          return buildAnalyticsPage(userSnapshot);
         }
       );
     }
   );  
   
-  Scaffold buildActivityPage(AsyncSnapshot<UserWithAssets> userSnapshot) {
+  Scaffold buildAnalyticsPage(AsyncSnapshot<UserWithAssets> userSnapshot) {
     
     UserWithAssets user = userSnapshot.data!;
     String firstName = user.info['name']['first'] as String;
@@ -123,16 +123,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       snap: false,
       floating: true,
       pinned: true,
-      flexibleSpace: SafeArea(
+      flexibleSpace: const SafeArea(
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+              padding: EdgeInsets.only(left: 20.0, right: 20.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Analytics',
                     style: TextStyle(
                       fontSize: 27,
@@ -182,7 +182,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              primary: Colors.transparent,
+              backgroundColor: Colors.transparent,
               side: const BorderSide(color: Colors.grey),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0),
@@ -227,13 +227,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.circle,
                           color: Color.fromARGB(255, 19, 66, 105),
                           size: 50,
                         ),
                         const SizedBox(width: 10),
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -245,7 +245,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                 fontFamily: 'Titillium Web',
                               ),
                             ),
-                            const SizedBox(height: 5),
+                            SizedBox(height: 5),
                             Text(
                               'Fixed Income',
                               style: TextStyle(
@@ -261,7 +261,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Align(
+                            const Align(
                               alignment: Alignment.centerRight,
                               child: Text(
                                 '\$1,000.00',
@@ -273,10 +273,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Row(
                               children: [
-                                Text(
+                                const Text(
                                   '2:27 PM',
                                   style: TextStyle(
                                     fontSize: 15,
@@ -284,17 +284,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                     fontFamily: 'Titillium Web',
                                   ),
                                 ),
-                                SizedBox(width: 7), // Add width
+                                const SizedBox(width: 7), // Add width
                                 Container(
                                   height: 15, // You can adjust the height as needed
-                                  child: VerticalDivider(
+                                  child: const VerticalDivider(
                                     color: Colors.white,
                                     width: 1,
                                     thickness: 1,
                                   ),
                                 ),
-                                SizedBox(width: 7), // Add width
-                                Text(
+                                const SizedBox(width: 7), // Add width
+                                const Text(
                                   'John Doe',
                                   style: TextStyle(
                                     fontSize: 15,
@@ -310,8 +310,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       ],
                     ),
                     const SizedBox(height: 15),
-                    Divider(
-                      color: const Color.fromARGB(255, 132, 132, 132),
+                    const Divider(
+                      color: Color.fromARGB(255, 132, 132, 132),
                       thickness: 1,
                     ), // Add a divider between the activities
                   ],
@@ -365,7 +365,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
