@@ -2,13 +2,13 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 
 
 /// Represents the dashboard page of the application.
@@ -26,6 +26,7 @@ class _DashboardPageState extends State<DashboardPage> {
     'assets/icons/activity_hollowed.png',
     'assets/icons/profile_hollowed.png',
   ];
+
 
   // database service instance
   late DatabaseService _databaseService;
@@ -254,7 +255,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       const SizedBox(height: 20),
                       _buildConnectedUsersSection(connectedUsers.data!),
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 30),
                       _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
                       const SizedBox(height: 130),
                     ],
@@ -513,9 +514,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
-    log('Asset Tiles for AGQ Consulting LLC for ${userName['first']} ${userName['last']}: ${assetTilesAGQ.length}');
-    log('Asset Tiles for AK1 Holdings LP for ${userName['first']} ${userName['last']}: ${assetTilesAK1.length}');
-
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
@@ -587,17 +585,13 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildConnectedUsersSection(List<UserWithAssets> connectedUsers) => Stack(
       children: [
-        CarouselSlider(
+        ExpandableCarousel(
           options: CarouselOptions(
-            aspectRatio: 34 / 9,
-            viewportFraction: 1,
-            initialPage: 0,
-            enableInfiniteScroll: false,
-            reverse: false,
+            viewportFraction: 1.0,
             autoPlay: false,
-            enlargeCenterPage: true,
-            enlargeFactor: 0.2,
-            scrollDirection: Axis.horizontal,
+            controller: CarouselController(),
+            floatingIndicator: false,
+            restorationId: 'expandable_carousel',
           ),
           items: connectedUsers.map((user) {
             String firstName = user.info['name']['first'] as String;
@@ -617,15 +611,20 @@ class _DashboardPageState extends State<DashboardPage> {
               }
             }
             return Builder(
-              builder: (BuildContext context) => _buildConnectedUserBreakdownSection(
-                  userName,
-                  totalUserAssets,
-                  latestIncome,
-                  user.assets,
-                ),
+              builder: (BuildContext context) => Column(
+                children: [
+                  _buildConnectedUserBreakdownSection(
+                    userName,
+                    totalUserAssets,
+                    latestIncome,
+                    user.assets,
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
             );
           }).toList(),
-        ),
+        )
       ],
     );
 
@@ -680,8 +679,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
-    log('Asset Tiles for AGQ Consulting LLC for ${userName['first']} ${userName['last']}: ${assetTilesAGQ.length}');
-    log('Asset Tiles for AK1 Holdings LP for ${userName['first']} ${userName['last']}: ${assetTilesAK1.length}');
 
     return Theme(
       data: ThemeData(
