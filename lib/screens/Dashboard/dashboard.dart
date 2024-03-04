@@ -71,10 +71,10 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (context, connectedUsersSnapshot) {
                 if (!connectedUsersSnapshot.hasData) {
                   // If there is no connected users, we build the dashboard for a single user
-                  return _dashboardSingleUser(userSnapshot);
+                  return _buildDashboardSingleUser(userSnapshot);
                 }
                 // Otherwise, we build the dashboard with connected users
-                return dashboardWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
+                return _buildDashboardWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
               }
             );
           }
@@ -82,7 +82,7 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     );
 
-  Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
+  Scaffold _buildDashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
     
     UserWithAssets user = userSnapshot.data!;
     String firstName = user.info['name']['first'] as String;
@@ -150,7 +150,7 @@ class _DashboardPageState extends State<DashboardPage> {
       
   }
 
-  Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
+  Scaffold _buildDashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
     int numConnectedUsers = connectedUsers.data!.length;
     UserWithAssets user = userSnapshot.data!;
     String firstName = user.info['name']['first'] as String;

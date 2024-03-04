@@ -62,6 +62,7 @@ class _ActivityPageState extends State<ActivityPage> {
         stream: _databaseService.getActivities,
         builder: (context, activitiesSnapshot) {
           if (!activitiesSnapshot.hasData || activitiesSnapshot.data == null) {
+            log('activities snapshot is empty');
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -70,6 +71,7 @@ class _ActivityPageState extends State<ActivityPage> {
             stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
             builder: (context, userSnapshot) {
               if (!userSnapshot.hasData || userSnapshot.data == null) {
+                log('No user data');
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
@@ -78,11 +80,10 @@ class _ActivityPageState extends State<ActivityPage> {
                 stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
                 builder: (context, connectedUsers) {
                   if (!connectedUsers.hasData || connectedUsers.data == null) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                    log('No connected users');
+                    return _buildActivitySingleUser(userSnapshot, activitiesSnapshot);
                   }
-                  return _buildActivityScreen(userSnapshot, connectedUsers, activitiesSnapshot);
+                  return _buildActivityWithConnectedUsers(userSnapshot, connectedUsers, activitiesSnapshot);
                 },
               );
             },
@@ -95,11 +96,12 @@ class _ActivityPageState extends State<ActivityPage> {
   bool _isSameDay(DateTime date1, DateTime date2) => 
     date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
     
-  dynamic getActivityType(Map<String, dynamic> activity) {
+  dynamic _getActivityType(Map<String, dynamic> activity) {
       switch(activity['type']){
         case 'income':
-          if (activity['fund'] == 'AGQ Consulting LLC')
+          if (activity['fund'] == 'AGQ Consulting LLC') {
             return 'Fixed Income';
+          }
           return 'Dividend Payment';
         case 'deposit':
           return 'Deposit';
@@ -113,18 +115,55 @@ class _ActivityPageState extends State<ActivityPage> {
 
     }
 
-
-  Scaffold _buildActivityScreen(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) {
-    String connectedUsersNames = connectedUsers.data!
-        .map((user) => (user.info['name']['first'] as String) + ' ' + (user.info['name']['last'] as String))
-        .join(', ');
-
-    return Scaffold(
+  Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot)=> Scaffold(
       body: Stack(
         children: [
           CustomScrollView(
             slivers: <Widget>[
-              _buildAppBar(connectedUsersNames),
+              _buildAppBar(),
+              SliverPadding(
+                padding: const EdgeInsets.only(top: 20.0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == 0) {
+                        return _buildSearchBar();
+                      // } else if (index == 1) {
+                        // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
+                      } else {
+                        final activities = activitiesSnapshot.data!;
+                        activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
+                        final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
+                        return _buildActivityWithDayHeader(activity, index - 1, activities);
+                      }
+                    },
+                    
+                    childCount: activitiesSnapshot.data!.length + 1, // Add 2 to include the search bar and the button list
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 150.0), // Add some space at the bottom
+              ),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildBottomNavBar(),
+          ),
+        ],
+      ),
+    );
+
+
+  Scaffold _buildActivityWithConnectedUsers(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) => Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(),
               SliverPadding(
                 padding: const EdgeInsets.only(top: 20.0),
                 sliver: SliverList(
@@ -133,7 +172,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       if (index == 0) {
                         return _buildSearchBar();
                       } else if (index == 1) {
-                        return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
+                        return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
                         final activities = activitiesSnapshot.data!;
                         activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
@@ -160,7 +199,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ],
       ),
     );
-  }
 
   // This is the search bar area 
   Padding _buildSearchBar() => Padding(
@@ -233,8 +271,7 @@ class _ActivityPageState extends State<ActivityPage> {
   );
 
 
-  SliverAppBar _buildAppBar(String connectedUsersNames) {
-    return SliverAppBar(
+  SliverAppBar _buildAppBar() => SliverAppBar(
       backgroundColor: const Color.fromARGB(255, 30, 41, 59),
       automaticallyImplyLeading: false,
       toolbarHeight: 80,
@@ -242,7 +279,7 @@ class _ActivityPageState extends State<ActivityPage> {
       snap: false,
       floating: true,
       pinned: true,
-      flexibleSpace: SafeArea(
+      flexibleSpace: const SafeArea(
         child: Stack(
           children: [
             Padding(
@@ -253,7 +290,7 @@ class _ActivityPageState extends State<ActivityPage> {
                 children: [
                   Text(
                     'Activity',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 27,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -282,8 +319,7 @@ class _ActivityPageState extends State<ActivityPage> {
           ),
         ),
       ],
-    );
-  }  
+    );  
 
   // If the activity is on a new day, we create a header stating the day.
   Widget _buildActivityWithDayHeader(Map<String, dynamic> activity, int index, List<Map<String, dynamic>> activities) {
@@ -304,7 +340,7 @@ class _ActivityPageState extends State<ActivityPage> {
               alignment: Alignment.centerLeft,
               child: Text(
                 DateFormat('MMMM d, yyyy').format(activityDate),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -361,7 +397,7 @@ class _ActivityPageState extends State<ActivityPage> {
           
           GestureDetector(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(25.0, 5.0, 25.0, 5.0),
+              padding: const EdgeInsets.fromLTRB(25.0, 5.0, 25.0, 5.0),
               child: Row(
                 children: [
                   Icon(
@@ -384,7 +420,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        getActivityType(activity),
+                        _getActivityType(activity),
                         style: TextStyle(
                           fontSize: 15,
                           color: getColorBasedOnActivityType(activity['type']),
@@ -410,18 +446,18 @@ class _ActivityPageState extends State<ActivityPage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Row(
                         children: [
                           Text(
                             time,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 13,
                               color: Colors.white,
                               fontFamily: 'Titillium Web',
                             ),
                           ),
-                          SizedBox(width: 7), // Add width
+                          const SizedBox(width: 7), // Add width
                           Container(
                             height: 15, // You can adjust the height as needed
                             child: const VerticalDivider(
@@ -430,7 +466,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               thickness: 1,
                             ),
                           ),
-                          SizedBox(width: 7), // Add width
+                          const SizedBox(width: 7), // Add width
                           Text(
                             activity['recipient'] ,
                             style: const TextStyle(
@@ -451,20 +487,21 @@ class _ActivityPageState extends State<ActivityPage> {
             onTap: () {
               showModalBottomSheet(
                 context: context,
-                
+                isScrollControlled: true,
                 backgroundColor: Colors.transparent, // Make the background transparent
-                builder: (BuildContext context) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.only(
+                builder: (BuildContext context) => ClipRRect(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20.0),
                       topRight: Radius.circular(20.0),
                     ),
-                    child: Container(
+                    child: FractionallySizedBox(
+                      heightFactor: 0.67, 
+                      child: Container(
                       color: AppColors.defaultBlueGray800,
-                      child: Column(
+                      child: SingleChildScrollView(child: Column(
                         children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
                             child: Text(
                               'Activity Details', // Your title here
                               style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -522,7 +559,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
-                                  getActivityType(activity),
+                                  _getActivityType(activity),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: getColorBasedOnActivityType(activity['type']),
@@ -540,7 +577,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.circle,
                                   color: Colors.blue,
                                   size: 50,
@@ -550,9 +587,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Description',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 18,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
@@ -592,7 +629,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             ),
                           ),
                           
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
                             child: Divider(
                               color: Colors.white,
@@ -604,7 +641,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.circle,
                                   color: Colors.blue,
                                   size: 50,
@@ -614,9 +651,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Date',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 18,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
@@ -628,7 +665,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                         children: [
                                           Text(
                                             date,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 14,
                                               color: Colors.white,
                                               fontFamily: 'Titillium Web',
@@ -643,7 +680,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             ),
                           ),
 
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
                             child: Divider(
                               color: Colors.white,
@@ -655,7 +692,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.circle,
                                   color: Colors.blue,
                                   size: 50,
@@ -665,9 +702,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Recipient',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 18,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
@@ -698,16 +735,16 @@ class _ActivityPageState extends State<ActivityPage> {
                         ],
                       ),
                     ),
-                  );
-                },
-              );
+                    ),
+                  ),
+              ));
             },
           ),
           
           if (showDivider)
-            Padding(
+            const Padding(
               padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-              child: const Divider(
+              child: Divider(
                 color: Color.fromARGB(255, 132, 132, 132),
                 thickness: 0.2,
               ),
@@ -717,55 +754,85 @@ class _ActivityPageState extends State<ActivityPage> {
     
     }
 
-  Container _buildHorizontalButtonList(String connectedUsersNames) => Container(
-    height: 35.0, 
+  Widget _buildHorizontalButtonList(UserWithAssets user, List<UserWithAssets> connectedUsers) => SizedBox(
+    height: 35.0,
     child: ListView(
       scrollDirection: Axis.horizontal,
       children: <Widget>[
-        const SizedBox(width: 20.0), // Add some space before the first button
-        ElevatedButton(
-          child: const Text(
-            'All',
-            style: TextStyle(
-              fontFamily: 'Titillium Web',
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // Make the text white
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0, left: 20.0),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.defaultBlue500,
+              side: const BorderSide(color: AppColors.defaultBlue500),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+            onPressed: () {
+              // Implement your button functionality here
+            },
+            child: const Text(
+              'All',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Make the text white
+              ),
             ),
           ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.defaultBlue500,
-            side: const BorderSide(color: AppColors.defaultBlue500),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-          onPressed: () {
-            // Implement your button functionality here
-          },
         ),
-        const SizedBox(width: 10.0), // Add some space between the buttons
-        ElevatedButton(
-          child: Text(
-            connectedUsersNames,
-            style: TextStyle(
-              fontFamily: 'Titillium Web',
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // Make the text white
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+           // Add trailing padding
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              side: const BorderSide(color: AppColors.defaultBlueGray100),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+            onPressed: () {
+              // Implement your button functionality here
+            },
+            child: Text(
+              '${user.info['name']['first']} ${user.info['name']['last']}',
+              style: const TextStyle(
+                fontFamily: 'Titillium Web',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Make the text white
+              ),
             ),
           ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            side: const BorderSide(color: AppColors.defaultBlueGray100),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-          onPressed: () {
-            // Implement your button functionality here
-          },
         ),
+        for (var connectedUser in connectedUsers)
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0), // Add trailing padding
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                side: const BorderSide(color: AppColors.defaultBlueGray100),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+              ),
+              onPressed: () {
+                // Implement your button functionality here
+              },
+              child: Text(
+                '${connectedUser.info['name']['first']} ${connectedUser.info['name']['last']}',
+                style: const TextStyle(
+                  fontFamily: 'Titillium Web',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // Make the text white
+                ),
+              ),
+            ),
+          ),
         const SizedBox(width: 10.0), // Add some space after the last button
       ],
     ),

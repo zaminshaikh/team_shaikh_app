@@ -36,14 +36,6 @@ class _NotificationPageState extends State<NotificationPage> {
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
-  
-  /// Formats the given amount as a currency string.
-  String _currencyFormat(double amount) => NumberFormat.currency(
-    symbol: '\$',
-    decimalDigits: 2,
-    locale: 'en_US',
-  ).format(amount);
-
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
