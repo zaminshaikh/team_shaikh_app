@@ -270,6 +270,36 @@ class DatabaseService {
       }
     }
   }
+
+  Future<void> replaceSubcollections(String targetCid) async {
+    // Get a reference to the source and target documents
+    DocumentReference sourceDoc = usersCollection.doc(cid);
+    DocumentReference targetDoc = usersCollection.doc(targetCid);
+
+    // List of subcollections to replace
+    List<String> subcollections = ['assets', 'notifications', 'activities'];
+
+    // Replace each subcollection
+    for (String subcollection in subcollections) {
+      // Get a reference to the source and target subcollections
+      CollectionReference sourceSubcollection = sourceDoc.collection(subcollection);
+      CollectionReference targetSubcollection = targetDoc.collection(subcollection);
+
+      // Get all documents in the source subcollection
+      QuerySnapshot querySnapshot = await sourceSubcollection.get();
+
+      // Delete all documents in the target subcollection
+      QuerySnapshot targetQuerySnapshot = await targetSubcollection.get();
+      for (QueryDocumentSnapshot doc in targetQuerySnapshot.docs) {
+        await targetSubcollection.doc(doc.id).delete();
+      }
+
+      // Copy each document from the source subcollection to the target subcollection
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        await targetSubcollection.doc(doc.id).set(doc.data());
+      }
+    }
+  }
   
     Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
       Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
@@ -280,7 +310,10 @@ class DatabaseService {
         var snapshots = await usersCollection.doc(userId).collection('notifications').get();
         return snapshots.docs.map((doc) => doc.data()).toList();
       }));
-      return allNotifications.expand((x) => x).toList();
+
+      var notificationsList = allNotifications.expand((x) => x).toList();
+      notificationsList.sort((a, b) => (b['time'] as Timestamp).compareTo(a['time'] as Timestamp));
+      return notificationsList;
     });
 }
 
