@@ -171,22 +171,22 @@ class _ActivityPageState extends State<ActivityPage> {
                     (context, index) {
                       if (index == 0) {
                         return _buildSearchBar();
-                      } else if (index == 1) {
-                        return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
+                      // } else if (index == 1) {
+                      //   return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
                         final activities = activitiesSnapshot.data!;
                         activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
-                        final activity = activities[index - 2]; // Subtract 2 because the first index is used by the search bar and the second by the button list
-                        return _buildActivityWithDayHeader(activity, index - 2, activities);
+                        final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
+                        return _buildActivityWithDayHeader(activity, index - 1, activities);
                       }
                     },
                     
-                    childCount: activitiesSnapshot.data!.length + 2, // Add 2 to include the search bar and the button list
+                    childCount: activitiesSnapshot.data!.length + 1, // Add 2 to include the search bar and the button list
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: const SizedBox(height: 150.0), // Add some space at the bottom
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 150.0), // Add some space at the bottom
               ),
             ],
           ),
@@ -201,73 +201,70 @@ class _ActivityPageState extends State<ActivityPage> {
     );
 
   // This is the search bar area 
-  Padding _buildSearchBar() => Padding(
-    padding: const EdgeInsets.fromLTRB(20.0,10,20,25),
-    child: Container(
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 50.0, // Set the height of the TextField
-              child: TextField(
-                controller: _searchController,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                ),
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
-                  hintText: 'Search by title',
-                  hintStyle: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  prefixIcon: Image.asset(
-                    'assets/icons/search_icon.png',
-                    color: Colors.white,
-                    height: 24,
-                    width: 24,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          IconButton(
+  Widget _buildSearchBar() => Padding(
+    padding: const EdgeInsets.fromLTRB(20.0,10,20,10),
+    child: Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
             icon: Image.asset(
               'assets/icons/filter.png',
-              color: Colors.white,
+              color: AppColors.defaultGray200,
               height: 24,
               width: 24,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              side: const BorderSide(color: AppColors.defaultGray200),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              elevation: 0,
+            ),
+            label: const Text(
+              'Filter',
+              style: TextStyle(
+                color: AppColors.defaultGray200,
+                fontFamily: 'Titillium Web',
+              ),
             ),
             onPressed: () {
               _buildFilterOptions(context);
             },
           ),
-          IconButton(
+        ),
+        const SizedBox(width: 10), // Add some space between the buttons
+        Expanded(
+          child: ElevatedButton.icon(
             icon: Image.asset(
               'assets/icons/sort.png',
-              color: Colors.white,
+              color: AppColors.defaultGray200,
               height: 24,
               width: 24,
             ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              side: const BorderSide(color: AppColors.defaultGray200),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              elevation: 0,
+            ),
+            label: const Text(
+              'Sort',
+              style: TextStyle(
+                color: AppColors.defaultGray200,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            
             onPressed: () {
               _buildSortOptions(context);
             },
           ),
-        ],
-      ),
+        ),
+      ],
     ),
-    
   );
 
 
@@ -388,7 +385,7 @@ class _ActivityPageState extends State<ActivityPage> {
             case 'income':
               return AppColors.defaultBlue300;
             default:
-              return Colors.blue;
+              return AppColors.defaultWhite;
           }
         }
         
@@ -924,9 +921,8 @@ class _ActivityPageState extends State<ActivityPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent, // Make the background transparent
-      builder: (BuildContext context) {
-        return ClipRRect(
-          borderRadius: BorderRadius.only(
+      builder: (BuildContext context) => ClipRRect(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20.0),
             topRight: Radius.circular(20.0),
           ),
@@ -934,8 +930,8 @@ class _ActivityPageState extends State<ActivityPage> {
             color: AppColors.defaultBlueGray800,
             child: Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(25.0),
+                const Padding(
+                  padding: EdgeInsets.all(25.0),
                   child: Text(
                     'Filter Activity', // Your title here
                     style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -944,8 +940,8 @@ class _ActivityPageState extends State<ActivityPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: ListTile(
-                    title: Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
                     onTap: () {
                       // Implement your filter option 1 functionality here
                     },
@@ -954,8 +950,8 @@ class _ActivityPageState extends State<ActivityPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: ListTile(
-                    title: Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    title: const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
                     onTap: () {
                       // Implement your filter option 2 functionality here
                     },
@@ -964,14 +960,14 @@ class _ActivityPageState extends State<ActivityPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: ListTile(
-                    title: Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    title: const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
                     onTap: () {
                       // Implement your filter option 3 functionality here
                     },
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -985,7 +981,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white, // This is the background color
                           ),
-                          child: Text('Apply', style: TextStyle(color: Color(0xFF8991A1), fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
+                          child: const Text('Apply', style: TextStyle(color: Color(0xFF8991A1), fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
                           onPressed: () {
                             // Implement your apply functionality here
                             Navigator.pop(context);
@@ -994,7 +990,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ),
                     TextButton(
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Icon(Icons.close, color: Colors.white),
@@ -1013,8 +1009,7 @@ class _ActivityPageState extends State<ActivityPage> {
               ],
             ),
           ),
-        );
-      },
+        ),
     );
   }
 
@@ -1022,11 +1017,10 @@ class _ActivityPageState extends State<ActivityPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent, // Make the background transparent
-      builder: (BuildContext context) {
-        return Container(
+      builder: (BuildContext context) => Container(
           height: 360,
           child: ClipRRect(
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20.0),
               topRight: Radius.circular(20.0),
             ),
@@ -1035,8 +1029,8 @@ class _ActivityPageState extends State<ActivityPage> {
               color: AppColors.defaultBlueGray800,
               child: Column(
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 5.0),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 5.0),
                     child: Text(
                       'Sort By', // Your title here
                       style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -1051,7 +1045,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           child: Container(
                             alignment: Alignment.centerLeft,
                             child: TextButton(
-                              child: Text('Date: New to Old', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
+                              child: const Text('Date: New to Old', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
                               onPressed: () {
                                 // Implement your sorting functionality here for option 1
                               },
@@ -1064,7 +1058,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           child: Container(
                             alignment: Alignment.centerLeft,
                             child: TextButton(
-                              child: Text('Date: Old to New', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
+                              child: const Text('Date: Old to New', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
                               onPressed: () {
                                 // Implement your sorting functionality here for option 2
                               },
@@ -1077,7 +1071,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           child: Container(
                             alignment: Alignment.centerLeft,
                             child: TextButton(
-                              child: Text('Amount: Low to High', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
+                              child: const Text('Amount: Low to High', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
                               onPressed: () {
                                 // Implement your sorting functionality here for option 3
                               },
@@ -1090,7 +1084,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           child: Container(
                             alignment: Alignment.centerLeft,
                             child: TextButton(
-                              child: Text('Amount: High to Low', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
+                              child: const Text('Amount: High to Low', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
                               onPressed: () {
                                 // Implement your sorting functionality here for option 4
                               },
@@ -1104,8 +1098,7 @@ class _ActivityPageState extends State<ActivityPage> {
               ),
             ),
           ),
-        );
-      },
+        ),
     );
   }
 }
