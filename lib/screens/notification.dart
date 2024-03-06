@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
@@ -46,45 +47,100 @@ class _NotificationPageState extends State<NotificationPage> {
           child: CircularProgressIndicator(),
         );
       }
-      return StreamBuilder<UserWithAssets>(
-        stream: _databaseService.getUserWithAssets,
-        builder: (context, userSnapshot) {
+      return StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _databaseService.getNotifications,
+        builder: (context, notificationsSnapshot) {
           // Wait for the user snapshot to have data
-          if (!userSnapshot.hasData || userSnapshot.data == null) {
+          if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
           // Once we have the user snapshot, we can build the activity page
-          return buildActivityPage(userSnapshot);
+          return _buildNotificationPage(notificationsSnapshot);
         }
       );
     }
   );  
   
-  Scaffold buildActivityPage(AsyncSnapshot<UserWithAssets> userSnapshot) {
-    
-    UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
-       
-      return Scaffold(
+  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
         body: Stack(
           children: [
             CustomScrollView(
               slivers: <Widget>[
                 _buildAppBar(context),
-                SliverPadding(
-                  padding: const EdgeInsets.all(0.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        // Total assets section
-
-                      ],
-                    ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      Map<String, dynamic> notification = notificationsSnapshot.data![index];
+                      String title;
+                      String route = '/notification';
+                      switch (notification['type']) {
+                        case 'activity':
+                          title = 'New Activity';
+                          route = '/activity';
+                          break;
+                        case 'statement':
+                          title = 'New Statement';
+                          route = '/profile';
+                          break;
+                        default:
+                          title = 'New Notification';
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 5.0, left: 20.0, right: 20.0),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: AppTextStyles.lBold(color: AppColors.defaultWhite),
+                                  ),
+                                  SizedBox(height: 4), // Add desired spacing between title and subtitle
+                                  Text(
+                                    notification['message'],
+                                    style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
+                                  ),
+                                ],
+                              ),
+                              trailing: !notification['isRead']
+                                  ? const CircleAvatar(
+                                      radius: 8,
+                                      backgroundColor: AppColors.defaultBlue300,
+                                    )
+                                  : null,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+                              dense: true,
+                            ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, route);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.defaultBlue300,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                  ),
+                                ),
+                                child: Text(
+                                  'View More',
+                                  style: AppTextStyles.lBold(color: AppColors.defaultWhite),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15.0),
+                            const Divider(color: AppColors.defaultGray500),
+                          ],
+                        ),
+                      );
+                    },
+                    childCount: notificationsSnapshot.data!.length,
                   ),
                 ),
               ],
@@ -92,16 +148,10 @@ class _NotificationPageState extends State<NotificationPage> {
           ],
         ),
       );
-      
-  }
-
-
-  
 }
 
 // This is the app bar 
-  SliverAppBar _buildAppBar(context) {
-    return SliverAppBar(
+  SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     toolbarHeight: 80,
     expandedHeight: 0,
@@ -114,11 +164,11 @@ class _NotificationPageState extends State<NotificationPage> {
         Navigator.of(context).pop();
       },
     ),
-    flexibleSpace: SafeArea(
+    flexibleSpace: const SafeArea(
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 60.0, right: 20.0),
+            padding: EdgeInsets.only(left: 60.0, right: 20.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,5 +199,4 @@ class _NotificationPageState extends State<NotificationPage> {
         ),
       ],
     );
-  }
 

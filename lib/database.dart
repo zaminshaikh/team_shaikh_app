@@ -270,17 +270,29 @@ class DatabaseService {
       }
     }
   }
+  
+    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
+      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+
+      var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
+      var allUsers = [cid, ...connectedUsers];
+      var allNotifications = await Future.wait(allUsers.map((userId) async {
+        var snapshots = await usersCollection.doc(userId).collection('notifications').get();
+        return snapshots.docs.map((doc) => doc.data()).toList();
+      }));
+      return allNotifications.expand((x) => x).toList();
+    });
+}
+
+class BasicUser {
+  /// The user's information.
+  final Map<String, dynamic> info;
+  BasicUser(this.info);
 }
 
 /// Represents a user with their information and assets.
-class UserWithAssets {
-  /// The user's information.
-  final Map<String, dynamic> info;
-
-  /// The user's assets.
+class UserWithAssets extends BasicUser{
   final List<Map<String, dynamic>> assets;
-
   /// Creates a new instance of [UserWithAssets].
-  UserWithAssets(this.info, this.assets);
+  UserWithAssets(Map<String, dynamic> info, this.assets) : super(info);
 }
-
