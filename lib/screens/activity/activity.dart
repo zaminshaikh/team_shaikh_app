@@ -17,6 +17,8 @@ class ActivityPage extends StatefulWidget {
 }
 
 class _ActivityPageState extends State<ActivityPage> {
+  List<Map<String, dynamic>> activities = [];
+  String _sorting = 'new-to-old';
 
   final TextEditingController _searchController = TextEditingController();
   List<String> icons = [
@@ -131,8 +133,33 @@ class _ActivityPageState extends State<ActivityPage> {
                       // } else if (index == 1) {
                         // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
                       } else {
-                        final activities = activitiesSnapshot.data!;
-                        activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
+                        activities = activitiesSnapshot.data!;
+
+                        try {
+                          switch (_sorting) {
+                            case 'new-to-old':
+                              activities.sort((a, b) => b['time'].compareTo(a['time']));
+                              break;
+                            case 'old-to-new':
+                              activities.sort((a, b) => (a['time']).compareTo(b['time']));
+                              break;
+                            case 'low-to-high':
+                              activities.sort((a, b) => (a['amount']).compareTo((b['amount']).toDouble()));
+                              break;
+                            case 'high-to-low':
+                              activities.sort((a, b) => (b['amount']).compareTo((a['amount'])));
+                              break;
+                          }
+                        } catch (e) {
+                          if (e is TypeError) {
+                            // Handle TypeError here
+                            log('Caught TypeError: $e');
+                          } else {
+                            // Handle other exceptions here
+                            log('Caught Exception: $e');
+                          }
+                        }
+                        // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
                         final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
                         return _buildActivityWithDayHeader(activity, index - 1, activities);
                       }
@@ -174,8 +201,22 @@ class _ActivityPageState extends State<ActivityPage> {
                       // } else if (index == 1) {
                       //   return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
-                        final activities = activitiesSnapshot.data!;
-                        activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
+                        activities = activitiesSnapshot.data!;
+                        switch (_sorting) {
+                        case 'new-to-old':
+                          activities.sort((a, b) => b['time'].compareTo(a['time']));
+                          break;
+                        case 'old-to-new':
+                          activities.sort((a, b) => (a['time']).compareTo(b['time']));
+                          break;
+                        case 'low-to-high':
+                          activities.sort((a, b) => (a['amount'] as double).compareTo(b['amount'] as double));
+                          break;
+                        case 'high-to-low':
+                          activities.sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+                          break;
+                        }
+                        // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
                         final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
                         return _buildActivityWithDayHeader(activity, index - 1, activities);
                       }
@@ -1047,7 +1088,9 @@ class _ActivityPageState extends State<ActivityPage> {
                             child: TextButton(
                               child: const Text('Date: New to Old', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
                               onPressed: () {
-                                // Implement your sorting functionality here for option 1
+                                setState(() {
+                                  _sorting = 'new-to-old';
+                                });
                               },
                             ),
                           ),
@@ -1060,7 +1103,9 @@ class _ActivityPageState extends State<ActivityPage> {
                             child: TextButton(
                               child: const Text('Date: Old to New', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
                               onPressed: () {
-                                // Implement your sorting functionality here for option 2
+                                setState(() {
+                                  _sorting = 'old-to-new';
+                                });
                               },
                             ),
                           ),
@@ -1073,7 +1118,9 @@ class _ActivityPageState extends State<ActivityPage> {
                             child: TextButton(
                               child: const Text('Amount: Low to High', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
                               onPressed: () {
-                                // Implement your sorting functionality here for option 3
+                                setState(() {
+                                  _sorting = 'low-to-high';
+                                });
                               },
                             ),
                           ),
@@ -1086,7 +1133,9 @@ class _ActivityPageState extends State<ActivityPage> {
                             child: TextButton(
                               child: const Text('Amount: High to Low', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
                               onPressed: () {
-                                // Implement your sorting functionality here for option 4
+                                setState(() {
+                                  _sorting = 'high-to-low';
+                                });
                               },
                             ),
                           ),

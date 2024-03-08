@@ -271,6 +271,18 @@ class DatabaseService {
     }
   }
 
+  // Stream<List<Map<String, dynamic>>> get getActivities => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
+  //   Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+
+  //   var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
+  //   var allUsers = [cid, ...connectedUsers];
+  //   var allActivities = await Future.wait(allUsers.map((userId) async {
+  //     var snapshots = await usersCollection.doc(userId).collection('activities').get();
+  //     return snapshots.docs.map((doc) => doc.data()).toList();
+  //   }));
+  //   return allActivities.expand((x) => x).toList();
+  // });
+
   Stream<List<Map<String, dynamic>>> get getActivities => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
     Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
 
@@ -278,8 +290,13 @@ class DatabaseService {
     var allUsers = [cid, ...connectedUsers];
     var allActivities = await Future.wait(allUsers.map((userId) async {
       var snapshots = await usersCollection.doc(userId).collection('activities').get();
-      return snapshots.docs.map((doc) => doc.data()).toList();
+      return snapshots.docs.map((doc) {
+        Map<String, dynamic> data = doc.data();
+        data['amount'] = data['amount']?.toDouble();
+        return data;
+      }).toList();
     }));
+
     return allActivities.expand((x) => x).toList();
   });
 }
