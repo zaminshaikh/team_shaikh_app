@@ -74,7 +74,23 @@ class _ProfilePageState extends State<ProfilePage> {
   );  
 
 
-// This is the row with buttons
+  Future<void> signUserOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      print('Error signing out: $e');
+    }
+  }
+
+  bool switchValue = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedButton = 'settings';
+  }
+
+  // This is the row with buttons
   Widget _buildButtonRow() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -140,352 +156,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-
-  Scaffold buildProfilePage(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot) {
-        
-    UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
-    String? cid = _databaseService.cid;
-
-
-    return Scaffold(
-        body: Stack(
-          children: [
-            CustomScrollView(
-              slivers: <Widget>[
-                _buildAppBar(context), 
-                SliverPadding(
-                  padding: const EdgeInsets.all(0.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        _buildButtonRow(),
-                        _buildSelectedPage(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildBottomNavigationBar(context), 
-            ),
-          ],
-        ),
-      );   
-  }
-}
-      
-  String _selectedButton = '';
-
-// This is the app bar 
-  SliverAppBar _buildAppBar(context) {
-    return SliverAppBar(
-    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-    automaticallyImplyLeading: false,
-    toolbarHeight: 80,
-    expandedHeight: 0,
-    snap: false,
-    floating: true,
-    pinned: true,
-    flexibleSpace: SafeArea(
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Profile',
-                  style: TextStyle(
-                    fontSize: 27,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-        ],
-      ),
-    ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/notification');
-            },
-            child: Image.asset(
-              'assets/icons/notification_bell.png',
-              color: Colors.white,
-              height: 32,
-              width: 32,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-// This is the bottom navigation bar 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-      height: 80,
-      padding: const EdgeInsets.only(right: 30, left: 30),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 30, 41, 59),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 8,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            },
-            child: Image.asset(
-              'assets/icons/dashboard_hollowed.png',
-              height: 50,
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            },
-            child: Image.asset(
-              'assets/icons/analytics_hollowed.png',
-              height: 50,
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );},
-            child: Image.asset(
-              'assets/icons/activity_hollowed.png',
-              height: 50,
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            },
-            child: Image.asset(
-              'assets/icons/profile_filled.png',
-              height: 50,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-// This is the Client Name and ID section
-  Widget _buildClientNameAndID(String name, String clientId) {
+  Padding _settings() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 30, 0, 20), // Add this line
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row containing Client ID and Name
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-              SizedBox(height: 5),
-              Text(
-                'Client ID: $clientId',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _buildSelectedPage() {
-    switch (_selectedButton) {
-      case 'settings':
-        return _settings(); // replace with your actual Settings page widget
-      case 'statementsAndDocuments':
-        return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
-      case 'helpCenter':
-        return _helpCenter(); // replace with your actual Help Center page widget
-      case 'profiles':
-        return _profiles(); // replace with your actual Profiles page widget
-      case 'legalAndPolicies':
-        return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
-      default:
-        return Container(); // return an empty container by default
-    }
-  }
-
-  Container _settings() {
-    return Container(
       padding: const EdgeInsets.all(20),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Settings',
-            style: TextStyle(
-              fontSize: 60,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ],
-      ),
-    );
-
-  }
-  
-  Container _statementsAndDocuments() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Statements and Documents',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    ),
-  );
-
-}
-
-  Container _helpCenter() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Help Center',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    ),
-  );
-
-}
-
-  Container _profiles() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Profiles',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    ),
-  );
-
-}
-
-  Container _legalAndPolicies() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Legal & Policies',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    ),
-  );
-
-}
-
-  /*
-
-
                   const SizedBox(height: 25),
 
                   // Security Section with options to change email and password
@@ -719,7 +396,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         ),
-                      ),                      const SizedBox(height: 16),
+                      ),
+                      
+                      const SizedBox(height: 16),
                                             
                       GestureDetector(
                         onTap: () async {
@@ -1038,7 +717,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => signUserOut(context),
+                        onTap: () => signUserOut(),
                         child: Container(
                           height: 55,
                           decoration: BoxDecoration(
@@ -1060,13 +739,335 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 150),
 
 
-                ],
+        ],
+              
+      ),
+      
+    );
+            
+  }
+  
+
+    Widget _buildSelectedPage() {
+    switch (_selectedButton) {
+      case 'settings':
+        return _settings(); // replace with your actual Settings page widget
+      case 'statementsAndDocuments':
+        return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
+      case 'helpCenter':
+        return _helpCenter(); // replace with your actual Help Center page widget
+      case 'profiles':
+        return _profiles(); // replace with your actual Profiles page widget
+      case 'legalAndPolicies':
+        return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
+      default:
+        return Container(); // return an empty container by default
+    }
+  }
+
+  Scaffold buildProfilePage(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot) {
+        
+    UserWithAssets user = userSnapshot.data!;
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
+    String? cid = _databaseService.cid;
+
+
+    return Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: <Widget>[
+                _buildAppBar(context), 
+                SliverPadding(
+                  padding: const EdgeInsets.all(0.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        _buildClientNameAndID('$firstName $lastName', cid ?? ''),
+                        _buildButtonRow(),
+                        _buildSelectedPage(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomNavigationBar(context), 
+            ),
+          ],
+        ),
+      );   
+  }
+}
+      
+  String _selectedButton = '';
+
+// This is the app bar 
+  SliverAppBar _buildAppBar(context) {
+    return SliverAppBar(
+    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+    automaticallyImplyLeading: false,
+    toolbarHeight: 80,
+    expandedHeight: 0,
+    snap: false,
+    floating: true,
+    pinned: true,
+    flexibleSpace: SafeArea(
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Profile',
+                  style: TextStyle(
+                    fontSize: 27,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+        ],
+      ),
+    ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 10.0),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/notification');
+            },
+            child: Image.asset(
+              'assets/icons/notification_bell.png',
+              color: Colors.white,
+              height: 32,
+              width: 32,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+// This is the bottom navigation bar 
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
+      height: 80,
+      padding: const EdgeInsets.only(right: 30, left: 30),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 30, 41, 59),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 8,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/dashboard_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/analytics_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );},
+            child: Image.asset(
+              'assets/icons/activity_hollowed.png',
+              height: 50,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/icons/profile_filled.png',
+              height: 50,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// This is the Client Name and ID section
+  Widget _buildClientNameAndID(String name, String clientId) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 30, 0, 20), // Add this line
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row containing Client ID and Name
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                'Client ID: $clientId',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
-      
-*/
+    );
+  }
+
+
+  Container _statementsAndDocuments() {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Statements and Documents',
+          style: TextStyle(
+            fontSize: 60,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Titillium Web',
+          ),
+        ),
+      ],
+    ),
+  );
+
+}
+
+  Container _helpCenter() {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Help Center',
+          style: TextStyle(
+            fontSize: 60,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Titillium Web',
+          ),
+        ),
+      ],
+    ),
+  );
+
+}
+
+  Container _profiles() {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Profiles',
+          style: TextStyle(
+            fontSize: 60,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Titillium Web',
+          ),
+        ),
+      ],
+    ),
+  );
+
+}
+
+  Container _legalAndPolicies() {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Legal & Policies',
+          style: TextStyle(
+            fontSize: 60,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Titillium Web',
+          ),
+        ),
+      ],
+    ),
+  );
+
+}
