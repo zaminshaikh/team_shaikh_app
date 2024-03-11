@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
@@ -24,10 +25,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _initData() async {
 
     User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        log('User is not logged in');
-        Navigator.pushReplacementNamed(context, '/login');
-      }
+    if (user == null) {
+      log('User is not logged in');
+      Navigator.pushReplacementNamed(context, '/login');
+    }
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
     // If there is no matching CID, redirect to login page
@@ -97,60 +98,140 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Row(
         children: <Widget>[
           SizedBox(width: 20),
-          ElevatedButton.icon(
-            icon: Icon(Icons.settings),
-            label: Text('Settings'),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(
+                color: _selectedButton == 'settings' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+              ),
+              backgroundColor: _selectedButton == 'settings' ? AppColors.defaultBlue500 : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Settings',
+                  style: TextStyle(
+                    color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+              ],
+            ),
             onPressed: () {
               setState(() {
                 _selectedButton = 'settings';
               });
-              print(_selectedButton);
             },
           ),
+          
           SizedBox(width: 10), // Add width
-          ElevatedButton.icon(
-            icon: Icon(Icons.description),
-            label: Text('Statements and Documents'),
+                    
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(
+                color: _selectedButton == 'statementsAndDocuments' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+              ),
+              backgroundColor: _selectedButton == 'statementsAndDocuments' ? AppColors.defaultBlue500 : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Statements and Documents',
+                  style: TextStyle(
+                    color: _selectedButton == 'statementsAndDocuments' ? Colors.white : AppColors.defaultBlueGray500,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+              ],
+            ),
             onPressed: () {
               setState(() {
                 _selectedButton = 'statementsAndDocuments';
               });
-              print(_selectedButton);
             },
           ),
           SizedBox(width: 10), // Add width
-          ElevatedButton.icon(
-            icon: Icon(Icons.help),
-            label: Text('Help Center'),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(
+                color: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+              ),
+              backgroundColor: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Help Center',
+                  style: TextStyle(
+                    color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+              ],
+            ),
             onPressed: () {
               setState(() {
                 _selectedButton = 'helpCenter';
               });
-              print(_selectedButton);
             },
           ),
           SizedBox(width: 10), // Add width
-          ElevatedButton.icon(
-            icon: Icon(Icons.person),
-            label: Text('Profiles'),
+
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(
+                color: _selectedButton == 'profiles' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+              ),
+              backgroundColor: _selectedButton == 'profiles' ? AppColors.defaultBlue500 : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Profiles',
+                  style: TextStyle(
+                    color: _selectedButton == 'profiles' ? Colors.white : AppColors.defaultBlueGray500,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+              ],
+            ),
             onPressed: () {
               setState(() {
                 _selectedButton = 'profiles';
               });
-              print(_selectedButton);
             },
           ),
-          SizedBox(width: 10), // Add width
-          ElevatedButton.icon(
-            icon: Icon(Icons.policy),
-            label: Text('Legal & Policies'),
+          SizedBox(width: 10), // Add width          
+
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(
+                color: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+              ),
+              backgroundColor: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Legal & Policies',
+                  style: TextStyle(
+                    color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+              ],
+            ),
             onPressed: () {
               setState(() {
                 _selectedButton = 'legalAndPolicies';
               });
-              print(_selectedButton);
             },
           ),
+          SizedBox(width: 20), // Add width
         ],
       ),
     );
@@ -158,7 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Padding _settings() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20,0,20,20),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -750,8 +831,7 @@ class _ProfilePageState extends State<ProfilePage> {
             
   }
   
-
-    Widget _buildSelectedPage() {
+  Widget _buildSelectedPage() {
     switch (_selectedButton) {
       case 'settings':
         return _settings(); // replace with your actual Settings page widget
