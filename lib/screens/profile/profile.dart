@@ -91,13 +91,18 @@ class _ProfilePageState extends State<ProfilePage> {
     _selectedButton = 'settings';
   }
 
-  // This is the row with buttons
+// This is the selected button, initially set to an empty string
+  String _selectedButton = '';
+
+// This is the row with buttons
   Widget _buildButtonRow() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: <Widget>[
-          SizedBox(width: 20),
+          SizedBox(width: 20), // Add initial width
+
+          // Settings button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
@@ -115,6 +120,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontFamily: 'Titillium Web'
                   ),
                 ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.settings,
+                  color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
+                ),
               ],
             ),
             onPressed: () {
@@ -125,7 +135,8 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           
           SizedBox(width: 10), // Add width
-                    
+          
+          // Statements and Documents button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
@@ -143,6 +154,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontFamily: 'Titillium Web'
                   ),
                 ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.description, // Add the icon here
+                  color: _selectedButton == 'statementsAndDocuments' ? Colors.white : AppColors.defaultBlueGray500,
+                ),
               ],
             ),
             onPressed: () {
@@ -151,7 +167,10 @@ class _ProfilePageState extends State<ProfilePage> {
               });
             },
           ),
+          
           SizedBox(width: 10), // Add width
+          
+          // Help Center button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
@@ -169,6 +188,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontFamily: 'Titillium Web'
                   ),
                 ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.help, // Add the icon here
+                  color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
+                ),
               ],
             ),
             onPressed: () {
@@ -177,8 +201,10 @@ class _ProfilePageState extends State<ProfilePage> {
               });
             },
           ),
+
           SizedBox(width: 10), // Add width
 
+          // Profiles button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
@@ -196,6 +222,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontFamily: 'Titillium Web'
                   ),
                 ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.person, // Add the icon here
+                  color: _selectedButton == 'profiles' ? Colors.white : AppColors.defaultBlueGray500,
+                ),
               ],
             ),
             onPressed: () {
@@ -204,8 +235,10 @@ class _ProfilePageState extends State<ProfilePage> {
               });
             },
           ),
+
           SizedBox(width: 10), // Add width          
 
+          // Legal and Policies button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
@@ -223,6 +256,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontFamily: 'Titillium Web'
                   ),
                 ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.policy, // Add the icon here
+                  color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
+                ),
               ],
             ),
             onPressed: () {
@@ -231,12 +269,14 @@ class _ProfilePageState extends State<ProfilePage> {
               });
             },
           ),
+          
           SizedBox(width: 20), // Add width
         ],
       ),
     );
   }
 
+// This is the settings section
   Padding _settings() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20,0,20,20),
@@ -831,6 +871,7 @@ class _ProfilePageState extends State<ProfilePage> {
             
   }
   
+// This is the function to display the selected page 
   Widget _buildSelectedPage() {
     switch (_selectedButton) {
       case 'settings':
@@ -847,50 +888,6 @@ class _ProfilePageState extends State<ProfilePage> {
         return Container(); // return an empty container by default
     }
   }
-
-  Scaffold buildProfilePage(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot) {
-        
-    UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
-    String? cid = _databaseService.cid;
-
-
-    return Scaffold(
-        body: Stack(
-          children: [
-            CustomScrollView(
-              slivers: <Widget>[
-                _buildAppBar(context), 
-                SliverPadding(
-                  padding: const EdgeInsets.all(0.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        _buildButtonRow(),
-                        _buildSelectedPage(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildBottomNavigationBar(context), 
-            ),
-          ],
-        ),
-      );   
-  }
-}
-      
-  String _selectedButton = '';
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) {
@@ -1067,7 +1064,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-
+// This is the Statements and Documents section
   Container _statementsAndDocuments() {
   return Container(
     padding: const EdgeInsets.all(20),
@@ -1089,27 +1086,335 @@ class _ProfilePageState extends State<ProfilePage> {
 
 }
 
+// This is the Help Center section
   Container _helpCenter() {
   return Container(
     padding: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Help Center',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
+
+        // Advisors Section
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Advisors',
+              style: TextStyle(
+                fontSize: 25,
+                color: Color.fromRGBO(255, 255, 255, 1),
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+
+            SizedBox(height: 20), 
+            
+            // Sonny Shaikh Info
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10), 
+                border: Border.all(color: Colors.white, width: 1), // Add this line
+              ),
+              
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // name and icon
+                    Row(
+                      children: [
+                        Icon(Icons.square, color: Colors.white, size: 70),
+                        SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ahsan \'Sonny\' Shaikh', 
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Color.fromRGBO(255, 255, 255, 1),
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+
+                            Text(
+                              'Investment Advisor', 
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[400],
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  
+                    const SizedBox(height: 20),
+
+                  // contact info
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Contact Info:', 
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 15),
+
+                        Text(
+                          'Email: sonny@example.com', 
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          'Phone: (123) 456-7890', 
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SizedBox(height: 20), 
+
+            // Kash Shaikh Info
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(10), 
+                border: Border.all(color: Colors.white, width: 1), // Add this line
+              ),
+              
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // name and icon
+                    Row(
+                      children: [
+                        Icon(Icons.square, color: Colors.white, size: 70),
+                        SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ahsan \'Sonny\' Shaikh', 
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Color.fromRGBO(255, 255, 255, 1),
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+
+                            Text(
+                              'Investment Advisor', 
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[400],
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  
+                    const SizedBox(height: 20),
+
+                  // contact info
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Contact Info:', 
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 15),
+
+                        Text(
+                          'Email: sonny@example.com', 
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          'Phone: (123) 456-7890', 
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          ],
+       ),
+
+
+        SizedBox(height: 40), 
+
+
+        // FAQ Section
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'FAQ',
+              style: TextStyle(
+                fontSize: 25,
+                color: Color.fromRGBO(255, 255, 255, 1),
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            
+            SizedBox(height: 20), 
+
+            Theme(
+              data: ThemeData(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: ExpansionTile(
+                title: Text(
+                  'Question 1',
+                  style: TextStyle(
+                    fontFamily: 'Titillium Web',
+                    color: Colors.white,
+                  ),
+                ),
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                      'Answer 1',
+                      style: TextStyle(
+                        fontFamily: 'Titillium Web',
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            
+            Theme(
+              data: ThemeData(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: ExpansionTile(
+                title: Text(
+                  'Question 2',
+                  style: TextStyle(
+                    fontFamily: 'Titillium Web',
+                    color: Colors.white,
+                  ),
+                ),
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                      'Answer 2',
+                      style: TextStyle(
+                        fontFamily: 'Titillium Web',
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+
+            Theme(
+              data: ThemeData(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: ExpansionTile(
+                title: Text(
+                  'Question 3',
+                  style: TextStyle(
+                    fontFamily: 'Titillium Web',
+                    color: Colors.white,
+                  ),
+                ),
+                children: <Widget>[
+                  ListTile(
+                    title: Text(
+                      'Answer 3',
+                      style: TextStyle(
+                        fontFamily: 'Titillium Web',
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          
+          ],
         ),
-      ],
+        
+        SizedBox(height: 150), 
+
+      ],      
     ),
+    
   );
 
 }
 
+// This is the Profiles section
   Container _profiles() {
   return Container(
     padding: const EdgeInsets.all(20),
@@ -1131,7 +1436,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
 }
 
+// This is the Legal and Policies section
   Container _legalAndPolicies() {
+
   return Container(
     padding: const EdgeInsets.all(20),
     child: Column(
@@ -1150,4 +1457,46 @@ class _ProfilePageState extends State<ProfilePage> {
     ),
   );
 
+}
+
+  Scaffold buildProfilePage(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot) {
+        
+    UserWithAssets user = userSnapshot.data!;
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
+    String? cid = _databaseService.cid;
+
+
+    return Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: <Widget>[
+                _buildAppBar(context), 
+                SliverPadding(
+                  padding: const EdgeInsets.all(0.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        _buildClientNameAndID('$firstName $lastName', cid ?? ''),
+                        _buildButtonRow(),
+                        _buildSelectedPage(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomNavigationBar(context), 
+            ),
+          ],
+        ),
+      );   
+  }
 }
