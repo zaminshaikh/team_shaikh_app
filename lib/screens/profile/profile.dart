@@ -1418,22 +1418,82 @@ class _ProfilePageState extends State<ProfilePage> {
   Container _profiles() {
   return Container(
     padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Profiles',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
+    child: Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10), 
+        border: Border.all(color: Colors.white, width: 1), // Add this line
+      ),
+      
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // name and icon
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'connectedUser', 
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Color.fromRGBO(255, 255, 255, 1),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+    
+                const SizedBox(height: 15),
+    
+                Text(
+                  'Assets:', 
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Color.fromRGBO(255, 255, 255, 1),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+    
+                const SizedBox(height: 10),
+    
+                Text(
+                  '\$totalAssets', 
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Color.fromRGBO(255, 255, 255, 1),
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+    
+              ],
+            ),
+    
+            Spacer(),
+    
+            Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlueGray700, // Change this to your desired color
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Text(
+                'relation',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            )
+          ],
         ),
-      ],
+      ),
     ),
+  
   );
-
 }
 
 // This is the Legal and Policies section
