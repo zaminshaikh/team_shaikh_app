@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
@@ -179,6 +181,5 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-    );
     );
 }

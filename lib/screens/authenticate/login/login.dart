@@ -4,9 +4,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:custom_signin_buttons/custom_signin_buttons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:team_shaikh_app/alert_dialog.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
+import 'package:team_shaikh_app/utilities.dart';
 
 
 // Creating a stateful widget for the Login page

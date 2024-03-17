@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/utilities.dart';
 
 
 
@@ -1045,5 +1046,4 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       ),
     );
   }
-}
 
