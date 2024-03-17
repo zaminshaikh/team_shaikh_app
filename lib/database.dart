@@ -11,6 +11,7 @@ class DatabaseService {
   final String uid;
   static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
   CollectionReference? assetsSubCollection;
+  CollectionReference? activitiesSubCollection; 
 
   /// A new instance of [DatabaseService] with the given [cid] and [uid].
   /// 
@@ -41,9 +42,12 @@ class DatabaseService {
       service.cid = querySnapshot.docs.first.id;
       switch (code) {
         case 1:
-          service.assetsSubCollection = FirebaseFirestore.instance.collection('testUsers').doc(service.cid).collection('assets');
+          service.assetsSubCollection = usersCollection.doc(service.cid).collection('assets');
           log('Assets subcollection set to $usersCollection/${service.cid}/assets');
-          break; 
+          break;
+        case 2:
+          service.activitiesSubCollection = usersCollection.doc(service.cid).collection('activities');
+          break;
         default:
           log('Invalid code');
       }
@@ -300,6 +304,23 @@ class DatabaseService {
       }
     }
   }
+
+  Stream<List<Map<String, dynamic>>> get getActivities => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
+    Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+
+    var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
+    var allUsers = [cid, ...connectedUsers];
+    var allActivities = await Future.wait(allUsers.map((userId) async {
+      var snapshots = await usersCollection.doc(userId).collection('activities').get();
+      return snapshots.docs.map((doc) {
+        Map<String, dynamic> data = doc.data();
+        data['amount'] = data['amount']?.toDouble();
+        return data;
+      }).toList();
+    }));
+
+    return allActivities.expand((x) => x).toList();
+  });
   
     Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
       Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
@@ -329,3 +350,4 @@ class UserWithAssets extends BasicUser{
   /// Creates a new instance of [UserWithAssets].
   UserWithAssets(Map<String, dynamic> info, this.assets) : super(info);
 }
+

@@ -10,6 +10,7 @@ import 'screens/authenticate/create_account.dart';
 import 'screens/authenticate/login/login.dart';
 import 'screens/authenticate/login/forgot_password.dart';
 import 'screens/dashboard/dashboard.dart';
+import 'screens/notification.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
