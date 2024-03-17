@@ -1058,95 +1058,59 @@ class _ActivityPageState extends State<ActivityPage> {
       context: context,
       backgroundColor: Colors.transparent, // Make the background transparent
       builder: (BuildContext context) => Container(
-          height: 360,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20.0),
-              topRight: Radius.circular(20.0),
-            ),
-            child: Container(
-              width: double.infinity,
-              color: AppColors.defaultBlueGray800,
-              child: Column(
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 5.0),
-                    child: Text(
-                      'Sort By', // Your title here
-                      style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
-                    ),
+        height: 360,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20.0),
+            topRight: Radius.circular(20.0),
+          ),
+          child: Container(
+            width: double.infinity,
+            color: AppColors.defaultBlueGray800,
+            child: Column(
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
+                  child: Text(
+                    'Sort By', // Your title here
+                    style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 0.0, 0.0, 0.0),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              child: const Text('Date: New to Old', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
-                              onPressed: () {
-                                setState(() {
-                                  _sorting = 'new-to-old';
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              child: const Text('Date: Old to New', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
-                              onPressed: () {
-                                setState(() {
-                                  _sorting = 'old-to-new';
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              child: const Text('Amount: Low to High', style: TextStyle(color: Colors.white, fontSize: 16,  fontFamily: 'Titillium Web')),
-                              onPressed: () {
-                                setState(() {
-                                  _sorting = 'low-to-high';
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              child: const Text('Amount: High to Low', style: TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Titillium Web')),
-                              onPressed: () {
-                                setState(() {
-                                  _sorting = 'high-to-low';
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                Column(
+                  children: [
+                    _buildOption(context, 'Date: New to Old (Default)', 'new-to-old'),
+                    _buildOption(context, 'Date: Old to New', 'old-to-new'),
+                    _buildOption(context, 'Amount: Low to High', 'low-to-high'),
+                    _buildOption(context, 'Amount: High to Low', 'high-to-low'),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildOption(BuildContext context, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        alignment: Alignment.centerLeft,
+        decoration: BoxDecoration(
+            color: _sorting == value ? AppColors.defaultBlue500 : Colors.transparent, // Change the color based on whether the option is selected
+        borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: TextButton(
+          child: Text(title, style: TextStyle(color: Colors.white, fontSize: 18, fontFamily: 'Titillium Web')),
+          onPressed: () {
+            setState(() {
+              _sorting = value;
+            });
+            Navigator.pop(context); // Close the bottom sheet
+          },
+        ),
+      ),
     );
   }
 }
