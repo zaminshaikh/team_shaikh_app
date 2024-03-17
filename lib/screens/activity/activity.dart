@@ -20,7 +20,6 @@ class _ActivityPageState extends State<ActivityPage> {
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
 
-  final TextEditingController _searchController = TextEditingController();
   List<String> icons = [
     'assets/icons/dashboard_hollowed.png',
     'assets/icons/analytics_hollowed.png',
