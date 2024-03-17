@@ -92,7 +92,7 @@ class _NotificationPageState extends State<NotificationPage> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 5.0),
+          padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -127,7 +127,7 @@ class _NotificationPageState extends State<NotificationPage> {
         break;
     }
     return Padding(
-      padding: const EdgeInsets.only(top: 5.0, left: 20.0, right: 20.0),
+      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
       child: Column(
         children: [
           showDivider ? const Divider(
