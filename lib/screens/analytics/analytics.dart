@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/utilities.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
@@ -64,33 +66,64 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             );
           }
           // Once we have the user snapshot, we can build the activity page
-          return buildActivityPage(userSnapshot);
+          return StreamBuilder<List<UserWithAssets>>(
+          stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
+          builder: (context, connectedUsers) {
+            if (!connectedUsers.hasData || connectedUsers.data == null) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return buildAnalyticsPage(userSnapshot, connectedUsers);
+          },
+        );
         }
       );
     }
   );  
   
-  Scaffold buildActivityPage(AsyncSnapshot<UserWithAssets> userSnapshot) {
+  Scaffold buildAnalyticsPage(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     
     UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {'first': firstName, 'last': lastName, 'company': companyName};
-       
+    // Total assets of one user
+    double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
+
+    String connectedUsersNames = connectedUsers.data!
+      .map((user) => (user.info['name']['first'] as String) + ' ' + (user.info['name']['last'] as String))
+      .join(', ');
+
+   
+    // We don't know the order of the funds, and perhaps the
+    // length could change in the future, so we'll loop through
+    for (var asset in user.assets) {
+      switch (asset['fund']) {
+        case 'AGQ Consulting LLC':
+          totalUserAGQ += asset['total'];
+          break;
+        case 'AK1 Holdings LP':
+          totalUserAK1 += asset['total'];
+          break;
+        default:
+          totalUserAssets += asset['total'];
+      }
+    }
+    double percentageAGQ = totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
+    double percentageAK1 = totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
+    
       return Scaffold(
         body: Stack(
           children: [
             CustomScrollView(
               slivers: <Widget>[
-                _buildAppBar(context),
+                _buildAppBar(),
                 SliverPadding(
-                  padding: const EdgeInsets.all(0.0),
+                  padding: const EdgeInsets.all(16.0),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate(
                       [
-                        // Total assets section
-
+                        // Assets structure section
+                        _buildAssetsStructureSection(totalUserAssets, percentageAGQ, percentageAK1),
+                        const SizedBox(height: 132),
                       ],
                     ),
                   ),
@@ -109,220 +142,325 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       
   }
 
+  Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
+    UserWithAssets user = userSnapshot.data!;
+    double totalUserAssets = 0.00, totalAGQ = 0.00, totalAK1 = 0.00, totalAssets = 0.00;
 
-  
-}
+    // This is a calculation of the total assets of the user only
+    for (var asset in user.assets) {
+      switch (asset['fund']) {
+        case 'AGQ Consulting LLC':
+          totalAGQ += asset['total'];
+          break;
+        case 'AK1 Holdings LP':
+          totalAK1 += asset['total'];
+          break;
+        default:
+          totalAssets += asset['total'];
+          totalUserAssets += asset['total'];
+      }
+    }
 
-// This is the app bar 
-  SliverAppBar _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-      automaticallyImplyLeading: false,
-      toolbarHeight: 80,
-      expandedHeight: 0,
-      snap: false,
-      floating: true,
-      pinned: true,
-      flexibleSpace: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Analytics',
-                    style: TextStyle(
-                      fontSize: 27,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                    ),
+    // This calculation is for the total assets of all connected users combined
+    for (var user in connectedUsers.data!) {
+      log('Connected User: ${user.info['name']['first']} ${user.info['name']['last']}');
+      for (var asset in user.assets) {
+        switch (asset['fund']) {
+          case 'AGQ Consulting LLC':
+            totalAGQ += asset['total'];
+            break;
+          case 'AK1 Holdings LP':
+            totalAK1 += asset['total'];
+            break;
+          default:
+            totalAssets += asset['total'];
+        }
+      }
+    }
+
+    double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
+    double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
+    log('Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(),
+              SliverPadding(
+                padding: const EdgeInsets.all(16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
+                      const SizedBox(height: 130),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/notification');
-            },
-            child: Image.asset(
-              'assets/icons/notification_bell.png',
-              color: Colors.white,
-              height: 32,
-              width: 32,
-            ),
+            ],
           ),
-        ),
-      ],
-    );
-  }
-// This is the horizontal list of connected users
-  Container buildHorizontalButtonList() {
-    return Container(
-      height: 40.0, // Make the buttons a little shorter
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: <Widget>[
-          const SizedBox(width: 20.0), // Add some space before the first button
-          ElevatedButton(
-            child: const Text(
-              'All',
-              style: TextStyle(
-                fontFamily: 'Titillium Web',
-                color: Colors.white, // Make the text white
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.transparent,
-              side: const BorderSide(color: Colors.grey),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-            ),
-            onPressed: () {
-              // Implement your button functionality here
-            },
-          ),
-          const SizedBox(width: 10.0), // Add some space between the buttons
-          // ... Add more buttons as needed
-        ],
-      ),                  
-    );
-  }
 
-// This is the list of activities 
-  Padding buildActivityContainer() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Aligns the children to the left
-          children: [
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'November 11',
-                style: TextStyle(
-                  fontSize: 18,
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildBottomNavigationBar(context),
+          ),
+        ],
+      ),    
+    );  
+  }
+    
+  SliverAppBar _buildAppBar() => SliverAppBar(
+  backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+  automaticallyImplyLeading: false,
+  toolbarHeight: 80,
+  expandedHeight: 0,
+  snap: false,
+  floating: true,
+  pinned: true,
+  flexibleSpace: const SafeArea(
+    child: Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 20.0, right: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Analytics',
+                style: const TextStyle(
+                  fontSize: 27,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Titillium Web',
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Container( // Container for the list of activities
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.circle,
-                          color: Color.fromARGB(255, 19, 66, 105),
-                          size: 50,
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'AGQ Consulting LLC',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              'Fixed Income',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                '\$1,000.00',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Titillium Web',
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Text(
-                                  '2:27 PM',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.white,
-                                    fontFamily: 'Titillium Web',
-                                  ),
-                                ),
-                                SizedBox(width: 7), // Add width
-                                Container(
-                                  height: 15, // You can adjust the height as needed
-                                  child: VerticalDivider(
-                                    color: Colors.white,
-                                    width: 1,
-                                    thickness: 1,
-                                  ),
-                                ),
-                                SizedBox(width: 7), // Add width
-                                Text(
-                                  'John Doe',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Titillium Web',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+            ],
+          ),
+        ),
+        
+      ],
+    ),
+  ),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(right: 10.0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/notification');
+          },
+          child: Image.asset(
+            'assets/icons/notification_bell.png',
+            color: Colors.white,
+            height: 32,
+            width: 32,
+          ),
+        ),
+      ),
+    ],
+  );
+  
+  Widget _buildAssetsStructureSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Container(
+    width: 400,
+    height: 520,
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(255, 30, 41, 59),
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: Column(
+      children: [
+
+        const SizedBox(height: 10),
+        
+        const Row(
+          children: [
+            SizedBox(width: 5),
+            Text(
+              'Assets Structure',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+            )
+          ],
+          
+        ),
+        
+        const SizedBox(height: 60),
+
+        Container(
+          width: 250,
+          height: 250,
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Stack(
+            children: [
+              PieChart(
+                PieChartData(
+                  startDegreeOffset: 120,
+                  centerSpaceRadius: 100,
+                  sectionsSpace: 10,
+                  sections: [
+                    PieChartSectionData(
+                      color: const Color.fromARGB(255,12,94,175),
+                      radius: 25,
+                      value: percentageAGQ,
+                      showTitle: false,
                     ),
-                    const SizedBox(height: 15),
-                    Divider(
-                      color: const Color.fromARGB(255, 132, 132, 132),
-                      thickness: 1,
-                    ), // Add a divider between the activities
+                    PieChartSectionData(
+                      color: const Color.fromARGB(255,49,153,221),
+                      radius: 25,
+                      value: percentageAK1,
+                      showTitle: false,
+                    ),
                   ],
                 ),
               ),
+              Align(
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [ 
+                                      
+                    const Text(
+                      'Total',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  
+                    Text(
+                      currencyFormat(totalUserAssets),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 30),
+        
+        const Row(
+          children: [
+            SizedBox(width: 30),
+            Text(
+              'Type',
+              style: TextStyle(
+                fontSize: 16, 
+                color: Color.fromARGB(255, 216, 216, 216), 
+                fontFamily: 'Titillium Web', 
+              ),
             ),
+            Spacer(), // This will push the following widgets to the right
+            Text(
+              '%',
+              style: TextStyle(
+                fontSize: 16, 
+                color: Color.fromARGB(255, 216, 216, 216), 
+                fontFamily: 'Titillium Web', 
+              ),
+            ),
+            SizedBox(width: 10),
           ],
         ),
-      ),
-    );
-  }
+                
+        const SizedBox(height: 5),
+
+        const Divider(
+          thickness: 1.2,
+          height: 1,
+          color: Color.fromARGB(255, 102, 102, 102), 
+          
+        ),
+      
+        const SizedBox(height: 10),
+
+        Column(
+          
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.circle,
+                size: 20,
+                color: Color.fromARGB(255,12,94,175),
+              ),
+              const SizedBox(width: 10),
+              const Text('AGQ Fixed Income',
+                style: TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
+                ),
+              ),
+              const Spacer(), // This will push the following widgets to the right
+              Text('${percentageAGQ.toStringAsFixed(1)}%',
+                style: const TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              const Icon(
+                Icons.circle,
+                size: 20,
+                color: Color.fromARGB(255,49,153,221),
+              ),
+              const SizedBox(width: 10),
+              const Text('AK1 Holdings LP',
+                style: TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
+                ),
+              ),
+              const Spacer(), // This will push the following widgets to the right
+              Text('${percentageAK1.toStringAsFixed(1)}%',
+                style: const TextStyle(
+                  fontSize: 15, 
+                  color: Colors.white, 
+                  fontWeight: FontWeight.w600, 
+                  fontFamily: 'Titillium Web', 
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
+          ),
+        ],        
+        )
+              
+      ],
+    ),
+  );
+
 
 // This is the bottom navigation bar 
   Widget _buildBottomNavigationBar(BuildContext context) {
@@ -365,7 +503,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
@@ -409,3 +547,4 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
+}
