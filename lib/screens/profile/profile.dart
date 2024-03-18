@@ -10,6 +10,8 @@ import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:developer';
+import 'PDFPreview.dart';
+import 'downloadmethod.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -1071,18 +1073,96 @@ class _ProfilePageState extends State<ProfilePage> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Statements and Documents',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
+        // search and filter
+        Container(
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 50.0, // Set the height of the TextField
+                  child: TextField(
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
+                      hintText: 'Search by title',
+                      hintStyle: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Titillium Web',
+                      ),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      prefixIcon: Image.asset(
+                        'assets/icons/search_icon.png',
+                        color: Colors.white,
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Image.asset(
+                  'assets/icons/sort.png',
+                  color: Colors.white,
+                  height: 24,
+                  width: 24,
+                ),
+                onPressed: () {
+                },
+              ),
+            ],
+          ),
+        ),
+        // statements
+        ListTile(
+          contentPadding: EdgeInsets.all(8.0),
+          title: Text(
+            'Statement Title',
+            style: TextStyle(
+              fontSize: 20.0,
+              fontFamily: 'Titillium Web',
+              color: Colors.white,
+            ),
+          ),
+          onTap: () async {
+            String filePath = await downloadFile(context, 'TestPdf.pdf');
+            if (filePath != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PDFScreen(filePath),
+                ),
+              );
+            }
+          },
+          trailing: IconButton(
+            icon: Icon(
+              Icons.download_rounded,
+              color: Colors.white, // Set the color here
+            ),
+            onPressed: () async {
+              await downloadFile(context, 'TestPdf.pdf');
+            },
           ),
         ),
       ],
     ),
   );
+  
+
+  
 
 }
 
@@ -1228,7 +1308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Ahsan \'Sonny\' Shaikh', 
+                              'Kashif Shaikh', 
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Color.fromRGBO(255, 255, 255, 1),
@@ -1270,7 +1350,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 15),
 
                         Text(
-                          'Email: sonny@example.com', 
+                          'Email: kash@example.com', 
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white,
