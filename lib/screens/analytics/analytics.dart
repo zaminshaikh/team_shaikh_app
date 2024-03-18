@@ -504,6 +504,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
