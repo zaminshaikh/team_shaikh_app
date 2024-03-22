@@ -87,11 +87,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     UserWithAssets user = userSnapshot.data!;
     // Total assets of one user
     double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
-
-    String connectedUsersNames = connectedUsers.data!
-      .map((user) => (user.info['name']['first'] as String) + ' ' + (user.info['name']['last'] as String))
-      .join(', ');
-
    
     // We don't know the order of the funds, and perhaps the
     // length could change in the future, so we'll loop through

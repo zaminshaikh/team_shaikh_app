@@ -96,12 +96,11 @@ class _ProfilePageState extends State<ProfilePage> {
   String _selectedButton = '';
 
 // This is the row with buttons
-  Widget _buildButtonRow() {
-    return SingleChildScrollView(
+  Widget _buildButtonRow() => SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: <Widget>[
-          SizedBox(width: 20), // Add initial width
+          const SizedBox(width: 20), // Add initial width
 
           // Settings button
           ElevatedButton(
@@ -135,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
           
-          SizedBox(width: 10), // Add width
+          const SizedBox(width: 10), // Add width
           
           // Statements and Documents button
           ElevatedButton(
@@ -169,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
           
-          SizedBox(width: 10), // Add width
+          const SizedBox(width: 10), // Add width
           
           // Help Center button
           ElevatedButton(
@@ -203,7 +202,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
 
-          SizedBox(width: 10), // Add width
+          const SizedBox(width: 10), // Add width
 
           // Profiles button
           ElevatedButton(
@@ -237,7 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
 
-          SizedBox(width: 10), // Add width          
+          const SizedBox(width: 10), // Add width          
 
           // Legal and Policies button
           ElevatedButton(
@@ -271,15 +270,13 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
           
-          SizedBox(width: 20), // Add width
+          const SizedBox(width: 20), // Add width
         ],
       ),
     );
-  }
 
 // This is the settings section
-  Padding _settings() {
-    return Padding(
+  Padding _settings() => Padding(
       padding: const EdgeInsets.fromLTRB(20,0,20,20),
 
       child: Column(
@@ -869,8 +866,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       
     );
-            
-  }
   
 // This is the function to display the selected page 
   Widget _buildSelectedPage() {
@@ -891,8 +886,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
 // This is the app bar 
-  SliverAppBar _buildAppBar(context) {
-    return SliverAppBar(
+  SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
     toolbarHeight: 80,
@@ -900,11 +894,11 @@ class _ProfilePageState extends State<ProfilePage> {
     snap: false,
     floating: true,
     pinned: true,
-    flexibleSpace: SafeArea(
+    flexibleSpace: const SafeArea(
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+            padding: EdgeInsets.only(left: 20.0, right: 20.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -942,11 +936,9 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ],
     );
-  }
 
 // This is the bottom navigation bar 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
+  Widget _buildBottomNavigationBar(BuildContext context) => Container(
       margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
       height: 80,
       padding: const EdgeInsets.only(right: 30, left: 30),
@@ -970,7 +962,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
@@ -985,7 +977,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => AnalyticsPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
@@ -1027,12 +1019,10 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
-  }
 
 // This is the Client Name and ID section
-  Widget _buildClientNameAndID(String name, String clientId) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 30, 0, 20), // Add this line
+  Widget _buildClientNameAndID(String name, String clientId) => Padding(
+      padding: const EdgeInsets.fromLTRB(20, 30, 0, 20), // Add this line
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1042,17 +1032,17 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Text(
                 name,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Titillium Web',
                 ),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               Text(
                 'Client ID: $clientId',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   color: Colors.white,
                   fontFamily: 'Titillium Web',
@@ -1063,11 +1053,9 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
-  }
 
 // This is the Statements and Documents section
-  Container _statementsAndDocuments() {
-  return Container(
+  Container _statementsAndDocuments() => Container(
     padding: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1126,8 +1114,8 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         // statements
         ListTile(
-          contentPadding: EdgeInsets.all(8.0),
-          title: Text(
+          contentPadding: const EdgeInsets.all(8.0),
+          title: const Text(
             'Statement Title',
             style: TextStyle(
               fontSize: 20.0,
@@ -1138,7 +1126,7 @@ class _ProfilePageState extends State<ProfilePage> {
           onTap: () async {
             String filePath = await downloadFile(context, 'TestPdf.pdf');
             if (filePath != null) {
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PDFScreen(filePath),
@@ -1147,7 +1135,7 @@ class _ProfilePageState extends State<ProfilePage> {
             }
           },
           trailing: IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.download_rounded,
               color: Colors.white, // Set the color here
             ),
@@ -1159,15 +1147,9 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     ),
   );
-  
-
-  
-
-}
 
 // This is the Help Center section
-  Container _helpCenter() {
-  return Container(
+  Container _helpCenter() => Container(
     padding: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1187,7 +1169,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            SizedBox(height: 20), 
+            const SizedBox(height: 20), 
             
             // Sonny Shaikh Info
             Container(
@@ -1206,12 +1188,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     // name and icon
                     Row(
                       children: [
-                        Icon(Icons.square, color: Colors.white, size: 70),
-                        SizedBox(width: 10),
+                        const Icon(Icons.square, color: Colors.white, size: 70),
+                        const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Ahsan \'Sonny\' Shaikh', 
                               style: TextStyle(
                                 fontSize: 20,
@@ -1238,7 +1220,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
 
                   // contact info
-                  Column(
+                  const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -1251,7 +1233,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
 
                         Text(
                           'Email: sonny@example.com', 
@@ -1262,7 +1244,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
 
                         Text(
                           'Phone: (123) 456-7890', 
@@ -1273,7 +1255,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
 
                       ],
                     ),
@@ -1282,7 +1264,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            SizedBox(height: 20), 
+            const SizedBox(height: 20), 
 
             // Kash Shaikh Info
             Container(
@@ -1301,12 +1283,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     // name and icon
                     Row(
                       children: [
-                        Icon(Icons.square, color: Colors.white, size: 70),
-                        SizedBox(width: 10),
+                        const Icon(Icons.square, color: Colors.white, size: 70),
+                        const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Kashif Shaikh', 
                               style: TextStyle(
                                 fontSize: 20,
@@ -1333,7 +1315,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
 
                   // contact info
-                  Column(
+                  const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -1346,7 +1328,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
 
                         Text(
                           'Email: kash@example.com', 
@@ -1357,7 +1339,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
 
                         Text(
                           'Phone: (123) 456-7890', 
@@ -1368,7 +1350,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
 
                       ],
                     ),
@@ -1381,7 +1363,7 @@ class _ProfilePageState extends State<ProfilePage> {
        ),
 
 
-        SizedBox(height: 40), 
+        const SizedBox(height: 40), 
 
 
         // FAQ Section
@@ -1398,14 +1380,14 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             
-            SizedBox(height: 20), 
+            const SizedBox(height: 20), 
 
             Theme(
               data: ThemeData(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
-              child: ExpansionTile(
+              child: const ExpansionTile(
                 title: Text(
                   'Question 1',
                   style: TextStyle(
@@ -1432,7 +1414,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
-              child: ExpansionTile(
+              child: const ExpansionTile(
                 title: Text(
                   'Question 2',
                   style: TextStyle(
@@ -1459,7 +1441,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
-              child: ExpansionTile(
+              child: const ExpansionTile(
                 title: Text(
                   'Question 3',
                   style: TextStyle(
@@ -1484,18 +1466,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
         
-        SizedBox(height: 150), 
+        const SizedBox(height: 150), 
 
       ],      
     ),
     
   );
 
-}
-
 // This is the Profiles section
-  Container _profiles() {
-  return Container(
+  Container _profiles() => Container(
     padding: const EdgeInsets.all(20),
     child: Container(
       width: double.infinity,
@@ -1511,7 +1490,7 @@ class _ProfilePageState extends State<ProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // name and icon
-            Column(
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -1524,7 +1503,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
     
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
     
                 Text(
                   'Assets:', 
@@ -1536,7 +1515,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
     
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
     
                 Text(
                   '\$totalAssets', 
@@ -1550,15 +1529,15 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
     
-            Spacer(),
+            const Spacer(),
     
             Container(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                 color: AppColors.defaultBlueGray700, // Change this to your desired color
                 borderRadius: BorderRadius.circular(15.0),
               ),
-              child: Text(
+              child: const Text(
                 'relation',
                 style: TextStyle(
                   color: Colors.white,
@@ -1573,17 +1552,14 @@ class _ProfilePageState extends State<ProfilePage> {
     ),
   
   );
-}
 
 // This is the Legal and Policies section
-  Container _legalAndPolicies() {
-
-  return Container(
+  Container _legalAndPolicies() => Container(
     padding: const EdgeInsets.all(20),
-    child: Column(
+    child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Legal & Policies',
           style: TextStyle(
             fontSize: 60,
@@ -1595,8 +1571,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     ),
   );
-
-}
 
   Scaffold buildProfilePage(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot) {
         
