@@ -10,34 +10,34 @@ class Wrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    body: StreamBuilder( 
-      stream: FirebaseAuth.instance.userChanges(), // Use stream to update on any changes to the user
-      builder: (context, snapshot) {
-        // If data is still loading
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } 
-        // Error case
-        else if (snapshot.hasError) {
-          log('StreamBuilder error: ${snapshot.error}');
-          return Text('Error: ${snapshot.error}');
-        } 
-        // User exists case
-        else if (snapshot.hasData) {
-          final user = snapshot.data as User;
-          // Check verification status (create_account.dart case)
-          if (user.emailVerified) {
-            log('wrapper.dart: User email is verified. Returning dashboard...');
-            return DashboardPage(key: UniqueKey());
-          } else {
-            log('wrapper.dart: User email is not verified.');
+      body: StreamBuilder( 
+        stream: FirebaseAuth.instance.userChanges(), // Use stream to update on any changes to the user
+        builder: (context, snapshot) {
+          // If data is still loading
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
-          }
-        } 
-        // Else return login
-        log('wrapper.dart: User is not logged in yet.');
-        return const LoginPage();
-      },
-    ),
-  );
+          } 
+          // Error case
+          else if (snapshot.hasError) {
+            log('StreamBuilder error: ${snapshot.error}');
+            return Text('Error: ${snapshot.error}');
+          } 
+          // User exists case
+          else if (snapshot.hasData) {
+            final user = snapshot.data as User;
+            // Check verification status (create_account.dart case)
+            if (user.emailVerified) {
+              log('wrapper.dart: User email is verified. Returning dashboard...');
+              return DashboardPage();
+            } else {
+              log('wrapper.dart: User email is not verified.');
+              return const CircularProgressIndicator();
+            }
+          } 
+          // Else return login
+          log('wrapper.dart: User is not logged in yet.');
+          return const LoginPage();
+        },
+      ),
+    );
 }

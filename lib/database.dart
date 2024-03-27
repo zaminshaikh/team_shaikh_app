@@ -43,18 +43,18 @@ class DatabaseService {
       switch (code) {
         case 1:
           service.assetsSubCollection = usersCollection.doc(service.cid).collection('assets');
-          log('Assets subcollection set to $usersCollection/${service.cid}/assets');
+          log('database.dart: database.dart: Assets subcollection set to $usersCollection/${service.cid}/assets');
           break;
         case 2:
           service.activitiesSubCollection = usersCollection.doc(service.cid).collection('activities');
           break;
         default:
-          log('Invalid code');
+          log('database.dart: database.dart: Invalid code');
       }
       // Now you can use 'cid' in your code
-      log('CID: ${service.cid}');
+      log('database.dart: database.dart: CID: ${service.cid}');
     } else {
-      log('Document with UID $uid not found in Firestore.');
+      log('database.dart: database.dart: Document with UID $uid not found in Firestore.');
       return null;
     }
 
@@ -124,7 +124,7 @@ class DatabaseService {
         // Set the document with the updated data
         await usersCollection.doc(cid).set(updatedData);
 
-        log('database.dart: User $uid has been linked with document $cid in Firestore');
+        log('database.dart: database.dart: database.dart: User $uid has been linked with document $cid in Firestore');
 
         return;
   
@@ -137,17 +137,17 @@ class DatabaseService {
       // This throws the exception to the calling method
     } on FirebaseAuthException catch (e) {
       // Handle FirebaseAuth exceptions
-      log('FirebaseAuthException: $e');
+      log('database.dart: database.dart: FirebaseAuthException: $e');
       rethrow; // Rethrow to propagate the exception to the caller
 
     } on FirebaseException catch (e) {
       // Handle Firebase exceptions
-      log('FirebaseException: $e');
+      log('database.dart: database.dart: FirebaseException: $e');
       rethrow; // Rethrow to propagate the exception to the caller
 
     } catch (e) {
       // Catch any other exceptions
-      log('Error creating/updating: $e', stackTrace: StackTrace.current);
+      log('database.dart: database.dart: Error creating/updating: $e', stackTrace: StackTrace.current);
       rethrow; // Rethrow to propagate the exception to the caller
     }
   }

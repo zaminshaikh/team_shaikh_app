@@ -360,25 +360,16 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               const SizedBox(height: 40.0),
 
 // Adding an align widget to put the text "AGQ" at the top left of the screen
-              const Align(
-                alignment: Alignment.centerLeft,
-
-// Text widget to display "AGQ"                
-                child: Text(
-                  "AGQ",
-                  
-// TextStyle to define text appearance
-                  style: TextStyle(
-                    fontSize: 40, 
-                    color: Colors.white, 
-                    fontWeight: FontWeight.bold, 
-                    fontFamily: 'Titillium Web', 
-                  ),
-                ),
-              ),
+              Align(
+              alignment: const Alignment(-1.0, -1.0),
+              child: Image.asset(
+              'assets/icons/team-shaikh-transparent.png',
+              height: 100,
+            ),
+            ),
 
 // Adding some space here
-              const SizedBox(height: 60.0),
+              const SizedBox(height: 30.0),
 
 // Text widget to display "Create An Account"                
               const Text(

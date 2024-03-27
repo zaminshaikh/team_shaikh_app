@@ -39,9 +39,10 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text,
       );
       // Successfully signed in, you can navigate to the next screen or perform other actions.
-      log('Signed in user ${userCredential.user!.uid}');
-      await userCredential.user!.reload(); // Trigger the stream to update in wrapper.dart
-      Navigator.pop(context); // Remove this context from the widget tree
+      log('login.dart: Signed in user ${userCredential.user!.uid}');
+      // await userCredential.user!.reload(); // Trigger the stream to update in wrapper.dart
+      // Trigger the stream to update in wrapper.dart
+
     } on FirebaseAuthException catch (e) {
       // Handle errors and show an error message.
       String errorMessage = '';
@@ -70,17 +71,12 @@ class _LoginPageState extends State<LoginPage> {
           children: <Widget>[
             // Logo and branding
             const SizedBox(height: 40.0),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'AGQ',
-                style: TextStyle(
-                  fontSize: 40, 
-                  color: Colors.white, 
-                  fontWeight: FontWeight.bold, 
-                  fontFamily: 'Titillium Web', 
-                ),
-              ),
+            Align(
+              alignment: const Alignment(-1.0, -1.0),
+              child: Image.asset(
+              'assets/icons/team-shaikh-transparent.png',
+              height: 100,
+            ),
             ),
             // Spacing
             const SizedBox(height: 60.0),
@@ -219,31 +215,29 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children:[
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          rememberMe = !rememberMe;
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Icon(
-                          rememberMe ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                          size: 24,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const Text('Remember Me',
-                      style: TextStyle(
-                        fontSize: 16, 
-                        color: Colors.white, 
-                        fontFamily: 'Titillium Web'
-                      )
-                    ),
-                    const SizedBox(width: 100),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     setState(() {
+                    //       rememberMe = !rememberMe;
+                    //     });
+                    //   },
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.all(6.0),
+                    //     child: Icon(
+                    //       rememberMe ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                    //       size: 24,
+                    //       color: Colors.white,
+                    //     ),
+                    //   ),
+                    // ),
+                    // const Text('Remember Me',
+                    //   style: TextStyle(
+                    //     fontSize: 16, 
+                    //     color: Colors.white, 
+                    //     fontFamily: 'Titillium Web'
+                    //   )
+                    // ),
+                    // const SizedBox(width: 100),
                     
                     // Forgot Password link
                     GestureDetector(
@@ -271,11 +265,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ],
-                ),
-              ]
             ),
             // Spacing
-            const SizedBox(height: 60.0),
+            const SizedBox(height: 40.0),
             
             // Login Button
             GestureDetector(
@@ -305,69 +297,69 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 20.0),
             
             // Google Sign-In Button
-            Container(
-              height: 55,
-              decoration: BoxDecoration(
-                color: Colors.transparent, 
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    FontAwesomeIcons.google,
-                    color: Colors.blue,
-                  ),
-                  SizedBox(width: 15),
-                  Text(
-                    'Sign in with Google',
-                    style: TextStyle(
-                      fontSize: 18, 
-                      color: Colors.blue, 
-                      fontWeight: FontWeight.bold, 
-                      fontFamily: 'Titillium Web'
-                      ),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   height: 55,
+            //   decoration: BoxDecoration(
+            //     color: Colors.transparent, 
+            //     borderRadius: BorderRadius.circular(25),
+            //     border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
+            //   ),
+            //   child: const Row(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       Icon(
+            //         FontAwesomeIcons.google,
+            //         color: Colors.blue,
+            //       ),
+            //       SizedBox(width: 15),
+            //       Text(
+            //         'Sign in with Google',
+            //         style: TextStyle(
+            //           fontSize: 18, 
+            //           color: Colors.blue, 
+            //           fontWeight: FontWeight.bold, 
+            //           fontFamily: 'Titillium Web'
+            //           ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
             // Spacing
-            const SizedBox(height: 30.0),
+            // const SizedBox(height: 30.0),
             
             // Login with Face ID
-            GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-              },
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: null,
-                    child: Row(
-                      children: [
-                        Text(
-                          'Login with Face ID',
-                          style: TextStyle(
-                            fontSize: 18, 
-                            fontWeight: FontWeight.bold, 
-                            color: Colors.blue, 
-                            fontFamily: 'Titillium Web'
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Icon(
-                          Icons.face,
-                          color: Colors.blue,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // GestureDetector(
+            //   behavior: HitTestBehavior.translucent,
+            //   onTap: () {
+            //   },
+            //   child: const Row(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       TextButton(
+            //         onPressed: null,
+            //         child: Row(
+            //           children: [
+            //             Text(
+            //               'Login with Face ID',
+            //               style: TextStyle(
+            //                 fontSize: 18, 
+            //                 fontWeight: FontWeight.bold, 
+            //                 color: Colors.blue, 
+            //                 fontFamily: 'Titillium Web'
+            //               ),
+            //             ),
+            //             SizedBox(width: 10),
+            //             Icon(
+            //               Icons.face,
+            //               color: Colors.blue,
+            //               size: 20,
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
             // Spacing
             const SizedBox(height: 40.0),
             

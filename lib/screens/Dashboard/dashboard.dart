@@ -13,7 +13,6 @@ import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 
 /// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }
@@ -39,7 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
     User? user = FirebaseAuth.instance.currentUser;
     // If we do not have a user and the context is valid
     if (user == null && mounted) {
-      log('User is not logged in');
+      log('dashboard.dart: User is not logged in');
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
@@ -51,7 +50,7 @@ class _DashboardPageState extends State<DashboardPage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service!;
-      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('dashboard.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
     }
     
   }
@@ -127,8 +126,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     double percentageAGQ = totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
-
-    log('Connected users snapshot has no data');
     
       return Scaffold(
         body: Stack(
@@ -213,7 +210,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
-    log('Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
+    log('dashboard.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
 
     return Scaffold(
       body: Stack(
@@ -429,7 +426,7 @@ class _DashboardPageState extends State<DashboardPage> {
         try {
           sectionName = companyName!;
         } catch (e) {
-          log('Error building asset tile for company: $e');
+          log('dashboard.dart: Error building asset tile for company: $e');
           sectionName = '';
         }
         break;
@@ -494,7 +491,7 @@ class _DashboardPageState extends State<DashboardPage> {
               }}
 
           } on TypeError catch (e) {
-            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+            log('dashboard.dart: Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
           }
           break;
         case 'AK1 Holdings LP':
@@ -514,7 +511,7 @@ class _DashboardPageState extends State<DashboardPage> {
               }}
 
           } on TypeError catch (e) {
-            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+            log('dashboard.dart: Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
           }
           break;
       }
@@ -659,7 +656,7 @@ class _DashboardPageState extends State<DashboardPage> {
               }}
 
           } on TypeError catch (e) {
-            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+            log('dashboard.dart: Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
           }
           break;
         case 'AK1 Holdings LP':
@@ -679,7 +676,7 @@ class _DashboardPageState extends State<DashboardPage> {
               }}
 
           } on TypeError catch (e) {
-            log('Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
+            log('dashboard.dart: Error building asset tile for AGQ Consulting LLC for user ${userName['first']} + ${userName['last']}: $e');
           }
           break;
       }

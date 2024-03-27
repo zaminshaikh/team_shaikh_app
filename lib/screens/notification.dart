@@ -21,7 +21,7 @@ class _NotificationPageState extends State<NotificationPage> {
 
     User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        log('User is not logged in');
+        log('notification.dart: User is not logged in');
         await Navigator.pushReplacementNamed(context, '/login');
       }
     // Fetch CID using async constructor
@@ -33,7 +33,7 @@ class _NotificationPageState extends State<NotificationPage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('notification.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
 

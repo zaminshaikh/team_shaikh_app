@@ -192,7 +192,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     await FirebaseAuth.instance.sendPasswordResetEmail(email: ForgotPasswordEmailString);
 
                     // Show a success message or navigate to a success screen
-                    log('Password reset email sent successfully!');
+                    log('forgot_password.dart: Password reset email sent successfully!');
 
                     // Show a dialog to inform the user
                     showDialog(
@@ -223,7 +223,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                   } catch (e) {
                     // Handle errors, you can display them to the user or log them
-                    log('Error sending password reset email: $e');
+                    log('forgot_password.dart: Error sending password reset email: $e');
 
                     // Show an error dialog
                     showDialog(

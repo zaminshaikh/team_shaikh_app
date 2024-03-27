@@ -76,13 +76,19 @@ class _ProfilePageState extends State<ProfilePage> {
   );  
 
 
-  Future<void> signUserOut() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-    } catch (e) {
-      print('Error signing out: $e');
+  void signUserOut(BuildContext context) async {
+    log('profile.dart: Signing out...');
+    await FirebaseAuth.instance.signOut();
+
+    // Async gap mounted widget check
+    if (!mounted){
+      log('profile.dart: No longer mounted!');
+      return;
     }
+    // Pop the current page and go to login
+    await Navigator.pushReplacementNamed(context, '/login');
   }
+
 
   bool switchValue = false;
 
@@ -836,7 +842,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => signUserOut(),
+                        onTap: () => signUserOut(context),
                         child: Container(
                           height: 55,
                           decoration: BoxDecoration(
@@ -962,7 +968,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
