@@ -175,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           
           const SizedBox(width: 10), // Add width
-          
+          /*
           // Help Center button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -277,6 +277,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           
           const SizedBox(width: 20), // Add width
+          */
         ],
       ),
     );
@@ -641,7 +642,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 20),
                     ],
                   ),
-
+/*
                   // Haptics Section with options to change haptics
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start, 
@@ -838,7 +839,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 20),
 
-
+*/
                   Column(
                     children: [
                       GestureDetector(
@@ -881,11 +882,11 @@ class _ProfilePageState extends State<ProfilePage> {
       case 'statementsAndDocuments':
         return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
       case 'helpCenter':
-        return _helpCenter(); // replace with your actual Help Center page widget
+       // return _helpCenter(); // replace with your actual Help Center page widget
       case 'profiles':
-        return _profiles(); // replace with your actual Profiles page widget
+       // return _profiles(); // replace with your actual Profiles page widget
       case 'legalAndPolicies':
-        return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
+       // return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
       default:
         return Container(); // return an empty container by default
     }
@@ -1130,7 +1131,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           onTap: () async {
-            String filePath = await downloadFile(context, 'TestPdf.pdf');
+            String filePath = await downloadFile(context, '12345670', 'TestPdf12345670.pdf');
             if (filePath != null) {
               await Navigator.push(
                 context,
@@ -1146,14 +1147,14 @@ class _ProfilePageState extends State<ProfilePage> {
               color: Colors.white, // Set the color here
             ),
             onPressed: () async {
-              await downloadFile(context, 'TestPdf.pdf');
+              await downloadFile(context, '12345670', 'TestPdf12345670.pdf');
             },
           ),
         ),
       ],
     ),
   );
-
+/*
 // This is the Help Center section
   Container _helpCenter() => Container(
     padding: const EdgeInsets.all(20),
@@ -1560,6 +1561,7 @@ class _ProfilePageState extends State<ProfilePage> {
   );
 
 // This is the Legal and Policies section
+
   Container _legalAndPolicies() => Container(
     padding: const EdgeInsets.all(20),
     child: const Column(
@@ -1577,7 +1579,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     ),
   );
-
+*/
   Scaffold buildProfilePage(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot) {
         
     UserWithAssets user = userSnapshot.data!;

@@ -960,6 +960,7 @@ class _ActivityPageState extends State<ActivityPage> {
   void _buildFilterOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent, // Make the background transparent
       builder: (BuildContext context) => ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -967,8 +968,10 @@ class _ActivityPageState extends State<ActivityPage> {
             topRight: Radius.circular(20.0),
           ),
           child: Container(
+            height: MediaQuery.of(context).size.height * 0.9,
             color: AppColors.defaultBlueGray800,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.all(25.0),
@@ -977,42 +980,155 @@ class _ActivityPageState extends State<ActivityPage> {
                     style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: ListTile(
-                    title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                    onTap: () {
-                      // Implement your filter option 1 functionality here
-                    },
+
+                SingleChildScrollView(
+                  child: ListView(
+                    physics: NeverScrollableScrollPhysics(), // to disable ListView's scrolling
+                    shrinkWrap: true,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: ListTile(
+                          title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          onTap: () async {
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: ExpansionTile(
+                          title: const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          children: [
+                            StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setState) {
+                                bool _isChecked1 = false;
+                                bool _isChecked2 = false;
+                                return Column(
+                                  children: <Widget>[
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'AGQ Consulting LLC',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked1,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked1 = value!;
+                                        });
+                                      },
+                                    ),
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'AK1 Capital',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked2,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked2 = value!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: ExpansionTile(
+                          title: const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          children: [
+                            StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setState) {
+                                bool _isChecked1 = false;
+                                bool _isChecked2 = false;
+                                return Column(
+                                  children: <Widget>[
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'Fixed Income',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked1,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked1 = value!;
+                                        });
+                                      },
+                                    ),
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'Variable Income',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked2,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked2 = value!;
+                                        });
+                                      },
+                                    ),
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'Withdrawal',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked2,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked2 = value!;
+                                        });
+                                      },
+                                    ),
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'Pending Withdrawal',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked2,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked2 = value!;
+                                        });
+                                      },
+                                    ),
+                                    CheckboxListTile(
+                                      title: Text(
+                                        'Deposit',
+                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                      ),
+                                      value: _isChecked2,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked2 = value!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: ListTile(
-                    title: const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                    onTap: () {
-                      // Implement your filter option 2 functionality here
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: ListTile(
-                    title: const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                    trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                    onTap: () {
-                      // Implement your filter option 3 functionality here
-                    },
-                  ),
-                ),
+
                 const Spacer(),
+                
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                       child: Container(
                         color: AppColors.defaultBlueGray800,
                         width: double.infinity,
@@ -1029,21 +1145,22 @@ class _ActivityPageState extends State<ActivityPage> {
                         ),
                       ),
                     ),
-                    TextButton(
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.close, color: Colors.white),
-                          SizedBox(width: 4.0), // Add some spacing between the icon and the text
-                          Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
-                        ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+                      child: TextButton(
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.close, color: Colors.white),
+                            Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
+                          ],
+                        ),
+                        onPressed: () {
+                          // Implement your cancel functionality here
+                          Navigator.pop(context);
+                        },
                       ),
-                      onPressed: () {
-                        // Implement your cancel functionality here
-                        Navigator.pop(context);
-                      },
                     ),
-                    const SizedBox(height: 25),
                   ],
                 ),
               ],
@@ -1056,35 +1173,45 @@ class _ActivityPageState extends State<ActivityPage> {
   void _buildSortOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent, // Make the background transparent
-      builder: (BuildContext context) => Container(
-        height: 360,
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20.0),
-            topRight: Radius.circular(20.0),
-          ),
-          child: Container(
-            width: double.infinity,
-            color: AppColors.defaultBlueGray800,
-            child: Column(
-              children: <Widget>[
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
-                  child: Text(
-                    'Sort By', // Your title here
-                    style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
+      builder: (BuildContext context) => SingleChildScrollView(
+        child: Container(
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+            ),
+            child: Container(
+              color: AppColors.defaultBlueGray800,
+              child: Wrap(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20.0), // Add some space at the top
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Sort By',
+                              style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20.0), // Add some space between the title and the options
+                        _buildOption(context, 'Date: New to Old (Default)', 'new-to-old'),
+                        _buildOption(context, 'Date: Old to New', 'old-to-new'),
+                        _buildOption(context, 'Amount: Low to High', 'low-to-high'),
+                        _buildOption(context, 'Amount: High to Low', 'high-to-low'),
+                        const SizedBox(height: 20.0), // Add some space at the bottom
+                      ],
+                    ),
                   ),
-                ),
-                Column(
-                  children: [
-                    _buildOption(context, 'Date: New to Old (Default)', 'new-to-old'),
-                    _buildOption(context, 'Date: Old to New', 'old-to-new'),
-                    _buildOption(context, 'Amount: Low to High', 'low-to-high'),
-                    _buildOption(context, 'Amount: High to Low', 'high-to-low'),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

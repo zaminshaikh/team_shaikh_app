@@ -690,6 +690,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                     ),
                   ),
+
                   // Next 2 rectangles in the row
                   Row(
                     children: List.generate(
@@ -707,6 +708,57 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                                       ? const Color.fromARGB(255, 47, 134, 47)
                                       : const Color.fromARGB(255, 100, 116, 139),
                           borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Next 2 rectangles in the row
+                  Row(
+                    children: List.generate(
+                      2,
+                      (index) => Container(
+                        width: 31,
+                        height: 5.5,
+                        margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                        decoration: BoxDecoration(
+                          color: _passwordSecurityIndicator == 2
+                              ? const Color.fromARGB(255, 100, 116, 139)
+                              : (_passwordSecurityIndicator == 3)
+                                  ? const Color.fromARGB(255, 219, 195, 60)
+                                  : (_passwordSecurityIndicator == 4)
+                                      ? const Color.fromARGB(255, 47, 134, 47)
+                                      : const Color.fromARGB(255, 100, 116, 139),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                  ),
+
+// Making the last 3 rectangles in the row
+                Row(
+                    children:
+                    List.generate(
+                      3,
+
+// Styling the rectangles
+                      (index) => Container(
+
+// Setting the width and height for the rectangles
+                        width: 31, 
+                        height: 5.5,
+
+// Making a margin between rectangles
+                        margin: const EdgeInsets.symmetric(horizontal: 4.4),
+
+// Making conditional statements to change the color of the rectangles based on the security of the password
+                        decoration: BoxDecoration(
+                          color: _passwordSecurityIndicator == 4
+                            ? const Color.fromARGB(255, 47, 134, 47)
+                            : const Color.fromARGB(255, 100, 116, 139),
+                          borderRadius: BorderRadius.circular(10.0),
+
+// Closing properties for the first 3 rectangles in the row
                         ),
                       ),
                     ),

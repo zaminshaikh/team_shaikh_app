@@ -3,18 +3,22 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
-Future<String> downloadFile(BuildContext context, String filename) async {
-String filePath = '';
+String clientId = '12345670'; // Replace with the actual client ID
+String documentName = 'TestPdf$clientId.pdf'; // Construct the document name
+
+
+Future<String> downloadFile(context, clientId, documentName) async {
+  String filePath = '';
 
   try {
     // Get the directory for the app's temporary files.
     final directory = await getTemporaryDirectory();
 
     // Construct the file path where the file should be saved.
-    filePath = '${directory.path}/$filename';
+    filePath = '${directory.path}/$documentName';
 
     // Create a reference to the file on Firebase Storage.
-    final ref = FirebaseStorage.instance.ref().child('statements').child(filename);
+    final ref = FirebaseStorage.instance.ref().child('testUsersStatements').child(clientId).child(documentName);
 
     // Start the download and save the file to local storage.
     final bytes = await ref.getData();
