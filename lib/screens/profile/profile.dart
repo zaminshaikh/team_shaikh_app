@@ -77,7 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
   void signUserOut(BuildContext context) async {
-    log('profile.dart: Signing out...');
+    ('profile.dart: Signing out...');
     await FirebaseAuth.instance.signOut();
 
     // Async gap mounted widget check
@@ -356,7 +356,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 100),
+                                      Spacer(),
                                       const Text(
                                         'ICON ART',
                                         style: TextStyle(
@@ -366,7 +366,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           fontFamily: 'Titillium Web',
                                         ),
                                       ),
-                                      const SizedBox(height: 80),
+                                      Spacer(),
                                       const Text(
                                         'Enter New Email',
                                         style: TextStyle(
@@ -376,7 +376,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           fontFamily: 'Titillium Web',
                                         ),
                                       ),
-                                      const SizedBox(height: 30),
+                                      Spacer(),
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -414,7 +414,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 25),
+                                      Spacer(),
                                       GestureDetector(
                                         onTap: () async {
                                           try {
@@ -1131,7 +1131,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           onTap: () async {
-            String filePath = await downloadFile(context, '12345670', 'TestPdf12345670.pdf');
+            String filePath = await downloadFile(context, {_databaseService.cid}, 'TestPdf${_databaseService.cid}.pdf');
             if (filePath != null) {
               await Navigator.push(
                 context,
@@ -1144,10 +1144,10 @@ class _ProfilePageState extends State<ProfilePage> {
           trailing: IconButton(
             icon: const Icon(
               Icons.download_rounded,
-              color: Colors.white, // Set the color here
+              color: Colors.white, 
             ),
             onPressed: () async {
-              await downloadFile(context, '12345670', 'TestPdf12345670.pdf');
+              await downloadFile(context, _databaseService.cid, 'TestPdf${_databaseService.cid}.pdf');
             },
           ),
         ),
