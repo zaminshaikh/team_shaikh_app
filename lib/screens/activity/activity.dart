@@ -1005,6 +1005,37 @@ class _ActivityPageState extends State<ActivityPage> {
                           title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
                           onTap: () async {
+                            // Implement your filter option 1 functionality here
+                            final DateTimeRange? dateTimeRange = await showDateRangePicker(
+                              context: context,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(3000),
+                              builder: (BuildContext context, Widget? child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    scaffoldBackgroundColor: AppColors.defaultGray500,
+                                    textTheme: TextTheme(
+                                      headlineMedium: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Titillium Web',
+                                        fontSize: 20,
+                                      ),
+                                      bodyMedium: TextStyle(
+                                        color: Colors.black,
+                                        fontFamily: 'Titillium Web',
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (dateTimeRange != null) {
+                              setState(() {
+                                selectedDates = dateTimeRange;
+                              });
+                            }
                           },
                         ),
                       ),
