@@ -957,6 +957,13 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
 
+
+  DateTimeRange selectedDates = DateTimeRange(
+    start: DateTime.now(),
+    end: DateTime.now(),
+  );
+
+  
   void _buildFilterOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -992,6 +999,37 @@ class _ActivityPageState extends State<ActivityPage> {
                           title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                           iconColor: Colors.white,
                           onTap: () async {
+                            // Implement your filter option 1 functionality here
+                            final DateTimeRange? dateTimeRange = await showDateRangePicker(
+                              context: context,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(3000),
+                              builder: (BuildContext context, Widget? child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    scaffoldBackgroundColor: AppColors.defaultGray500,
+                                    textTheme: TextTheme(
+                                      headlineMedium: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Titillium Web',
+                                        fontSize: 20,
+                                      ),
+                                      bodyMedium: TextStyle(
+                                        color: Colors.black,
+                                        fontFamily: 'Titillium Web',
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (dateTimeRange != null) {
+                              setState(() {
+                                selectedDates = dateTimeRange;
+                              });
+                            }
                           },
                         ),
                       ),
