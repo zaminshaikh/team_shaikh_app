@@ -990,7 +990,7 @@ class _ActivityPageState extends State<ActivityPage> {
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ListTile(
                           title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          iconColor: Colors.white,
                           onTap: () async {
                           },
                         ),
@@ -999,7 +999,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ExpansionTile(
                           title: const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          iconColor: Colors.white,
+                          collapsedIconColor: Colors.white,
                           children: [
                             StatefulBuilder(
                               builder: (BuildContext context, StateSetter setState) {
@@ -1043,7 +1044,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ExpansionTile(
                           title: const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          iconColor: Colors.white,
+                          collapsedIconColor: Colors.white,
                           children: [
                             StatefulBuilder(
                               builder: (BuildContext context, StateSetter setState) {
