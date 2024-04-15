@@ -111,58 +111,6 @@ class _ActivityPageState extends State<ActivityPage> {
       }
     }
 
-  bool AGQisChecked = false;
-  bool Ak1isChecked = false;
-
-  String selectedFunds = '';
-
-  void setSelectedFunds() {
-    if (agqIsChecked && ak1IsChecked) {
-      selectedFunds = 'All Funds';
-    } else if (agqIsChecked) {
-      selectedFunds = 'AGQ Consulting LLC';
-    } else if (ak1IsChecked) {
-      selectedFunds = 'AK1 Capital';
-    } else {
-      selectedFunds = 'All Funds';
-    }
-  }
-
-  bool isFixedIncomeChecked = false;
-  bool isVariableIncomeChecked = false;
-  bool isWithdrawalChecked = false;
-  bool isPendingWithdrawalChecked = false;
-  bool isDepositChecked = false;
-
-    String selectedActivityTypes = '';
-
-    void setSelectedActivityTypes() {
-      List<String> selectedTypes = [];
-
-      if (isFixedIncomeChecked) {
-        selectedTypes.add('Fixed');
-      }
-      if (isVariableIncomeChecked) {
-        selectedTypes.add('Variable');
-      }
-      if (isWithdrawalChecked) {
-        selectedTypes.add('Withdrawal');
-      }
-      if (isPendingWithdrawalChecked) {
-        selectedTypes.add('Pending Withdrawal');
-      }
-      if (isDepositChecked) {
-        selectedTypes.add('Deposit');
-      }
-
-      if (selectedTypes.isEmpty) {
-        selectedActivityTypes = 'No Type Selected';
-      } else if (selectedTypes.length == 5) {
-        selectedActivityTypes = 'All Types';
-      } else {
-        selectedActivityTypes = selectedTypes.join(', ');
-      }
-    }
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -276,7 +224,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == 0) {
-                        return _buildSearchBar();
+                        return _buildFilterAndSort();
                       // } else if (index == 1) {
                         // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
                       } else {
