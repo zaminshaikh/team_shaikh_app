@@ -1068,57 +1068,57 @@ class _ProfilePageState extends State<ProfilePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // search and filter
-        Container(
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 50.0, // Set the height of the TextField
-                  child: TextField(
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
-                      hintText: 'Search by title',
-                      hintStyle: const TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
-                      ),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      prefixIcon: Image.asset(
-                        'assets/icons/search_icon.png',
-                        color: Colors.white,
-                        height: 24,
-                        width: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Image.asset(
-                  'assets/icons/sort.png',
-                  color: Colors.white,
-                  height: 24,
-                  width: 24,
-                ),
-                onPressed: () {
-                },
-              ),
-            ],
-          ),
-        ),
+        // Container(
+        //   child: Row(
+        //     children: [
+        //       Expanded(
+        //         child: Container(
+        //           height: 50.0, // Set the height of the TextField
+        //           child: TextField(
+        //             style: const TextStyle(
+        //               color: Colors.white,
+        //               fontFamily: 'Titillium Web',
+        //             ),
+        //             decoration: InputDecoration(
+        //               contentPadding: const EdgeInsets.all(5.0), // Add padding to TextField
+        //               hintText: 'Search by title',
+        //               hintStyle: const TextStyle(
+        //                 color: Colors.white,
+        //                 fontFamily: 'Titillium Web',
+        //               ),
+        //               filled: true,
+        //               fillColor: Colors.transparent,
+        //               border: OutlineInputBorder(
+        //                 borderRadius: BorderRadius.circular(30),
+        //                 borderSide: const BorderSide(color: Colors.grey),
+        //               ),
+        //               enabledBorder: OutlineInputBorder(
+        //                 borderRadius: BorderRadius.circular(30),
+        //                 borderSide: const BorderSide(color: Colors.grey),
+        //               ),
+        //               prefixIcon: Image.asset(
+        //                 'assets/icons/search_icon.png',
+        //                 color: Colors.white,
+        //                 height: 24,
+        //                 width: 24,
+        //               ),
+        //             ),
+        //           ),
+        //         ),
+        //       ),
+        //       IconButton(
+        //         icon: Image.asset(
+        //           'assets/icons/sort.png',
+        //           color: Colors.white,
+        //           height: 24,
+        //           width: 24,
+        //         ),
+        //         onPressed: () {
+        //         },
+        //       ),
+        //     ],
+        //   ),
+        // ),
         // statements
         ListTile(
           contentPadding: const EdgeInsets.all(8.0),
