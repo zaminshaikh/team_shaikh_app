@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
+import 'package:team_shaikh_app/database.dart';
 
-String clientId = '12345670'; // Replace with the actual client ID
+  late DatabaseService _databaseService;
+
+String clientId = {_databaseService.cid} as String; // Replace with the actual client ID
 String documentName = 'TestPdf$clientId.pdf'; // Construct the document name
 
 
