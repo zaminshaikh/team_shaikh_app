@@ -225,14 +225,15 @@ class _NotificationPageState extends State<NotificationPage> {
         ],
       ),
     ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white, size: 30.0),
-            onPressed: () {},
-          )
-        ),
-      ],
+    // TODO(@zaminshaikh): Implement the settings button (commented out below).
+      // actions: [
+      //   Padding(
+      //     padding: const EdgeInsets.only(right: 10.0),
+      //     child: IconButton(
+      //       icon: const Icon(Icons.settings, color: Colors.white, size: 30.0),
+      //       onPressed: () {},
+      //     )
+      //   ),
+      // ],
     );
 

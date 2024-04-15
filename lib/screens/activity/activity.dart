@@ -20,7 +20,16 @@ class ActivityPage extends StatefulWidget {
 class _ActivityPageState extends State<ActivityPage> {
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
+  // ignore: prefer_final_fields
+  List<String> _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+  // ignore: prefer_final_fields
+  List<String> _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
 
+  List<String> icons = [
+    'assets/icons/dashboard_hollowed.png',
+    'assets/icons/activity_filled.png',
+    'assets/icons/profile_hollowed.png',
+  ];
 
   late DatabaseService _databaseService;
 
@@ -35,15 +44,72 @@ class _ActivityPageState extends State<ActivityPage> {
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
     // If there is no matching CID, redirect to login page and alert the user
     if (service == null) {
+      if (!mounted){ return; }
       await CustomAlertDialog.showAlertDialog(context, 'User does not exist error!', 
         'The current user is not associated with any account... We will redirect you to the login page to sign in with a valid user.');
+      
       await FirebaseAuth.instance.signOut(); // Sign that user out
+      if (!mounted){ return; }
       await Navigator.pushReplacementNamed(context, '/login');
+      
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
     }
   }
+
+  bool agqIsChecked = false;
+  bool ak1IsChecked = false;
+
+  String selectedFunds = '';
+
+  void setSelectedFunds() {
+    if (agqIsChecked && ak1IsChecked) {
+      selectedFunds = 'All Funds';
+    } else if (agqIsChecked) {
+      selectedFunds = 'AGQ Consulting LLC';
+    } else if (ak1IsChecked) {
+      selectedFunds = 'AK1 Capital';
+    } else {
+      selectedFunds = 'All Funds';
+    }
+  }
+
+  bool isFixedIncomeChecked = false;
+  bool isVariableIncomeChecked = false;
+  bool isWithdrawalChecked = false;
+  bool isPendingWithdrawalChecked = false;
+  bool isDepositChecked = false;
+
+    String selectedActivityTypes = '';
+
+    void setSelectedActivityTypes() {
+      List<String> selectedTypes = [];
+
+      if (isFixedIncomeChecked) {
+        selectedTypes.add('Fixed');
+      }
+      if (isVariableIncomeChecked) {
+        selectedTypes.add('Variable');
+      }
+      if (isWithdrawalChecked) {
+        selectedTypes.add('Withdrawal');
+      }
+      if (isPendingWithdrawalChecked) {
+        selectedTypes.add('Pending Withdrawal');
+      }
+      if (isDepositChecked) {
+        selectedTypes.add('Deposit');
+      }
+
+      if (selectedTypes.isEmpty) {
+        selectedActivityTypes = 'No Type Selected';
+      } else if (selectedTypes.length == 5) {
+        selectedActivityTypes = 'All Types';
+      } else {
+        selectedActivityTypes = selectedTypes.join(', ');
+      }
+    }
 
   bool AGQisChecked = false;
   bool Ak1isChecked = false;
@@ -51,11 +117,11 @@ class _ActivityPageState extends State<ActivityPage> {
   String selectedFunds = '';
 
   void setSelectedFunds() {
-    if (AGQisChecked && Ak1isChecked) {
+    if (agqIsChecked && ak1IsChecked) {
       selectedFunds = 'All Funds';
-    } else if (AGQisChecked) {
+    } else if (agqIsChecked) {
       selectedFunds = 'AGQ Consulting LLC';
-    } else if (Ak1isChecked) {
+    } else if (ak1IsChecked) {
       selectedFunds = 'AK1 Capital';
     } else {
       selectedFunds = 'All Funds';
@@ -113,7 +179,6 @@ class _ActivityPageState extends State<ActivityPage> {
         stream: _databaseService.getActivities,
         builder: (context, activitiesSnapshot) {
           if (!activitiesSnapshot.hasData || activitiesSnapshot.data == null) {
-            log('activities snapshot is empty');
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -122,7 +187,6 @@ class _ActivityPageState extends State<ActivityPage> {
             stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
             builder: (context, userSnapshot) {
               if (!userSnapshot.hasData || userSnapshot.data == null) {
-                log('No user data');
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
@@ -131,7 +195,6 @@ class _ActivityPageState extends State<ActivityPage> {
                 stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
                 builder: (context, connectedUsers) {
                   if (!connectedUsers.hasData || connectedUsers.data == null) {
-                    log('No connected users');
                     setSelectedFunds();
                     return _buildActivitySingleUser(userSnapshot, activitiesSnapshot);
                   }
@@ -168,6 +231,38 @@ class _ActivityPageState extends State<ActivityPage> {
       }
 
     }
+  // Implement sorting on activities based on the user's selection (defaulted to _sorting = 'new-to-old')
+  void sort(List<Map<String, dynamic>> activities) {
+    try {
+      switch (_sorting) {
+        case 'new-to-old':
+          activities.sort((a, b) => b['time'].compareTo(a['time']));
+          break;
+        case 'old-to-new':
+          activities.sort((a, b) => (a['time']).compareTo(b['time']));
+          break;
+        case 'low-to-high':
+          activities.sort((a, b) => (a['amount']).compareTo((b['amount']).toDouble()));
+          break;
+        case 'high-to-low':
+          activities.sort((a, b) => (b['amount']).compareTo((a['amount'])));
+          break;
+      }
+    } catch (e) {
+      if (e is TypeError) {
+        // Handle TypeError here (usually casting error)
+        log('activity.dart: Caught TypeError: $e');
+      } else {
+        // Handle other exceptions here
+        log('activity.dart: Caught Exception: $e');
+      }
+    }
+  }
+
+  void filter(List<Map<String, dynamic>> activities) {
+    activities.removeWhere((element) => !_typeFilter.contains(element['type']));
+    activities.removeWhere((element) => !_fundsFilter.contains(element['fund']));
+  }
 
   Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot)=> Scaffold(
       body: Stack(
@@ -181,36 +276,15 @@ class _ActivityPageState extends State<ActivityPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == 0) {
-                        return _buildFilterAndSort();
+                        return _buildSearchBar();
                       // } else if (index == 1) {
                         // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
                       } else {
                         activities = activitiesSnapshot.data!;
 
-                        try {
-                          switch (_sorting) {
-                            case 'new-to-old':
-                              activities.sort((a, b) => b['time'].compareTo(a['time']));
-                              break;
-                            case 'old-to-new':
-                              activities.sort((a, b) => (a['time']).compareTo(b['time']));
-                              break;
-                            case 'low-to-high':
-                              activities.sort((a, b) => (a['amount']).compareTo((b['amount']).toDouble()));
-                              break;
-                            case 'high-to-low':
-                              activities.sort((a, b) => (b['amount']).compareTo((a['amount'])));
-                              break;
-                          }
-                        } catch (e) {
-                          if (e is TypeError) {
-                            // Handle TypeError here
-                            log('Caught TypeError: $e');
-                          } else {
-                            // Handle other exceptions here
-                            log('Caught Exception: $e');
-                          }
-                        }
+                        sort(activities);
+                        filter(activities);
+                        
                         // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
                         final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
                         return _buildActivityWithDayHeader(activity, index - 1, activities);
@@ -236,6 +310,8 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
 
+  
+
 
   Scaffold _buildActivityWithConnectedUsers(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) => Scaffold(
       body: Stack(
@@ -254,19 +330,18 @@ class _ActivityPageState extends State<ActivityPage> {
                       //   return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
                         activities = activitiesSnapshot.data!;
-                        switch (_sorting) {
-                        case 'new-to-old':
-                          activities.sort((a, b) => b['time'].compareTo(a['time']));
-                          break;
-                        case 'old-to-new':
-                          activities.sort((a, b) => (a['time']).compareTo(b['time']));
-                          break;
-                        case 'low-to-high':
-                          activities.sort((a, b) => (a['amount'] as double).compareTo(b['amount'] as double));
-                          break;
-                        case 'high-to-low':
-                          activities.sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
-                          break;
+
+                        try {
+                          sort(activities);
+                          filter(activities);
+                        } catch (e) {
+                          if (e is TypeError) {
+                            // Handle TypeError here (usually casting error)
+                            log('activity.dart: Caught TypeError: $e');
+                          } else {
+                            // Handle other exceptions here
+                            log('activity.dart: Caught Exception: $e');
+                          }
                         }
                         // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
                         final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
@@ -1141,28 +1216,28 @@ class _ActivityPageState extends State<ActivityPage> {
                                 return Column(
                                   children: <Widget>[
                                     CheckboxListTile(
-                                      title: Text(
+                                      title: const Text(
                                         'AGQ Consulting LLC',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: AGQisChecked,
+                                      value: agqIsChecked,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           setSelectedFunds();
-                                          AGQisChecked = value!;
+                                          agqIsChecked = value!;
                                         });
                                       },
                                     ),
                                     CheckboxListTile(
-                                      title: Text(
+                                      title: const Text(
                                         'AK1 Capital',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: Ak1isChecked,
+                                      value: ak1IsChecked,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           setSelectedFunds();
-                                          Ak1isChecked = value!;
+                                          ak1IsChecked = value!;
                                         });
                                       },
                                     ),
