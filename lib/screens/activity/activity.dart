@@ -181,7 +181,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == 0) {
-                        return _buildFilterSort();
+                        return _buildFilterAndSort();
                       // } else if (index == 1) {
                         // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
                       } else {
@@ -249,7 +249,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == 0) {
-                        return _buildFilterSort();
+                        return _buildFilterAndSort();
                       // } else if (index == 1) {
                       //   return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
@@ -295,7 +295,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
 
   // This is the search bar area 
-  Widget _buildFilterSort() => Padding(
+  Widget _buildFilterAndSort() => Padding(
     padding: const EdgeInsets.fromLTRB(20.0,10,20,10),
     child: Row(
       children: [
@@ -1054,23 +1054,23 @@ class _ActivityPageState extends State<ActivityPage> {
                             children: [
                               const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                               const SizedBox(width: 10), // Add some spacing between the title and the date
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.defaultBlueGray500,
-                                  borderRadius: BorderRadius.circular(10), // Add a rounded border
-                                ),
-                                padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
-                                child: Text(
-                                  selectedDates.start == selectedDates.end
-                                    ? '${DateFormat.yMd().format(selectedDates.start)}'
-                                    : '${DateFormat.yMd().format(selectedDates.start)} - ${DateFormat.yMd().format(selectedDates.end)}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Titillium Web',
-                                    fontWeight: FontWeight.bold, // Bolden the font
-                                  ),
-                                ),
-                              )
+                              // Container(
+                              //   decoration: BoxDecoration(
+                              //     color: AppColors.defaultBlueGray500,
+                              //     borderRadius: BorderRadius.circular(10), // Add a rounded border
+                              //   ),
+                              //   padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
+                              //   child: Text(
+                              //     selectedDates.start == selectedDates.end
+                              //       ? '${DateFormat.yMd().format(selectedDates.start)}'
+                              //       : '${DateFormat.yMd().format(selectedDates.start)} - ${DateFormat.yMd().format(selectedDates.end)}',
+                              //     style: TextStyle(
+                              //       color: Colors.white,
+                              //       fontFamily: 'Titillium Web',
+                              //       fontWeight: FontWeight.bold, // Bolden the font
+                              //     ),
+                              //   ),
+                              // )
                             ],
                           ),
                           onTap: () async {
@@ -1116,21 +1116,21 @@ class _ActivityPageState extends State<ActivityPage> {
                             children: [
                               const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                               const SizedBox(width: 10), // Add some spacing between the title and the date
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.defaultBlueGray500,
-                                  borderRadius: BorderRadius.circular(10), // Add a rounded border
-                                ),
-                                padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
-                                child: Text(
-                                  '$selectedFunds',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Titillium Web',
-                                    fontWeight: FontWeight.bold, // Bolden the font
-                                  ),
-                                ),
-                              )
+                              // Container(
+                              //   decoration: BoxDecoration(
+                              //     color: AppColors.defaultBlueGray500,
+                              //     borderRadius: BorderRadius.circular(10), // Add a rounded border
+                              //   ),
+                              //   padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
+                              //   child: Text(
+                              //     '$selectedFunds',
+                              //     style: TextStyle(
+                              //       color: Colors.white,
+                              //       fontFamily: 'Titillium Web',
+                              //       fontWeight: FontWeight.bold, // Bolden the font
+                              //     ),
+                              //   ),
+                              // )
                             ],
                           ),
                           iconColor: Colors.white,
@@ -1181,23 +1181,23 @@ class _ActivityPageState extends State<ActivityPage> {
                             children: [
                               const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                               const SizedBox(width: 10), // Add some spacing between the title and the date
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.defaultBlueGray500,
-                                  borderRadius: BorderRadius.circular(10), // Add a rounded border
-                                ),
-                                padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
-                                child: Flexible(
-                                  child: Text(
-                                    selectedActivityTypes,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: 'Titillium Web',
-                                      fontWeight: FontWeight.bold, // Bolden the font
-                                    ),
-                                  ),
-                                ),
-                              )
+                              // Container(
+                              //   decoration: BoxDecoration(
+                              //     color: AppColors.defaultBlueGray500,
+                              //     borderRadius: BorderRadius.circular(10), // Add a rounded border
+                              //   ),
+                              //   padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
+                              //   child: Flexible(
+                              //     child: Text(
+                              //       selectedActivityTypes,
+                              //       style: TextStyle(
+                              //         color: Colors.white,
+                              //         fontFamily: 'Titillium Web',
+                              //         fontWeight: FontWeight.bold, // Bolden the font
+                              //       ),
+                              //     ),
+                              //   ),
+                              // )
                             ],
                           ),
                           iconColor: Colors.white,
