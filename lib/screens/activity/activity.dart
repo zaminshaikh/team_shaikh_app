@@ -1,7 +1,8 @@
 import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/utilities.dart';
@@ -20,12 +21,6 @@ class _ActivityPageState extends State<ActivityPage> {
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
 
-  List<String> icons = [
-    'assets/icons/dashboard_hollowed.png',
-    'assets/icons/analytics_hollowed.png',
-    'assets/icons/activity_filled.png',
-    'assets/icons/profile_hollowed.png',
-  ];
 
   late DatabaseService _databaseService;
 
@@ -128,7 +123,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == 0) {
-                        return _buildSearchBar();
+                        return _buildFilterSort();
                       // } else if (index == 1) {
                         // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
                       } else {
@@ -196,7 +191,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       if (index == 0) {
-                        return _buildSearchBar();
+                        return _buildFilterSort();
                       // } else if (index == 1) {
                       //   return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
@@ -240,15 +235,16 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
 
+
   // This is the search bar area 
-  Widget _buildSearchBar() => Padding(
+  Widget _buildFilterSort() => Padding(
     padding: const EdgeInsets.fromLTRB(20.0,10,20,10),
     child: Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            icon: Image.asset(
-              'assets/icons/filter.png',
+            icon: SvgPicture.asset(
+              'assets/icons/filter.svg',
               color: AppColors.defaultGray200,
               height: 24,
               width: 24,
@@ -306,7 +302,6 @@ class _ActivityPageState extends State<ActivityPage> {
       ],
     ),
   );
-
 
   SliverAppBar _buildAppBar() => SliverAppBar(
       backgroundColor: const Color.fromARGB(255, 30, 41, 59),
