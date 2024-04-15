@@ -25,11 +25,6 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
 
-  List<String> icons = [
-    'assets/icons/dashboard_hollowed.png',
-    'assets/icons/activity_filled.png',
-    'assets/icons/profile_hollowed.png',
-  ];
 
   late DatabaseService _databaseService;
 
@@ -61,56 +56,11 @@ class _ActivityPageState extends State<ActivityPage> {
   bool agqIsChecked = false;
   bool ak1IsChecked = false;
 
-  String selectedFunds = '';
 
-  void setSelectedFunds() {
-    if (agqIsChecked && ak1IsChecked) {
-      selectedFunds = 'All Funds';
-    } else if (agqIsChecked) {
-      selectedFunds = 'AGQ Consulting LLC';
-    } else if (ak1IsChecked) {
-      selectedFunds = 'AK1 Capital';
-    } else {
-      selectedFunds = 'All Funds';
-    }
-  }
-
-  bool isFixedIncomeChecked = false;
-  bool isVariableIncomeChecked = false;
+  bool isIncomeChecked = false;
   bool isWithdrawalChecked = false;
   bool isPendingWithdrawalChecked = false;
   bool isDepositChecked = false;
-
-    String selectedActivityTypes = '';
-
-    void setSelectedActivityTypes() {
-      List<String> selectedTypes = [];
-
-      if (isFixedIncomeChecked) {
-        selectedTypes.add('Fixed');
-      }
-      if (isVariableIncomeChecked) {
-        selectedTypes.add('Variable');
-      }
-      if (isWithdrawalChecked) {
-        selectedTypes.add('Withdrawal');
-      }
-      if (isPendingWithdrawalChecked) {
-        selectedTypes.add('Pending Withdrawal');
-      }
-      if (isDepositChecked) {
-        selectedTypes.add('Deposit');
-      }
-
-      if (selectedTypes.isEmpty) {
-        selectedActivityTypes = 'No Type Selected';
-      } else if (selectedTypes.length == 5) {
-        selectedActivityTypes = 'All Types';
-      } else {
-        selectedActivityTypes = selectedTypes.join(', ');
-      }
-    }
-
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -143,10 +93,8 @@ class _ActivityPageState extends State<ActivityPage> {
                 stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
                 builder: (context, connectedUsers) {
                   if (!connectedUsers.hasData || connectedUsers.data == null) {
-                    setSelectedFunds();
                     return _buildActivitySingleUser(userSnapshot, activitiesSnapshot);
                   }
-                  setSelectedFunds();
                   return _buildActivityWithConnectedUsers(userSnapshot, connectedUsers, activitiesSnapshot);
 
                 },
@@ -212,56 +160,58 @@ class _ActivityPageState extends State<ActivityPage> {
     activities.removeWhere((element) => !_fundsFilter.contains(element['fund']));
   }
 
-  Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot)=> Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(),
-              SliverPadding(
-                padding: const EdgeInsets.only(top: 20.0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == 0) {
-                        return _buildFilterAndSort();
-                      // } else if (index == 1) {
-                        // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
-                      } else {
-                        activities = activitiesSnapshot.data!;
-
-                        sort(activities);
-                        filter(activities);
-                        
-                        // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
-                        final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
-                        return _buildActivityWithDayHeader(activity, index - 1, activities);
-                      }
-                    },
-                    
-                    childCount: activitiesSnapshot.data!.length + 1, // Add 2 to include the search bar and the button list
+  Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot){
+    activities = activities.isEmpty ? activitiesSnapshot.data! : activities;
+    filter(activities);
+    sort(activities);
+    return Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: <Widget>[
+                _buildAppBar(),
+                SliverPadding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == 0) {
+                          return _buildFilterAndSort();
+                          // } else if (index == 1) {
+                          // return _buildHorizontalButtonList(connectedUsersNames); // Add your button list here
+                        } else {
+                          // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
+                          final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
+                          return _buildActivityWithDayHeader(activity, index - 1, activities);
+                        }
+                      },
+                      
+                      childCount: activities.length + 1, 
+                    ),
                   ),
                 ),
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 150.0), // Add some space at the bottom
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavBar(),
-          ),
-        ],
-      ),
-    );
-
-  
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 150.0), // Add some space at the bottom
+                ),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomNavBar(),
+            ),
+          ],
+        ),
+      );
+  }
 
 
-  Scaffold _buildActivityWithConnectedUsers(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) => Scaffold(
+  Scaffold _buildActivityWithConnectedUsers(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) {
+    activities = activities.isEmpty ? activitiesSnapshot.data! : activities;
+    filter(activities);
+    sort(activities);
+    return Scaffold(
       body: Stack(
         children: [
           CustomScrollView(
@@ -277,27 +227,14 @@ class _ActivityPageState extends State<ActivityPage> {
                       // } else if (index == 1) {
                       //   return _buildHorizontalButtonList(userSnapshot.data!, connectedUsers.data!); // Add your button list here
                       } else {
-                        activities = activitiesSnapshot.data!;
-
-                        try {
-                          sort(activities);
-                          filter(activities);
-                        } catch (e) {
-                          if (e is TypeError) {
-                            // Handle TypeError here (usually casting error)
-                            log('activity.dart: Caught TypeError: $e');
-                          } else {
-                            // Handle other exceptions here
-                            log('activity.dart: Caught Exception: $e');
-                          }
-                        }
+                        
                         // activities.sort((a, b) => b['time'].compareTo(a['time'])); // Sort the list by time in reverse order
                         final activity = activities[index - 1]; // Subtract 2 because the first index is used by the search bar and the second by the button list
                         return _buildActivityWithDayHeader(activity, index - 1, activities);
                       }
                     },
                     
-                    childCount: activitiesSnapshot.data!.length + 1, // Add 2 to include the search bar and the button list
+                    childCount: activities.length + 1, // Add 2 to include the search bar and the button list
                   ),
                 ),
               ),
@@ -315,6 +252,7 @@ class _ActivityPageState extends State<ActivityPage> {
         ],
       ),
     );
+  }
 
 
   // This is the search bar area 
@@ -1042,6 +980,34 @@ class _ActivityPageState extends State<ActivityPage> {
   
   void _buildFilterOptions(BuildContext context) {
 
+    /// Edits the filter based on the value of `value`
+    /// 
+    /// If `value` is true, it adds `key` to filter, if false it removes
+    /// `code` specifies which filter to edit; 1 for fund, 2 for type
+    void editFilter(int code, bool value, String key){
+      switch (code) {
+        case 1:
+          if (value) {
+            if (!_fundsFilter.contains(key)) {
+              _fundsFilter.add(key);
+            }
+          } else {
+            _fundsFilter.remove(key);
+          }
+          break;
+        case 2:
+          if (value) {
+            if (!_typeFilter.contains(key)) {
+              _typeFilter.add(key);
+            }
+          } else {
+            _typeFilter.remove(key);
+          }
+          break;
+      }
+    }
+
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1102,8 +1068,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               context: context,
                               firstDate: DateTime(2000),
                               lastDate: DateTime(3000),
-                              builder: (BuildContext context, Widget? child) {
-                                return Theme(
+                              builder: (BuildContext context, Widget? child) => Theme(
                                   data: Theme.of(context).copyWith(
                                     scaffoldBackgroundColor: AppColors.defaultGray500,
                                     textTheme: TextTheme(
@@ -1120,8 +1085,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                     ),
                                   ),
                                   child: child!,
-                                );
-                              },
+                                ),
                             );
                             if (dateTimeRange != null) {
                               setState(() {
@@ -1160,8 +1124,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           collapsedIconColor: Colors.white,
                           children: [
                             StatefulBuilder(
-                              builder: (BuildContext context, StateSetter setState) {
-                                return Column(
+                              builder: (BuildContext context, StateSetter setState) => Column(
                                   children: <Widget>[
                                     CheckboxListTile(
                                       title: const Text(
@@ -1170,28 +1133,27 @@ class _ActivityPageState extends State<ActivityPage> {
                                       ),
                                       value: agqIsChecked,
                                       onChanged: (bool? value) {
+                                        editFilter(1, value!, 'AGQ Consulting LLC');
                                         setState(() {
-                                          setSelectedFunds();
-                                          agqIsChecked = value!;
+                                          agqIsChecked = value;
                                         });
                                       },
                                     ),
                                     CheckboxListTile(
                                       title: const Text(
-                                        'AK1 Capital',
+                                        'AK1 Holdings LP',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
                                       value: ak1IsChecked,
                                       onChanged: (bool? value) {
+                                        editFilter(1, value!, 'AK1 Holdings LP');
                                         setState(() {
-                                          setSelectedFunds();
-                                          ak1IsChecked = value!;
+                                          ak1IsChecked = value;
                                         });
                                       },
                                     ),
                                   ],
-                                );
-                              },
+                                ),
                             ),
                           ],
                         ),
@@ -1227,33 +1189,18 @@ class _ActivityPageState extends State<ActivityPage> {
                           collapsedIconColor: Colors.white,
                           children: [
                             StatefulBuilder(
-                              builder: (BuildContext context, StateSetter setState) {
-
-                                return Column(
+                              builder: (BuildContext context, StateSetter setState) => Column(
                                   children: <Widget>[
                                     CheckboxListTile(
                                       title: Text(
-                                        'Fixed Income',
+                                        'Income',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: isFixedIncomeChecked,
+                                      value: isIncomeChecked,
                                       onChanged: (bool? value) {
+                                        editFilter(2, value!, 'income');
                                         setState(() {
-                                          setSelectedActivityTypes();
-                                          isFixedIncomeChecked = value!;
-                                        });
-                                      },
-                                    ),
-                                    CheckboxListTile(
-                                      title: Text(
-                                        'Variable Income',
-                                        style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                      ),
-                                      value: isVariableIncomeChecked,
-                                      onChanged: (bool? value) {
-                                        setSelectedActivityTypes();
-                                        setState(() {
-                                          isVariableIncomeChecked = value!;
+                                          isIncomeChecked = value;
                                         });
                                       },
                                     ),
@@ -1264,9 +1211,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                       ),
                                       value: isWithdrawalChecked,
                                       onChanged: (bool? value) {
-                                        setSelectedActivityTypes();
+                                        editFilter(2, value!, 'withdrawal');
                                         setState(() {
-                                          isWithdrawalChecked = value!;
+                                          isWithdrawalChecked = value;
                                         });
                                       },
                                     ),
@@ -1278,9 +1225,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                       ),
                                       value: isPendingWithdrawalChecked,
                                       onChanged: (bool? value) {
-                                        setSelectedActivityTypes();
+                                        editFilter(2, value!, 'pending');
                                         setState(() {
-                                          isPendingWithdrawalChecked = value!;
+                                          isPendingWithdrawalChecked = value;
                                         });
                                       },
                                     ),
@@ -1291,15 +1238,14 @@ class _ActivityPageState extends State<ActivityPage> {
                                       ),
                                       value: isDepositChecked,
                                       onChanged: (bool? value) {
-                                        setSelectedActivityTypes();
+                                        editFilter(2, value!, 'deposit');
                                         setState(() {
-                                          isDepositChecked = value!;
+                                          isDepositChecked = value;
                                         });
                                       },
                                     ),
                                   ],
-                                );
-                              },
+                                ),
                             ),
                           ],
                         ),
@@ -1325,9 +1271,12 @@ class _ActivityPageState extends State<ActivityPage> {
                           ),
                           child: const Text('Apply', style: TextStyle(color: Color(0xFF8991A1), fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
                           onPressed: () {
-                            // Implement your apply functionality here
                             Navigator.pop(context);
-                          },
+                            // Implement your apply functionality here
+                            setState(() {
+                              filter(activities);
+                            });
+                          } // Close the bottom sheet,
                         ),
                       ),
                     ),
@@ -1405,8 +1354,7 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  Widget _buildOption(BuildContext context, String title, String value) {
-    return Padding(
+  Widget _buildOption(BuildContext context, String title, String value) => Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
         alignment: Alignment.centerLeft,
@@ -1425,6 +1373,5 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
       ),
     );
-  }
 }
 
