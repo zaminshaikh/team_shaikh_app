@@ -50,9 +50,64 @@ class _ActivityPageState extends State<ActivityPage> {
     }
   }
 
+  bool AGQisChecked = false;
+  bool Ak1isChecked = false;
+
+  String selectedFunds = '';
+
+  void setSelectedFunds() {
+    if (AGQisChecked && Ak1isChecked) {
+      selectedFunds = 'All Funds';
+    } else if (AGQisChecked) {
+      selectedFunds = 'AGQ Consulting LLC';
+    } else if (Ak1isChecked) {
+      selectedFunds = 'AK1 Capital';
+    } else {
+      selectedFunds = 'All Funds';
+    }
+  }
+
+  bool isFixedIncomeChecked = false;
+  bool isVariableIncomeChecked = false;
+  bool isWithdrawalChecked = false;
+  bool isPendingWithdrawalChecked = false;
+  bool isDepositChecked = false;
+
+    String selectedActivityTypes = '';
+
+    void setSelectedActivityTypes() {
+      List<String> selectedTypes = [];
+
+      if (isFixedIncomeChecked) {
+        selectedTypes.add('Fixed');
+      }
+      if (isVariableIncomeChecked) {
+        selectedTypes.add('Variable');
+      }
+      if (isWithdrawalChecked) {
+        selectedTypes.add('Withdrawal');
+      }
+      if (isPendingWithdrawalChecked) {
+        selectedTypes.add('Pending Withdrawal');
+      }
+      if (isDepositChecked) {
+        selectedTypes.add('Deposit');
+      }
+
+      if (selectedTypes.isEmpty) {
+        selectedActivityTypes = 'No Type Selected';
+      } else if (selectedTypes.length == 5) {
+        selectedActivityTypes = 'All Types';
+      } else {
+        selectedActivityTypes = selectedTypes.join(', ');
+      }
+    }
+
   @override
   Widget build(BuildContext context) => FutureBuilder(
+    
     future: _initData(),
+
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(
@@ -82,9 +137,12 @@ class _ActivityPageState extends State<ActivityPage> {
                 builder: (context, connectedUsers) {
                   if (!connectedUsers.hasData || connectedUsers.data == null) {
                     log('No connected users');
+                    setSelectedFunds();
                     return _buildActivitySingleUser(userSnapshot, activitiesSnapshot);
                   }
+                  setSelectedFunds();
                   return _buildActivityWithConnectedUsers(userSnapshot, connectedUsers, activitiesSnapshot);
+
                 },
               );
             },
@@ -966,11 +1024,6 @@ class _ActivityPageState extends State<ActivityPage> {
   
   void _buildFilterOptions(BuildContext context) {
 
-    DateTimeRange selectedDates = DateTimeRange(
-      start: DateTime.now(),
-      end: DateTime.now(),
-    );
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1002,8 +1055,29 @@ class _ActivityPageState extends State<ActivityPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ListTile(
-                          title: const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          title: Row(
+                            children: [
+                              const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                              const SizedBox(width: 10), // Add some spacing between the title and the date
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.defaultBlueGray500,
+                                  borderRadius: BorderRadius.circular(10), // Add a rounded border
+                                ),
+                                padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
+                                child: Text(
+                                  selectedDates.start == selectedDates.end
+                                    ? '${DateFormat.yMd().format(selectedDates.start)}'
+                                    : '${DateFormat.yMd().format(selectedDates.start)} - ${DateFormat.yMd().format(selectedDates.end)}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web',
+                                    fontWeight: FontWeight.bold, // Bolden the font
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
                           onTap: () async {
                             // Implement your filter option 1 functionality here
                             final DateTimeRange? dateTimeRange = await showDateRangePicker(
@@ -1043,14 +1117,32 @@ class _ActivityPageState extends State<ActivityPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ExpansionTile(
-                          title: const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                          title: Row(
+                            children: [
+                              const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                              const SizedBox(width: 10), // Add some spacing between the title and the date
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.defaultBlueGray500,
+                                  borderRadius: BorderRadius.circular(10), // Add a rounded border
+                                ),
+                                padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
+                                child: Text(
+                                  '$selectedFunds',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web',
+                                    fontWeight: FontWeight.bold, // Bolden the font
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
                           iconColor: Colors.white,
                           collapsedIconColor: Colors.white,
                           children: [
                             StatefulBuilder(
                               builder: (BuildContext context, StateSetter setState) {
-                                bool _isChecked1 = false;
-                                bool _isChecked2 = false;
                                 return Column(
                                   children: <Widget>[
                                     CheckboxListTile(
@@ -1058,10 +1150,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'AGQ Consulting LLC',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked1,
+                                      value: AGQisChecked,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          _isChecked1 = value!;
+                                          setSelectedFunds();
+                                          AGQisChecked = value!;
                                         });
                                       },
                                     ),
@@ -1070,10 +1163,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'AK1 Capital',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked2,
+                                      value: Ak1isChecked,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          _isChecked2 = value!;
+                                          setSelectedFunds();
+                                          Ak1isChecked = value!;
                                         });
                                       },
                                     ),
@@ -1088,14 +1182,35 @@ class _ActivityPageState extends State<ActivityPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ExpansionTile(
-                          title: const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                          title: Row(
+                            children: [
+                              const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                              const SizedBox(width: 10), // Add some spacing between the title and the date
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.defaultBlueGray500,
+                                  borderRadius: BorderRadius.circular(10), // Add a rounded border
+                                ),
+                                padding: EdgeInsets.all(8.0), // Add some padding to give the text some room
+                                child: Flexible(
+                                  child: Text(
+                                    selectedActivityTypes,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: 'Titillium Web',
+                                      fontWeight: FontWeight.bold, // Bolden the font
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
                           iconColor: Colors.white,
                           collapsedIconColor: Colors.white,
                           children: [
                             StatefulBuilder(
                               builder: (BuildContext context, StateSetter setState) {
-                                bool _isChecked1 = false;
-                                bool _isChecked2 = false;
+
                                 return Column(
                                   children: <Widget>[
                                     CheckboxListTile(
@@ -1103,10 +1218,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'Fixed Income',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked1,
+                                      value: isFixedIncomeChecked,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          _isChecked1 = value!;
+                                          setSelectedActivityTypes();
+                                          isFixedIncomeChecked = value!;
                                         });
                                       },
                                     ),
@@ -1115,10 +1231,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'Variable Income',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked2,
+                                      value: isVariableIncomeChecked,
                                       onChanged: (bool? value) {
+                                        setSelectedActivityTypes();
                                         setState(() {
-                                          _isChecked2 = value!;
+                                          isVariableIncomeChecked = value!;
                                         });
                                       },
                                     ),
@@ -1127,22 +1244,25 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'Withdrawal',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked2,
+                                      value: isWithdrawalChecked,
                                       onChanged: (bool? value) {
+                                        setSelectedActivityTypes();
                                         setState(() {
-                                          _isChecked2 = value!;
+                                          isWithdrawalChecked = value!;
                                         });
                                       },
                                     ),
                                     CheckboxListTile(
                                       title: Text(
+                                        
                                         'Pending Withdrawal',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked2,
+                                      value: isPendingWithdrawalChecked,
                                       onChanged: (bool? value) {
+                                        setSelectedActivityTypes();
                                         setState(() {
-                                          _isChecked2 = value!;
+                                          isPendingWithdrawalChecked = value!;
                                         });
                                       },
                                     ),
@@ -1151,10 +1271,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'Deposit',
                                         style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                       ),
-                                      value: _isChecked2,
+                                      value: isDepositChecked,
                                       onChanged: (bool? value) {
+                                        setSelectedActivityTypes();
                                         setState(() {
-                                          _isChecked2 = value!;
+                                          isDepositChecked = value!;
                                         });
                                       },
                                     ),
