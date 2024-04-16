@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -18,13 +19,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  int selectedIndex = 0;
-  List<String> data = [
-    'assets/icons/dashboard_hollowed.png',
-    'assets/icons/analytics_hollowed.png',
-    'assets/icons/activity_hollowed.png',
-    'assets/icons/profile_hollowed.png',
-  ];
 
 
   // database service instance
@@ -157,7 +151,7 @@ class _DashboardPageState extends State<DashboardPage> {
               left: 0,
               right: 0,
               bottom: 0,
-              child: _buildBottomNavigationBar(),
+              child: _buildBottomNavigationBar(context),
             ),
           ],
         ),
@@ -266,7 +260,7 @@ class _DashboardPageState extends State<DashboardPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildBottomNavigationBar(),
+            child: _buildBottomNavigationBar(context),
           ),
         ],
       ),    
@@ -322,11 +316,10 @@ class _DashboardPageState extends State<DashboardPage> {
             onTap: () {
               Navigator.pushNamed(context, '/notification');
             },
-            child: Image.asset(
-              'assets/icons/notification_bell.png',
-              color: Colors.white,
-              height: 32,
-              width: 32,
+            child: SvgPicture.asset(
+              'assets/icons/notification_bell.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              height: 30,
             ),
           ),
         ),
@@ -375,9 +368,9 @@ class _DashboardPageState extends State<DashboardPage> {
             SizedBox(height: 10),
             Row(
               children: [
-                Image.asset(
-                  'assets/icons/green_arrow_up.png',
-                  height: 20,
+                SvgPicture.asset(
+                  'assets/icons/green_arrow_up.svg',
+                  height: 12,
                 ),
                 SizedBox(width: 5),
                 Text(
@@ -436,9 +429,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
     Widget leadingIcon;
     if (fund == 'agq') {
-      leadingIcon = Image.asset('assets/icons/agq_logo.png');
+      leadingIcon = SvgPicture.asset('assets/icons/agq_logo.svg');
     } else if (fund == 'ak1') {
-      leadingIcon = Image.asset('assets/icons/ak1_logo.png');
+      leadingIcon = SvgPicture.asset('assets/icons/ak1_logo.svg');
     } else {
       leadingIcon = Icon(Icons.account_balance, color: Colors.white);
     }
@@ -534,9 +527,9 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             SizedBox(width: 10),
-            Image.asset(
-                    'assets/icons/green_arrow_up.png',
-                    height: 20,
+            SvgPicture.asset(
+                    'assets/icons/green_arrow_up.svg',
+                    height: 12,
                   ),
             SizedBox(width: 5),
             Text(
@@ -700,9 +693,9 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             SizedBox(width: 10),
-            Image.asset(
-              'assets/icons/green_arrow_up.png',
-              height: 20,
+            SvgPicture.asset(
+              'assets/icons/green_arrow_up.svg',
+              height: 12,
             ),
             SizedBox(width: 5),
             Text(
@@ -951,43 +944,27 @@ class _DashboardPageState extends State<DashboardPage> {
     ),
   );
 
-  Widget _buildBottomNavigationBar() => Container(
-    margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-    height: 80,
-    padding: const EdgeInsets.only(right: 30, left: 30),
-    decoration: BoxDecoration(
-      color: const Color.fromARGB(255, 30, 41, 59),
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          spreadRadius: 8,
-          blurRadius: 8,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(
-        data.length,
-        (i) => GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedIndex = i;
-            });
-
-            if (data[i] == 'assets/icons/analytics_hollowed.png') {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            }
-
-            if (data[i] == 'assets/icons/dashboard_hollowed.png') {
+  Widget _buildBottomNavigationBar(BuildContext context) => Container(
+      margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
+      height: 80,
+      padding: const EdgeInsets.only(right: 30, left: 30),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 30, 41, 59),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 8,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -995,19 +972,43 @@ class _DashboardPageState extends State<DashboardPage> {
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
-            }
-
-            if (data[i] == 'assets/icons/activity_hollowed.png') {
+            },
+            child: SvgPicture.asset(
+              'assets/icons/dashboard_filled.svg',
+              height: 22,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                ),
+              );
+            },
+            child: SvgPicture.asset(
+              'assets/icons/analytics_hollowed.svg',
+              height: 22,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
-              );
-            }
-
-            if (data[i] == 'assets/icons/profile_hollowed.png') {
+              );},
+            child: SvgPicture.asset(
+              'assets/icons/activity_hollowed.svg',
+              height: 20,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
@@ -1015,20 +1016,15 @@ class _DashboardPageState extends State<DashboardPage> {
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );
-            }
-
-          },
-
-          child: Image.asset(
-            i == selectedIndex && data[i] == 'assets/icons/dashboard_hollowed.png'
-              ? 'assets/icons/dashboard_filled.png'
-              : data[i],
-            height: 50,
-          ),       
-        ),
+            },
+            child: SvgPicture.asset(
+              'assets/icons/profile_hollowed.svg',
+              height: 22,
+            ),
+          ),
+        ],
       ),
-    ),    
-  );
+    );
 
 
 }

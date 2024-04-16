@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/utilities.dart';
@@ -248,11 +249,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           onTap: () {
             Navigator.pushNamed(context, '/notification');
           },
-          child: Image.asset(
-            'assets/icons/notification_bell.png',
-            color: Colors.white,
-            height: 32,
-            width: 32,
+          child: SvgPicture.asset(
+            'assets/icons/notification_bell.svg',
+            height: 30,
           ),
         ),
       ),
@@ -458,8 +457,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
 
 // This is the bottom navigation bar 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
+  Widget _buildBottomNavigationBar(BuildContext context) => Container(
       margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
       height: 80,
       padding: const EdgeInsets.only(right: 30, left: 30),
@@ -488,9 +486,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/dashboard_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/dashboard_hollowed.svg',
+              height: 22,
             ),
           ),
           GestureDetector(
@@ -503,9 +501,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/analytics_filled.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/analytics_filled.svg',
+              height: 22,
             ),
           ),
           GestureDetector(
@@ -517,9 +515,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );},
-            child: Image.asset(
-              'assets/icons/activity_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/activity_hollowed.svg',
+              height: 20,
             ),
           ),
           GestureDetector(
@@ -532,14 +530,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/profile_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/profile_hollowed.svg',
+              height: 22,
             ),
           ),
         ],
       ),
     );
-  }
+
+
 
 }

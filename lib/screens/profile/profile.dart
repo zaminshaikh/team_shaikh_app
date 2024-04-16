@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/resources.dart';
@@ -838,7 +839,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
 
                   const SizedBox(height: 20),
-
 */
                   Column(
                     children: [
@@ -933,8 +933,8 @@ class _ProfilePageState extends State<ProfilePage> {
             onTap: () {
               Navigator.pushNamed(context, '/notification');
             },
-            child: Image.asset(
-              'assets/icons/notification_bell.png',
+            child: SvgPicture.asset(
+              'assets/icons/notification_bell.svg',
               color: Colors.white,
               height: 32,
               width: 32,
@@ -974,9 +974,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/dashboard_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/dashboard_hollowed.svg',
+              height: 22,
             ),
           ),
           GestureDetector(
@@ -989,9 +989,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/analytics_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/analytics_hollowed.svg',
+              height: 22,
             ),
           ),
           GestureDetector(
@@ -1003,9 +1003,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );},
-            child: Image.asset(
-              'assets/icons/activity_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/activity_hollowed.svg',
+              height: 20,
             ),
           ),
           GestureDetector(
@@ -1018,14 +1018,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/profile_filled.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/profile_filled.svg',
+              height: 22,
             ),
           ),
         ],
       ),
     );
+
 
 // This is the Client Name and ID section
   Widget _buildClientNameAndID(String name, String clientId) => Padding(

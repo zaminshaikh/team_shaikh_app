@@ -25,11 +25,6 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
 
-  List<String> icons = [
-    'assets/icons/dashboard_hollowed.png',
-    'assets/icons/activity_filled.png',
-    'assets/icons/profile_hollowed.png',
-  ];
 
   late DatabaseService _databaseService;
 
@@ -252,7 +247,7 @@ class _ActivityPageState extends State<ActivityPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildBottomNavBar(),
+            child: _buildBottomNavigationBar(context),
           ),
         ],
       ),
@@ -310,7 +305,7 @@ class _ActivityPageState extends State<ActivityPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildBottomNavBar(),
+            child: _buildBottomNavigationBar(context),
           ),
         ],
       ),
@@ -326,7 +321,6 @@ class _ActivityPageState extends State<ActivityPage> {
           child: ElevatedButton.icon(
             icon: SvgPicture.asset(
               'assets/icons/filter.svg',
-              color: AppColors.defaultGray200,
               height: 24,
               width: 24,
             ),
@@ -353,9 +347,8 @@ class _ActivityPageState extends State<ActivityPage> {
         const SizedBox(width: 10), // Add some space between the buttons
         Expanded(
           child: ElevatedButton.icon(
-            icon: Image.asset(
-              'assets/icons/sort.png',
-              color: AppColors.defaultGray200,
+            icon: SvgPicture.asset(
+              'assets/icons/sort.svg',
               height: 24,
               width: 24,
             ),
@@ -423,9 +416,8 @@ class _ActivityPageState extends State<ActivityPage> {
             onTap: () {
               Navigator.pushNamed(context, '/notification');
             },
-            child: Image.asset(
-              'assets/icons/notification_bell.png',
-              color: Colors.white,
+            child: SvgPicture.asset(
+              'assets/icons/notification_bell.svg',
               height: 32,
               width: 32,
             ),
@@ -951,7 +943,8 @@ class _ActivityPageState extends State<ActivityPage> {
     ),
   );
 
-  Widget _buildBottomNavBar() => Container(
+// This is the bottom navigation bar 
+  Widget _buildBottomNavigationBar(BuildContext context) => Container(
       margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
       height: 80,
       padding: const EdgeInsets.only(right: 30, left: 30),
@@ -980,9 +973,9 @@ class _ActivityPageState extends State<ActivityPage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/dashboard_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/dashboard_hollowed.svg',
+              height: 22,
             ),
           ),
           GestureDetector(
@@ -995,9 +988,9 @@ class _ActivityPageState extends State<ActivityPage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/analytics_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/analytics_hollowed.svg',
+              height: 22,
             ),
           ),
           GestureDetector(
@@ -1009,9 +1002,9 @@ class _ActivityPageState extends State<ActivityPage> {
                   transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                 ),
               );},
-            child: Image.asset(
-              'assets/icons/activity_filled.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/activity_filled.svg',
+              height: 20,
             ),
           ),
           GestureDetector(
@@ -1024,14 +1017,15 @@ class _ActivityPageState extends State<ActivityPage> {
                 ),
               );
             },
-            child: Image.asset(
-              'assets/icons/profile_hollowed.png',
-              height: 50,
+            child: SvgPicture.asset(
+              'assets/icons/profile_hollowed.svg',
+              height: 22,
             ),
           ),
         ],
       ),
     );
+
 
 
   DateTimeRange selectedDates = DateTimeRange(
