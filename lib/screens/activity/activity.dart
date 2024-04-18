@@ -55,6 +55,7 @@ class _ActivityPageState extends State<ActivityPage> {
   bool agqIsChecked = false;
   bool ak1IsChecked = false;
 
+
   bool isIncomeChecked = false;
   bool isWithdrawalChecked = false;
   bool isPendingWithdrawalChecked = false;
@@ -62,9 +63,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-    
     future: _initData(),
-
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(
@@ -159,7 +158,7 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot){
-    activities = activities.isEmpty ? activitiesSnapshot.data! : activities;
+    activities = activitiesSnapshot.data!;
     filter(activities);
     sort(activities);
     return Scaffold(
@@ -204,9 +203,8 @@ class _ActivityPageState extends State<ActivityPage> {
       );
   }
 
-
   Scaffold _buildActivityWithConnectedUsers(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) {
-    activities = activities.isEmpty ? activitiesSnapshot.data! : activities;
+    activities = activitiesSnapshot.data!;
     filter(activities);
     sort(activities);
     return Scaffold(
@@ -251,7 +249,6 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
-
 
   // This is the search bar area 
   Widget _buildFilterAndSort() => Padding(
@@ -358,9 +355,9 @@ class _ActivityPageState extends State<ActivityPage> {
               Navigator.pushNamed(context, '/notification');
             },
             child: SvgPicture.asset(
-              'assets/icons/bell.svg',
-              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              height: 30,
+              'assets/icons/notification_bell.svg',
+              height: 32,
+              width: 32,
             ),
           ),
         ),
@@ -800,6 +797,7 @@ class _ActivityPageState extends State<ActivityPage> {
     
     }
 
+
   Widget _buildHorizontalButtonList(UserWithAssets user, List<UserWithAssets> connectedUsers) => SizedBox(
     height: 35.0,
     child: ListView(
@@ -967,8 +965,6 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
 
-
-
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime.now(),
     end: DateTime.now(),
@@ -977,39 +973,32 @@ class _ActivityPageState extends State<ActivityPage> {
   
   void _buildFilterOptions(BuildContext context) {
 
-  bool isAnyCheckboxChecked = false;
-
     /// Edits the filter based on the value of `value`
     /// 
     /// If `value` is true, it adds `key` to filter, if false it removes
     /// `code` specifies which filter to edit; 1 for fund, 2 for type
-  void editFilter(int code, bool value, String key){
-    setState(() {
-      
-    });
-    switch (code) {
-      case 1:
-        if (value) {
-          if (!_fundsFilter.contains(key)) {
-            _fundsFilter.add(key);
+    void editFilter(int code, bool value, String key){
+      switch (code) {
+        case 1:
+          if (value) {
+            if (!_fundsFilter.contains(key)) {
+              _fundsFilter.add(key);
+            }
+          } else {
+            _fundsFilter.remove(key);
           }
-        } else {
-          _fundsFilter.remove(key);
-        }
-        break;
-      case 2:
-        if (value) {
-          if (!_typeFilter.contains(key)) {
-            _typeFilter.add(key);
+          break;
+        case 2:
+          if (value) {
+            if (!_typeFilter.contains(key)) {
+              _typeFilter.add(key);
+            }
+          } else {
+            _typeFilter.remove(key);
           }
-        } else {
-          _typeFilter.remove(key);
-        }
-        break;
+          break;
+      }
     }
-    // Update `isAnyCheckboxChecked` based on the current state of the filters
-    isAnyCheckboxChecked = _fundsFilter.isNotEmpty || _typeFilter.isNotEmpty;
-  }    
 
 
     showModalBottomSheet(
@@ -1138,8 +1127,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                       value: agqIsChecked,
                                       onChanged: (bool? value) {
                                         editFilter(1, value!, 'AGQ Consulting LLC');
-                                        agqIsChecked = value;
                                         setState(() {
+                                          agqIsChecked = value;
                                         });
                                       },
                                     ),
@@ -1151,8 +1140,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                       value: ak1IsChecked,
                                       onChanged: (bool? value) {
                                         editFilter(1, value!, 'AK1 Holdings LP');
-                                          ak1IsChecked = value;
                                         setState(() {
+                                          ak1IsChecked = value;
                                         });
                                       },
                                     ),
@@ -1164,7 +1153,6 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                       
                       Padding(
-
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ExpansionTile(
                           title: Row(
