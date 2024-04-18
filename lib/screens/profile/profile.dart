@@ -934,10 +934,9 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.pushNamed(context, '/notification');
             },
             child: SvgPicture.asset(
-              'assets/icons/notification_bell.svg',
-              color: Colors.white,
-              height: 32,
-              width: 32,
+              'assets/icons/bell.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              height: 30,
             ),
           ),
         ),

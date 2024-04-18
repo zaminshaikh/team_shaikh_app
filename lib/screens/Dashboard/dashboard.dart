@@ -317,7 +317,7 @@ class _DashboardPageState extends State<DashboardPage> {
               Navigator.pushNamed(context, '/notification');
             },
             child: SvgPicture.asset(
-              'assets/icons/notification_bell.svg',
+              'assets/icons/bell.svg',
               colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
               height: 30,
             ),

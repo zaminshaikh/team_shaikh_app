@@ -25,7 +25,6 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
 
-
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
@@ -55,7 +54,6 @@ class _ActivityPageState extends State<ActivityPage> {
 
   bool agqIsChecked = false;
   bool ak1IsChecked = false;
-
 
   bool isIncomeChecked = false;
   bool isWithdrawalChecked = false;
@@ -199,7 +197,7 @@ class _ActivityPageState extends State<ActivityPage> {
               left: 0,
               right: 0,
               bottom: 0,
-              child: _buildBottomNavBar(),
+              child: _buildBottomNavigationBar(context),
             ),
           ],
         ),
@@ -360,9 +358,9 @@ class _ActivityPageState extends State<ActivityPage> {
               Navigator.pushNamed(context, '/notification');
             },
             child: SvgPicture.asset(
-              'assets/icons/notification_bell.svg',
-              height: 32,
-              width: 32,
+              'assets/icons/bell.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              height: 30,
             ),
           ),
         ),
@@ -979,32 +977,39 @@ class _ActivityPageState extends State<ActivityPage> {
   
   void _buildFilterOptions(BuildContext context) {
 
+  bool isAnyCheckboxChecked = false;
+
     /// Edits the filter based on the value of `value`
     /// 
     /// If `value` is true, it adds `key` to filter, if false it removes
     /// `code` specifies which filter to edit; 1 for fund, 2 for type
-    void editFilter(int code, bool value, String key){
-      switch (code) {
-        case 1:
-          if (value) {
-            if (!_fundsFilter.contains(key)) {
-              _fundsFilter.add(key);
-            }
-          } else {
-            _fundsFilter.remove(key);
+  void editFilter(int code, bool value, String key){
+    setState(() {
+      
+    });
+    switch (code) {
+      case 1:
+        if (value) {
+          if (!_fundsFilter.contains(key)) {
+            _fundsFilter.add(key);
           }
-          break;
-        case 2:
-          if (value) {
-            if (!_typeFilter.contains(key)) {
-              _typeFilter.add(key);
-            }
-          } else {
-            _typeFilter.remove(key);
+        } else {
+          _fundsFilter.remove(key);
+        }
+        break;
+      case 2:
+        if (value) {
+          if (!_typeFilter.contains(key)) {
+            _typeFilter.add(key);
           }
-          break;
-      }
+        } else {
+          _typeFilter.remove(key);
+        }
+        break;
     }
+    // Update `isAnyCheckboxChecked` based on the current state of the filters
+    isAnyCheckboxChecked = _fundsFilter.isNotEmpty || _typeFilter.isNotEmpty;
+  }    
 
 
     showModalBottomSheet(
@@ -1133,8 +1138,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                       value: agqIsChecked,
                                       onChanged: (bool? value) {
                                         editFilter(1, value!, 'AGQ Consulting LLC');
+                                        agqIsChecked = value;
                                         setState(() {
-                                          agqIsChecked = value;
                                         });
                                       },
                                     ),
@@ -1146,8 +1151,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                       value: ak1IsChecked,
                                       onChanged: (bool? value) {
                                         editFilter(1, value!, 'AK1 Holdings LP');
-                                        setState(() {
                                           ak1IsChecked = value;
+                                        setState(() {
                                         });
                                       },
                                     ),
@@ -1159,6 +1164,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                       
                       Padding(
+
                         padding: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ExpansionTile(
                           title: Row(

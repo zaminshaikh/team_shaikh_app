@@ -249,10 +249,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           onTap: () {
             Navigator.pushNamed(context, '/notification');
           },
-          child: SvgPicture.asset(
-            'assets/icons/notification_bell.svg',
-            height: 30,
-          ),
+            child: SvgPicture.asset(
+              'assets/icons/bell.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              height: 30,
+            ),
         ),
       ),
     ],
