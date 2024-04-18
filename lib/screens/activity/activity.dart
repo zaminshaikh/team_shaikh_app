@@ -259,6 +259,7 @@ class _ActivityPageState extends State<ActivityPage> {
           child: ElevatedButton.icon(
             icon: SvgPicture.asset(
               'assets/icons/filter.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
               height: 24,
               width: 24,
             ),
@@ -274,6 +275,8 @@ class _ActivityPageState extends State<ActivityPage> {
               'Filter',
               style: TextStyle(
                 color: AppColors.defaultGray200,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
                 fontFamily: 'Titillium Web',
               ),
             ),
@@ -287,6 +290,7 @@ class _ActivityPageState extends State<ActivityPage> {
           child: ElevatedButton.icon(
             icon: SvgPicture.asset(
               'assets/icons/sort.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
               height: 24,
               width: 24,
             ),
@@ -302,6 +306,8 @@ class _ActivityPageState extends State<ActivityPage> {
               'Sort',
               style: TextStyle(
                 color: AppColors.defaultGray200,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
                 fontFamily: 'Titillium Web',
               ),
             ),
@@ -355,7 +361,8 @@ class _ActivityPageState extends State<ActivityPage> {
               Navigator.pushNamed(context, '/notification');
             },
             child: SvgPicture.asset(
-              'assets/icons/notification_bell.svg',
+              'assets/icons/bell.svg',
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
               height: 32,
               width: 32,
             ),
