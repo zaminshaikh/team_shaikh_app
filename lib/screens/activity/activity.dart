@@ -25,6 +25,7 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
 
+
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
@@ -52,14 +53,13 @@ class _ActivityPageState extends State<ActivityPage> {
     }
   }
 
-  bool agqIsChecked = false;
-  bool ak1IsChecked = false;
+  bool agqIsChecked = true;
+  bool ak1IsChecked = true;
 
-
-  bool isIncomeChecked = false;
-  bool isWithdrawalChecked = false;
-  bool isPendingWithdrawalChecked = false;
-  bool isDepositChecked = false;
+  bool isIncomeChecked = true;
+  bool isWithdrawalChecked = true;
+  bool isPendingWithdrawalChecked = true;
+  bool isDepositChecked = true;
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -155,6 +155,14 @@ class _ActivityPageState extends State<ActivityPage> {
   void filter(List<Map<String, dynamic>> activities) {
     activities.removeWhere((element) => !_typeFilter.contains(element['type']));
     activities.removeWhere((element) => !_fundsFilter.contains(element['fund']));
+
+    if (_typeFilter.isEmpty) {
+      _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+    }
+
+    if (_fundsFilter.isEmpty) {
+      _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
+    }
   }
 
   Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot){
@@ -1274,6 +1282,8 @@ class _ActivityPageState extends State<ActivityPage> {
                             Navigator.pop(context);
                             // Implement your apply functionality here
                             setState(() {
+                            log('$_fundsFilter');
+                            log('$_typeFilter');
                               filter(activities);
                             });
                           } // Close the bottom sheet,
