@@ -25,6 +25,12 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1 Holdings LP', 'AGQ Consulting LLC'];
 
+  DateTimeRange selectedDates = DateTimeRange(
+    start: DateTime(1900),
+    end: DateTime.now(),
+  );
+
+
 
   late DatabaseService _databaseService;
 
@@ -155,6 +161,7 @@ class _ActivityPageState extends State<ActivityPage> {
   void filter(List<Map<String, dynamic>> activities) {
     activities.removeWhere((element) => !_typeFilter.contains(element['type']));
     activities.removeWhere((element) => !_fundsFilter.contains(element['fund']));
+    activities.removeWhere((element) => element['time'].toDate().isBefore(selectedDates.start) || element['time'].toDate().isAfter(selectedDates.end));
 
     if (_typeFilter.isEmpty) {
       _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
@@ -1041,11 +1048,7 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
 
-  DateTimeRange selectedDates = DateTimeRange(
-    start: DateTime.now(),
-    end: DateTime.now(),
-  );
-
+  
   
   void _buildFilterOptions(BuildContext context) {
 
