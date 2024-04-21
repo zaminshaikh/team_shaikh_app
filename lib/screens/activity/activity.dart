@@ -449,6 +449,61 @@ class _ActivityPageState extends State<ActivityPage> {
               return AppColors.defaultWhite;
           }
         }
+
+        Color getUnderlayColorBasedOnActivityType(String activityType) {
+          switch (activityType) {
+            case 'deposit':
+              return Color.fromARGB(255, 21, 52, 57);
+            case 'withdrawal':
+              return Color.fromARGB(255, 41, 25, 28);
+            case 'pending':
+              return Color.fromARGB(255, 24, 46, 68);
+            case 'income':
+              return Color.fromARGB(255, 24, 46, 68);
+            default:
+              return AppColors.defaultWhite;
+          }
+        }
+
+        Widget getIconBasedOnActivityType(String activityType) {
+          switch (activityType) {
+            case 'deposit':
+              return SvgPicture.asset(
+                'assets/icons/deposit.svg',
+                color: getColorBasedOnActivityType(activityType),
+                height: 30,
+                width: 30,
+              );
+            case 'withdrawal':
+              return SvgPicture.asset(
+                'assets/icons/withdrawal.svg',
+                color: getColorBasedOnActivityType(activityType),
+                height: 30,
+                width: 30,
+              );
+            case 'pending':
+              return SvgPicture.asset(
+                'assets/icons/pending_withdrawal.svg',
+                color: getColorBasedOnActivityType(activityType),
+                height: 30,
+                width: 30,
+              );
+            case 'income':
+              return SvgPicture.asset(
+                'assets/icons/income.svg',
+                color: getColorBasedOnActivityType(activityType),
+                height: 30,
+                width: 30,
+              );
+            default:
+              return Icon(
+                Icons.circle,
+                color: AppColors.defaultWhite,
+                size: 30,
+              );
+          }
+        }
+
         
       return Column(
         children: [
@@ -458,10 +513,16 @@ class _ActivityPageState extends State<ActivityPage> {
               padding: const EdgeInsets.fromLTRB(25.0, 5.0, 25.0, 5.0),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.circle,
-                    color: getColorBasedOnActivityType(activity['type']),
-                    size: 50,
+                  Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.circle,
+                        color: getUnderlayColorBasedOnActivityType(activity['type']),
+                        size: 50,
+                      ),
+                      getIconBasedOnActivityType(activity['type']),
+                    ]
                   ),
                   const SizedBox(width: 10),
                   Column(
