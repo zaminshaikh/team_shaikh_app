@@ -33,7 +33,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     // If there is no matching CID, redirect to login page
     if (service == null) {
       Navigator.pushReplacementNamed(context, '/login');
-    } else {
+} else {
       // Otherwise set the database service instance
       _databaseService = service;
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
