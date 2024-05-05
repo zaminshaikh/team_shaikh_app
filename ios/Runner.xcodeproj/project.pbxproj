@@ -307,7 +307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\ncd $SRCROOT\nflutter pub get\ncd ios\npod install\n";
+			shellScript = "#!/bin/sh\n\n# Fail this script if any subcommand fails.\nset -e\n\n# The default execution directory of this script is the ci_scripts directory.\ncd $CI_PRIMARY_REPOSITORY_PATH # change working directory to the root of your cloned repo.\n\n# Install Flutter using git.\ngit clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter\nexport PATH=\"$PATH:$HOME/flutter/bin\"\n\n# Install Flutter artifacts for iOS (--ios), or macOS (--macos) platforms.\nflutter precache --ios\n\n# Install Flutter dependencies.\nflutter pub get\n\n# Install CocoaPods using Homebrew.\nHOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.\nbrew install cocoapods\n\n# Install CocoaPods dependencies.\ncd ios && pod install # run `pod install` in the `ios` directory.\n\nexit 0\n";
 		};
 		6068EF45CC1132D4EF8F3417 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
