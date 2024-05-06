@@ -194,7 +194,6 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				E4E56CBFD5D565FB33C84225 /* [CP] Check Pods Manifest.lock */,
-				43389DE62BE73BCD008F401E /* ShellScript */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
@@ -290,24 +289,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
-		};
-		43389DE62BE73BCD008F401E /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\n\n# Fail this script if any subcommand fails.\nset -e\n\n# The default execution directory of this script is the ci_scripts directory.\ncd $CI_PRIMARY_REPOSITORY_PATH # change working directory to the root of your cloned repo.\n\n# Install Flutter using git.\ngit clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter\nexport PATH=\"$PATH:$HOME/flutter/bin\"\n\n# Install Flutter artifacts for iOS (--ios), or macOS (--macos) platforms.\nflutter precache --ios\n\n# Install Flutter dependencies.\nflutter pub get\n\n# Install CocoaPods using Homebrew.\nHOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.\nbrew install cocoapods\n\n# Install CocoaPods dependencies.\ncd ios && pod install # run `pod install` in the `ios` directory.\n\nexit 0\n";
 		};
 		6068EF45CC1132D4EF8F3417 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
