@@ -15,7 +15,7 @@ ios/Flutter/flutter_export_environment 2.sh
 macos/Flutter/ephemeral/
 macos/Flutter/GeneratedPluginRegistrant.swift
 android/local.properties
-ios/Podfile.lock
+# ios/Podfile.lock
 
 # IntelliJ related
 *.iml

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBJTRrvHA_e7dKQTxIJ6XEv9PeVRXshjYE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>957281597606</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.teamshaikh.investmentportfolio</string>
+	<key>PROJECT_ID</key>
+	<string>team-shaikh-app-52dc5</string>
+	<key>STORAGE_BUCKET</key>
+	<string>team-shaikh-app-52dc5.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:957281597606:ios:62ad36fe6d3fadf418dc67</string>
+</dict>
+</plist>

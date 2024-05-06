@@ -116,7 +116,6 @@ class DatabaseService {
           'uid': uid,
           'email': email,
           'name': existingData['name'],
-          'hapticsOn': existingData['hapticsOn'],
           'notif': existingData['notif'],
           'connectedUsers': existingData['connectedUsers'],
         };
