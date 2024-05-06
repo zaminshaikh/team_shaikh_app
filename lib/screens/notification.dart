@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
@@ -112,20 +114,25 @@ class _NotificationPageState extends State<NotificationPage> {
     
   Widget _buildNotification(Map<String, dynamic> notification, bool showDivider){
     String title;
-    String route = '/notification';
-    switch (notification['type']) {
-      case 'activity':
-        title = 'New Activity';
-        route = '/activity';
-        break;
-      case 'statement':
-        title = 'New Statement';
-        route = '/profile';
-        break;
-      default:
-        title = 'New Notification';
-        break;
-    }
+String routeName = '/notification';
+Widget route;
+switch (notification['type']) {
+  case 'activity':
+    title = 'New Activity';
+    routeName = '/activity';
+    route = ActivityPage(); // replace with your actual Activity page widget
+    break;
+  case 'statement':
+    title = 'New Statement';
+    routeName = '/profile';
+    route = ProfilePage(); // replace with your actual Profile page widget
+    break;
+  default:
+    title = 'New Notification';
+    route = NotificationPage(); // replace with your actual Notification page widget
+    break;
+}
+
     return Padding(
       padding: const EdgeInsets.only(left: 20.0, right: 20.0),
       child: Column(
@@ -164,7 +171,10 @@ class _NotificationPageState extends State<NotificationPage> {
             alignment: Alignment.centerLeft,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, route);
+                Navigator.pushReplacement(context, PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) => route,
+                  transitionDuration: Duration.zero,
+                ));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.defaultBlue300,

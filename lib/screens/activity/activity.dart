@@ -526,7 +526,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       Icon(
                         Icons.circle,
                         color: getUnderlayColorBasedOnActivityType(activity['type']),
-                        size: 50,
+                        size: 70,
                       ),
                       getIconBasedOnActivityType(activity['type']),
                     ]
