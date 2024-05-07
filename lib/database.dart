@@ -116,7 +116,6 @@ class DatabaseService {
           'uid': uid,
           'email': email,
           'name': existingData['name'],
-          'notif': existingData['notif'],
           'connectedUsers': existingData['connectedUsers'],
         };
 
