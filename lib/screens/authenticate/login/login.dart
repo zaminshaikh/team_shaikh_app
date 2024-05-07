@@ -6,6 +6,7 @@ import 'package:custom_signin_buttons/custom_signin_buttons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
 
 
@@ -17,6 +18,11 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
+  // Controllers to store login email and password
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+
 // State class for the LoginPage
 class _LoginPageState extends State<LoginPage> {
 
@@ -25,37 +31,27 @@ class _LoginPageState extends State<LoginPage> {
   // Boolean variable to set the remember me checkbox to unchecked, and initializing that the user does not want the app to remember them
   bool rememberMe = false;
   
-  // Controllers to store login email and password
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
   // Sign user in method
-  void signUserIn(context) async {
-    // try login
+  Future<bool> signUserIn(context) async {
     try {
-      // Create a new UserCredential from Firebase with given details 
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
-      // Successfully signed in, you can navigate to the next screen or perform other actions.
       log('login.dart: Signed in user ${userCredential.user!.uid}');
-      // await userCredential.user!.reload(); // Trigger the stream to update in wrapper.dart
-      // Trigger the stream to update in wrapper.dart
-
+      return true;
     } on FirebaseAuthException catch (e) {
-      // Handle errors and show an error message.
       String errorMessage = '';
-        // Check if the error is due to the email not being found
       if (e.code == 'user-not-found') {
         errorMessage = 'Email not found. Please check your email or sign up for a new account.';
       } else {
         errorMessage = 'Error signing in. Please check your email and password. $e';
       }
-      // Display the error message using a dialog.
       await CustomAlertDialog.showAlertDialog(context, 'Error logging in', errorMessage);
+      return false;
     }
   }
+  
 
 
   // The build method for the login screen widget
@@ -271,7 +267,18 @@ class _LoginPageState extends State<LoginPage> {
             
             // Login Button
             GestureDetector(
-              onTap: () => signUserIn(context),
+              onTap: () async {
+                bool success = await signUserIn(context);
+                if (success) {
+                  Navigator.pushReplacement(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation1, animation2) => DashboardPage(),
+                      transitionDuration: Duration.zero,
+                    ),
+                  );
+                }
+              },
               child: Container(
                 height: 55,
                 decoration: BoxDecoration(

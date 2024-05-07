@@ -27,7 +27,7 @@ class Wrapper extends StatelessWidget {
             final user = snapshot.data as User;
             // Check verification status (create_account.dart case)
             if (user.emailVerified) {
-              log('wrapper.dart: User email is verified. Returning dashboard...');
+              log('wrapper.dart: User email (${user.email}) with uid (${user.uid}) is verified. Returning dashboard...');
               return DashboardPage();
             } else {
               log('wrapper.dart: User email is not verified.');
