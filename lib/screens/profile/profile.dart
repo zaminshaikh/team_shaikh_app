@@ -81,12 +81,19 @@ class _ProfilePageState extends State<ProfilePage> {
   void signUserOut(BuildContext context) async {
     ('profile.dart: Signing out...');
     await FirebaseAuth.instance.signOut();
+    assert(FirebaseAuth.instance.currentUser == null);
+
+    emailController.clear();
+    passwordController.clear();
+
+    
 
     // Async gap mounted widget check
     if (!mounted){
       log('profile.dart: No longer mounted!');
       return;
     }
+
     // Pop the current page and go to login
     Navigator.pushAndRemoveUntil(
       context,
