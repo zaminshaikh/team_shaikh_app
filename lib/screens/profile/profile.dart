@@ -8,6 +8,7 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:developer';
 import 'PDFPreview.dart';
@@ -87,8 +88,14 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
     // Pop the current page and go to login
-    await Navigator.pushReplacementNamed(context, '/login');
-  }
+    Navigator.pushAndRemoveUntil(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => LoginPage(),
+        transitionDuration: Duration.zero,
+      ),
+      (route) => false,
+    );  }
 
 
   bool switchValue = false;

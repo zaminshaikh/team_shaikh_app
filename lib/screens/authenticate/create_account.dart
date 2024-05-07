@@ -67,7 +67,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// ```
   void _signUserUp(BuildContext context) async {
     // Delete any users currently in the buffer
-    await FirebaseAuth.instance.currentUser?.delete();  
+    if (FirebaseAuth.instance.currentUser != null) {
+      await FirebaseAuth.instance.currentUser?.delete();
+    }  
     log('create_account.dart: User after delete: ${FirebaseAuth.instance.currentUser ?? 'deleted'}'); // Confirms delete
     try {
       // Create a new UserCredential from Firebase with given details
