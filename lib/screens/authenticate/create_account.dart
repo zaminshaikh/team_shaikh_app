@@ -1,8 +1,11 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
 
 
@@ -68,9 +71,18 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   void _signUserUp(BuildContext context) async {
     // Delete any users currently in the buffer
     if (FirebaseAuth.instance.currentUser != null) {
-      await FirebaseAuth.instance.currentUser?.delete();
+      log('create_account.dart: User email: ${FirebaseAuth.instance.currentUser!.email}'); 
+      try {
+        await FirebaseAuth.instance.currentUser!.delete();
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          await FirebaseAuth.instance.signOut();
+        } else {
+          log('create_account.dart: Error: $e', stackTrace: StackTrace.current);
+        }
+      }
+      log('create_account.dart: User after delete: ${FirebaseAuth.instance.currentUser ?? 'deleted'}'); // Confirms delete
     }  
-    log('create_account.dart: User after delete: ${FirebaseAuth.instance.currentUser ?? 'deleted'}'); // Confirms delete
     try {
       // Create a new UserCredential from Firebase with given details
       UserCredential userCredential =
@@ -120,7 +132,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       if (!mounted) {return;}
       // Handle FirebaseAuth exceptions and display appropriate error messages
       handleFirebaseAuthException(context, e);
-      await FirebaseAuth.instance.currentUser?.delete();
     } catch (e) {
       log('create_account.dart: Error signing user in: $e', stackTrace: StackTrace.current);
       await FirebaseAuth.instance.currentUser?.delete();
@@ -133,23 +144,19 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       borderRadius: BorderRadius.circular(16),
     ),
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       height: 500,
       width: 1000,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 80),
-          const Text(
-            'ICON ART',
-            style: TextStyle(
-              fontSize: 40,
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Titillium Web',
-            ),
+          const SizedBox(height: 20),
+          SvgPicture.asset(
+            'assets/icons/verify_email_iconart.svg',
+            height: 200, // specify a fixed height
+            width: 200, // specify a fixed width
           ),
-          const SizedBox(height: 80),
+          const Spacer(),
           const Text(
             'Verify your Email Address',
             style: TextStyle(
@@ -159,8 +166,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               fontFamily: 'Titillium Web',
             ),
           ),
-          const SizedBox(height: 10),
-          
+          const Spacer(),
           const Center(
             child: Text(
               'You will recieve an Email with a link to verify your email. Please check your inbox.',
@@ -172,7 +178,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             ),
           ),
 
-          const SizedBox(height: 70),
+          const Spacer(),
 
           TextButton(
             onPressed: () async {
@@ -189,42 +195,15 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 log('create_account.dart: User $uid connected to Client ID $_cid');
 
                 if (!mounted) {return;} // async gap widget mounting check
-                await Navigator.pushReplacementNamed(context, '/dashboard');
-              } else {
+                await CustomAlertDialog.showAlertDialog(context, 'Success', 'Email verified successfully.', icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green));
+                if (!mounted) {return;} 
+                await Navigator.pushReplacement(context, PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) => DashboardPage(),
+                  transitionDuration: const Duration(seconds: 0),
+                ));
+                } else {
                 if (!mounted) {return;} // async gap widget mounting check
-                await showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text(
-                      'Error',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.blue, // You can change this to your desired color
-                      ),
-                    ),
-                    content: const Text(
-                      'Email not verified. Please check your inbox for the verification link.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.blue, // You can change this to your desired color
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(
-                            fontFamily: 'Titillium Web',
-                            color: Colors.blue, // You can change this to your desired color
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                await CustomAlertDialog.showAlertDialog(context, 'Error', 'Email not verified. Please check your inbox for the verification link.', icon: const Icon(Icons.not_interested_rounded, color: Colors.red));
               }
             },
             child: Container(
@@ -249,7 +228,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 ),
               ),
             ),
-          ),                                  
+          ),
+        
         ],
       ),
     ),
@@ -337,7 +317,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }    
 
     // Show an error dialog with the error message
-    CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage);
+    CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage, icon: const Icon(Icons.error, color: Colors.red,));
   }
   
   /// Builds the create account screen widget.
