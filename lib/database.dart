@@ -12,6 +12,7 @@ class DatabaseService {
   static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
   CollectionReference? assetsSubCollection;
   CollectionReference? activitiesSubCollection; 
+  CollectionReference? notificationsSubCollection; 
 
   /// A new instance of [DatabaseService] with the given [cid] and [uid].
   /// 
@@ -30,9 +31,11 @@ class DatabaseService {
   DatabaseService(this.uid);
   DatabaseService.withCID(this.uid, this.cid);
 
+
   // Asynchronous factory constructor
   static Future<DatabaseService?> fetchCID(String uid, int code) async {
     DatabaseService service = DatabaseService(uid);
+
 
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
@@ -48,6 +51,9 @@ class DatabaseService {
         case 2:
           service.activitiesSubCollection = usersCollection.doc(service.cid).collection('activities');
           break;
+        case 3:
+          service.notificationsSubCollection = usersCollection.doc(service.cid).collection('notifications');
+          break;
         default:
           log('database.dart: database.dart: Invalid code');
       }
@@ -59,6 +65,93 @@ class DatabaseService {
     }
 
     return service;
+  }
+
+  Future<void> logNotificationIds() async {
+    if (notificationsSubCollection == null) {
+      log('database.dart: database.dart: Notifications subcollection is not set');
+      return;
+    }
+
+    // Fetch the documents from the notifications subcollection
+    QuerySnapshot querySnapshot = await notificationsSubCollection!.get();
+
+    // Log the document IDs
+    for (var doc in querySnapshot.docs) {
+      log('database.dart: database.dart: Notification document ID: ${doc.id}');
+    }
+  }
+
+  Future<List<String>> fetchConnectedCids(String cid) async {
+    DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
+    if (userSnapshot.exists) {
+      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+      List<String> connectedUsers = info['connectedUsers'].cast<String>();
+      return connectedUsers;
+    } else {
+      log('database.dart: No document found with cid: $cid');
+      return [];
+    }
+  }
+
+  // ignore: prefer_expression_function_bodies
+  Future<void> markAsRead(String notificationId) async {
+    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+    if (service != null) {
+      print(service.cid);  
+      print('cid: ${service.cid}, notificationId: $notificationId');
+      DocumentReference docRef = usersCollection.doc(service.cid).collection('notifications').doc(notificationId);
+      print('docref: $docRef');
+      DocumentSnapshot docSnap = await docRef.get();
+      if (docSnap.exists) {
+        return docRef.update({'isRead': true});
+      } else {
+        print('Document does not exist under this cid');
+        // Check if service.cid is null before calling fetchConnectedCids
+        if (service.cid == null) {
+          print('service.cid is null');
+          return;
+        }
+        // Fetch the connected users' cids
+        List<String> connectedCids = await fetchConnectedCids(service.cid!);
+        for (String cid in connectedCids) {
+          print ('connectedCids: $connectedCids');
+          docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
+          print('docref: $docRef');
+          docSnap = await docRef.get();
+          if (docSnap.exists) {
+            print('Document found under cid: $cid');
+            return docRef.update({'isRead': true});
+          } else {
+            print('Document not found under cid: $cid');
+          }
+        }
+        print('Document does not exist under any connected cid');
+      }
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+    if (service != null && service.cid != null) {
+      print(service.cid);  
+      print('cid: ${service.cid}');
+      await _markNotificationsAsRead(service.cid!);
+      List<String> connectedCids = await fetchConnectedCids(uid);
+      for (String cid in connectedCids) {
+        await _markNotificationsAsRead(cid);
+      }
+    }
+  }
+
+  Future<void> _markNotificationsAsRead(String cid) async {
+    CollectionReference notificationsCollection = usersCollection.doc(cid).collection('notifications');
+    print('notificationsCollection: $notificationsCollection');
+    QuerySnapshot querySnapshot = await notificationsCollection.get();
+    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+      DocumentReference docRef = doc.reference;
+      await docRef.update({'isRead': true});
+    }
   }
 
 
@@ -320,21 +413,16 @@ class DatabaseService {
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
-      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
-
-      var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
-      var allUsers = [cid, ...connectedUsers];
-      var allNotifications = await Future.wait(allUsers.map((userId) async {
-        var snapshots = await usersCollection.doc(userId).collection('notifications').get();
-        return snapshots.docs.map((doc) => doc.data()).toList();
-      }));
-
-      var notificationsList = allNotifications.expand((x) => x).toList();
-      notificationsList.sort((a, b) => (b['time'] as Timestamp).compareTo(a['time'] as Timestamp));
-      return notificationsList;
+    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection('notifications').snapshots().asyncMap((snapshot) async {
+      return snapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; 
+        return data;
+      }).toList();
     });
 }
+
+
 
 class BasicUser {
   /// The user's information.
