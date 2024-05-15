@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -373,13 +374,27 @@ class _ActivityPageState extends State<ActivityPage> {
           padding: const EdgeInsets.only(right: 10.0),
           child: GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, '/notification');
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  transitionDuration: Duration(milliseconds: 350),
+                  pageBuilder: (_, __, ___) => NotificationPage(),
+                  transitionsBuilder: (_, animation, __, child) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: Offset(1.0, 0.0),
+                        end: Offset(0.0, 0.0),
+                      ).animate(animation),
+                      child: child,
+                    );
+                  },
+                ),
+              );
             },
             child: SvgPicture.asset(
               'assets/icons/bell.svg',
               colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              height: 32,
-              width: 32,
+              height: 30,
             ),
           ),
         ),

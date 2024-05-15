@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
@@ -314,7 +315,22 @@ class _DashboardPageState extends State<DashboardPage> {
           padding: const EdgeInsets.only(right: 10.0),
           child: GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, '/notification');
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  transitionDuration: Duration(milliseconds: 350),
+                  pageBuilder: (_, __, ___) => NotificationPage(),
+                  transitionsBuilder: (_, animation, __, child) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: Offset(1.0, 0.0),
+                        end: Offset(0.0, 0.0),
+                      ).animate(animation),
+                      child: child,
+                    );
+                  },
+                ),
+              );
             },
             child: SvgPicture.asset(
               'assets/icons/bell.svg',
