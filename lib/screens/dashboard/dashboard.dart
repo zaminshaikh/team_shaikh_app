@@ -278,144 +278,145 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
-    
-  SliverAppBar _buildAppBar(Map<String, String> userName, String? cid) => SliverAppBar(
-    backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-    automaticallyImplyLeading: false,
-    toolbarHeight: 80,
-    expandedHeight: 0,
-    snap: false,
-    floating: true,
-    pinned: true,
-    flexibleSpace: SafeArea(
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome Back, ${userName['first']} ${userName['last']}!',
-                  style: TextStyle(
-                    fontSize: 23,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
+
+  SliverAppBar _buildAppBar(Map<String, String> userName, String? cid) =>
+      SliverAppBar(
+        backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+        automaticallyImplyLeading: false,
+        toolbarHeight: 80,
+        expandedHeight: 0,
+        snap: false,
+        floating: true,
+        pinned: true,
+        flexibleSpace: SafeArea(
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome Back, ${userName['first']} ${userName['last']}!',
+                      style: TextStyle(
+                        fontSize: 23,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Client ID: $cid',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 5),
-                Text(
-                  'Client ID: $cid',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-        ],
-      ),
-    ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  transitionDuration: Duration(milliseconds: 450),
-                  pageBuilder: (_, __, ___) => NotificationPage(),
-                  transitionsBuilder: (_, animation, __, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: Offset(1.0, 0.0),
-                        end: Offset(0.0, 0.0),
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/icons/bell.svg',
-              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              height: 30,
-            ),
+              ),
+            ],
           ),
         ),
-      ],
-  );
-    
-  Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) => Container(
-    width: 400,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 450),
+                    pageBuilder: (_, __, ___) => NotificationPage(),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: Offset(1.0, 0.0),
+                          end: Offset(0.0, 0.0),
+                        ).animate(animation),
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/bell.svg',
+                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                height: 30,
+              ),
+            ),
+          ),
+        ],
+      );
 
-    height: 160,
-    padding: const EdgeInsets.all(15),
-    decoration: BoxDecoration(
-      color: Colors.blue,
-      borderRadius: BorderRadius.circular(15),
-      image: DecorationImage(
-        image: AssetImage('assets/icons/total_assets_gradient.png'),
-        fit: BoxFit.cover,
-        alignment: Alignment.centerRight,
-        colorFilter: ColorFilter.mode(Colors.blue.withOpacity(0.9), BlendMode.dstATop),
-      ),
-    ),
-    child: Row(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) =>
+      Container(
+        width: 400,
+        height: 160,
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(15),
+          image: DecorationImage(
+            image: AssetImage('assets/icons/total_assets_gradient.png'),
+            fit: BoxFit.cover,
+            alignment: Alignment.centerRight,
+            colorFilter: ColorFilter.mode(
+                Colors.blue.withOpacity(0.9), BlendMode.dstATop),
+          ),
+        ),
+        child: Row(
           children: [
-            SizedBox(height: 10),
-            Text(
-              'Total Assets',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              _currencyFormat(totalAssets),
-              style: TextStyle(
-                fontSize: 35,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            SizedBox(height: 10),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SvgPicture.asset(
-                  'assets/icons/green_arrow_up.svg',
-                  height: 12,
-                ),
-                SizedBox(width: 5),
+                SizedBox(height: 10),
                 Text(
-                  _currencyFormat(latestIncome),
+                  'Total Assets',
                   style: TextStyle(
                     fontSize: 18,
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  _currencyFormat(totalAssets),
+                  style: TextStyle(
+                    fontSize: 35,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                     fontFamily: 'Titillium Web',
                   ),
                 ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    SvgPicture.asset(
+                      'assets/icons/YTD.svg',
+                      height: 13,
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      _currencyFormat(latestIncome),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ],
+                )
               ],
-            )
+            ),
           ],
         ),
-      ],
-    ),
-  );  
+      );
 
   // String fund
   ListTile _buildAssetTile(String fieldName, double amount, String fund,

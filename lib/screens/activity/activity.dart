@@ -1047,11 +1047,11 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                 );
               },
-              child: SvgPicture.asset(
+                child: SvgPicture.asset(
                 'assets/icons/dashboard_hollowed.svg',
-                height: 22,
+                  height: 22,
+                ),
               ),
-            ),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -1065,9 +1065,9 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                 );
               },
-              child: SvgPicture.asset(
-                'assets/icons/analytics_hollowed.svg',
-                height: 22,
+                child: SvgPicture.asset(
+                  'assets/icons/analytics_hollowed.svg',
+                  height: 22,
               ),
             ),
             GestureDetector(
@@ -1083,9 +1083,9 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                 );
               },
-              child: SvgPicture.asset(
+                child: SvgPicture.asset(
                 'assets/icons/activity_filled.svg',
-                height: 20,
+                  height: 20,
               ),
             ),
             GestureDetector(
@@ -1101,16 +1101,16 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                 );
               },
-              child: SvgPicture.asset(
-                'assets/icons/profile_hollowed.svg',
-                height: 22,
+                child: SvgPicture.asset(
+                  'assets/icons/profile_hollowed.svg',
+                  height: 22,
               ),
             ),
           ],
         ),
       );
-
-  void _buildFilterOptions(BuildContext context) {
+      
+      void _buildFilterOptions(BuildContext context) {
     /// Edits the filter based on the value of `value`
     ///
     /// If `value` is true, it adds `key` to filter, if false it removes
@@ -1164,17 +1164,15 @@ class _ActivityPageState extends State<ActivityPage> {
                       fontFamily: 'Titillium Web'),
                 ),
               ),
-              SingleChildScrollView(
-                child: ListView(
-                  physics:
-                      NeverScrollableScrollPhysics(), // to disable ListView's scrolling
-                  shrinkWrap: true,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: ListTile(
-                        title: Row(
-                          children: [
+              ListView(
+                physics: const BouncingScrollPhysics(), // to enable ListView's scrolling
+                shrinkWrap: true,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: ListTile(
+                      title: Row(
+                        children: [
                             const Text('By Time Period',
                                 style: TextStyle(
                                     color: Colors.white,
@@ -1239,7 +1237,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      padding: const EdgeInsets.only(top: 5.0),
                       child: ExpansionTile(
                         title: Row(
                           children: [
@@ -1315,7 +1313,7 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      padding: const EdgeInsets.symmetric(vertical: 0.0),
                       child: ExpansionTile(
                         title: Row(
                           children: [
@@ -1426,7 +1424,6 @@ class _ActivityPageState extends State<ActivityPage> {
                     ),
                   ],
                 ),
-              ),
               const Spacer(),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
