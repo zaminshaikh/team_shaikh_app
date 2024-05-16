@@ -1,5 +1,6 @@
 // Import Flutter Library
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
@@ -46,20 +47,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               const SizedBox(height: 40.0),
 
 // Adding an align widget to put the text 'AGQ' at the top left of the screen
-              const Align(
+               Align(
                 alignment: Alignment.centerLeft,
 
 // Text widget to display 'AGQ'                
-                child: Text(
-                  'AGQ',
-                  
-// TextStyle to define text appearance
-                  style: TextStyle(
-                    fontSize: 40, 
-                    color: Colors.white, 
-                    fontWeight: FontWeight.bold, 
-                    fontFamily: 'Titillium Web', 
-                  ),
+                child: Row(
+                  children: [
+                    Align(
+                      alignment: const Alignment(-1.0, -1.0),
+                      child: Image.asset(
+                        'assets/icons/team-shaikh-transparent.png',
+                        height: 100,
+                      ),
+                    ),
+
+                  ],
                 ),
               ),
 
@@ -182,7 +184,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
                         
 // Adding space at the bottom for the submit button
-              const SizedBox(height: 320.0),
+              const SizedBox(height: 150.0),
 
 // GestureDetector for handling taps on the submit button
               GestureDetector(
