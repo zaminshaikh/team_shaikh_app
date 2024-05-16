@@ -532,21 +532,23 @@ class _ActivityPageState extends State<ActivityPage> {
           
           GestureDetector(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(25.0, 5.0, 25.0, 5.0),
+              padding: const EdgeInsets.fromLTRB(10.0, 5.0, 15.0, 5.0),
               child: Row(
                 children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Icon(
-                        Icons.circle,
-                        color: getUnderlayColorBasedOnActivityType(activity['type']),
-                        size: 70,
+                  Padding(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          Icon(
+                            Icons.circle,
+                            color: getUnderlayColorBasedOnActivityType(activity['type']),
+                            size: 70,
+                          ),
+                          getIconBasedOnActivityType(activity['type']),
+                        ]
                       ),
-                      getIconBasedOnActivityType(activity['type']),
-                    ]
                   ),
-                  const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
