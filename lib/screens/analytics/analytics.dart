@@ -251,7 +251,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  transitionDuration: Duration(milliseconds: 350),
+                  transitionDuration: Duration(milliseconds: 450),
                   pageBuilder: (_, __, ___) => NotificationPage(),
                   transitionsBuilder: (_, animation, __, child) {
                     return SlideTransition(

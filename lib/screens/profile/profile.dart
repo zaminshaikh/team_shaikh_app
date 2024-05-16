@@ -14,6 +14,9 @@ import 'package:team_shaikh_app/screens/notification.dart';
 import 'dart:developer';
 import 'PDFPreview.dart';
 import 'downloadmethod.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -107,6 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
   bool switchValue = false;
+
 
   @override
   void initState() {
@@ -949,7 +953,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  transitionDuration: Duration(milliseconds: 350),
+                  transitionDuration: Duration(milliseconds: 450),
                   pageBuilder: (_, __, ___) => NotificationPage(),
                   transitionsBuilder: (_, animation, __, child) {
                     return SlideTransition(
@@ -1161,6 +1165,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           onTap: () async {
+            await downloadFile(context, _databaseService.cid, 'TestPdf${_databaseService.cid}.pdf');
             String filePath = await downloadFile(context, {_databaseService.cid}, 'TestPdf${_databaseService.cid}.pdf');
             if (filePath != null) {
               await Navigator.push(
@@ -1176,11 +1181,11 @@ class _ProfilePageState extends State<ProfilePage> {
               Icons.download_rounded,
               color: Colors.white, 
             ),
-            onPressed: () async {
-              await downloadFile(context, _databaseService.cid, 'TestPdf${_databaseService.cid}.pdf');
+            onPressed: () {
+              downloadToFiles(documentName);
             },
           ),
-        ),
+          ),
       ],
     ),
   );
