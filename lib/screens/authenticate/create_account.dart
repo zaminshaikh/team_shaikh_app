@@ -650,11 +650,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       (index) => Container(
 
 // Setting the width and height for the rectangles
-                        width: 31, 
+                        width: 28, 
                         height: 5.5,
 
 // Making a margin between rectangles
-                        margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                        margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
 
 // Making conditional statements to change the color of the rectangles based on the security of the password
                         decoration: BoxDecoration(
@@ -678,7 +678,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     children: List.generate(
                       2,
                       (index) => Container(
-                        width: 31,
+                        width: 28,
                         height: 5.5,
                         margin: const EdgeInsets.symmetric(horizontal: 4.4),
                         decoration: BoxDecoration(
@@ -700,7 +700,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     children: List.generate(
                       2,
                       (index) => Container(
-                        width: 31,
+                        width: 28,
                         height: 5.5,
                         margin: const EdgeInsets.symmetric(horizontal: 4.4),
                         decoration: BoxDecoration(
@@ -727,11 +727,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       (index) => Container(
 
 // Setting the width and height for the rectangles
-                        width: 31, 
+                        width: 25, 
                         height: 5.5,
 
 // Making a margin between rectangles
-                        margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                        margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
 
 // Making conditional statements to change the color of the rectangles based on the security of the password
                         decoration: BoxDecoration(
