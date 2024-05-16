@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -5,12 +6,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:team_shaikh_app/database.dart';
+import 'package:http/http.dart' as http;
 
-  late DatabaseService _databaseService;
+DatabaseService _databaseService = DatabaseService(FirebaseAuth.instance.currentUser!.uid);
 
-String clientId = {_databaseService.cid} as String; // Replace with the actual client ID
+String clientId = _databaseService.cid ?? 'default'; // Replace 'default' with your actual default client ID
 String documentName = 'TestPdf$clientId.pdf'; // Construct the document name
 
+void downloadToFiles(String documentName) async {
+  Directory downloadDir = await getApplicationDocumentsDirectory();
+  var path = "${downloadDir.path}/$documentName";
+  var file = File(path);
+  var res = await http.get(Uri.parse('https://source.unsplash.com/random')); 
+  await file.writeAsBytes(res.bodyBytes);
+  print('File downloaded to: $path');
+
+  // Open share options
+}
 
 Future<String> downloadFile(context, clientId, documentName) async {
   String filePath = '';
@@ -30,23 +42,6 @@ Future<String> downloadFile(context, clientId, documentName) async {
     if (bytes != null) {
       final file = File(filePath);
       await file.writeAsBytes(bytes);
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Download completed!'),
-            content: Text('File saved at $filePath'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
     } else {
       print('Download failed: File data is null');
     }

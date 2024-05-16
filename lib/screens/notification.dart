@@ -106,30 +106,37 @@ class _NotificationPageState extends State<NotificationPage> {
     mainAxisAlignment: MainAxisAlignment.end,
     children: [
       Center(
-        child: Container(
-          width: 200, // Set the width as per your requirement
-          child: ElevatedButton(
-            onPressed: () async {
-              DatabaseService service = DatabaseService(uid);
-              await service.markAllAsRead();
-            },
-            child: Row(
-              children: [
-                Icon(Icons.checklist_rounded, color: Colors.white), // Replace with your desired icon (optional
-                const SizedBox(width: 10), 
-                const Text(
-                  'Mark All As Read',
-                  style: TextStyle(
-                    color: Colors.white
-                    ),
-                  textAlign: TextAlign.center,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0),
+          child: Container(
+            width: 200, // Set the width as per your requirement
+            child: ElevatedButton(
+              onPressed: () async {
+                DatabaseService service = DatabaseService(uid);
+                await service.markAllAsRead();
+              },
+              child: Row(
+                children: [
+                  Icon(Icons.checklist_rounded, color: Colors.white), // Replace with your desired icon (optional
+                  Spacer(),
+                  const Text(
+                    'Mark All As Read',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              style: ElevatedButton.styleFrom(
+                
+                backgroundColor: AppColors.defaultBlue500,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30), // border radius of the button
                 ),
-              ],
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.defaultBlue500,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30), // border radius of the button
               ),
             ),
           ),
