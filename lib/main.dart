@@ -31,8 +31,25 @@ class MyApp extends StatelessWidget {
       // Theme data for styling the general background
       theme: ThemeData(
         scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web', fontWeight: FontWeight.bold),
+          titleMedium: TextStyle(color: Colors.white, fontFamily: 'Titillium Web', fontWeight: FontWeight.bold),
+          titleSmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web', fontWeight: FontWeight.bold),
+          labelLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          labelMedium: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          labelSmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displayLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displayMedium: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displaySmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          headlineLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web', fontWeight: FontWeight.bold),
+          headlineMedium: TextStyle(color: Colors.white, fontFamily: 'Titillium Web', fontWeight: FontWeight.bold),
+          headlineSmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web', fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          bodyMedium: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          bodySmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          // Add other text styles if needed
+        ),
       ),
-
       // When the app first starts, call the wrapper class which will
       // determine whether to show the home page or the authenticate page
       home: const Wrapper(),

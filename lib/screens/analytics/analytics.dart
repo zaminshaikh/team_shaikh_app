@@ -18,138 +18,142 @@ class AnalyticsPage extends StatefulWidget {
 }
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
-
   // database service instance
   late DatabaseService _databaseService;
 
   Future<void> _initData() async {
-
     User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        log('User is not logged in');
-        Navigator.pushReplacementNamed(context, '/login');
-      }
+    if (user == null) {
+      log('User is not logged in');
+      Navigator.pushReplacementNamed(context, '/login');
+    }
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
     // If there is no matching CID, redirect to login page
     if (service == null) {
       Navigator.pushReplacementNamed(context, '/login');
-} else {
+    } else {
       // Otherwise set the database service instance
       _databaseService = service;
       log('Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
-  
+
   /// Formats the given amount as a currency string.
   String _currencyFormat(double amount) => NumberFormat.currency(
-    symbol: '\$',
-    decimalDigits: 2,
-    locale: 'en_US',
-  ).format(amount);
-
+        symbol: '\$',
+        decimalDigits: 2,
+        locale: 'en_US',
+      ).format(amount);
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-    future: _initData(), // Initialize the database service
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-      return StreamBuilder<UserWithAssets>(
-        stream: _databaseService.getUserWithAssets,
-        builder: (context, userSnapshot) {
-          // Wait for the user snapshot to have data
-          if (!userSnapshot.hasData || userSnapshot.data == null) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          // Once we have the user snapshot, we can build the activity page
-          return StreamBuilder<List<UserWithAssets>>(
-          stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
-          builder: (context, connectedUsers) {
-            if (!connectedUsers.hasData || connectedUsers.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return buildAnalyticsPage(userSnapshot, connectedUsers);
-          },
-        );
+      future: _initData(), // Initialize the database service
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
-      );
-    }
-  );  
-  
-  Scaffold buildAnalyticsPage(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
-    
+        return StreamBuilder<UserWithAssets>(
+            stream: _databaseService.getUserWithAssets,
+            builder: (context, userSnapshot) {
+              // Wait for the user snapshot to have data
+              if (!userSnapshot.hasData || userSnapshot.data == null) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              // Once we have the user snapshot, we can build the activity page
+              return StreamBuilder<List<UserWithAssets>>(
+                stream: _databaseService
+                    .getConnectedUsersWithAssets, // Assuming this is the stream for connected users
+                builder: (context, connectedUsers) {
+                  if (!connectedUsers.hasData || connectedUsers.data == null) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return buildAnalyticsPage(userSnapshot, connectedUsers);
+                },
+              );
+            });
+      });
+
+  Scaffold buildAnalyticsPage(AsyncSnapshot<UserWithAssets> userSnapshot,
+      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     UserWithAssets user = userSnapshot.data!;
     // Total assets of one user
     double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
-   
+
     // We don't know the order of the funds, and perhaps the
     // length could change in the future, so we'll loop through
     for (var asset in user.assets) {
       switch (asset['fund']) {
-        case 'AGQ Consulting LLC':
+        case 'AGQ':
           totalUserAGQ += asset['total'];
           break;
-        case 'AK1 Holdings LP':
+        case 'AK1':
           totalUserAK1 += asset['total'];
           break;
         default:
           totalUserAssets += asset['total'];
       }
     }
-    double percentageAGQ = totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
-    double percentageAK1 = totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
-    
-      return Scaffold(
-        body: Stack(
-          children: [
-            CustomScrollView(
-              slivers: <Widget>[
-                _buildAppBar(),
-                SliverPadding(
-                  padding: const EdgeInsets.all(16.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        // Assets structure section
-                        _buildAssetsStructureSection(totalUserAssets, percentageAGQ, percentageAK1),
-                        const SizedBox(height: 132),
-                      ],
-                    ),
+    double percentageAGQ =
+        totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
+    double percentageAK1 =
+        totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(),
+              SliverPadding(
+                padding: const EdgeInsets.all(16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      // Assets structure section
+                      _buildAssetsStructureSection(
+                          totalUserAssets, percentageAGQ, percentageAK1),
+                      const SizedBox(height: 132),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildBottomNavigationBar(context),
-            ),
-          ],
-        ),
-      );
-      
+              ),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildBottomNavigationBar(context),
+          ),
+        ],
+      ),
+    );
   }
 
-  Scaffold dashboardWithConnectedUsers(BuildContext context, AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) { 
+  Scaffold dashboardWithConnectedUsers(
+      BuildContext context,
+      AsyncSnapshot<UserWithAssets> userSnapshot,
+      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     UserWithAssets user = userSnapshot.data!;
-    double totalUserAssets = 0.00, totalAGQ = 0.00, totalAK1 = 0.00, totalAssets = 0.00;
+    double totalUserAssets = 0.00,
+        totalAGQ = 0.00,
+        totalAK1 = 0.00,
+        totalAssets = 0.00;
 
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
       switch (asset['fund']) {
-        case 'AGQ Consulting LLC':
+        case 'AGQ':
           totalAGQ += asset['total'];
           break;
-        case 'AK1 Holdings LP':
+        case 'AK1':
           totalAK1 += asset['total'];
           break;
         default:
@@ -163,10 +167,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       log('Connected User: ${user.info['name']['first']} ${user.info['name']['last']}');
       for (var asset in user.assets) {
         switch (asset['fund']) {
-          case 'AGQ Consulting LLC':
+          case 'AGQ':
             totalAGQ += asset['total'];
             break;
-          case 'AK1 Holdings LP':
+          case 'AK1':
             totalAK1 += asset['total'];
             break;
           default:
@@ -190,7 +194,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
-                      _buildAssetsStructureSection(totalAssets, percentageAGQ, percentageAK1),
+                      _buildAssetsStructureSection(
+                          totalAssets, percentageAGQ, percentageAK1),
                       const SizedBox(height: 130),
                     ],
                   ),
@@ -198,7 +203,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ),
             ],
           ),
-
           Positioned(
             left: 0,
             right: 0,
@@ -206,10 +210,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             child: _buildBottomNavigationBar(context),
           ),
         ],
-      ),    
-    );  
+      ),
+    );
   }
-    
+
   SliverAppBar _buildAppBar() => SliverAppBar(
   backgroundColor: const Color.fromARGB(255, 30, 41, 59),
   automaticallyImplyLeading: false,
@@ -473,90 +477,99 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     ),
   );
 
-
-// This is the bottom navigation bar 
+// This is the bottom navigation bar
   Widget _buildBottomNavigationBar(BuildContext context) => Container(
-      margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-      height: 80,
-      padding: const EdgeInsets.only(right: 30, left: 30),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 30, 41, 59),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 8,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => DashboardPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/icons/dashboard_hollowed.svg',
-              height: 22,
+        margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
+        height: 80,
+        padding: const EdgeInsets.only(right: 30, left: 30),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 30, 41, 59),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 8,
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const AnalyticsPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/icons/analytics_filled.svg',
-              height: 22,
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        DashboardPage(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) =>
+                            child,
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/dashboard_hollowed.svg',
+                height: 22,
+              ),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );},
-            child: SvgPicture.asset(
-              'assets/icons/activity_hollowed.svg',
-              height: 20,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const AnalyticsPage(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) =>
+                            child,
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/analytics_filled.svg',
+                height: 22,
+              ),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                ),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/icons/profile_hollowed.svg',
-              height: 22,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const ActivityPage(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) =>
+                            child,
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/activity_hollowed.svg',
+                height: 20,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-
-
-
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const ProfilePage(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) =>
+                            child,
+                  ),
+                );
+              },
+              child: SvgPicture.asset(
+                'assets/icons/profile_hollowed.svg',
+                height: 22,
+              ),
+            ),
+          ],
+        ),
+      );
 }
