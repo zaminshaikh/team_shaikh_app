@@ -249,7 +249,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   ),
     actions: [
       Padding(
-        padding: const EdgeInsets.only(right: 10.0),
+        padding: const EdgeInsets.only(right: 5.0),
         child: GestureDetector(
           onTap: () {
               Navigator.push(
@@ -270,10 +270,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               );
             },
 
-            child: SvgPicture.asset(
-              'assets/icons/bell.svg',
-              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              height: 30,
+            child: Container(
+              color: Color.fromRGBO(239, 232, 232, 0),
+              padding: const EdgeInsets.all(20.0),
+              child: SvgPicture.asset(
+                'assets/icons/bell.svg',
+                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                height: 30,
+              ),
             ),
         ),
       ),
@@ -479,97 +483,113 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
 // This is the bottom navigation bar
   Widget _buildBottomNavigationBar(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-        height: 80,
-        padding: const EdgeInsets.only(right: 30, left: 30),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 30, 41, 59),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 8,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+    margin: const EdgeInsets.only(bottom: 30, right: 20, left: 20),
+    height: 80,
+    padding: const EdgeInsets.only(right: 10, left: 10),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(255, 30, 41, 59),
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          spreadRadius: 8,
+          blurRadius: 8,
+          offset: const Offset(0, 3),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        DashboardPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/dashboard_hollowed.svg',
-                height: 22,
+      ],
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    DashboardPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
               ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/dashboard_hollowed.svg',
+              height: 22,
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const AnalyticsPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/analytics_filled.svg',
-                height: 22,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const ActivityPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/activity_hollowed.svg',
-                height: 20,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const ProfilePage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/profile_hollowed.svg',
-                height: 22,
-              ),
-            ),
-          ],
+          ),
         ),
-      );
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const AnalyticsPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
+              ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/analytics_filled.svg',
+              height: 22,
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const ActivityPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
+              ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/activity_hollowed.svg',
+              height: 22,
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const ProfilePage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
+              ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/profile_hollowed.svg',
+              height: 22,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
