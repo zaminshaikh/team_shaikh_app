@@ -512,14 +512,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAGQ.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'agq',
-                  companyName: userName['company']));
+              if (entry.value != 0) {
+                assetTilesAGQ.add(_buildAssetTile(
+                    entry.key, (entry.value).toDouble(), 'agq',
+                    companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
-              if (entry.value is num &&
+              if (entry.value is num && 
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAGQ.add(
@@ -538,14 +541,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAK1.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'ak1',
-                  companyName: userName['company']));
+              if (entry.value != 0) {
+                assetTilesAK1.add(_buildAssetTile(
+                    entry.key, (entry.value).toDouble(), 'ak1',
+                    companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAK1.add(
@@ -698,14 +704,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAGQ.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'agq',
-                  companyName: userName['company']));
+              if (entry.value != 0) {
+                assetTilesAGQ.add(_buildAssetTile(
+                    entry.key, (entry.value).toDouble(), 'agq',
+                    companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAGQ.add(
@@ -724,14 +733,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAK1.add(_buildAssetTile(
+              if (entry.key == 'total') {
+                assetTilesAK1.add(_buildAssetTile(
                   entry.key, (entry.value).toDouble(), 'ak1',
                   companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAK1.add(
