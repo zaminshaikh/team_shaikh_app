@@ -75,7 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
               return StreamBuilder<List<UserWithAssets>>(
                   stream: _databaseService.getConnectedUsersWithAssets,
                   builder: (context, connectedUsersSnapshot) {
-                    if (!connectedUsersSnapshot.hasData) {
+                    if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
                       // If there is no connected users, we build the dashboard for a single user
                       return _dashboardSingleUser(userSnapshot);
                     }
@@ -112,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalUserAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['ytd'];
+            latestIncome = double.parse(asset['ytd'].toString());
           totalUserAssets += asset['total'];
       }
     }
@@ -191,7 +191,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['ytd'];
+          latestIncome = double.parse(asset['ytd'].toString());
           totalAssets += asset['total'];
           totalUserAssets += asset['total'];
       }

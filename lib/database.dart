@@ -206,10 +206,9 @@ class DatabaseService {
         
         // Update new fields and keep old ones from snapshot
         Map<String, dynamic> updatedData = {
+          ...existingData,
           'uid': uid,
           'email': email,
-          'name': existingData['name'],
-          'connectedUsers': existingData['connectedUsers'],
         };
 
         // Set the document with the updated data
@@ -314,7 +313,8 @@ class DatabaseService {
   Stream<List<UserWithAssets>> get getConnectedUsersWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
     Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
     List<String> connectedUsers = info['connectedUsers'].cast<String>();
-    if (connectedUsers.isEmpty) {
+    log('database.dart: Connected users: $connectedUsers');
+    if ( connectedUsers.isEmpty ) {
       return [];
     }
     List<UserWithAssets> connectedUsersWithAssets = [];

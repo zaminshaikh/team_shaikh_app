@@ -90,8 +90,7 @@ class _ActivityPageState extends State<ActivityPage> {
                 );
               }
               return StreamBuilder<UserWithAssets>(
-                stream: _databaseService
-                    .getUserWithAssets, // Assuming this is the stream for the user
+                stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
                 builder: (context, userSnapshot) {
                   if (!userSnapshot.hasData || userSnapshot.data == null) {
                     return const Center(
@@ -99,11 +98,9 @@ class _ActivityPageState extends State<ActivityPage> {
                     );
                   }
                   return StreamBuilder<List<UserWithAssets>>(
-                    stream: _databaseService
-                        .getConnectedUsersWithAssets, // Assuming this is the stream for connected users
+                    stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
                     builder: (context, connectedUsers) {
-                      if (!connectedUsers.hasData ||
-                          connectedUsers.data == null) {
+                      if (!connectedUsers.hasData || connectedUsers.data!.isEmpty || connectedUsers.data == null) {
                         return _buildActivitySingleUser(
                             userSnapshot, activitiesSnapshot);
                       }
