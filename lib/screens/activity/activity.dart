@@ -592,34 +592,34 @@ class _ActivityPageState extends State<ActivityPage> {
               return SvgPicture.asset(
                 'assets/icons/deposit.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 30,
-                width: 30,
+                height: 50,
+                width: 50,
               );
             case 'withdrawal':
               return SvgPicture.asset(
                 'assets/icons/withdrawal.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 30,
-                width: 30,
+                height: 50,
+                width: 50,
               );
             case 'pending':
               return SvgPicture.asset(
                 'assets/icons/pending_withdrawal.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 30,
-                width: 30,
+                height: 50,
+                width: 50,
               );
             case 'income':
               return SvgPicture.asset(
-                'assets/icons/income.svg',
+                'assets/icons/variable_income.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 30,
-                width: 30,
+                height: 50,
+                width: 50,
               );
             default:
               return Icon(
                 Icons.circle,
-                color: AppColors.defaultWhite,
+                color: Colors.transparent,
                 size: 30,
               );
           }
@@ -632,97 +632,100 @@ class _ActivityPageState extends State<ActivityPage> {
           GestureDetector(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10.0, 5.0, 15.0, 5.0),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: Stack(
-                        alignment: Alignment.center,
-                        children: <Widget>[
-                          Icon(
-                            Icons.circle,
-                            color: getUnderlayColorBasedOnActivityType(activity['type']),
-                            size: 70,
-                          ),
-                          getIconBasedOnActivityType(activity['type']),
-                        ]
-                      ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        activity['fund'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Titillium Web',
+              child: Container(
+                color: const Color.fromRGBO(1,1,1,0),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.circle,
+                              color: getUnderlayColorBasedOnActivityType(activity['type']),
+                              size: 70,
+                            ),
+                            getIconBasedOnActivityType(activity['type']),
+                          ]
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        _getActivityType(activity),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: getColorBasedOnActivityType(activity['type']),
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
-                          style: TextStyle(
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          activity['fund'],
+                          style: const TextStyle(
                             fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          _getActivityType(activity),
+                          style: TextStyle(
+                            fontSize: 15,
                             color: getColorBasedOnActivityType(activity['type']),
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Titillium Web',
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Text(
-                            time,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(width: 7), // Add width
-                          Container(
-                            height: 15, // You can adjust the height as needed
-                            child: const VerticalDivider(
-                              color: Colors.white,
-                              width: 1,
-                              thickness: 1,
-                            ),
-                          ),
-                          const SizedBox(width: 7), // Add width
-                          Text(
-                            activity['recipient'] ,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.white,
+                      ],
+                    ),
+                    const Spacer(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: getColorBasedOnActivityType(activity['type']),
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Titillium Web',
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            Text(
+                              time,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.white,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                            const SizedBox(width: 7), // Add width
+                            Container(
+                              height: 15, // You can adjust the height as needed
+                              child: const VerticalDivider(
+                                color: Colors.white,
+                                width: 1,
+                                thickness: 1,
+                              ),
+                            ),
+                            const SizedBox(width: 7), // Add width
+                            Text(
+                              activity['recipient'] ,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             
             ),

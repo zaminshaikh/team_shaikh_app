@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
@@ -14,6 +15,7 @@ import 'screens/dashboard/dashboard.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // test
+  await ScreenUtil.ensureScreenSize();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   runApp(const MyApp());
 }

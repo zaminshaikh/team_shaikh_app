@@ -43,6 +43,7 @@ class CustomSlideIndicator extends SlideIndicator {
     );
   }
 }
+
 class _DashboardPageState extends State<DashboardPage> {
   // database service instance
   late DatabaseService _databaseService;
@@ -451,7 +452,7 @@ class _DashboardPageState extends State<DashboardPage> {
         Container(
           width: 400,
           height: 160,
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.only(left: 12, top: 10),
           decoration: BoxDecoration(
             color: Colors.blue,
             borderRadius: BorderRadius.circular(15),
@@ -542,7 +543,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ],
                               ),
                             ),
-                            Text('YTD stands for Year-To-Date. It is a financial term that describes the period of time from the beginning of the current year to the present date.'),
+                            Text('YTD stands for Year-To-Date. It is a financial term that describes the amount of income accumulated over the period of time from the beginning of the current year to the present date.'),
                             const SizedBox(height: 20),
                             Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 5),
@@ -552,7 +553,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ],
                               ),
                             ),
-                            Text('Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all cash, stocks, bonds, and other investments.'),
+                            Text('Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all IRAs, Nuview Cash, and assets in both AGQ and AK1.'),
                           ],
                         ),
                       ),
@@ -619,6 +620,22 @@ class _DashboardPageState extends State<DashboardPage> {
           sectionName = '';
         }
         break;
+      // case 'ira':
+      //   sectionName = 'IRA';
+      //   break;
+      // case 'rothIra':
+      //   sectionName = 'ROTH IRA';
+      //   break;
+      // case 'sepIra':
+      //   sectionName = 'SEP IRA';
+      //   break;
+      // case 'nuviewCashIra':
+      //   sectionName = 'Nuview Cash IRA';
+      //   break;
+      // case 'nuviewCashRothIra':
+      //   sectionName = 'Nuview Cash ROTH IRA';
+      //   break;
+
       default:
         sectionName = fieldName;
     }
@@ -921,6 +938,7 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
+
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
@@ -998,7 +1016,7 @@ class _DashboardPageState extends State<DashboardPage> {
       Container(
         width: 400,
         height: 520,
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
         decoration: BoxDecoration(
           color: const Color.fromARGB(255, 30, 41, 59),
           borderRadius: BorderRadius.circular(15),

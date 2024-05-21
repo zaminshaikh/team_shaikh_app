@@ -102,7 +102,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       'last': lastName,
       'company': companyName
     };
-    String? cid = _databaseService.cid;
+
     // Total assets of one user
     double totalUserAssets = 0.00,
         totalAGQ = 0.00,
@@ -299,7 +299,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Widget _buildAssetsStructureSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Container(
     width: 400,
     height: 520,
-    padding: const EdgeInsets.all(15),
+    padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
     decoration: BoxDecoration(
       color: const Color.fromARGB(255, 30, 41, 59),
       borderRadius: BorderRadius.circular(15),
