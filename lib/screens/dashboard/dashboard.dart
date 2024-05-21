@@ -393,7 +393,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         alignment: Alignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.only(top: 0), // Increase padding as needed
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Colors.transparent, // Change this color to the one you want
@@ -405,13 +404,13 @@ class _DashboardPageState extends State<DashboardPage> {
                               child: SvgPicture.asset(
                                 'assets/icons/bell.svg',
                                 colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                height: 35,
+                                height: 32,
                               ),
                             ),
                           ),
                       Positioned(
                         right: 0,
-                        top: 3,
+                        top: 5,
                         child: unreadNotificationsCount > 0
                             ? Container(
                                 decoration: BoxDecoration(
@@ -419,8 +418,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 constraints: BoxConstraints(
-                                  minWidth: 20,
-                                  minHeight: 20,
+                                  minWidth: 18,
+                                  minHeight: 18,
                                 ),
                                 child: Text(
                                   '$unreadNotificationsCount',
@@ -428,7 +427,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontFamily: 'Titillium Web',
-                                    fontSize: 14,
+                                    fontSize: 12,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -494,6 +493,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       SvgPicture.asset(
                         'assets/icons/YTD.svg',
                         height: 13,
+                        color: Color.fromRGBO(74, 222, 128, 1)
                       ),
                       SizedBox(width: 5),
                       Text(
@@ -515,73 +515,73 @@ class _DashboardPageState extends State<DashboardPage> {
         Positioned(
           bottom: 5,
           right: 5,
-          child: GestureDetector(
-            child: IconButton(
-              icon: Icon(Icons.info_outline_rounded, color: const Color.fromARGB(132, 255, 255, 255)),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      backgroundColor: AppColors.defaultBlueGray800,
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: <Widget>[
-                            const SizedBox(height: 5),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 5),
-                                child: Row(
-                                children: <Widget>[
-                                  Text('What is', style: Theme.of(context).textTheme.titleLarge),
-                                  const SizedBox(width: 5),
-                                  SvgPicture.asset(
-                                    'assets/icons/YTD.svg',
-                                    height: 20,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text('?', style: Theme.of(context).textTheme.titleLarge),
-                                ],
-                              ),
-                            ),
-                            Text('YTD stands for Year-To-Date. It is a financial term that describes the amount of income accumulated over the period of time from the beginning of the current year to the present date.'),
-                            const SizedBox(height: 20),
+          child: IconButton(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            icon: Icon(Icons.info_outline_rounded, color: Color.fromARGB(71, 255, 255, 255)),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    backgroundColor: AppColors.defaultBlueGray800,
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                          const SizedBox(height: 5),
                             Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 5),
-                                child: Row(
-                                children: <Widget>[
-                                  Text('What are my total assets?', style: Theme.of(context).textTheme.titleLarge),
-                                ],
-                              ),
-                            ),
-                            Text('Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all IRAs, Nuview Cash, and assets in both AGQ and AK1.'),
-                          ],
-                        ),
-                      ),
-                      actions: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            width: double.infinity, // This will make the container take up the full width of the AlertDialog
-                            padding: EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
-                              borderRadius: BorderRadius.circular(20), // This will make the corners rounded
-                            ),
-                            child: Text(
-                              'Continue',
-                              textAlign: TextAlign.center, // This will center the text
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                              children: <Widget>[
+                                Text('What is', style: Theme.of(context).textTheme.titleLarge),
+                                const SizedBox(width: 5),
+                                SvgPicture.asset(
+                                  'assets/icons/YTD.svg',
+                                  height: 20,
+                                ),
+                                const SizedBox(width: 5),
+                                Text('?', style: Theme.of(context).textTheme.titleLarge),
+                              ],
                             ),
                           ),
-                        )
-                      ],
-                    );
-
-                  },
-                );
-              },
-            ),
+                          Text('YTD stands for Year-To-Date. It is a financial term that describes the amount of income accumulated over the period of time from the beginning of the current year to the present date.'),
+                          const SizedBox(height: 20),
+                          Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                              children: <Widget>[
+                                Text('What are my total assets?', style: Theme.of(context).textTheme.titleLarge),
+                              ],
+                            ),
+                          ),
+                          Text('Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all IRAs, Nuview Cash, and assets in both AGQ and AK1.'),
+                        ],
+                      ),
+                    ),
+                    actions: <Widget>[
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          width: double.infinity, // This will make the container take up the full width of the AlertDialog
+                          padding: EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
+                            borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                          ),
+                          child: Text(
+                            'Continue',
+                            textAlign: TextAlign.center, // This will center the text
+                          ),
+                        ),
+                      )
+                    ],
+                  );
+          
+                },
+              );
+            },
           ),
         ),
       ],
@@ -749,68 +749,71 @@ class _DashboardPageState extends State<DashboardPage> {
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
       ),
-      child: ExpansionTile(
-        title: Row(
-          children: [
-            Text(
-              '${userName['first']} ${userName['last']}',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
+      child: Container(
+        color: const Color.fromARGB(255, 17, 24, 39),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              Text(
+                '${userName['first']} ${userName['last']}',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            SvgPicture.asset(
-              'assets/icons/YTD.svg',
-              height: 13,
-            ),
-            SizedBox(width: 5),
-            Text(
-              _currencyFormat(latestIncome),
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
+              SizedBox(width: 10),
+              SvgPicture.asset(
+                'assets/icons/YTD.svg',
+                height: 13,
               ),
+              SizedBox(width: 5),
+              Text(
+                _currencyFormat(latestIncome),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+          subtitle: Text(
+            _currencyFormat(totalUserAssets),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          maintainState: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          collapsedBackgroundColor: const Color.fromARGB(255, 30, 41, 59),
+          backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
+              child: Divider(color: Colors.grey[300]),
+            ),
+            Column(
+              children: assetTilesAK1,
+            ),
+            Column(
+              children: assetTilesAGQ,
             ),
           ],
         ),
-        subtitle: Text(
-          _currencyFormat(totalUserAssets),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        maintainState: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        collapsedBackgroundColor: const Color.fromARGB(255, 30, 41, 59),
-        backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
-            child: Divider(color: Colors.grey[300]),
-          ),
-          Column(
-            children: assetTilesAK1,
-          ),
-          Column(
-            children: assetTilesAGQ,
-          ),
-        ],
       ),
     );
   }
@@ -943,70 +946,73 @@ class _DashboardPageState extends State<DashboardPage> {
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
       ),
-      child: ExpansionTile(
-        title: Row(
-          children: [
-            Text(
-              '${userName['first']} ${userName['last']}',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
+      child: Container(
+        color: const Color.fromARGB(255, 17, 24, 39),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              Text(
+                '${userName['first']} ${userName['last']}',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            SvgPicture.asset(
-              'assets/icons/YTD.svg',
-              height: 13,
-            ),
-            SizedBox(width: 5),
-            Text(
-              _currencyFormat(latestIncome),
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
+              SizedBox(width: 10),
+              SvgPicture.asset(
+                'assets/icons/YTD.svg',
+                height: 13,
               ),
+              SizedBox(width: 5),
+              Text(
+                _currencyFormat(latestIncome),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+          subtitle: Text(
+            _currencyFormat(totalUserAssets),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          maintainState: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.white), // Add this line
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.white), // And this line
+          ),
+          collapsedBackgroundColor: Colors.transparent,
+          backgroundColor: Colors.transparent,
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
+              child: Divider(color: Colors.grey[300]),
+            ), // Add a light divider bar
+            Column(
+              children: assetTilesAK1,
+            ),
+            Column(
+              children: assetTilesAGQ,
             ),
           ],
         ),
-        subtitle: Text(
-          _currencyFormat(totalUserAssets),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        maintainState: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Colors.white), // Add this line
-        ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Colors.white), // And this line
-        ),
-        collapsedBackgroundColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
-            child: Divider(color: Colors.grey[300]),
-          ), // Add a light divider bar
-          Column(
-            children: assetTilesAK1,
-          ),
-          Column(
-            children: assetTilesAGQ,
-          ),
-        ],
       ),
     );
   }
@@ -1140,7 +1146,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AGQ',
+                      'AGQ Fund',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -1171,7 +1177,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AK1',
+                      'AK1H Fund',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -1235,7 +1241,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_filled.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
@@ -1257,7 +1263,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_hollowed.svg',
-              height: 22,
+              height: 27,
             ),
           ),
         ),
@@ -1279,7 +1285,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
@@ -1301,7 +1307,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),

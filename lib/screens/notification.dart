@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -68,6 +69,35 @@ class _NotificationPageState extends State<NotificationPage> {
               child: CircularProgressIndicator(),
             );
           }
+          // If there are no notifications, display a message
+          if (notificationsSnapshot.data!.isEmpty) {
+            return Scaffold(
+              body: CustomScrollView(
+                slivers: <Widget>[
+                  _buildAppBar(context),
+                  SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        Center(
+                          heightFactor: 3,
+                          child: Text(
+                            'No notifications.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          
           // Once we have the user snapshot, we can build the activity page
           // use unreadNotificationsCount as needed
           return _buildNotificationPage(notificationsSnapshot);
@@ -102,52 +132,61 @@ class _NotificationPageState extends State<NotificationPage> {
         ),
       ],
     ),
-    floatingActionButton: _buildMarkAllAsReadButton(),
+    floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
     floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
   );
 
-  Widget _buildMarkAllAsReadButton() => Column(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Align(
-        alignment: Alignment.bottomCenter, // Align to bottom center
-        child: Padding(
-          padding: const EdgeInsets.all(16.0), // Adjust padding as needed
-          child: ElevatedButton(
-            onPressed: () async {
-              DatabaseService service = DatabaseService(uid);
-              await service.markAllAsRead();
-              setState(() {
-                // Refresh the page
-              });
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min, // Add this
-              children: [
-                Icon(Icons.checklist_rounded, color: Colors.white),
-                Text(
-                  ' Mark All As Read',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+  Widget _buildMarkAllAsReadButton(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
+    // Assuming notifications is your list of notifications
+    bool hasUnreadNotifications = notificationsSnapshot.data!.any((notification) => !notification['isRead'] );
+
+    if (!hasUnreadNotifications) {
+      return Container(); // Return an empty container if there are no unread notifications
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Align(
+          alignment: Alignment.bottomCenter, // Align to bottom center
+          child: Padding(
+            padding: const EdgeInsets.all(16.0), // Adjust padding as needed
+            child: ElevatedButton(
+              onPressed: () async {
+                DatabaseService service = DatabaseService(uid);
+                await service.markAllAsRead();
+                setState(() {
+                  // Refresh the page
+                });
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min, // Add this
+                children: [
+                  const Icon(Icons.checklist_rounded, color: Colors.white),
+                  Text(
+                    ' Mark All As Read',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.defaultBlue500,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+                ],
               ),
-              padding: EdgeInsets.symmetric(horizontal: 16.0), // Add padding to the button
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.defaultBlue500,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding to the button
+              ),
             ),
           ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
   
   Widget _buildNotificationWithDayHeader(Map<String, dynamic> notification, DateTime previousNotificationDate) {
     final notificationDate = (notification['time'] as Timestamp).toDate();

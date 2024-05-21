@@ -437,7 +437,6 @@ class _ActivityPageState extends State<ActivityPage> {
                         alignment: Alignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.only(top: 0), // Increase padding as needed
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Colors.transparent, // Change this color to the one you want
@@ -449,13 +448,13 @@ class _ActivityPageState extends State<ActivityPage> {
                               child: SvgPicture.asset(
                                 'assets/icons/bell.svg',
                                 colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                height: 35,
+                                height: 32,
                               ),
                             ),
                           ),
                       Positioned(
                         right: 0,
-                        top: 3,
+                        top: 5,
                         child: unreadNotificationsCount > 0
                             ? Container(
                                 decoration: BoxDecoration(
@@ -463,8 +462,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 constraints: BoxConstraints(
-                                  minWidth: 20,
-                                  minHeight: 20,
+                                  minWidth: 18,
+                                  minHeight: 18,
                                 ),
                                 child: Text(
                                   '$unreadNotificationsCount',
@@ -472,7 +471,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontFamily: 'Titillium Web',
-                                    fontSize: 14,
+                                    fontSize: 12,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -1124,7 +1123,7 @@ class _ActivityPageState extends State<ActivityPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
@@ -1146,7 +1145,7 @@ class _ActivityPageState extends State<ActivityPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_hollowed.svg',
-              height: 22,
+              height: 27,
             ),
           ),
         ),
@@ -1168,7 +1167,7 @@ class _ActivityPageState extends State<ActivityPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_filled.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
@@ -1190,7 +1189,7 @@ class _ActivityPageState extends State<ActivityPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),

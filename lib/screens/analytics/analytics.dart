@@ -120,7 +120,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['ytd'];
+          latestIncome = (asset['ytd'] as num).toDouble();
           totalAssets += asset['total'];
           totalUserAssets += asset['total'];
       }
@@ -243,7 +243,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         alignment: Alignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.only(top: 0), // Increase padding as needed
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Colors.transparent, // Change this color to the one you want
@@ -255,13 +254,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                               child: SvgPicture.asset(
                                 'assets/icons/bell.svg',
                                 colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                height: 35,
+                                height: 32,
                               ),
                             ),
                           ),
                       Positioned(
                         right: 0,
-                        top: 3,
+                        top: 5,
                         child: unreadNotificationsCount > 0
                             ? Container(
                                 decoration: BoxDecoration(
@@ -269,8 +268,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 constraints: BoxConstraints(
-                                  minWidth: 20,
-                                  minHeight: 20,
+                                  minWidth: 18,
+                                  minHeight: 18,
                                 ),
                                 child: Text(
                                   '$unreadNotificationsCount',
@@ -278,7 +277,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontFamily: 'Titillium Web',
-                                    fontSize: 14,
+                                    fontSize: 12,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -427,67 +426,70 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         const SizedBox(height: 10),
 
         Column(
-          
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.circle,
-                size: 20,
-                color: Color.fromARGB(255,12,94,175),
-              ),
-              const SizedBox(width: 10),
-              const Text('AGQ Fixed Income',
-                style: TextStyle(
-                  fontSize: 15, 
-                  color: Colors.white, 
-                  fontWeight: FontWeight.w600, 
-                  fontFamily: 'Titillium Web', 
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 20,
+                      color: Color.fromARGB(255, 12, 94, 175),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'AGQ Fund',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    Spacer(), // This will push the following widgets to the right
+                    Text(
+                      '${percentageAGQ.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                  ],
                 ),
-              ),
-              const Spacer(), // This will push the following widgets to the right
-              Text('${percentageAGQ.toStringAsFixed(1)}%',
-                style: const TextStyle(
-                  fontSize: 15, 
-                  color: Colors.white, 
-                  fontWeight: FontWeight.w600, 
-                  fontFamily: 'Titillium Web', 
+                SizedBox(height: 20),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 20,
+                      color: Color.fromARGB(255, 49, 153, 221),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'AK1H Fund',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    Spacer(), // This will push the following widgets to the right
+                    Text(
+                      '${percentageAK1.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 10),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              const Icon(
-                Icons.circle,
-                size: 20,
-                color: Color.fromARGB(255,49,153,221),
-              ),
-              const SizedBox(width: 10),
-              const Text('AK1 Holdings LP',
-                style: TextStyle(
-                  fontSize: 15, 
-                  color: Colors.white, 
-                  fontWeight: FontWeight.w600, 
-                  fontFamily: 'Titillium Web', 
-                ),
-              ),
-              const Spacer(), // This will push the following widgets to the right
-              Text('${percentageAK1.toStringAsFixed(1)}%',
-                style: const TextStyle(
-                  fontSize: 15, 
-                  color: Colors.white, 
-                  fontWeight: FontWeight.w600, 
-                  fontFamily: 'Titillium Web', 
-                ),
-              ),
-              const SizedBox(width: 10),
-            ],
-          ),
-        ],        
-        )
+              ],
+            )
               
       ],
     ),
@@ -531,7 +533,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
@@ -553,7 +555,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_filled.svg',
-              height: 22,
+              height: 27,
             ),
           ),
         ),
@@ -575,7 +577,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
@@ -597,7 +599,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',
-              height: 22,
+              height: 25,
             ),
           ),
         ),
