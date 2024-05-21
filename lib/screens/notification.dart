@@ -14,10 +14,12 @@ class NotificationPage extends StatefulWidget {
   _NotificationPageState createState() => _NotificationPageState();
 }
 String uid = '';
+
 class _NotificationPageState extends State<NotificationPage> {
 
   // database service instance
   late DatabaseService _databaseService;
+  
 
   Future<void> _initData() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -46,7 +48,7 @@ class _NotificationPageState extends State<NotificationPage> {
     
   }
 
-  
+
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -67,12 +69,13 @@ class _NotificationPageState extends State<NotificationPage> {
             );
           }
           // Once we have the user snapshot, we can build the activity page
+          // use unreadNotificationsCount as needed
           return _buildNotificationPage(notificationsSnapshot);
         }
       );
     }
   );  
-  
+
   Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
     body: Stack(
       children: [
@@ -118,6 +121,9 @@ class _NotificationPageState extends State<NotificationPage> {
                   onPressed: () async {
                     DatabaseService service = DatabaseService(uid);
                     await service.markAllAsRead();
+                    setState(() {
+                      // Refresh the page
+                    });
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

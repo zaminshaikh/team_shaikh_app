@@ -73,48 +73,67 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-        future: _initData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          return StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _databaseService.getActivities,
-            builder: (context, activitiesSnapshot) {
-              if (!activitiesSnapshot.hasData ||
-                  activitiesSnapshot.data == null) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return StreamBuilder<UserWithAssets>(
-                stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
-                builder: (context, userSnapshot) {
-                  if (!userSnapshot.hasData || userSnapshot.data == null) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  return StreamBuilder<List<UserWithAssets>>(
-                    stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
-                    builder: (context, connectedUsers) {
-                      if (!connectedUsers.hasData || connectedUsers.data!.isEmpty || connectedUsers.data == null) {
-                        return _buildActivitySingleUser(
-                            userSnapshot, activitiesSnapshot);
-                      }
-                      return _buildActivityWithConnectedUsers(
-                          userSnapshot, connectedUsers, activitiesSnapshot);
-                    },
-                  );
-                },
-              );
-            },
+      future: _initData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
           );
-        },
-      );
-
+        }
+        return StreamBuilder<List<Map<String, dynamic>>>(
+          stream: _databaseService.getActivities,
+          builder: (context, activitiesSnapshot) {
+            if (!activitiesSnapshot.hasData || activitiesSnapshot.data == null) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return StreamBuilder<UserWithAssets>(
+              stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
+              builder: (context, userSnapshot) {
+                if (!userSnapshot.hasData || userSnapshot.data == null) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return StreamBuilder<List<UserWithAssets>>(
+                  stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
+                  builder: (context, connectedUsers) {
+                    if (!connectedUsers.hasData || connectedUsers.data == null) {
+                      return StreamBuilder<List<Map<String, dynamic>>>(
+                        stream: _databaseService.getNotifications,
+                        builder: (context, notificationsSnapshot) {
+                          if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
+                          // use unreadNotificationsCount as needed
+                          return _buildActivitySingleUser(userSnapshot, activitiesSnapshot);
+                        }
+                      );
+                    }
+                    return StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: _databaseService.getNotifications,
+                      builder: (context, notificationsSnapshot) {
+                        if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
+                        // use unreadNotificationsCount as needed
+                        return _buildActivityWithConnectedUsers(userSnapshot, connectedUsers, activitiesSnapshot);
+                      }
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+    });
   bool _isSameDay(DateTime date1, DateTime date2) =>
       date1.year == date2.year &&
       date1.month == date2.month &&
@@ -386,40 +405,89 @@ class _ActivityPageState extends State<ActivityPage> {
           ],
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 5.0),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  transitionDuration: Duration(milliseconds: 450),
-                  pageBuilder: (_, __, ___) => NotificationPage(),
-                  transitionsBuilder: (_, animation, __, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: Offset(1.0, 0.0),
-                        end: Offset(0.0, 0.0),
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 5.0, bottom: 5.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 450),
+                    pageBuilder: (_, __, ___) => NotificationPage(),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: Offset(1.0, 0.0),
+                          end: Offset(0.0, 0.0),
+                        ).animate(animation),
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                color: Color.fromRGBO(239, 232, 232, 0),
+                padding: const EdgeInsets.all(10.0),
+                child: ClipRect(
+                  child: Stack(
+                    children: <Widget>[
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(top: 0), // Increase padding as needed
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.transparent, // Change this color to the one you want
+                                width: 0.3, // Adjust width to your need
+                              ),
+                              shape: BoxShape.rectangle, // or BoxShape.rectangle if you want a rectangle
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/bell.svg',
+                                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                height: 35,
+                              ),
+                            ),
+                          ),
+                      Positioned(
+                        right: 0,
+                        top: 3,
+                        child: unreadNotificationsCount > 0
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF267DB5),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: 20,
+                                  minHeight: 20,
+                                ),
+                                child: Text(
+                                  '$unreadNotificationsCount',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Titillium Web',
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : Container(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
-            child: Container(
-              color: Color.fromRGBO(239, 232, 232, 0),
-              padding: const EdgeInsets.all(20.0),
-              child: SvgPicture.asset(
-                'assets/icons/bell.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                height: 30,
               ),
             ),
           ),
-        ),
-      ],
+        ],
     );  
 
   // If the activity is on a new day, we create a header stating the day.

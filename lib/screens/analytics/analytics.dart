@@ -66,15 +66,26 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               }
               // Once we have the user snapshot, we can build the activity page
               return StreamBuilder<List<UserWithAssets>>(
-                stream: _databaseService
-                    .getConnectedUsersWithAssets, // Assuming this is the stream for connected users
+                stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the stream for connected users
                 builder: (context, connectedUsers) {
                   if (!connectedUsers.hasData || connectedUsers.data == null) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   }
-                  return buildAnalyticsPage(userSnapshot, connectedUsers);
+                  return StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: _databaseService.getNotifications,
+                    builder: (context, notificationsSnapshot) {
+                      if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
+                      // use unreadNotificationsCount as needed
+                      return buildAnalyticsPage(userSnapshot, connectedUsers);
+                    }
+                  );
                 },
               );
             });
@@ -83,69 +94,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Scaffold buildAnalyticsPage(AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     UserWithAssets user = userSnapshot.data!;
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {
+      'first': firstName,
+      'last': lastName,
+      'company': companyName
+    };
+    String? cid = _databaseService.cid;
     // Total assets of one user
-    double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
-
-    // We don't know the order of the funds, and perhaps the
-    // length could change in the future, so we'll loop through
-    for (var asset in user.assets) {
-      switch (asset['fund']) {
-        case 'AGQ':
-          totalUserAGQ += asset['total'];
-          break;
-        case 'AK1':
-          totalUserAK1 += asset['total'];
-          break;
-        default:
-          totalUserAssets += asset['total'];
-      }
-    }
-    double percentageAGQ =
-        totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
-    double percentageAK1 =
-        totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(),
-              SliverPadding(
-                padding: const EdgeInsets.all(16.0),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      // Assets structure section
-                      _buildAssetsStructureSection(
-                          totalUserAssets, percentageAGQ, percentageAK1),
-                      const SizedBox(height: 132),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavigationBar(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Scaffold dashboardWithConnectedUsers(
-      BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
-    UserWithAssets user = userSnapshot.data!;
     double totalUserAssets = 0.00,
         totalAGQ = 0.00,
         totalAK1 = 0.00,
         totalAssets = 0.00;
+    double latestIncome = 0.00;
 
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
@@ -157,6 +120,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           totalAK1 += asset['total'];
           break;
         default:
+          latestIncome = asset['ytd'];
           totalAssets += asset['total'];
           totalUserAssets += asset['total'];
       }
@@ -164,7 +128,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     // This calculation is for the total assets of all connected users combined
     for (var user in connectedUsers.data!) {
-      log('Connected User: ${user.info['name']['first']} ${user.info['name']['last']}');
       for (var asset in user.assets) {
         switch (asset['fund']) {
           case 'AGQ':
@@ -181,7 +144,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
-    log('Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
+    log('analytics.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
 
     return Scaffold(
       body: Stack(
@@ -194,9 +157,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
+                      // Assets structure section
                       _buildAssetsStructureSection(
                           totalAssets, percentageAGQ, percentageAK1),
-                      const SizedBox(height: 130),
+                      const SizedBox(height: 132),
                     ],
                   ),
                 ),
@@ -247,41 +211,89 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       ],
     ),
   ),
-    actions: [
-      Padding(
-        padding: const EdgeInsets.only(right: 5.0),
-        child: GestureDetector(
-          onTap: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  transitionDuration: Duration(milliseconds: 450),
-                  pageBuilder: (_, __, ___) => NotificationPage(),
-                  transitionsBuilder: (_, animation, __, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: Offset(1.0, 0.0),
-                        end: Offset(0.0, 0.0),
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 5.0, bottom: 5.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 450),
+                    pageBuilder: (_, __, ___) => NotificationPage(),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: Offset(1.0, 0.0),
+                          end: Offset(0.0, 0.0),
+                        ).animate(animation),
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                color: Color.fromRGBO(239, 232, 232, 0),
+                padding: const EdgeInsets.all(10.0),
+                child: ClipRect(
+                  child: Stack(
+                    children: <Widget>[
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(top: 0), // Increase padding as needed
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.transparent, // Change this color to the one you want
+                                width: 0.3, // Adjust width to your need
+                              ),
+                              shape: BoxShape.rectangle, // or BoxShape.rectangle if you want a rectangle
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/bell.svg',
+                                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                height: 35,
+                              ),
+                            ),
+                          ),
+                      Positioned(
+                        right: 0,
+                        top: 3,
+                        child: unreadNotificationsCount > 0
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF267DB5),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: 20,
+                                  minHeight: 20,
+                                ),
+                                child: Text(
+                                  '$unreadNotificationsCount',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Titillium Web',
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : Container(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
-
-            child: Container(
-              color: Color.fromRGBO(239, 232, 232, 0),
-              padding: const EdgeInsets.all(20.0),
-              child: SvgPicture.asset(
-                'assets/icons/bell.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                height: 30,
               ),
             ),
-        ),
-      ),
-    ],
+          ),
+        ],
   );
   
   Widget _buildAssetsStructureSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Container(

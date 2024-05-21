@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -17,7 +18,31 @@ class DashboardPage extends StatefulWidget {
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }
+int unreadNotificationsCount = 0;
 
+class CustomSlideIndicator extends SlideIndicator {
+   CustomSlideIndicator();
+
+  @override
+  Widget build(int current, double slidePercent, int itemCount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List<Widget>.generate(itemCount, (index) {
+        return Container(
+          width: 10.0,
+          height: 10.0,
+          margin: EdgeInsets.symmetric(vertical: 0.0, horizontal: 5.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: current == index
+                ? Color.fromRGBO(255, 255, 255, 0.802)
+                : Color.fromRGBO(255, 255, 255, 0.504)
+          ),
+        );
+      }),
+    );
+  }
+}
 class _DashboardPageState extends State<DashboardPage> {
   // database service instance
   late DatabaseService _databaseService;
@@ -75,16 +100,30 @@ class _DashboardPageState extends State<DashboardPage> {
               return StreamBuilder<List<UserWithAssets>>(
                   stream: _databaseService.getConnectedUsersWithAssets,
                   builder: (context, connectedUsersSnapshot) {
+
                     if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
                       // If there is no connected users, we build the dashboard for a single user
                       return _dashboardSingleUser(userSnapshot);
                     }
                     // Otherwise, we build the dashboard with connected users
-                    return dashboardWithConnectedUsers(
-                        context, userSnapshot, connectedUsersSnapshot);
+                    return StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: _databaseService.getNotifications,
+                      builder: (context, notificationsSnapshot) {
+                        if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
+                        // use unreadNotificationsCount as needed
+                        return dashboardWithConnectedUsers(
+                            context, userSnapshot, connectedUsersSnapshot);
+                      }
+                    );
                   });
             });
       });
+
 
   Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
     UserWithAssets user = userSnapshot.data!;
@@ -323,7 +362,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 5.0),
+            padding: const EdgeInsets.only(right: 5.0, bottom: 5.0),
             child: GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -345,11 +384,60 @@ class _DashboardPageState extends State<DashboardPage> {
               },
               child: Container(
                 color: Color.fromRGBO(239, 232, 232, 0),
-                padding: const EdgeInsets.all(20.0),
-                child: SvgPicture.asset(
-                  'assets/icons/bell.svg',
-                  colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  height: 30,
+                padding: const EdgeInsets.all(10.0),
+                child: ClipRect(
+                  child: Stack(
+                    children: <Widget>[
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(top: 0), // Increase padding as needed
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.transparent, // Change this color to the one you want
+                                width: 0.3, // Adjust width to your need
+                              ),
+                              shape: BoxShape.rectangle, // or BoxShape.rectangle if you want a rectangle
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/bell.svg',
+                                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                height: 35,
+                              ),
+                            ),
+                          ),
+                      Positioned(
+                        right: 0,
+                        top: 3,
+                        child: unreadNotificationsCount > 0
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF267DB5),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: 20,
+                                  minHeight: 20,
+                                ),
+                                child: Text(
+                                  '$unreadNotificationsCount',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Titillium Web',
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : Container(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -358,71 +446,146 @@ class _DashboardPageState extends State<DashboardPage> {
       );
 
   Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) =>
-      Container(
-        width: 400,
-        height: 160,
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(15),
-          image: DecorationImage(
-            image: AssetImage('assets/icons/total_assets_gradient.png'),
-            fit: BoxFit.cover,
-            alignment: Alignment.centerRight,
-            colorFilter: ColorFilter.mode(
-                Colors.blue.withOpacity(0.9), BlendMode.dstATop),
+    Stack(
+      children: [
+        Container(
+          width: 400,
+          height: 160,
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(15),
+            image: DecorationImage(
+              image: AssetImage('assets/icons/total_assets_gradient.png'),
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+              colorFilter: ColorFilter.mode(
+                  Colors.blue.withOpacity(0.9), BlendMode.dstATop),
+            ),
+          ),
+          child: Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10),
+                  Text(
+                    'Total Assets',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    _currencyFormat(totalAssets),
+                    style: TextStyle(
+                      fontSize: 35,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/YTD.svg',
+                        height: 13,
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        _currencyFormat(latestIncome),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ],
           ),
         ),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                Text(
-                  'Total Assets',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  _currencyFormat(totalAssets),
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/YTD.svg',
-                      height: 13,
-                    ),
-                    SizedBox(width: 5),
-                    Text(
-                      _currencyFormat(latestIncome),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
+        Positioned(
+          bottom: 5,
+          right: 5,
+          child: GestureDetector(
+            child: IconButton(
+              icon: Icon(Icons.info_outline_rounded, color: const Color.fromARGB(132, 255, 255, 255)),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      backgroundColor: AppColors.defaultBlueGray800,
+                        content: SingleChildScrollView(
+                          child: ListBody(
+                            children: <Widget>[
+                            const SizedBox(height: 5),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                child: Row(
+                                children: <Widget>[
+                                  Text('What is', style: Theme.of(context).textTheme.titleLarge),
+                                  const SizedBox(width: 5),
+                                  SvgPicture.asset(
+                                    'assets/icons/YTD.svg',
+                                    height: 20,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text('?', style: Theme.of(context).textTheme.titleLarge),
+                                ],
+                              ),
+                            ),
+                            Text('YTD stands for Year-To-Date. It is a financial term that describes the period of time from the beginning of the current year to the present date.'),
+                            const SizedBox(height: 20),
+                            Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                child: Row(
+                                children: <Widget>[
+                                  Text('What are my total assets?', style: Theme.of(context).textTheme.titleLarge),
+                                ],
+                              ),
+                            ),
+                            Text('Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all cash, stocks, bonds, and other investments.'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ],
-        ),
-      );
+                      actions: <Widget>[
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            width: double.infinity, // This will make the container take up the full width of the AlertDialog
+                            padding: EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
+                              borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                            ),
+                            child: Text(
+                              'Continue',
+                              textAlign: TextAlign.center, // This will center the text
+                            ),
+                          ),
+                        )
+                      ],
+                    );
 
-  // String fund
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+    
   ListTile _buildAssetTile(String fieldName, double amount, String fund,
       {String? companyName}) {
     String sectionName = '';
@@ -645,6 +808,7 @@ class _DashboardPageState extends State<DashboardPage> {
               controller: CarouselController(),
               floatingIndicator: false,
               restorationId: 'expandable_carousel',
+              slideIndicator: CustomSlideIndicator(),
             ),
             items: connectedUsers.map((user) {
               String firstName = user.info['name']['first'] as String;
@@ -958,11 +1122,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AGQ Fixed Income',
+                      'AGQ',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontFamily: 'Titillium Web',
                       ),
                     ),
@@ -989,11 +1153,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AK1 Fund',
+                      'AK1',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontFamily: 'Titillium Web',
                       ),
                     ),
