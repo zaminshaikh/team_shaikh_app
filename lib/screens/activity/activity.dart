@@ -134,6 +134,7 @@ class _ActivityPageState extends State<ActivityPage> {
           },
         );
     });
+  
   bool _isSameDay(DateTime date1, DateTime date2) =>
       date1.year == date2.year &&
       date1.month == date2.month &&
@@ -143,9 +144,9 @@ class _ActivityPageState extends State<ActivityPage> {
     switch (activity['type']) {
       case 'income':
         if (activity['fund'] == 'AGQ') {
-          return 'Fixed Income';
+          return 'Profit';
         }
-        return 'Dividend Payment';
+        return 'Profit';
       case 'deposit':
         return 'Deposit';
       case 'withdrawal':
@@ -585,45 +586,60 @@ class _ActivityPageState extends State<ActivityPage> {
       }
     }
 
-        Widget getIconBasedOnActivityType(String activityType) {
+    Color getActivityUnderlayColorBasedOnActivityType(String activityType) {
+      switch (activityType) {
+        case 'deposit':
+          return Color.fromARGB(255, 34, 66, 73);
+        case 'withdrawal':
+          return Color.fromARGB(255, 63, 52, 67);
+        case 'pending':
+          return Color.fromARGB(255, 32, 58, 83);
+        case 'income':
+          return Color.fromARGB(255, 32, 58, 83);
+        default:
+          return AppColors.defaultWhite;
+      }
+    }
+
+
+        Widget getIconBasedOnActivityType(String activityType, {double size = 50.0}) {
           switch (activityType) {
             case 'deposit':
               return SvgPicture.asset(
                 'assets/icons/deposit.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 50,
-                width: 50,
+                height: size,
+                width: size,
               );
             case 'withdrawal':
               return SvgPicture.asset(
                 'assets/icons/withdrawal.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 50,
-                width: 50,
+                height: size,
+                width: size,
               );
             case 'pending':
               return SvgPicture.asset(
                 'assets/icons/pending_withdrawal.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 50,
-                width: 50,
+                height: size,
+                width: size,
               );
             case 'income':
               return SvgPicture.asset(
                 'assets/icons/variable_income.svg',
                 color: getColorBasedOnActivityType(activityType),
-                height: 50,
-                width: 50,
+                height: size,
+                width: size,
               );
             default:
               return Icon(
                 Icons.circle,
                 color: Colors.transparent,
-                size: 30,
+                size: size,
               );
           }
         }
-
         
       return Column(
         children: [
@@ -746,12 +762,29 @@ class _ActivityPageState extends State<ActivityPage> {
                           child: SingleChildScrollView(
                             child: Column(
                               children: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 15, left: 10),
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.arrow_back_ios_new_rounded,
+                                          color: Color.fromARGB(171, 255, 255, 255),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                                  padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
                                   child: Text(
                                     'Activity Details', // Your title here
                                     style: TextStyle(
-                                        fontSize: 20.0,
+                                        fontSize: 25.0,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                         fontFamily: 'Titillium Web'),
@@ -779,7 +812,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                         case 'pending':
                                           return 'Pending withdrawal from your investment at';
                                         case 'income':
-                                          return 'Fixed income to your investment at';
+                                          return 'Profit to your investment at';
                                         default:
                                           return '';
                                       }
@@ -798,17 +831,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(
-                                        Icons.circle,
-                                        color: getColorBasedOnActivityType(
-                                            activity['type']),
-                                        size: 25,
-                                      ),
+                                      getIconBasedOnActivityType(activity['type'], size: 35),
                                       const SizedBox(width: 5),
                                       Text(
                                         _getActivityType(activity),
                                         style: TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 16,
                                           color: getColorBasedOnActivityType(
                                               activity['type']),
                                           fontWeight: FontWeight.bold,
@@ -824,10 +852,23 @@ class _ActivityPageState extends State<ActivityPage> {
                                       const EdgeInsets.fromLTRB(18, 0, 18, 0),
                                   child: Row(
                                     children: [
-                                      const Icon(
-                                        Icons.circle,
-                                        color: Colors.blue,
-                                        size: 50,
+                                      Stack(
+                                        children: [
+                                          Icon(
+                                            Icons.circle,
+                                            color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
+                                            size: 50,
+                                          ),
+                                          Positioned.fill(
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: SvgPicture.asset(
+                                                'assets/icons/activity_description.svg',
+                                                color: getColorBasedOnActivityType(activity['type']),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
@@ -857,7 +898,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                       case 'pending':
                                                         return 'Pending withdrawal from your investment at';
                                                       case 'income':
-                                                        return 'Fixed income to your investment at';
+                                                        return 'Profit to your investment at';
                                                       default:
                                                         return '';
                                                     }
@@ -888,10 +929,23 @@ class _ActivityPageState extends State<ActivityPage> {
                                       const EdgeInsets.fromLTRB(18, 0, 18, 0),
                                   child: Row(
                                     children: [
-                                      const Icon(
-                                        Icons.circle,
-                                        color: Colors.blue,
-                                        size: 50,
+                                      Stack(
+                                        children: [
+                                          Icon(
+                                            Icons.circle,
+                                            color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
+                                            size: 50,
+                                          ),
+                                          Positioned.fill(
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: SvgPicture.asset(
+                                                'assets/icons/activity_date.svg',
+                                                color: getColorBasedOnActivityType(activity['type'])
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
@@ -939,10 +993,23 @@ class _ActivityPageState extends State<ActivityPage> {
                                       const EdgeInsets.fromLTRB(18, 0, 18, 0),
                                   child: Row(
                                     children: [
-                                      const Icon(
-                                        Icons.circle,
-                                        color: Colors.blue,
-                                        size: 50,
+                                      Stack(
+                                        children: [
+                                          Icon(
+                                            Icons.circle,
+                                            color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
+                                            size: 50,
+                                          ),
+                                          Positioned.fill(
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: SvgPicture.asset(
+                                                'assets/icons/activity_user.svg',
+                                                color: getColorBasedOnActivityType(activity['type'])
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
@@ -1197,9 +1264,10 @@ class _ActivityPageState extends State<ActivityPage> {
     ),
   );
       
-      bool isFilterSelected = false;
 
-      void _buildFilterOptions(BuildContext context) {
+  bool isFilterSelected = false;
+
+  void _buildFilterOptions(BuildContext context) {
     /// Edits the filter based on the value of `value`
     ///
     /// If `value` is true, it adds `key` to filter, if false it removes
@@ -1390,7 +1458,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                 children: <Widget>[
                                                   CheckboxListTile(
                                                     title: Text(
-                                                      'Income',
+                                                      'Profit',
                                                       style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                                     ),
                                                     value: isIncomeChecked,
@@ -1446,6 +1514,31 @@ class _ActivityPageState extends State<ActivityPage> {
                                           ],
                                         ),
                                       ),
+                                      // ... existing code ...
+
+Padding(
+  padding: const EdgeInsets.symmetric(vertical: 5.0),
+  child: ExpansionTile(
+    title: Row(
+      children: [
+        const Text('By Connected Users', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+        const SizedBox(width: 10), // Add some spacing between the title and the date
+      ],
+    ),
+    iconColor: Colors.white,
+    collapsedIconColor: Colors.white,
+    children: [
+      StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) => Column(
+          children: <Widget>[
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+
+// ... existing code ...
                                     ],
                                   ),
                                 );
@@ -1486,21 +1579,23 @@ class _ActivityPageState extends State<ActivityPage> {
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                              child: TextButton(
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Icon(Icons.close, color: Colors.white),
-                                    Text('Clear', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
-                                  ],
+                            GestureDetector(
+                              child: Container(
+                                color: Colors.transparent,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(Icons.close, color: Colors.white),
+                                      Text('Clear', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
+                                    ],
+                                  ),
                                 ),
-                                onPressed: () {
-                                  // Implement your cancel functionality here
-                                  Navigator.pop(context);
-                                },
                               ),
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
                             ),
                           ],
                         ),

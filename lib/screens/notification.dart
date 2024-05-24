@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -75,12 +76,16 @@ class _NotificationPageState extends State<NotificationPage> {
               body: CustomScrollView(
                 slivers: <Widget>[
                   _buildAppBar(context),
-                  SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        Center(
-                          heightFactor: 3,
-                          child: Text(
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          SvgPicture.asset(
+                            'assets/icons/empty_notifications.svg',
+                          ),
+                          Text(
                             'No notifications.',
                             style: TextStyle(
                               color: Colors.white,
@@ -89,8 +94,8 @@ class _NotificationPageState extends State<NotificationPage> {
                               fontSize: 30,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
