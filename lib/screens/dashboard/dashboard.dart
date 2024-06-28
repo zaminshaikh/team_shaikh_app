@@ -24,24 +24,20 @@ class CustomSlideIndicator extends SlideIndicator {
    CustomSlideIndicator();
 
   @override
-  Widget build(int current, double slidePercent, int itemCount) {
-    return Row(
+  Widget build(int currentPage, double pageDelta, int itemCount) => Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List<Widget>.generate(itemCount, (index) {
-        return Container(
+      children: List<Widget>.generate(itemCount, (index) => Container(
           width: 10.0,
           height: 10.0,
           margin: EdgeInsets.symmetric(vertical: 0.0, horizontal: 5.0),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: current == index
+            color: currentPage == index
                 ? Color.fromRGBO(255, 255, 255, 0.802)
                 : Color.fromRGBO(255, 255, 255, 0.504)
           ),
-        );
-      }),
+        )),
     );
-  }
 }
 
 class _DashboardPageState extends State<DashboardPage> {
@@ -300,7 +296,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       _buildConnectedUsersSection(connectedUsers.data!),
                       const SizedBox(height: 30),
                       _buildAssetsStructureSection(
-                          totalAssets, percentageAGQ, percentageAK1),
+                        totalAssets, percentageAGQ, percentageAK1),
                       const SizedBox(height: 130),
                     ],
                   ),
@@ -371,15 +367,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   PageRouteBuilder(
                     transitionDuration: Duration(milliseconds: 450),
                     pageBuilder: (_, __, ___) => NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) {
-                      return SlideTransition(
+                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
                         position: Tween<Offset>(
                           begin: Offset(1.0, 0.0),
                           end: Offset(0.0, 0.0),
                         ).animate(animation),
                         child: child,
-                      );
-                    },
+                      ),
                   ),
                 );
               },
@@ -460,7 +454,7 @@ class _DashboardPageState extends State<DashboardPage> {
               fit: BoxFit.cover,
               alignment: Alignment.centerRight,
               colorFilter: ColorFilter.mode(
-                  Colors.blue.withOpacity(0.9), BlendMode.dstATop),
+                  const Color.fromARGB(255, 212, 217, 222).withOpacity(0.9), BlendMode.dstATop),
             ),
           ),
           child: Row(
@@ -522,8 +516,7 @@ class _DashboardPageState extends State<DashboardPage> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
+                builder: (BuildContext context) => AlertDialog(
                     backgroundColor: AppColors.defaultBlueGray800,
                       content: SingleChildScrollView(
                         child: ListBody(
@@ -577,9 +570,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       )
                     ],
-                  );
-          
-                },
+                  ),
               );
             },
           ),
@@ -672,11 +663,37 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  int _getAssetTileIndex(String name, {String? companyName}) {
+    if (name == companyName) {
+      return 1;
+    }
+    switch (name) {
+      case 'Personal':
+        return 0;
+      case 'Traditional IRA':
+        return 2;
+      case 'Nuview Cash IRA':
+        return 3;
+      case 'Roth IRA':
+        return 4;
+      case 'Nuview Cash Roth IRA':
+        return 5;
+      case 'SEP IRA':
+        return 6;
+      case 'Nuview Cash SEP IRA':
+        return 7;
+      default:
+        return -1;
+    }
+  }
+
   Widget _buildUserBreakdownSection(
       Map<String, String> userName,
       double totalUserAssets,
       double latestIncome,
-      List<Map<String, dynamic>> assets) {
+      List<Map<String, dynamic>> assets,
+      {bool isConnectedUser = false}) {
+        
     // Initialize empty lists for the tiles
     List<ListTile> assetTilesAGQ = [];
     List<ListTile> assetTilesAK1 = [];
@@ -745,6 +762,11 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
+    // Sort tiles in order specified in _getAssetTileIndex
+    assetTilesAGQ.sort((a, b) => _getAssetTileIndex((a.title as Text).data!, companyName: userName['company']).compareTo(_getAssetTileIndex((b.title as Text).data!, companyName: userName['company'])));
+    assetTilesAK1.sort((a, b) => _getAssetTileIndex((a.title as Text).data!, companyName: userName['company']).compareTo(_getAssetTileIndex((b.title as Text).data!, companyName: userName['company'])));
+    
+
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
@@ -792,12 +814,14 @@ class _DashboardPageState extends State<DashboardPage> {
           maintainState: true,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
+            side: isConnectedUser ? BorderSide(color: Colors.white) : BorderSide.none, // Specific styling for connected users
           ),
           collapsedShape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
+            side: isConnectedUser ? BorderSide(color: Colors.white) : BorderSide.none,  // Specific styling for connected users
           ),
-          collapsedBackgroundColor: const Color.fromARGB(255, 30, 41, 59),
-          backgroundColor: const Color.fromARGB(255, 30, 41, 59),
+          collapsedBackgroundColor: isConnectedUser ? Colors.transparent : Color.fromARGB(255, 30, 41, 59), // Specific styling for connected users
+          backgroundColor: isConnectedUser ? Colors.transparent : const Color.fromARGB(255, 30, 41, 59), // Specific styling for connected users
           iconColor: Colors.white,
           collapsedIconColor: Colors.white,
           children: <Widget>[
@@ -847,18 +871,19 @@ class _DashboardPageState extends State<DashboardPage> {
                   case 'AK1':
                     break;
                   default:
-                    latestIncome = asset['ytd'];
+                    latestIncome = (asset['ytd'] as int).toDouble();
                     totalUserAssets += asset['total'];
                 }
               }
               return Builder(
                 builder: (BuildContext context) => Column(
                   children: [
-                    _buildConnectedUserBreakdownSection(
+                    _buildUserBreakdownSection(
                       userName,
                       totalUserAssets,
                       latestIncome,
                       user.assets,
+                      isConnectedUser: true,
                     ),
                     SizedBox(height: 20),
                   ],
