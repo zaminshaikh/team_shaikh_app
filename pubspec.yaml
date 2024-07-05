@@ -51,6 +51,9 @@ dependencies:
   file_saver: ^0.2.12
   mime: ^1.0.0
   flutter_screenutil: ^5.9.1
+  url_launcher: ^6.3.0
+  shared_preferences: ^2.2.3
+  local_auth: ^2.2.0
   
 
 dev_dependencies:

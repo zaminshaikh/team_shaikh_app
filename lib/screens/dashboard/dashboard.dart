@@ -847,9 +847,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   case 'AK1':
                     break;
                   default:
-                    latestIncome = asset['ytd'];
-                    totalUserAssets += asset['total'];
-                }
+                    latestIncome = (asset['ytd'] is int) ? (asset['ytd'] as int).toDouble() : asset['ytd'] as double;
+                    totalUserAssets += (asset['total'] is int) ? (asset['total'] as int).toDouble() : asset['total'] as double;                }
               }
               return Builder(
                 builder: (BuildContext context) => Column(

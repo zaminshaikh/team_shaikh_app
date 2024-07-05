@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
             Align(
               alignment: const Alignment(-1.0, -1.0),
               child: Image.asset(
-              'assets/icons/team-shaikh-transparent.png',
+              'assets/icons/team_shaikh_transparent.png',
               height: 100,
             ),
             ),
