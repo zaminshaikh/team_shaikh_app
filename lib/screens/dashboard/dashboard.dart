@@ -453,8 +453,8 @@ class _DashboardPageState extends State<DashboardPage> {
               image: AssetImage('assets/icons/total_assets_gradient.png'),
               fit: BoxFit.cover,
               alignment: Alignment.centerRight,
-              colorFilter: ColorFilter.mode(
-                  const Color.fromARGB(255, 212, 217, 222).withOpacity(0.9), BlendMode.dstATop),
+              // colorFilter: ColorFilter.mode(
+              //     Color.fromARGB(255, 14, 54, 93).withOpacity(0.9), BlendMode.dstATop),
             ),
           ),
           child: Row(
