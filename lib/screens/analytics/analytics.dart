@@ -159,8 +159,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
-                      _buildLineChartSection(
-                          totalUserAssets, percentageAGQ, percentageAK1),
                       // Assets structure section
                       _buildAssetsStructureSection(
                           totalAssets, percentageAGQ, percentageAK1),
