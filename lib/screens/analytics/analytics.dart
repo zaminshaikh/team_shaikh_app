@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+ import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
@@ -46,6 +47,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         locale: 'en_US',
       ).format(amount);
 
+  String dropdownValue = 'last-year';
+
   @override
   Widget build(BuildContext context) => FutureBuilder(
       future: _initData(), // Initialize the database service
@@ -82,7 +85,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         );
                       }
                       unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
-                      // use unreadNotificationsCount as needed
                       return buildAnalyticsPage(userSnapshot, connectedUsers);
                     }
                   );
@@ -157,6 +159,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
+                      _buildLineChartSection(
+                          totalUserAssets, percentageAGQ, percentageAK1),
                       // Assets structure section
                       _buildAssetsStructureSection(
                           totalAssets, percentageAGQ, percentageAK1),
@@ -197,7 +201,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             children: [
               Text(
                 'Analytics',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 27,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -295,8 +299,441 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ],
   );
   
+    Widget _buildOption(BuildContext context, String title, String value) =>
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GestureDetector(
+          onTap: () => setState(() {
+            dropdownValue = value;
+            Navigator.pop(context); // Close the bottom sheet
+          }),
+          child: Container(
+            width: double.infinity,
+            color: Color.fromRGBO(94, 181, 171, 0),
+            child: Container(
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                color: dropdownValue == value
+                    ? AppColors.defaultBlue500
+                    : Colors
+                        .transparent, // Change the color based on whether the option is selected
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              child: Container(
+                padding: EdgeInsets.all(10),
+                child: Text(title,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontFamily: 'Titillium Web')),
+                ),
+            ),
+          ),
+        ),
+      );
+
+String text = ''; 
+
+Widget bottomTitlesWidget(double value, TitleMeta meta) {
+  const style = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.bold
+  );
+  switch (value.toInt()) {
+    case 0:
+      if (dropdownValue == 'last-week') {
+        text = 'Sun';
+      } 
+      if (dropdownValue == 'last-month') {
+        text = '1';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Jan';
+      } 
+      break;
+    case 1:
+      if (dropdownValue == 'last-week') {
+        text = 'Mon';
+      } 
+      if (dropdownValue == 'last-month') {
+        text = '15';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Feb';
+      } 
+      break;
+    case 2:
+      if (dropdownValue == 'last-week') {
+        text = 'Tue';
+      } 
+      if (dropdownValue == 'last-month') {
+        text = '30';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Mar';
+      } 
+      break;
+    case 3:
+      if (dropdownValue == 'last-week') {
+        text = 'Wed';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Apr';
+      } 
+      break;
+    case 4:
+      if (dropdownValue == 'last-week') {
+        text = 'Thu';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'May';
+      } 
+      break;
+    case 5:
+      if (dropdownValue == 'last-week') {
+        text = 'Fri';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Jun';
+      } 
+      break;
+    case 6:
+      if (dropdownValue == 'last-week') {
+        text = 'Sat';
+      } 
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Jul';
+      } 
+      break;
+    case 7:
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Aug';
+      } 
+      break;
+    case 8:
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Sep';
+      } 
+      break;
+    case 9:
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Oct';
+      } 
+      break;
+    case 10:
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Nov';
+      } 
+      break;
+    case 11:
+      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+        text = 'Dec';
+      } 
+      break;
+    default:
+      return Container();
+  }
+  return SideTitleWidget(
+    axisSide: meta.axisSide,
+    space: 3,
+    child: Text(
+      text,
+      style: style,
+    ),
+  );
+}
+
+FlTitlesData get titlesData => FlTitlesData(
+  topTitles: AxisTitles(
+    sideTitles: SideTitles(
+      showTitles: false
+      )
+    ),
+  rightTitles: AxisTitles(
+    sideTitles: SideTitles(
+      showTitles: false
+      )
+    ),
+  bottomTitles: AxisTitles(
+    sideTitles: SideTitles(
+      showTitles: true,
+      interval: 1,
+      getTitlesWidget: bottomTitlesWidget,
+    ),
+  ),
+);
+
+String getDropdownValueName(String dropDownValue) {
+  switch (dropDownValue) {
+    case 'last-week':
+      return 'Last Week';
+    case 'last-month':
+      return 'Last Month';
+    case 'last-6-months':
+      return 'Last 6 Months';
+    case 'last-year':
+      return 'Last Year';
+    case 'custom-time-period':
+      return 'Custom';
+    default:
+      return 'Unknown';
+  }
+}
+
+  double maxX(String dropdownValue) {
+    switch (dropdownValue) {
+      case 'last-week':
+        return 6;
+      case 'last-month':
+        return 2;
+      case 'last-6-months':
+        return 5;
+      case 'last-year':
+        return 11;
+      case 'custom-time-period':
+        return 0;
+      default:
+        return 6;
+    }
+  }
+
+
+    Widget _buildLineChartSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Padding(
+      padding: const EdgeInsets.only(bottom: 25),
+      child: Container(
+        width: double.infinity,
+        height: 520,
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 30, 41, 59),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          children: [
+        
+            
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Row(
+                children: [
+                  Text(
+                    'Asset Timeline',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+
+                  Spacer(),
+
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: AppColors.defaultBlueGray800,
+        builder: (BuildContext context) => SingleChildScrollView(
+          child: Container(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20.0),
+                topRight: Radius.circular(20.0),
+              ),
+              child: Container(
+                color: AppColors.defaultBlueGray800,
+                child: Wrap(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                              height: 20.0), // Add some space at the top
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Choose Time Period',
+                                style: TextStyle(
+                                    fontSize: 22.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web'),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20.0), // Add some space between the title and the options
+                          _buildOption(context, 'Last Week', 'last-week'),
+                          _buildOption(context, 'Last Month', 'last-month'),
+                          _buildOption(context, 'Last 6 Months', 'last-6-months'),
+                          _buildOption(context, 'Last Year', 'last-year'),
+                          _buildOption(context, 'Customize Time Period', 'custom-time-period'),
+                          const SizedBox(
+                              height: 20.0), // Add some space at the bottom
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color.fromARGB(121, 255, 255, 255),
+                          width: 2,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              getDropdownValueName(dropdownValue),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            const Icon(Icons.keyboard_arrow_down_rounded, size: 25, color: Color.fromARGB(212, 255, 255, 255)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+        
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(right: 20, bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 1,
+                    child: Padding(
+                      padding: EdgeInsets.only( right: 10),
+                      child: LineChart(
+                        LineChartData(
+                          gridData: FlGridData(
+                            show: true,
+                            drawVerticalLine: false,
+                            getDrawingHorizontalLine: (value) {
+                              return FlLine(
+                                color: const Color.fromARGB(255, 102, 102, 102),
+                                strokeWidth: 0.5,
+                              );
+                            },
+                          ),
+                          titlesData: titlesData,
+
+                          borderData: FlBorderData(
+                            show: false,
+                          ),
+                          minX: 0,
+                          maxX: maxX(dropdownValue),
+                          minY: 0,
+                          maxY: 10000,
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: [
+                                FlSpot(0, 2000),
+                                FlSpot(1, 6000),
+                                FlSpot(2, 4000),
+                                FlSpot(3, 5000),
+                                FlSpot(4, 4000),
+                                FlSpot(5, 3000),
+                              ],
+                              isCurved: true,
+                              color: AppColors.defaultBlue500,
+                              barWidth: 3,
+                              isStrokeCapRound: true,
+                              dotData: FlDotData(
+                                show: true,
+                                getDotPainter: (spot, percent, barData, index) {
+                                  return FlDotCirclePainter(
+                                    radius: 4,
+                                    color: AppColors.defaultBlueGray500,
+                                    strokeWidth: 0,
+                                    strokeColor: Colors.transparent,
+                                  );
+                                },
+                              ),
+                              belowBarData: BarAreaData(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    AppColors.defaultBlue500,
+                                    AppColors.defaultBlue500,
+                                    AppColors.defaultBlue500.withOpacity(0.2),
+                                  ],
+                                ),
+                                show: true,
+                              ),
+                            ),
+                          ],
+                        )
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+
+            Padding(
+              padding: const EdgeInsets.only(left: 15.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.defaultBlue500,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    'Total assets timeline',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                ],
+              ),
+            ), 
+          ],
+        ),
+      ),
+    );
+
+
   Widget _buildAssetsStructureSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Container(
-    width: 400,
+    width: double.infinity,
     height: 520,
     padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
     decoration: BoxDecoration(
@@ -533,7 +970,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -555,7 +992,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_filled.svg',
-              height: 27,
+              height: 25,
             ),
           ),
         ),
@@ -577,7 +1014,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -599,7 +1036,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),

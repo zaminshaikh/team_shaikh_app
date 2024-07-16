@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
+import 'package:team_shaikh_app/main.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -16,10 +18,9 @@ import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'PDFPreview.dart';
 import 'downloadmethod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Add this line
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -124,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await Navigator.pushAndRemoveUntil(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => const LoginPage(),
+        pageBuilder: (context, animation1, animation2) => OnboardingPage(),
         transitionDuration: Duration.zero,
       ),
       (route) => false,
@@ -290,7 +291,10 @@ List<String> assetsFormatted = [];
     
   }
   
-  bool switchValue = false;
+  bool hapticsSwitchValue = false;
+  bool activitySwitchValue = false;
+  bool statementsSwitchValue = false;
+
     List<String> connectedUserNames = [];
 
 
@@ -485,7 +489,7 @@ List<String> assetsFormatted = [];
           
           itemCount: connectedUserNames.length,
           itemBuilder: (context, index) => Container(
-          margin: EdgeInsets.only(bottom: 20),
+          margin: const EdgeInsets.only(bottom: 20),
           width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.transparent,
@@ -617,7 +621,7 @@ Column _profileForAllUsers() => Column(
       _profileForUser(),
               const Row(
           children: [
-            const SizedBox(width: 20),
+            SizedBox(width: 20),
 
             Text(
               'Connected Users', 
@@ -1283,52 +1287,38 @@ Column _profileForAllUsers() => Column(
                   ),
 
                   // Haptics Section with options to change haptics
+                  const Text(
+                    'Haptics',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Enable haptics if you want to receive vibration feedback.',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 15),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start, 
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, 
-                        children: [
-                          const Text(
-                            'Haptics',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Wrap(
-                            children: [
-                              Text(
-                                'Enable haptics if you want to receive vibration feedback.',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.white,
-                                  fontFamily: 'Titillium Web',
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CupertinoSwitch(
-                                // This bool value toggles the switch.
-                                value: switchValue,
-                                activeColor: CupertinoColors.activeBlue,
-                                onChanged: (bool? value) {
-                                  // This is called when the user toggles the switch.
-                                  setState(() {
-                                    switchValue = value ?? false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
+                      CupertinoSwitch(
+                        // This bool value toggles the switch.
+                        value: hapticsSwitchValue,
+                        activeColor: CupertinoColors.activeBlue,
+                        onChanged: (bool? value) {
+                          // This is called when the user toggles the switch.
+                          setState(() {
+                            hapticsSwitchValue = value ?? false;
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -1386,12 +1376,12 @@ Column _profileForAllUsers() => Column(
                             children: [
                               CupertinoSwitch(
                                 // This bool value toggles the switch.
-                                value: switchValue,
+                                value: activitySwitchValue,
                                 activeColor: CupertinoColors.activeBlue,
                                 onChanged: (bool? value) {
                                   // This is called when the user toggles the switch.
                                   setState(() {
-                                    switchValue = value ?? false;
+                                    activitySwitchValue = value ?? false;
                                   });
                                 },
                               ),
@@ -1424,13 +1414,12 @@ Column _profileForAllUsers() => Column(
                             children: [
                               CupertinoSwitch(
                                 // This bool value toggles the switch.
-                                value: switchValue,
+                                value: statementsSwitchValue,
                                 activeColor: CupertinoColors.activeBlue,
                                 onChanged: (bool? value) {
                                   // This is called when the user toggles the switch.
-                                  setState(() {
-                                    switchValue = value ?? false;
-                                  });
+                                    statementsSwitchValue = value ?? false;
+                                    print('$statementsSwitchValue');
                                 },
                               ),
                             ],
@@ -1705,7 +1694,7 @@ Column _profileForAllUsers() => Column(
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1727,7 +1716,7 @@ Column _profileForAllUsers() => Column(
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_hollowed.svg',
-              height: 27,
+              height: 25,
             ),
           ),
         ),
@@ -1749,7 +1738,7 @@ Column _profileForAllUsers() => Column(
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1771,7 +1760,7 @@ Column _profileForAllUsers() => Column(
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_filled.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1969,7 +1958,6 @@ Widget _buildClientNameAndID(String name, String clientId) {
                               SvgPicture.asset(
                                 'assets/icons/email.svg',
                                 color: Colors.white,
-                                height: 16,
                               ),
                               const SizedBox(width: 10),
                               const Text(

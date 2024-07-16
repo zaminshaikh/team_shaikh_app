@@ -1265,7 +1265,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_filled.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1287,7 +1287,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_hollowed.svg',
-              height: 27,
+              height: 25,
             ),
           ),
         ),
@@ -1309,7 +1309,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1331,7 +1331,7 @@ class _DashboardPageState extends State<DashboardPage> {
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),

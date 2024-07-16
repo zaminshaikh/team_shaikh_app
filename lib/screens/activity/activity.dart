@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_expression_function_bodies, library_private_types_in_public_api, deprecated_member_use
+
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -94,11 +96,7 @@ class _ActivityPageState extends State<ActivityPage> {
             };
             return userName.values.join(' ');
           }).toList();
-          userCheckStatus = Map.fromIterable(
-            connectedUserNames,
-            key: (user) => user,
-            value: (user) => true,
-          );
+          userCheckStatus = { for (var user in connectedUserNames) user : true };
         });
       });
     });
@@ -260,12 +258,10 @@ class _ActivityPageState extends State<ActivityPage> {
     }
 
     // Add date range filter if it's specified
-    if (selectedDates.start != null && selectedDates.end != null) {
-      String formatDate(DateTime date) => DateFormat('MM/dd/yy').format(date);
-      String dateRange = "${formatDate(selectedDates.start)} to ${formatDate(selectedDates.end)}";
-      selectedFilters.add(dateRange);
-    }
-
+    String formatDate(DateTime date) => DateFormat('MM/dd/yy').format(date);
+    String dateRange = '${formatDate(selectedDates.start)} to ${formatDate(selectedDates.end)}';
+    selectedFilters.add(dateRange);
+  
 
     return selectedFilters;
   }
@@ -325,8 +321,6 @@ class _ActivityPageState extends State<ActivityPage> {
 
     bool activitiesExist = activities.isNotEmpty;
 
-    // Print the result to debug console
-    print('Do activities within selected filters exist? $activitiesExist');
 
     return Scaffold(
       body: Stack(
@@ -383,7 +377,7 @@ class _ActivityPageState extends State<ActivityPage> {
             child: ElevatedButton.icon(
               icon: SvgPicture.asset(
                 'assets/icons/filter.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 height: 24,
                 width: 24,
               ),
@@ -414,7 +408,7 @@ class _ActivityPageState extends State<ActivityPage> {
             child: ElevatedButton.icon(
               icon: SvgPicture.asset(
                 'assets/icons/sort.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 height: 24,
                 width: 24,
               ),
@@ -452,7 +446,7 @@ class _ActivityPageState extends State<ActivityPage> {
             child: ElevatedButton.icon(
               icon: SvgPicture.asset(
                 'assets/icons/filter.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 height: 24,
                 width: 24,
               ),
@@ -483,7 +477,7 @@ class _ActivityPageState extends State<ActivityPage> {
             child: ElevatedButton.icon(
               icon: SvgPicture.asset(
                 'assets/icons/sort.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 height: 24,
                 width: 24,
               ),
@@ -553,13 +547,13 @@ class _ActivityPageState extends State<ActivityPage> {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    transitionDuration: Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => NotificationPage(),
+                    transitionDuration: const Duration(milliseconds: 450),
+                    pageBuilder: (_, __, ___) => const NotificationPage(),
                     transitionsBuilder: (_, animation, __, child) {
                       return SlideTransition(
                         position: Tween<Offset>(
-                          begin: Offset(1.0, 0.0),
-                          end: Offset(0.0, 0.0),
+                          begin: const Offset(1.0, 0.0),
+                          end: const Offset(0.0, 0.0),
                         ).animate(animation),
                         child: child,
                       );
@@ -568,7 +562,7 @@ class _ActivityPageState extends State<ActivityPage> {
                 );
               },
               child: Container(
-                color: Color.fromRGBO(239, 232, 232, 0),
+                color: const Color.fromRGBO(239, 232, 232, 0),
                 padding: const EdgeInsets.all(10.0),
                 child: ClipRect(
                   child: Stack(
@@ -587,7 +581,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             child: Center(
                               child: SvgPicture.asset(
                                 'assets/icons/bell.svg',
-                                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                                 height: 32,
                               ),
                             ),
@@ -598,16 +592,16 @@ class _ActivityPageState extends State<ActivityPage> {
                         child: unreadNotificationsCount > 0
                             ? Container(
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF267DB5),
+                                  color: const Color(0xFF267DB5),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                constraints: BoxConstraints(
+                                constraints: const BoxConstraints(
                                   minWidth: 18,
                                   minHeight: 18,
                                 ),
                                 child: Text(
                                   '$unreadNotificationsCount',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontFamily: 'Titillium Web',
@@ -639,11 +633,9 @@ class _ActivityPageState extends State<ActivityPage> {
     final nextActivityDate = index < activities.length - 1
         ? (activities[index + 1]['time'] as Timestamp).toDate()
         : null;
-    final firstActivityDate = (activities[0]['time'] as Timestamp).toDate();
 
     bool isLastActivityForTheDay =
         nextActivityDate == null || !_isSameDay(activityDate, nextActivityDate);
-    bool isLatestDate = _isSameDay(activityDate, firstActivityDate);
 
     bool isFirstVisibleActivityOfTheDay = previousActivityDate == null ||
         !_isSameDay(activityDate, previousActivityDate) ||
@@ -654,7 +646,7 @@ class _ActivityPageState extends State<ActivityPage> {
         return Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 25.0, 20.0, 25.0), // Add padding to the top only if it's not the latest date
+              padding: const EdgeInsets.fromLTRB(20.0, 25.0, 20.0, 25.0), // Add padding to the top only if it's not the latest date
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -722,13 +714,13 @@ class _ActivityPageState extends State<ActivityPage> {
       Color getUnderlayColorBasedOnActivityType(String activityType) {
         switch (activityType) {
           case 'deposit':
-            return Color.fromARGB(255, 21, 52, 57);
+            return const Color.fromARGB(255, 21, 52, 57);
           case 'withdrawal':
-            return Color.fromARGB(255, 41, 25, 28);
+            return const Color.fromARGB(255, 41, 25, 28);
           case 'pending':
-            return Color.fromARGB(255, 24, 46, 68);
+            return const Color.fromARGB(255, 24, 46, 68);
           case 'income':
-            return Color.fromARGB(255, 24, 46, 68);
+            return const Color.fromARGB(255, 24, 46, 68);
           default:
             return AppColors.defaultWhite;
         }
@@ -737,13 +729,13 @@ class _ActivityPageState extends State<ActivityPage> {
       Color getActivityUnderlayColorBasedOnActivityType(String activityType) {
         switch (activityType) {
           case 'deposit':
-            return Color.fromARGB(255, 34, 66, 73);
+            return const Color.fromARGB(255, 34, 66, 73);
           case 'withdrawal':
-            return Color.fromARGB(255, 63, 52, 67);
+            return const Color.fromARGB(255, 63, 52, 67);
           case 'pending':
-            return Color.fromARGB(255, 32, 58, 83);
+            return const Color.fromARGB(255, 32, 58, 83);
           case 'income':
-            return Color.fromARGB(255, 32, 58, 83);
+            return const Color.fromARGB(255, 32, 58, 83);
           default:
             return AppColors.defaultWhite;
         }
@@ -865,14 +857,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                 ),
                               ),
                               const SizedBox(width: 7), // Add width
-                              Container(
-                                height: 15, // You can adjust the height as needed
-                                child: const VerticalDivider(
+                              const VerticalDivider(
                                   color: Colors.white,
                                   width: 1,
                                   thickness: 1,
                                 ),
-                              ),
                               const SizedBox(width: 7), // Add width
                               Text(
                                 activity['recipient'] ,
@@ -1294,11 +1283,11 @@ class _ActivityPageState extends State<ActivityPage> {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1316,11 +1305,11 @@ class _ActivityPageState extends State<ActivityPage> {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_hollowed.svg',
-              height: 27,
+              height: 25,
             ),
           ),
         ),
@@ -1338,11 +1327,11 @@ class _ActivityPageState extends State<ActivityPage> {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_filled.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1360,11 +1349,11 @@ class _ActivityPageState extends State<ActivityPage> {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',
-              height: 25,
+              height: 22,
             ),
           ),
         ),
@@ -1410,289 +1399,289 @@ class _ActivityPageState extends State<ActivityPage> {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      return Container(
-        child: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Container(
-            color: Color.fromRGBO(0, 0, 0, 0.001),
-            child: GestureDetector(
-              onTap: () {},
-              child: DraggableScrollableSheet(
-                initialChildSize: 0.9,
-                minChildSize: 0.8,
-                maxChildSize: 0.9,
-                builder: (_, controller) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.defaultBlueGray800,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(25.0),
-                        topRight: const Radius.circular(25.0),
-                      ),
+      return GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          color: const Color.fromRGBO(0, 0, 0, 0.001),
+          child: GestureDetector(
+            onTap: () {},
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.9,
+              minChildSize: 0.8,
+              maxChildSize: 0.9,
+              builder: (_, controller) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.defaultBlueGray800,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25.0),
+                      topRight: Radius.circular(25.0),
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5, bottom: 5),
-                            child: Icon(
-                              Icons.remove,
-                              color: Colors.transparent,
-                            ),
-                          ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 5, bottom: 5),
+                        child: Icon(
+                          Icons.remove,
+                          color: Colors.transparent,
                         ),
-                        Expanded(
-                          child: ListView.builder(
-                            controller: controller,
-                            itemCount: 3, // Increased by 2 to accommodate the title and the new ListView
-                            itemBuilder: (_, index) {
-                              if (index == 0) {
-                                return Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(25.0),
-                                    child: Text(
-                                      'Filter Activity', // Your title here
-                                      style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
-                                    ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: controller,
+                          itemCount: 3, // Increased by 2 to accommodate the title and the new ListView
+                          itemBuilder: (_, index) {
+                            if (index == 0) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(25.0),
+                                  child: Text(
+                                    'Filter Activity', // Your title here
+                                    style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
                                   ),
-                                );
-                              } else if (index == 1) {
-                                return Container(
-                                  height: MediaQuery.of(context).size.height * 0.9, // Set the height to 90% of the screen height
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        title: GestureDetector(
-                                          onTap: () async {
-                                            // Implement your filter option 1 functionality here
-                                            final DateTimeRange? dateTimeRange = await showDateRangePicker(
-                                              context: context,
-                                              firstDate: DateTime(2000),
-                                              lastDate: DateTime(3000),
-                                              builder: (BuildContext context, Widget? child) => Theme(
-                                                data: Theme.of(context).copyWith(
-                                                  scaffoldBackgroundColor: AppColors.defaultGray500,
-                                                  textTheme: TextTheme(
-                                                    headlineMedium: TextStyle(
-                                                      color: Colors.white,
-                                                      fontFamily: 'Titillium Web',
-                                                      fontSize: 20,
-                                                    ),
-                                                    bodyMedium: TextStyle(
-                                                      color: Colors.black,
-                                                      fontFamily: 'Titillium Web',
-                                                      fontSize: 16,
-                                                    ),
+                                ),
+                              );
+                            } else if (index == 1) {
+                              return SizedBox(
+                                height: MediaQuery.of(context).size.height * 0.9, // Set the height to 90% of the screen height
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      title: GestureDetector(
+                                        onTap: () async {
+                                          // Implement your filter option 1 functionality here
+                                          final DateTimeRange? dateTimeRange = await showDateRangePicker(
+                                            context: context,
+                                            firstDate: DateTime(2000),
+                                            lastDate: DateTime(3000),
+                                            builder: (BuildContext context, Widget? child) => Theme(
+                                              data: Theme.of(context).copyWith(
+                                                scaffoldBackgroundColor: AppColors.defaultGray500,
+                                                textTheme: const TextTheme(
+                                                  headlineMedium: TextStyle(
+                                                    color: Colors.white,
+                                                    fontFamily: 'Titillium Web',
+                                                    fontSize: 20,
+                                                  ),
+                                                  bodyMedium: TextStyle(
+                                                    color: Colors.black,
+                                                    fontFamily: 'Titillium Web',
+                                                    fontSize: 16,
                                                   ),
                                                 ),
-                                                child: child!,
                                               ),
-                                            );
-                                            if (dateTimeRange != null) {
-                                              setState(() {
-                                                selectedDates = dateTimeRange;
-                                              });
-                                            }
-                                          },
-                                          child: Row(
+                                              child: child!,
+                                            ),
+                                          );
+                                          if (dateTimeRange != null) {
+                                            setState(() {
+                                              selectedDates = dateTimeRange;
+                                            });
+                                          }
+                                        },
+                                        child: Container(
+                                          color: Colors.transparent,
+                                          child: const Row(
                                             children: [
-                                              const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                              Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                                             ],
                                           ),
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                        child: ExpansionTile(
-                                          title: Row(
-                                            children: [
-                                              const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                              const SizedBox(width: 10), // Add some spacing between the title and the date
-                                            ],
-                                          ),
-                                          iconColor: Colors.white,
-                                          collapsedIconColor: Colors.white,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                      child: ExpansionTile(
+                                        title: const Row(
                                           children: [
-                                            StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) => Column(
-                                                children: <Widget>[
-                                                  CheckboxListTile(
-                                                    title: const Text(
-                                                      'AGQ Consulting LLC',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: agqIsChecked,
-                                                    onChanged: (bool? value) {
-                                                      editFilter(1, value!, 'AGQ');
-                                                      setState(() {
-                                                        agqIsChecked = value;
-                                                      });
-                                                    },
-                                                  ),
-                                                  CheckboxListTile(
-                                                    title: const Text(
-                                                      'AK1 Holdings LP',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: ak1IsChecked,
-                                                    onChanged: (bool? value) {
-                                                      editFilter(1, value!, 'AK1');
-                                                      setState(() {
-                                                        ak1IsChecked = value;
-                                                      });
-                                                    },
-                                                  ),
-                                                ], 
-                                              ),
-                                            ),
+                                            Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                            SizedBox(width: 10), // Add some spacing between the title and the date
                                           ],
                                         ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                        child: ExpansionTile(
-                                          title: Row(
-                                            children: [
-                                              const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                              const SizedBox(width: 10), // Add some spacing between the title and the date
-                                            ],
-                                          ),
-                                          iconColor: Colors.white,
-                                          collapsedIconColor: Colors.white,
-                                          children: [
-                                            StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) => Column(
-                                                children: <Widget>[
-                                                  CheckboxListTile(
-                                                    title: Text(
-                                                      'Profit',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: isIncomeChecked,
-                                                    onChanged: (bool? value) {
-                                                      editFilter(2, value!, 'income');
-                                                      setState(() {
-                                                        isIncomeChecked = value;
-                                                      });
-                                                    },
+                                        iconColor: Colors.white,
+                                        collapsedIconColor: Colors.white,
+                                        children: [
+                                          StatefulBuilder(
+                                            builder: (BuildContext context, StateSetter setState) => Column(
+                                              children: <Widget>[
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'AGQ Consulting LLC',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                                   ),
-                                                  CheckboxListTile(
-                                                    title: Text(
-                                                      'Withdrawal',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: isWithdrawalChecked,
-                                                    onChanged: (bool? value) {
-                                                      editFilter(2, value!, 'withdrawal');
-                                                      setState(() {
-                                                        isWithdrawalChecked = value;
-                                                      });
-                                                    },
+                                                  value: agqIsChecked,
+                                                  onChanged: (bool? value) {
+                                                    editFilter(1, value!, 'AGQ');
+                                                    setState(() {
+                                                      agqIsChecked = value;
+                                                    });
+                                                  },
+                                                ),
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'AK1 Holdings LP',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                                   ),
-                                                  CheckboxListTile(
-                                                    title: Text(
-                                                      'Deposit',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: isDepositChecked,
-                                                    onChanged: (bool? value) {
-                                                      editFilter(2, value!, 'deposit');
-                                                      setState(() {
-                                                        isDepositChecked = value;
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
+                                                  value: ak1IsChecked,
+                                                  onChanged: (bool? value) {
+                                                    editFilter(1, value!, 'AK1');
+                                                    setState(() {
+                                                      ak1IsChecked = value;
+                                                    });
+                                                  },
+                                                ),
+                                              ], 
                                             ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                      child: ExpansionTile(
+                                        title: const Row(
+                                          children: [
+                                            Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                            SizedBox(width: 10), // Add some spacing between the title and the date
                                           ],
                                         ),
+                                        iconColor: Colors.white,
+                                        collapsedIconColor: Colors.white,
+                                        children: [
+                                          StatefulBuilder(
+                                            builder: (BuildContext context, StateSetter setState) => Column(
+                                              children: <Widget>[
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'Profit',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: isIncomeChecked,
+                                                  onChanged: (bool? value) {
+                                                    editFilter(2, value!, 'income');
+                                                    setState(() {
+                                                      isIncomeChecked = value;
+                                                    });
+                                                  },
+                                                ),
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'Withdrawal',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: isWithdrawalChecked,
+                                                  onChanged: (bool? value) {
+                                                    editFilter(2, value!, 'withdrawal');
+                                                    setState(() {
+                                                      isWithdrawalChecked = value;
+                                                    });
+                                                  },
+                                                ),
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'Deposit',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: isDepositChecked,
+                                                  onChanged: (bool? value) {
+                                                    editFilter(2, value!, 'deposit');
+                                                    setState(() {
+                                                      isDepositChecked = value;
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              } else if (index == 2) {
+                              return Container(
+                              );
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      ListView(
+                        shrinkWrap: true,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                            child: Container(
+                              color: AppColors.defaultBlueGray800,
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.defaultBlue500, // This is the background color
+                                ),
+                                child: const Text('Apply', style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18, 
+                                  fontWeight: FontWeight.bold, 
+                                  fontFamily: 'Titillium Web')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  // Implement your apply functionality here
+                                  setState(() {
+                                    log('$_fundsFilter');
+                                    log('$_typeFilter');
+                                    filter(activities);
+                                  });
+                                } // Close the bottom sheet,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            child: Container(
+                              color: Colors.transparent,
+                              child: const Padding(
+                                padding: EdgeInsets.all(4.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.close, color: Colors.white),
+                                    Text('Clear', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+      
+                                _fundsFilter = ['AK1', 'AGQ'];
+      
+                                selectedDates = DateTimeRange(
+                                  start: DateTime(1900),
+                                  end: DateTime.now(),
                                 );
-                                } else if (index == 2) {
-                                return Container(
-                                );
-                              }
+      
+      
+                                agqIsChecked = true;
+                                ak1IsChecked = true;
+      
+                                isIncomeChecked = true;
+                                isWithdrawalChecked = true;
+                                isPendingWithdrawalChecked = true;
+                                isDepositChecked = true;
+                              });
+      
+                              Navigator.pop(context);
                             },
                           ),
-                        ),
-                        ListView(
-                          shrinkWrap: true,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                              child: Container(
-                                color: AppColors.defaultBlueGray800,
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.defaultBlue500, // This is the background color
-                                  ),
-                                  child: const Text('Apply', style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18, 
-                                    fontWeight: FontWeight.bold, 
-                                    fontFamily: 'Titillium Web')),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    // Implement your apply functionality here
-                                    setState(() {
-                                      log('$_fundsFilter');
-                                      log('$_typeFilter');
-                                      filter(activities);
-                                    });
-                                  } // Close the bottom sheet,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              child: Container(
-                                color: Colors.transparent,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.close, color: Colors.white),
-                                      Text('Clear', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
-
-                                  _fundsFilter = ['AK1', 'AGQ'];
-
-                                  selectedDates = DateTimeRange(
-                                    start: DateTime(1900),
-                                    end: DateTime.now(),
-                                  );
-
-
-                                  agqIsChecked = true;
-                                  ak1IsChecked = true;
-
-                                  isIncomeChecked = true;
-                                  isWithdrawalChecked = true;
-                                  isPendingWithdrawalChecked = true;
-                                  isDepositChecked = true;
-                                });
-
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -1738,379 +1727,379 @@ class _ActivityPageState extends State<ActivityPage> {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      return Container(
-        child: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Container(
-            color: Color.fromRGBO(0, 0, 0, 0.001),
-            child: GestureDetector(
-              onTap: () {},
-              child: DraggableScrollableSheet(
-                initialChildSize: 0.9,
-                minChildSize: 0.8,
-                maxChildSize: 0.9,
-                builder: (_, controller) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.defaultBlueGray800,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(25.0),
-                        topRight: const Radius.circular(25.0),
-                      ),
+      return GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          color: const Color.fromRGBO(0, 0, 0, 0.001),
+          child: GestureDetector(
+            onTap: () {},
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.9,
+              minChildSize: 0.8,
+              maxChildSize: 0.9,
+              builder: (_, controller) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.defaultBlueGray800,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25.0),
+                      topRight: Radius.circular(25.0),
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 5, bottom: 5),
-                            child: Icon(
-                              Icons.remove,
-                              color: Colors.transparent,
-                            ),
-                          ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 5, bottom: 5),
+                        child: Icon(
+                          Icons.remove,
+                          color: Colors.transparent,
                         ),
-                        Expanded(
-                          child: ListView.builder(
-                            controller: controller,
-                            itemCount: 3, // Increased by 2 to accommodate the title and the new ListView
-                            itemBuilder: (_, index) {
-                              if (index == 0) {
-                                return Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(25.0),
-                                    child: Text(
-                                      'Filter Activity', // Your title here
-                                      style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
-                                    ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: controller,
+                          itemCount: 3, // Increased by 2 to accommodate the title and the new ListView
+                          itemBuilder: (_, index) {
+                            if (index == 0) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(25.0),
+                                  child: Text(
+                                    'Filter Activity', // Your title here
+                                    style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Titillium Web'),
                                   ),
-                                );
-                              } else if (index == 1) {
-                                return Container(
-                                  height: MediaQuery.of(context).size.height * 0.9, // Set the height to 90% of the screen height
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        title: GestureDetector(
-                                          onTap: () async {
-                                            // Implement your filter option 1 functionality here
-                                            final DateTimeRange? dateTimeRange = await showDateRangePicker(
-                                              context: context,
-                                              firstDate: DateTime(2000),
-                                              lastDate: DateTime(3000),
-                                              builder: (BuildContext context, Widget? child) => Theme(
-                                                data: Theme.of(context).copyWith(
-                                                  scaffoldBackgroundColor: AppColors.defaultGray500,
-                                                  textTheme: TextTheme(
-                                                    headlineMedium: TextStyle(
-                                                      color: Colors.white,
-                                                      fontFamily: 'Titillium Web',
-                                                      fontSize: 20,
-                                                    ),
-                                                    bodyMedium: TextStyle(
-                                                      color: Colors.black,
-                                                      fontFamily: 'Titillium Web',
-                                                      fontSize: 16,
-                                                    ),
+                                ),
+                              );
+                            } else if (index == 1) {
+                              return SizedBox(
+                                height: MediaQuery.of(context).size.height * 0.9, // Set the height to 90% of the screen height
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      title: GestureDetector(
+                                        onTap: () async {
+                                          // Implement your filter option 1 functionality here
+                                          final DateTimeRange? dateTimeRange = await showDateRangePicker(
+                                            context: context,
+                                            firstDate: DateTime(2000),
+                                            lastDate: DateTime(3000),
+                                            builder: (BuildContext context, Widget? child) => Theme(
+                                              data: Theme.of(context).copyWith(
+                                                scaffoldBackgroundColor: AppColors.defaultGray500,
+                                                textTheme: const TextTheme(
+                                                  headlineMedium: TextStyle(
+                                                    color: Colors.white,
+                                                    fontFamily: 'Titillium Web',
+                                                    fontSize: 20,
+                                                  ),
+                                                  bodyMedium: TextStyle(
+                                                    color: Colors.black,
+                                                    fontFamily: 'Titillium Web',
+                                                    fontSize: 16,
                                                   ),
                                                 ),
-                                                child: child!,
                                               ),
-                                            );
-                                            if (dateTimeRange != null) {
-                                              setState(() {
-                                                selectedDates = dateTimeRange;
-                                              });
-                                            }
-                                          },
-                                          child: Row(
+                                              child: child!,
+                                            ),
+                                          );
+                                          if (dateTimeRange != null) {
+                                            setState(() {
+                                              selectedDates = dateTimeRange;
+                                            });
+                                          }
+                                        },
+                                        child: Container(
+                                          color: Colors.transparent,
+                                          child: const Row(
                                             children: [
-                                              const Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                              Text('By Time Period', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                                             ],
                                           ),
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                        child: ExpansionTile(
-                                          title: Row(
-                                            children: [
-                                              const Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                              const SizedBox(width: 10), // Add some spacing between the title and the date
-                                            ],
-                                          ),
-                                          iconColor: Colors.white,
-                                          collapsedIconColor: Colors.white,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                      child: ExpansionTile(
+                                        title: const Row(
                                           children: [
-                                            StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) => Column(
-                                                children: <Widget>[
-                                                  CheckboxListTile(
-                                                    title: const Text(
-                                                      'AGQ Consulting LLC',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: agqIsChecked,
-                                                    onChanged: (bool? value) {
-                                                      // If trying to uncheck, and the other checkbox is not checked, show the dialog instead of changing the state
-                                                      if (value == false && !ak1IsChecked) {
-                                                        CustomAlertDialog.showAlertDialog(
-                                                          context,
-                                                          'Action Required',
-                                                          'At least one fund must be selected at all times.',
-                                                          icon: Icon(Icons.error_outline, color: Colors.red),
-                                                        );
-                                                      } else {
-                                                        // Proceed with the state change if the new value is true or the other checkbox is checked
-                                                        editFilter(1, value!, 'AGQ');
-                                                        setState(() {
-                                                          agqIsChecked = value!;
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                  CheckboxListTile(
-                                                    title: const Text(
-                                                      'AK1 Holdings LP',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: ak1IsChecked,
-                                                    onChanged: (bool? value) {
-                                                      if (value == false && !agqIsChecked) {
-                                                        // Show dialog if trying to uncheck the last remaining checkbox
-                                                        CustomAlertDialog.showAlertDialog(
-                                                          context,
-                                                          'Action Required',
-                                                          'At least one fund must be selected at all times.',
-                                                          icon: Icon(Icons.error_outline, color: Colors.red),
-                                                        );
-                                                      } else if (value != null) {
-                                                        // Proceed with updating the filter and checkbox state
-                                                        editFilter(1, value!, 'AK1');
-                                                        setState(() {
-                                                          ak1IsChecked = value;
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                            Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                            SizedBox(width: 10), // Add some spacing between the title and the date
                                           ],
                                         ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                        child: ExpansionTile(
-                                          title: Row(
-                                            children: [
-                                              const Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                              const SizedBox(width: 10), // Add some spacing between the title and the date
-                                            ],
-                                          ),
-                                          iconColor: Colors.white,
-                                          collapsedIconColor: Colors.white,
-                                          children: [
-                                            StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) => Column(
-                                                children: <Widget>[
-                                                  CheckboxListTile(
-                                                    title: Text(
-                                                      'Profit',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: isIncomeChecked,
-                                                    onChanged: (bool? value) {
-                                                      if (value != null && !value && !isWithdrawalChecked && !isDepositChecked) {
-                                                        CustomAlertDialog.showAlertDialog(
-                                                          context,
-                                                          'Action Required',
-                                                          'At least one type of activity must be selected at all times.',
-                                                          icon: Icon(Icons.error_outline, color: Colors.red),
-                                                        );
-                                                      } else {
-                                                        editFilter(2, value!, 'income');
-                                                        setState(() {
-                                                          isIncomeChecked = value;
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                  CheckboxListTile(
-                                                    title: Text(
-                                                      'Withdrawal',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: isWithdrawalChecked,
-                                                    onChanged: (bool? value) {
-                                                      if (value != null && !value && !isIncomeChecked && !isDepositChecked) {
-                                                        CustomAlertDialog.showAlertDialog(
-                                                          context,
-                                                          'Action Required',
-                                                          'At least one type of activity must be selected at all times.',
-                                                          icon: Icon(Icons.error_outline, color: Colors.red),
-                                                        );
-                                                      } else {
-                                                        editFilter(2, value!, 'withdrawal');
-                                                        setState(() {
-                                                          isWithdrawalChecked = value;
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                  CheckboxListTile(
-                                                    title: Text(
-                                                      'Deposit',
-                                                      style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                    ),
-                                                    value: isDepositChecked,
-                                                    onChanged: (bool? value) {
-                                                      if (value != null && !value && !isIncomeChecked && !isWithdrawalChecked) {
-                                                        CustomAlertDialog.showAlertDialog(
-                                                          context,
-                                                          'Action Required',
-                                                          'At least one type of activity must be selected at all times.',
-                                                          icon: Icon(Icons.error_outline, color: Colors.red),
-                                                        );
-                                                      } else {
-                                                        editFilter(2, value!, 'deposit');
-                                                        setState(() {
-                                                          isDepositChecked = value;
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // ... existing code ...
-
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                        child: ExpansionTile(
-                                          title: Row(
-                                            children: [
-                                              const Text('By Connected Users', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                              const SizedBox(width: 10), // Add some spacing between the title and the date
-                                            ],
-                                          ),
-                                          iconColor: Colors.white,
-                                          collapsedIconColor: Colors.white,
-                                          children: connectedUserNames.map((userName) {
-                                            return StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) {
-                                                return CheckboxListTile(
-                                                  title: Text(
-                                                    userName,
+                                        iconColor: Colors.white,
+                                        collapsedIconColor: Colors.white,
+                                        children: [
+                                          StatefulBuilder(
+                                            builder: (BuildContext context, StateSetter setState) => Column(
+                                              children: <Widget>[
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'AGQ Consulting LLC',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                                   ),
-                                                  value: userCheckStatus[userName],
+                                                  value: agqIsChecked,
                                                   onChanged: (bool? value) {
-                                                    setState(() {
-                                                      userCheckStatus[userName] = value!;
-                                                      updateUserCheckStatus(userName, value!);
-                                                    });
-                                                    log('Connected User Names: $connectedUserNames');
-                                                    // Handle the change event here
+                                                    // If trying to uncheck, and the other checkbox is not checked, show the dialog instead of changing the state
+                                                    if (value == false && !ak1IsChecked) {
+                                                      CustomAlertDialog.showAlertDialog(
+                                                        context,
+                                                        'Action Required',
+                                                        'At least one fund must be selected at all times.',
+                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
+                                                      );
+                                                    } else {
+                                                      // Proceed with the state change if the new value is true or the other checkbox is checked
+                                                      editFilter(1, value!, 'AGQ');
+                                                      setState(() {
+                                                        agqIsChecked = value;
+                                                      });
+                                                    }
                                                   },
-                                                );
-                                              },
-                                            );
-                                          }).toList(),
-                                        ),
+                                                ),
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'AK1 Holdings LP',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: ak1IsChecked,
+                                                  onChanged: (bool? value) {
+                                                    if (value == false && !agqIsChecked) {
+                                                      // Show dialog if trying to uncheck the last remaining checkbox
+                                                      CustomAlertDialog.showAlertDialog(
+                                                        context,
+                                                        'Action Required',
+                                                        'At least one fund must be selected at all times.',
+                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
+                                                      );
+                                                    } else if (value != null) {
+                                                      // Proceed with updating the filter and checkbox state
+                                                      editFilter(1, value, 'AK1');
+                                                      setState(() {
+                                                        ak1IsChecked = value;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                      child: ExpansionTile(
+                                        title: const Row(
+                                          children: [
+                                            Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                            SizedBox(width: 10), // Add some spacing between the title and the date
+                                          ],
+                                        ),
+                                        iconColor: Colors.white,
+                                        collapsedIconColor: Colors.white,
+                                        children: [
+                                          StatefulBuilder(
+                                            builder: (BuildContext context, StateSetter setState) => Column(
+                                              children: <Widget>[
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'Profit',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: isIncomeChecked,
+                                                  onChanged: (bool? value) {
+                                                    if (value != null && !value && !isWithdrawalChecked && !isDepositChecked) {
+                                                      CustomAlertDialog.showAlertDialog(
+                                                        context,
+                                                        'Action Required',
+                                                        'At least one type of activity must be selected at all times.',
+                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
+                                                      );
+                                                    } else {
+                                                      editFilter(2, value!, 'income');
+                                                      setState(() {
+                                                        isIncomeChecked = value;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'Withdrawal',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: isWithdrawalChecked,
+                                                  onChanged: (bool? value) {
+                                                    if (value != null && !value && !isIncomeChecked && !isDepositChecked) {
+                                                      CustomAlertDialog.showAlertDialog(
+                                                        context,
+                                                        'Action Required',
+                                                        'At least one type of activity must be selected at all times.',
+                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
+                                                      );
+                                                    } else {
+                                                      editFilter(2, value!, 'withdrawal');
+                                                      setState(() {
+                                                        isWithdrawalChecked = value;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                                CheckboxListTile(
+                                                  title: const Text(
+                                                    'Deposit',
+                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: isDepositChecked,
+                                                  onChanged: (bool? value) {
+                                                    if (value != null && !value && !isIncomeChecked && !isWithdrawalChecked) {
+                                                      CustomAlertDialog.showAlertDialog(
+                                                        context,
+                                                        'Action Required',
+                                                        'At least one type of activity must be selected at all times.',
+                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
+                                                      );
+                                                    } else {
+                                                      editFilter(2, value!, 'deposit');
+                                                      setState(() {
+                                                        isDepositChecked = value;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // ... existing code ...
+      
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                      child: ExpansionTile(
+                                        title: const Row(
+                                          children: [
+                                            Text('By Connected Users', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                            SizedBox(width: 10), // Add some spacing between the title and the date
+                                          ],
+                                        ),
+                                        iconColor: Colors.white,
+                                        collapsedIconColor: Colors.white,
+                                        children: connectedUserNames.map((userName) {
+                                          return StatefulBuilder(
+                                            builder: (BuildContext context, StateSetter setState) {
+                                              return CheckboxListTile(
+                                                title: Text(
+                                                  userName,
+                                                  style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                ),
+                                                value: userCheckStatus[userName],
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    userCheckStatus[userName] = value!;
+                                                    updateUserCheckStatus(userName, value);
+                                                  });
+                                                  log('Connected User Names: $connectedUserNames');
+                                                  // Handle the change event here
+                                                },
+                                              );
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              } else if (index == 2) {
+                              return Container(
+                              );
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      ListView(
+                        shrinkWrap: true,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                            child: Container(
+                              color: AppColors.defaultBlueGray800,
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.defaultBlue500, // This is the background color
+                                ),
+                                child: const Text('Apply', style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18, 
+                                  fontWeight: FontWeight.bold, 
+                                  fontFamily: 'Titillium Web')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  // Implement your apply functionality here
+                                  setState(() {
+                                    log('$_fundsFilter');
+                                    log('$_typeFilter');
+                                    filter(activities);
+                                  });
+                                } // Close the bottom sheet,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            child: Container(
+                              color: Colors.transparent,
+                              child: const Padding(
+                                padding: EdgeInsets.all(4.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(Icons.close, color: Colors.white),
+                                    Text('Clear', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+      
+                                _fundsFilter = ['AK1', 'AGQ'];
+      
+                                selectedUsers = connectedUserNames;
+                                allUsersChecked = true;
+                                selectAllUsers();
+      
+                                selectedDates = DateTimeRange(
+                                  start: DateTime(1900),
+                                  end: DateTime.now(),
                                 );
-                                } else if (index == 2) {
-                                return Container(
-                                );
-                              }
+      
+      
+      
+                                agqIsChecked = true;
+                                ak1IsChecked = true;
+      
+                                isIncomeChecked = true;
+                                isWithdrawalChecked = true;
+                                isPendingWithdrawalChecked = true;
+                                isDepositChecked = true;
+                              });
+      
+                              Navigator.pop(context);
                             },
                           ),
-                        ),
-                        ListView(
-                          shrinkWrap: true,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                              child: Container(
-                                color: AppColors.defaultBlueGray800,
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.defaultBlue500, // This is the background color
-                                  ),
-                                  child: const Text('Apply', style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18, 
-                                    fontWeight: FontWeight.bold, 
-                                    fontFamily: 'Titillium Web')),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    // Implement your apply functionality here
-                                    setState(() {
-                                      log('$_fundsFilter');
-                                      log('$_typeFilter');
-                                      filter(activities);
-                                    });
-                                  } // Close the bottom sheet,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              child: Container(
-                                color: Colors.transparent,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.close, color: Colors.white),
-                                      Text('Clear', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web')),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
-
-                                  _fundsFilter = ['AK1', 'AGQ'];
-
-                                  selectedUsers = connectedUserNames;
-                                  allUsersChecked = true;
-                                  selectAllUsers();
-
-                                  selectedDates = DateTimeRange(
-                                    start: DateTime(1900),
-                                    end: DateTime.now(),
-                                  );
-
-
-
-                                  agqIsChecked = true;
-                                  ak1IsChecked = true;
-
-                                  isIncomeChecked = true;
-                                  isWithdrawalChecked = true;
-                                  isPendingWithdrawalChecked = true;
-                                  isDepositChecked = true;
-                                });
-
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -2127,53 +2116,51 @@ class _ActivityPageState extends State<ActivityPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent, // Make the background transparent
       builder: (BuildContext context) => SingleChildScrollView(
-        child: Container(
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20.0),
-              topRight: Radius.circular(20.0),
-            ),
-            child: Container(
-              color: AppColors.defaultBlueGray800,
-              child: Wrap(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                            height: 20.0), // Add some space at the top
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20.0, 0, 0, 0),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Sort By',
-                              style: TextStyle(
-                                  fontSize: 22.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontFamily: 'Titillium Web'),
-                            ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20.0),
+            topRight: Radius.circular(20.0),
+          ),
+          child: Container(
+            color: AppColors.defaultBlueGray800,
+            child: Wrap(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                          height: 20.0), // Add some space at the top
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Sort By',
+                            style: TextStyle(
+                                fontSize: 22.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Titillium Web'),
                           ),
                         ),
-                        const SizedBox(
-                            height:
-                                20.0), // Add some space between the title and the options
-                        _buildOption(context, 'Date: New to Old (Default)',
-                            'new-to-old'),
-                        _buildOption(context, 'Date: Old to New', 'old-to-new'),
-                        _buildOption(
-                            context, 'Amount: Low to High', 'low-to-high'),
-                        _buildOption(
-                            context, 'Amount: High to Low', 'high-to-low'),
-                        const SizedBox(
-                            height: 20.0), // Add some space at the bottom
-                      ],
-                    ),
+                      ),
+                      const SizedBox(
+                          height:
+                              20.0), // Add some space between the title and the options
+                      _buildOption(context, 'Date: New to Old (Default)',
+                          'new-to-old'),
+                      _buildOption(context, 'Date: Old to New', 'old-to-new'),
+                      _buildOption(
+                          context, 'Amount: Low to High', 'low-to-high'),
+                      _buildOption(
+                          context, 'Amount: High to Low', 'high-to-low'),
+                      const SizedBox(
+                          height: 20.0), // Add some space at the bottom
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -2191,7 +2178,7 @@ class _ActivityPageState extends State<ActivityPage> {
           }),
           child: Container(
             width: double.infinity,
-            color: Color.fromRGBO(94, 181, 171, 0),
+            color: const Color.fromRGBO(94, 181, 171, 0),
             child: Container(
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
@@ -2202,9 +2189,9 @@ class _ActivityPageState extends State<ActivityPage> {
                 borderRadius: BorderRadius.circular(20.0),
               ),
               child: Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Text(title,
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
@@ -2225,10 +2212,10 @@ class _ActivityPageState extends State<ActivityPage> {
             color: AppColors.defaultBlueGray700,
             borderRadius: BorderRadius.circular(15), // Adjust the radius as needed
           ),
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Adjust padding as needed
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Adjust padding as needed
           child: Text(
             fundName, // Button text
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.defaultBlueGray100,
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -2249,10 +2236,10 @@ class _ActivityPageState extends State<ActivityPage> {
             color: AppColors.defaultBlueGray700,
             borderRadius: BorderRadius.circular(15), // Adjust the radius as needed
           ),
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Adjust padding as needed
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Adjust padding as needed
           child: Text(
             activityType, // Button text
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.defaultBlueGray100,
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -2264,8 +2251,8 @@ class _ActivityPageState extends State<ActivityPage> {
     }
 
   Widget _buildNoActivityMessage() {
-    return Padding(
-      padding: const EdgeInsets.all(30.0),
+    return const Padding(
+      padding: EdgeInsets.all(30.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -2296,8 +2283,6 @@ class _ActivityPageState extends State<ActivityPage> {
       // Define the start of the range as January 1, 1900
       DateTime startOfRange = DateTime(1900, 1, 1);
       // Normalize start and end dates to remove time part for accurate comparison
-      DateTime normalizedStartDate = DateTime(startDate.year, startDate.month, startDate.day);
-      DateTime normalizedEndDate = DateTime(endDate.year, endDate.month, endDate.day);
       // Get today's date for comparison
       DateTime today = DateTime.now();
       // Normalize today's date to remove time part
@@ -2309,12 +2294,12 @@ class _ActivityPageState extends State<ActivityPage> {
       if (isAllTime) {
 
 
-        return "All Time";
+        return 'All Time';
       } else {
         // Format the dates as strings for display
-        String formattedStartDate = "${selectedDates.start.month}/${selectedDates.start.day}/${selectedDates.start.year}";
-        String formattedEndDate = "${selectedDates.end.month}/${selectedDates.end.day}/${selectedDates.end.year}";
-        return "$formattedStartDate - $formattedEndDate";
+        String formattedStartDate = '${selectedDates.start.month}/${selectedDates.start.day}/${selectedDates.start.year}';
+        String formattedEndDate = '${selectedDates.end.month}/${selectedDates.end.day}/${selectedDates.end.year}';
+        return '$formattedStartDate - $formattedEndDate';
       }
     }
 
@@ -2324,7 +2309,7 @@ class _ActivityPageState extends State<ActivityPage> {
       children: [
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.transparent,
           ),
           child: Column(
@@ -2344,8 +2329,8 @@ class _ActivityPageState extends State<ActivityPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text(
-                                'Selected Sort: ',
+                              const Text(
+                                'Sort: ',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -2353,7 +2338,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                   fontFamily: 'Titillium Web',
                                 ),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Container(
                                 color: Colors.transparent,
                                 child: GestureDetector(
@@ -2373,7 +2358,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   : _sorting == 'low-to-high'
                                                       ? 'Amount: Low to High'
                                                       : 'Amount: High to Low',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             color: AppColors.defaultBlue300,
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -2383,7 +2368,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                         const SizedBox(width: 10),
                                         SvgPicture.asset(
                                           'assets/icons/sort.svg',
-                                          colorFilter: ColorFilter.mode(AppColors.defaultBlue300, BlendMode.srcIn),
+                                          colorFilter: const ColorFilter.mode(AppColors.defaultBlue300, BlendMode.srcIn),
                                           height: 20,
                                           width: 20,
                                         ),
@@ -2407,8 +2392,8 @@ class _ActivityPageState extends State<ActivityPage> {
 
               Row(
                 children: [
-                  Text(
-                    'Selected Filters: ',
+                  const Text(
+                    'Filters: ',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -2419,7 +2404,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   Expanded(
                   child: ShaderMask(
                       shaderCallback: (Rect bounds) {
-                        return LinearGradient(
+                        return const LinearGradient(
                           colors: [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
                           stops: [0.0, 0.1, 0.9, 1.0],
                           begin: Alignment.centerLeft,
@@ -2437,6 +2422,10 @@ class _ActivityPageState extends State<ActivityPage> {
                             },
                             child: Row(
                               children: [
+                                Container(
+                                  width: 20,
+                                  color: const Color.fromARGB(255, 17, 24, 39),
+                                ),
                                 Padding(
                                   padding: const EdgeInsets.all(4.0), // Equal padding for Date Range Button
                                   child: Container(
@@ -2444,10 +2433,10 @@ class _ActivityPageState extends State<ActivityPage> {
                                       color: AppColors.defaultBlueGray700,
                                       borderRadius: BorderRadius.circular(15),
                                     ),
-                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                     child: Text(
                                       buttonText,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: AppColors.defaultBlueGray100,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
@@ -2464,8 +2453,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                         color: AppColors.defaultBlueGray700,
                                         borderRadius: BorderRadius.circular(15),
                                       ),
-                                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                      child: Text(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      child: const Text(
                                         'All Connected Users',
                                         style: TextStyle(
                                           color: AppColors.defaultBlueGray100,
@@ -2487,10 +2476,10 @@ class _ActivityPageState extends State<ActivityPage> {
                                           color: AppColors.defaultBlueGray700,
                                           borderRadius: BorderRadius.circular(15),
                                         ),
-                                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                         child: Text(
                                           userName,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             color: AppColors.defaultBlueGray100,
                                             fontSize: 16,
                                             fontWeight: FontWeight.w700,
@@ -2537,8 +2526,8 @@ class _ActivityPageState extends State<ActivityPage> {
           ),
         ),
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
             child: Divider(
               color: Color.fromARGB(255, 126, 123, 123),
               thickness: 0.5,
