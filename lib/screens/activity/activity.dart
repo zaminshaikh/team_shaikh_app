@@ -72,31 +72,53 @@ class _ActivityPageState extends State<ActivityPage> {
   bool isWithdrawalChecked = true;
   bool isPendingWithdrawalChecked = true;
   bool isDepositChecked = true;
-  List<String> connectedUserNames = [];
+  List<String> allUserNames = [];
+  Map<String, dynamic> userName = {};
   Map<String, bool> userCheckStatus = {};
   List<String> selectedUsers = [];
-
+  List<String> connectedUserNames = [];
   bool allFundsChecked = true;
   bool allUsersChecked = true;
-
-
+  
 
   @override
   void initState() {
     super.initState();
     _initData().then((_) {
+      _databaseService.getUserWithAssets.listen((user) {
+        setState(() {
+          String firstName = user.info['name']['first'] as String;
+          String lastName = user.info['name']['last'] as String;
+          String fullName = '$firstName $lastName';
+  
+          // Assuming allUserNames is a List<String> meant to store user names
+          allUserNames.add(fullName);
+
+              // Update userCheckStatus for fullName
+            userCheckStatus[fullName] = true;
+            print('bruh $userCheckStatus');
+
+  
+          print('User name: $fullName');
+        });
+      });
       _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
         setState(() {
           connectedUserNames = connectedUsers.map<String>((user) {
             String firstName = user.info['name']['first'] as String;
             String lastName = user.info['name']['last'] as String;
-            Map<String, String> userName = {
-              'first': firstName,
-              'last': lastName,
-            };
-            return userName.values.join(' ');
+            return '$firstName $lastName';
           }).toList();
-          userCheckStatus = { for (var user in connectedUserNames) user : true };
+  
+          // Update userCheckStatus for each connected user
+          for (var userName in connectedUserNames) {
+            userCheckStatus[userName] = true;
+          }
+  
+          // Add connectedUserNames to allUserNames
+          allUserNames.addAll(connectedUserNames);
+          print('Connected users: $connectedUserNames');
+          print('All users: $allUserNames');
         });
       });
     });
@@ -145,7 +167,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         }
                       );
                     }
-                    log('Connected users: $connectedUserNames');
+                    print('Connected users: ${connectedUserNames}');
+                    print('All checked users: ${userCheckStatus}');
                     return StreamBuilder<List<Map<String, dynamic>>>(
                       stream: _databaseService.getNotifications,
                       builder: (context, notificationsSnapshot) {
@@ -166,6 +189,7 @@ class _ActivityPageState extends State<ActivityPage> {
           },
         );
     });
+    
 
     
   
@@ -2071,7 +2095,7 @@ class _ActivityPageState extends State<ActivityPage> {
       
                                 _fundsFilter = ['AK1', 'AGQ'];
       
-                                selectedUsers = connectedUserNames;
+                                selectedUsers = allUserNames;
                                 allUsersChecked = true;
                                 selectAllUsers();
       
