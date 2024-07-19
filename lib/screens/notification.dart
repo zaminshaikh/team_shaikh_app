@@ -2,6 +2,8 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -14,10 +16,12 @@ class NotificationPage extends StatefulWidget {
   _NotificationPageState createState() => _NotificationPageState();
 }
 String uid = '';
+
 class _NotificationPageState extends State<NotificationPage> {
 
   // database service instance
   late DatabaseService _databaseService;
+  
 
   Future<void> _initData() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -46,7 +50,7 @@ class _NotificationPageState extends State<NotificationPage> {
     
   }
 
-  
+
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -66,13 +70,47 @@ class _NotificationPageState extends State<NotificationPage> {
               child: CircularProgressIndicator(),
             );
           }
+          // If there are no notifications, display a message
+          if (notificationsSnapshot.data!.isEmpty) {
+            return Scaffold(
+              body: CustomScrollView(
+                slivers: <Widget>[
+                  _buildAppBar(context),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          SvgPicture.asset(
+                            'assets/icons/empty_notifications.svg',
+                          ),
+                          Text(
+                            'No notifications.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          
           // Once we have the user snapshot, we can build the activity page
+          // use unreadNotificationsCount as needed
           return _buildNotificationPage(notificationsSnapshot);
         }
       );
     }
   );  
-  
+
   Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
     body: Stack(
       children: [
@@ -99,57 +137,62 @@ class _NotificationPageState extends State<NotificationPage> {
         ),
       ],
     ),
-    floatingActionButton: _buildMarkAllAsReadButton(),
+    floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
     floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
   );
 
-  Widget _buildMarkAllAsReadButton() => Column(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Align(
-        alignment: Alignment.bottomCenter, // Align to bottom center
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0),
-          child: Center( // Add this
-            child: Container(
-              width: 200, // Set the width as per your requirement
-              child: Center( // Center the button within the Container
-                child: ElevatedButton(
-                  onPressed: () async {
-                    DatabaseService service = DatabaseService(uid);
-                    await service.markAllAsRead();
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.checklist_rounded, color: Colors.white),
-                      const Text(
-                        ' Mark All As Read',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Titillium Web',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.defaultBlue500,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+  Widget _buildMarkAllAsReadButton(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
+    // Assuming notifications is your list of notifications
+    bool hasUnreadNotifications = notificationsSnapshot.data!.any((notification) => !notification['isRead'] );
+
+    if (!hasUnreadNotifications) {
+      return Container(); // Return an empty container if there are no unread notifications
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Align(
+          alignment: Alignment.bottomCenter, // Align to bottom center
+          child: Padding(
+            padding: const EdgeInsets.all(16.0), // Adjust padding as needed
+            child: ElevatedButton(
+              onPressed: () async {
+                DatabaseService service = DatabaseService(uid);
+                await service.markAllAsRead();
+                setState(() {
+                  // Refresh the page
+                });
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min, // Add this
+                children: [
+                  const Icon(Icons.checklist_rounded, color: Colors.white),
+                  Text(
+                    ' Mark All As Read',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
+                ],
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.defaultBlue500,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding to the button
               ),
             ),
           ),
         ),
-      ),
-    ],
-  );
-
+      ],
+    );
+  }
+  
   Widget _buildNotificationWithDayHeader(Map<String, dynamic> notification, DateTime previousNotificationDate) {
     final notificationDate = (notification['time'] as Timestamp).toDate();
     return Column(
@@ -196,93 +239,98 @@ class _NotificationPageState extends State<NotificationPage> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-          child: Container(
-          decoration: BoxDecoration(
-            color: !notification['isRead'] ? color?.withOpacity(0.05) : null,
-            borderRadius: BorderRadius.circular(15.0), // Set the border radius
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-                children: [
-                  ListTile(
-                    title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.lBold(color: AppColors.defaultWhite),
-                        ),
-                        const SizedBox(height: 4), // Add desired spacing between title and subtitle
-                        Text(
-                          notification['message'],
-                          style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
-                        ),
-                        const SizedBox(height: 4), // Add desired spacing between message and ID
-                        Text(
-                          'ID: ${notification['id']}', // Display the document ID
-                          style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
-                        ),
-                      ],
-                    ),
-                    trailing: !notification['isRead']
-                        ? const CircleAvatar(
-                            radius: 8,
-                            backgroundColor: AppColors.defaultBlue300,
-                          )
-                        : const CircleAvatar(
-                            radius: 8,
-                            backgroundColor: Colors.transparent,
-                          ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
-                    dense: true,
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        try {
-                          // Mark the notification as read
-                          DatabaseService databaseService = DatabaseService(uid);
-                          await databaseService.markAsRead(notification['id']);
-            
-                          Navigator.pushReplacement(context, PageRouteBuilder(
-                            pageBuilder: (context, animation1, animation2) => route,
-                            transitionDuration: Duration.zero,
-                          ));
-                        } catch (e) {
-                          if (e is FirebaseException && e.code == 'not-found') {
-                            print('The document was not found');
-                            print('Notification ID: ${notification['id']}');
-                            print('UID: ${uid}');
-                          } else {
-                            rethrow;
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.defaultBlue300,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                      ),
-                      child: Text(
-                        'View More',
-                        style: AppTextStyles.lBold(color: AppColors.defaultWhite),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15.0),
-                  if (showDivider)
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                      child: Divider(color: AppColors.defaultWhite),
-                    )
-                ],
+          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          child: Column(
+            children: [
+              Container(
+              decoration: BoxDecoration(
+                color: !notification['isRead'] ? color?.withOpacity(0.05) : null,
+                borderRadius: BorderRadius.circular(15.0), // Set the border radius
               ),
-            ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                    children: [
+                      ListTile(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: AppTextStyles.lBold(color: AppColors.defaultWhite),
+                            ),
+                            const SizedBox(height: 4), // Add desired spacing between title and subtitle
+                            Text(
+                              notification['message'],
+                              style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
+                            ),
+                            const SizedBox(height: 4), // Add desired spacing between message and ID
+                            Text(
+                              'ID: ${notification['id']}', // Display the document ID
+                              style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
+                            ),
+                          ],
+                        ),
+                        trailing: !notification['isRead']
+                            ? const CircleAvatar(
+                                radius: 8,
+                                backgroundColor: AppColors.defaultBlue300,
+                              )
+                            : const CircleAvatar(
+                                radius: 8,
+                                backgroundColor: Colors.transparent,
+                              ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+                        dense: true,
+                      ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            try {
+                              // Mark the notification as read
+                              DatabaseService databaseService = DatabaseService(uid);
+                              await databaseService.markAsRead(notification['id']);
+                
+                              Navigator.pushReplacement(context, PageRouteBuilder(
+                                pageBuilder: (context, animation1, animation2) => route,
+                                transitionDuration: Duration.zero,
+                              ));
+                            } catch (e) {
+                              if (e is FirebaseException && e.code == 'not-found') {
+                                print('The document was not found');
+                                print('Notification ID: ${notification['id']}');
+                                print('UID: ${uid}');
+                              } else {
+                                rethrow;
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.defaultBlue300,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                          ),
+                          child: Text(
+                            'View More',
+                            style: AppTextStyles.lBold(color: AppColors.defaultWhite),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15.0),
+                    ],
+                  ),
+                ),
+              ),
+
+              if (showDivider)
+              const Padding(
+                padding: EdgeInsets.all(5),
+                child: Divider(color: AppColors.defaultWhite),
+              ),
+            ],
           ),
         ),
       ],

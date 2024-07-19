@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -16,6 +17,27 @@ import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 class DashboardPage extends StatefulWidget {
   @override
   _DashboardPageState createState() => _DashboardPageState();
+}
+int unreadNotificationsCount = 0;
+
+class CustomSlideIndicator extends SlideIndicator {
+   CustomSlideIndicator();
+
+  @override
+  Widget build(int currentPage, double pageDelta, int itemCount) => Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List<Widget>.generate(itemCount, (index) => Container(
+          width: 10.0,
+          height: 10.0,
+          margin: EdgeInsets.symmetric(vertical: 0.0, horizontal: 5.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: currentPage == index
+                ? Color.fromRGBO(255, 255, 255, 0.802)
+                : Color.fromRGBO(255, 255, 255, 0.504)
+          ),
+        )),
+    );
 }
 
 class _DashboardPageState extends State<DashboardPage> {
@@ -75,16 +97,30 @@ class _DashboardPageState extends State<DashboardPage> {
               return StreamBuilder<List<UserWithAssets>>(
                   stream: _databaseService.getConnectedUsersWithAssets,
                   builder: (context, connectedUsersSnapshot) {
-                    if (!connectedUsersSnapshot.hasData) {
+
+                    if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
                       // If there is no connected users, we build the dashboard for a single user
                       return _dashboardSingleUser(userSnapshot);
                     }
                     // Otherwise, we build the dashboard with connected users
-                    return dashboardWithConnectedUsers(
-                        context, userSnapshot, connectedUsersSnapshot);
+                    return StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: _databaseService.getNotifications,
+                      builder: (context, notificationsSnapshot) {
+                        if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
+                        // use unreadNotificationsCount as needed
+                        return dashboardWithConnectedUsers(
+                            context, userSnapshot, connectedUsersSnapshot);
+                      }
+                    );
                   });
             });
       });
+
 
   Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
     UserWithAssets user = userSnapshot.data!;
@@ -112,7 +148,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalUserAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['ytd'];
+            latestIncome = double.parse(asset['ytd'].toString());
           totalUserAssets += asset['total'];
       }
     }
@@ -191,7 +227,7 @@ class _DashboardPageState extends State<DashboardPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = asset['ytd'];
+          latestIncome = double.parse(asset['ytd'].toString());
           totalAssets += asset['total'];
           totalUserAssets += asset['total'];
       }
@@ -260,7 +296,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       _buildConnectedUsersSection(connectedUsers.data!),
                       const SizedBox(height: 30),
                       _buildAssetsStructureSection(
-                          totalAssets, percentageAGQ, percentageAK1),
+                        totalAssets, percentageAGQ, percentageAK1),
                       const SizedBox(height: 130),
                     ],
                   ),
@@ -323,7 +359,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 10.0),
+            padding: const EdgeInsets.only(right: 5.0, bottom: 5.0),
             child: GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -331,22 +367,72 @@ class _DashboardPageState extends State<DashboardPage> {
                   PageRouteBuilder(
                     transitionDuration: Duration(milliseconds: 450),
                     pageBuilder: (_, __, ___) => NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) {
-                      return SlideTransition(
+                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
                         position: Tween<Offset>(
                           begin: Offset(1.0, 0.0),
                           end: Offset(0.0, 0.0),
                         ).animate(animation),
                         child: child,
-                      );
-                    },
+                      ),
                   ),
                 );
               },
-              child: SvgPicture.asset(
-                'assets/icons/bell.svg',
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                height: 30,
+              child: Container(
+                color: Color.fromRGBO(239, 232, 232, 0),
+                padding: const EdgeInsets.all(10.0),
+                child: ClipRect(
+                  child: Stack(
+                    children: <Widget>[
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.transparent, // Change this color to the one you want
+                                width: 0.3, // Adjust width to your need
+                              ),
+                              shape: BoxShape.rectangle, // or BoxShape.rectangle if you want a rectangle
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/bell.svg',
+                                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                height: 32,
+                              ),
+                            ),
+                          ),
+                      Positioned(
+                        right: 0,
+                        top: 5,
+                        child: unreadNotificationsCount > 0
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF267DB5),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Text(
+                                  '$unreadNotificationsCount',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Titillium Web',
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : Container(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -354,71 +440,144 @@ class _DashboardPageState extends State<DashboardPage> {
       );
 
   Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) =>
-      Container(
-        width: 400,
-        height: 160,
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(15),
-          image: DecorationImage(
-            image: AssetImage('assets/icons/total_assets_gradient.png'),
-            fit: BoxFit.cover,
-            alignment: Alignment.centerRight,
-            colorFilter: ColorFilter.mode(
-                Colors.blue.withOpacity(0.9), BlendMode.dstATop),
+    Stack(
+      children: [
+        Container(
+          width: 400,
+          height: 160,
+          padding: const EdgeInsets.only(left: 12, top: 10),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(15),
+            image: DecorationImage(
+              image: AssetImage('assets/icons/total_assets_gradient.png'),
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+              // colorFilter: ColorFilter.mode(
+              //     Color.fromARGB(255, 14, 54, 93).withOpacity(0.9), BlendMode.dstATop),
+            ),
+          ),
+          child: Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 10),
+                  Text(
+                    'Total Assets',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    _currencyFormat(totalAssets),
+                    style: TextStyle(
+                      fontSize: 35,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/YTD.svg',
+                        height: 13,
+                        color: Color.fromRGBO(74, 222, 128, 1)
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        _currencyFormat(latestIncome),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ],
           ),
         ),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                Text(
-                  'Total Assets',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  _currencyFormat(totalAssets),
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/YTD.svg',
-                      height: 13,
-                    ),
-                    SizedBox(width: 5),
-                    Text(
-                      _currencyFormat(latestIncome),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
+        Positioned(
+          bottom: 5,
+          right: 5,
+          child: IconButton(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            icon: Icon(Icons.info_outline_rounded, color: Color.fromARGB(71, 255, 255, 255)),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                    backgroundColor: AppColors.defaultBlueGray800,
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                          const SizedBox(height: 5),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                              children: <Widget>[
+                                Text('What is', style: Theme.of(context).textTheme.titleLarge),
+                                const SizedBox(width: 5),
+                                SvgPicture.asset(
+                                  'assets/icons/YTD.svg',
+                                  height: 20,
+                                ),
+                                const SizedBox(width: 5),
+                                Text('?', style: Theme.of(context).textTheme.titleLarge),
+                              ],
+                            ),
+                          ),
+                          Text('YTD stands for Year-To-Date. It is a financial term that describes the amount of income accumulated over the period of time from the beginning of the current year to the present date.'),
+                          const SizedBox(height: 20),
+                          Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                              children: <Widget>[
+                                Text('What are my total assets?', style: Theme.of(context).textTheme.titleLarge),
+                              ],
+                            ),
+                          ),
+                          Text('Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all IRAs, Nuview Cash, and assets in both AGQ and AK1.'),
+                        ],
                       ),
                     ),
-                  ],
-                )
-              ],
-            ),
-          ],
+                    actions: <Widget>[
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          width: double.infinity, // This will make the container take up the full width of the AlertDialog
+                          padding: EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
+                            borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                          ),
+                          child: Text(
+                            'Continue',
+                            textAlign: TextAlign.center, // This will center the text
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+              );
+            },
+          ),
         ),
-      );
-
-  // String fund
+      ],
+    );
+    
   ListTile _buildAssetTile(String fieldName, double amount, String fund,
       {String? companyName}) {
     String sectionName = '';
@@ -452,6 +611,22 @@ class _DashboardPageState extends State<DashboardPage> {
           sectionName = '';
         }
         break;
+      // case 'ira':
+      //   sectionName = 'IRA';
+      //   break;
+      // case 'rothIra':
+      //   sectionName = 'ROTH IRA';
+      //   break;
+      // case 'sepIra':
+      //   sectionName = 'SEP IRA';
+      //   break;
+      // case 'nuviewCashIra':
+      //   sectionName = 'Nuview Cash IRA';
+      //   break;
+      // case 'nuviewCashRothIra':
+      //   sectionName = 'Nuview Cash ROTH IRA';
+      //   break;
+
       default:
         sectionName = fieldName;
     }
@@ -488,11 +663,37 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  int _getAssetTileIndex(String name, {String? companyName}) {
+    if (name == companyName) {
+      return 1;
+    }
+    switch (name) {
+      case 'Personal':
+        return 0;
+      case 'Traditional IRA':
+        return 2;
+      case 'Nuview Cash IRA':
+        return 3;
+      case 'Roth IRA':
+        return 4;
+      case 'Nuview Cash Roth IRA':
+        return 5;
+      case 'SEP IRA':
+        return 6;
+      case 'Nuview Cash SEP IRA':
+        return 7;
+      default:
+        return -1;
+    }
+  }
+
   Widget _buildUserBreakdownSection(
       Map<String, String> userName,
       double totalUserAssets,
       double latestIncome,
-      List<Map<String, dynamic>> assets) {
+      List<Map<String, dynamic>> assets,
+      {bool isConnectedUser = false}) {
+        
     // Initialize empty lists for the tiles
     List<ListTile> assetTilesAGQ = [];
     List<ListTile> assetTilesAK1 = [];
@@ -508,14 +709,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAGQ.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'agq',
-                  companyName: userName['company']));
+              if (entry.value != 0) {
+                assetTilesAGQ.add(_buildAssetTile(
+                    entry.key, (entry.value).toDouble(), 'agq',
+                    companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
-              if (entry.value is num &&
+              if (entry.value is num && 
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAGQ.add(
@@ -534,14 +738,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAK1.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'ak1',
-                  companyName: userName['company']));
+              if (entry.value != 0) {
+                assetTilesAK1.add(_buildAssetTile(
+                    entry.key, (entry.value).toDouble(), 'ak1',
+                    companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAK1.add(
@@ -555,72 +762,82 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
+    // Sort tiles in order specified in _getAssetTileIndex
+    assetTilesAGQ.sort((a, b) => _getAssetTileIndex((a.title as Text).data!, companyName: userName['company']).compareTo(_getAssetTileIndex((b.title as Text).data!, companyName: userName['company'])));
+    assetTilesAK1.sort((a, b) => _getAssetTileIndex((a.title as Text).data!, companyName: userName['company']).compareTo(_getAssetTileIndex((b.title as Text).data!, companyName: userName['company'])));
+    
+
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
       ),
-      child: ExpansionTile(
-        title: Row(
-          children: [
-            Text(
-              '${userName['first']} ${userName['last']}',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
+      child: Container(
+        color: const Color.fromARGB(255, 17, 24, 39),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              Text(
+                '${userName['first']} ${userName['last']}',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            SvgPicture.asset(
-              'assets/icons/YTD.svg',
-              height: 13,
-            ),
-            SizedBox(width: 5),
-            Text(
-              _currencyFormat(latestIncome),
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
+              SizedBox(width: 10),
+              SvgPicture.asset(
+                'assets/icons/YTD.svg',
+                height: 13,
               ),
+              SizedBox(width: 5),
+              Text(
+                _currencyFormat(latestIncome),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+          subtitle: Text(
+            _currencyFormat(totalUserAssets),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          maintainState: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: isConnectedUser ? BorderSide(color: Colors.white) : BorderSide.none, // Specific styling for connected users
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: isConnectedUser ? BorderSide(color: Colors.white) : BorderSide.none,  // Specific styling for connected users
+          ),
+          collapsedBackgroundColor: isConnectedUser ? Colors.transparent : Color.fromARGB(255, 30, 41, 59), // Specific styling for connected users
+          backgroundColor: isConnectedUser ? Colors.transparent : const Color.fromARGB(255, 30, 41, 59), // Specific styling for connected users
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
+              child: Divider(color: Colors.grey[300]),
+            ),
+            Column(
+              children: assetTilesAK1,
+            ),
+            Column(
+              children: assetTilesAGQ,
             ),
           ],
         ),
-        subtitle: Text(
-          _currencyFormat(totalUserAssets),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        maintainState: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        collapsedBackgroundColor: const Color.fromARGB(255, 30, 41, 59),
-        backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
-            child: Divider(color: Colors.grey[300]),
-          ),
-          Column(
-            children: assetTilesAK1,
-          ),
-          Column(
-            children: assetTilesAGQ,
-          ),
-        ],
       ),
     );
   }
@@ -635,6 +852,7 @@ class _DashboardPageState extends State<DashboardPage> {
               controller: CarouselController(),
               floatingIndicator: false,
               restorationId: 'expandable_carousel',
+              slideIndicator: CustomSlideIndicator(),
             ),
             items: connectedUsers.map((user) {
               String firstName = user.info['name']['first'] as String;
@@ -653,18 +871,18 @@ class _DashboardPageState extends State<DashboardPage> {
                   case 'AK1':
                     break;
                   default:
-                    latestIncome = asset['ytd'];
-                    totalUserAssets += asset['total'];
-                }
+                    latestIncome = (asset['ytd'] is int) ? (asset['ytd'] as int).toDouble() : asset['ytd'] as double;
+                    totalUserAssets += (asset['total'] is int) ? (asset['total'] as int).toDouble() : asset['total'] as double;                }
               }
               return Builder(
                 builder: (BuildContext context) => Column(
                   children: [
-                    _buildConnectedUserBreakdownSection(
+                    _buildUserBreakdownSection(
                       userName,
                       totalUserAssets,
                       latestIncome,
                       user.assets,
+                      isConnectedUser: true,
                     ),
                     SizedBox(height: 20),
                   ],
@@ -694,14 +912,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAGQ.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'agq',
-                  companyName: userName['company']));
+              if (entry.value != 0) {
+                assetTilesAGQ.add(_buildAssetTile(
+                    entry.key, (entry.value).toDouble(), 'agq',
+                    companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAGQ.add(
@@ -720,14 +941,17 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               return false;
             }).forEach((entry) {
-              assetTilesAK1.add(_buildAssetTile(
+              if (entry.key == 'total') {
+                assetTilesAK1.add(_buildAssetTile(
                   entry.key, (entry.value).toDouble(), 'ak1',
                   companyName: userName['company']));
+              }
             });
             // for each entry in the document that is not total, latestIncome, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
+                  entry.value != 0 &&
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAK1.add(
@@ -741,74 +965,78 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
+
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
       ),
-      child: ExpansionTile(
-        title: Row(
-          children: [
-            Text(
-              '${userName['first']} ${userName['last']}',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
+      child: Container(
+        color: const Color.fromARGB(255, 17, 24, 39),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              Text(
+                '${userName['first']} ${userName['last']}',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            SvgPicture.asset(
-              'assets/icons/YTD.svg',
-              height: 13,
-            ),
-            SizedBox(width: 5),
-            Text(
-              _currencyFormat(latestIncome),
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
+              SizedBox(width: 10),
+              SvgPicture.asset(
+                'assets/icons/YTD.svg',
+                height: 13,
               ),
+              SizedBox(width: 5),
+              Text(
+                _currencyFormat(latestIncome),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+          subtitle: Text(
+            _currencyFormat(totalUserAssets),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          maintainState: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.white), // Add this line
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: Colors.white), // And this line
+          ),
+          collapsedBackgroundColor: Colors.transparent,
+          backgroundColor: Colors.transparent,
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
+              child: Divider(color: Colors.grey[300]),
+            ), // Add a light divider bar
+            Column(
+              children: assetTilesAK1,
+            ),
+            Column(
+              children: assetTilesAGQ,
             ),
           ],
         ),
-        subtitle: Text(
-          _currencyFormat(totalUserAssets),
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        maintainState: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Colors.white), // Add this line
-        ),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: BorderSide(color: Colors.white), // And this line
-        ),
-        collapsedBackgroundColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 25.0, right: 25.0, bottom: 10.0, top: 10.0),
-            child: Divider(color: Colors.grey[300]),
-          ), // Add a light divider bar
-          Column(
-            children: assetTilesAK1,
-          ),
-          Column(
-            children: assetTilesAGQ,
-          ),
-        ],
       ),
     );
   }
@@ -818,7 +1046,7 @@ class _DashboardPageState extends State<DashboardPage> {
       Container(
         width: 400,
         height: 520,
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
         decoration: BoxDecoration(
           color: const Color.fromARGB(255, 30, 41, 59),
           borderRadius: BorderRadius.circular(15),
@@ -942,11 +1170,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AGQ Fixed Income',
+                      'AGQ Fund',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontFamily: 'Titillium Web',
                       ),
                     ),
@@ -973,11 +1201,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AK1 Fund',
+                      'AK1H Fund',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontFamily: 'Titillium Web',
                       ),
                     ),
@@ -1001,97 +1229,113 @@ class _DashboardPageState extends State<DashboardPage> {
       );
 
   Widget _buildBottomNavigationBar(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 50, right: 20, left: 20),
-        height: 80,
-        padding: const EdgeInsets.only(right: 30, left: 30),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 30, 41, 59),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 8,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+    margin: const EdgeInsets.only(bottom: 30, right: 20, left: 20),
+    height: 80,
+    padding: const EdgeInsets.only(right: 10, left: 10),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(255, 30, 41, 59),
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          spreadRadius: 8,
+          blurRadius: 8,
+          offset: const Offset(0, 3),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        DashboardPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/dashboard_filled.svg',
-                height: 22,
+      ],
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    DashboardPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
               ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/dashboard_filled.svg',
+              height: 22,
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const AnalyticsPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/analytics_hollowed.svg',
-                height: 22,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const ActivityPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/activity_hollowed.svg',
-                height: 22,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const ProfilePage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/profile_hollowed.svg',
-                height: 22,
-              ),
-            ),
-          ],
+          ),
         ),
-      );
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const AnalyticsPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
+              ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/analytics_hollowed.svg',
+              height: 25,
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const ActivityPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
+              ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/activity_hollowed.svg',
+              height: 22,
+            ),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const ProfilePage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) =>
+                        child,
+              ),
+            );
+          },
+          child: Container(
+            color: Color.fromRGBO(239, 232, 232, 0),
+            padding: const EdgeInsets.all(20.0),
+            child: SvgPicture.asset(
+              'assets/icons/profile_hollowed.svg',
+              height: 22,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
