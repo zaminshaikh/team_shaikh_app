@@ -117,16 +117,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
       switch (asset['fund']) {
-        case 'AGQ Consulting LLC':
+        case 'AGQ':
           totalAGQ += asset['total'];
           break;
-        case 'AK1 Holdings LP':
+        case 'AK1':
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = (asset['ytd'] as num).toDouble();
-          totalAssets += asset['total'];
+          latestIncome = double.parse(asset['ytd'].toString());
           totalUserAssets += asset['total'];
+          totalAssets += asset['total'];
       }
     }
 
@@ -134,10 +134,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     for (var user in connectedUsers.data!) {
       for (var asset in user.assets) {
         switch (asset['fund']) {
-          case 'AGQ Consulting LLC':
+          case 'AGQ':
             totalAGQ += asset['total'];
             break;
-          case 'AK1 Holdings LP':
+          case 'AK1':
             totalAK1 += asset['total'];
             break;
           default:
@@ -905,7 +905,7 @@ String getDropdownValueName(String dropDownValue) {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AK1H Fund',
+                      'AK1 Fund',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,

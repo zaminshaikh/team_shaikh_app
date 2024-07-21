@@ -1050,8 +1050,8 @@ Column _profileForAllUsers() => Column(
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    primary: const Color.fromARGB(255, 30, 75, 137), // Background color
-                                    onPrimary: Colors.white, // Text color
+                                    backgroundColor: const Color.fromARGB(255, 30, 75, 137), // Updated from primary
+                                    foregroundColor: Colors.white, // Text color
                                     splashFactory: NoSplash.splashFactory,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),
@@ -1216,8 +1216,8 @@ Column _profileForAllUsers() => Column(
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    primary: const Color.fromARGB(255, 30, 75, 137), // Background color
-                                    onPrimary: Colors.white, // Text color
+                                    backgroundColor: const Color.fromARGB(255, 30, 75, 137), // Updated from primary
+                                    foregroundColor: Colors.white, // Updated from onPrimary
                                     splashFactory: NoSplash.splashFactory,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),

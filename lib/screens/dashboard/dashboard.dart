@@ -1201,7 +1201,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'AK1H Fund',
+                      'AK1 Fund',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white,
