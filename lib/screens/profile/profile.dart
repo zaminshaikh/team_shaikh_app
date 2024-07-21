@@ -189,7 +189,7 @@ List<String> assetsFormatted = [];
       }
 
       UserWithAssets user = userSnapshot.data!;
-      DateTime dob = (user.info['dob'] as Timestamp).toDate();
+      DateTime dob = user.info['dob'] != null ? (user.info['dob'] as Timestamp).toDate() : DateTime.now();
       userDob = DateFormat('MM/dd/yyyy').format(dob);
 
       email = user.info['email'] as String;
@@ -203,18 +203,18 @@ List<String> assetsFormatted = [];
         userFirstDepositDate = 'N/A'; 
       }
       
-      initEmail = user.info['initEmail'] as String;
-      phoneNumber = user.info['phoneNumber'] as String;
-      address = user.info['address'] as String;
-      beneficiaryFirstName = user.info['beneficiaryFirstName'] as String;
-      beneficiaryLastName = user.info['beneficiaryLastName'] as String;
+      initEmail = user.info['initEmail'] != null ? user.info['initEmail'] as String: '';
+      phoneNumber = user.info['phoneNumber'] != null ? user.info['phoneNumber'] as String : '';
+      address = user.info['address'] as String? ?? '';
+      beneficiaryFirstName = user.info['beneficiaryFirstName'] != null ? user.info['beneficiaryFirstName'] as String : '';
+      beneficiaryLastName = user.info['beneficiaryLastName'] != null ? user.info['beneficiaryLastName'] as String : '';
       beneficiary = '$beneficiaryFirstName $beneficiaryLastName';
-      if (user.info['appEmail'] != '') {
+      if (user.info['appEmail'] != null && user.info['appEmail'] != '' ) {
         appEmail = user.info['appEmail'] as String;
       } else {
-        appEmail = user.info['initEmail'] as String;
+        appEmail = '';
       }
-      appEmail = user.info['appEmail'] as String;
+      // appEmail = user.info['appEmail'] as String;
       firstName = user.info['name']['first'] as String;
       lastName = user.info['name']['last'] as String;
       companyName = user.info['name']['company'] as String? ?? 'N/A';
