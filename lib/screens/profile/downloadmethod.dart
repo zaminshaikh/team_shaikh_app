@@ -28,20 +28,24 @@ Future<String> downloadFile(context, clientId, documentName) async {
   String filePath = '';
 
   try {
-    // Get the directory for the app's temporary files.
+    print('Attempting to get the directory for the app\'s temporary files.');
     final directory = await getTemporaryDirectory();
+    print('Temporary directory obtained: ${directory.path}');
 
-    // Construct the file path where the file should be saved.
     filePath = '${directory.path}/$documentName';
+    print('Constructed file path: $filePath');
 
-    // Create a reference to the file on Firebase Storage.
+    print('Creating a reference to the file on Firebase Storage.');
     final ref = FirebaseStorage.instance.ref().child('testUsersStatements').child(clientId).child(documentName);
+    print('Firebase Storage reference created: ${ref.fullPath}');
 
-    // Start the download and save the file to local storage.
+    print('Starting the download...');
     final bytes = await ref.getData();
     if (bytes != null) {
+      print('Download successful. File size: ${bytes.length} bytes.');
       final file = File(filePath);
       await file.writeAsBytes(bytes);
+      print('File saved to local storage at $filePath');
     } else {
       print('Download failed: File data is null');
     }

@@ -1,11 +1,14 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
 import 'package:team_shaikh_app/main.dart';
@@ -291,6 +294,23 @@ List<String> assetsFormatted = [];
     
   }
   
+Future<void> shareFile(context, clientId, documentName) async {
+  try {
+    // Call downloadFile to get the filePath
+    String filePath = await downloadFile(context, {_databaseService.cid}, 'TestPdf${_databaseService.cid}.pdf');
+
+    // Check if the filePath is not empty
+    if (filePath.isNotEmpty) {
+      // Use Share.shareFiles to share the file
+      await Share.shareFiles([filePath]);
+    } else {
+      print('Share failed: File path is empty');
+    }
+  } catch (e) {
+    print('Share error: $e');
+  }
+}
+
   bool hapticsSwitchValue = false;
   bool activitySwitchValue = false;
   bool statementsSwitchValue = false;
@@ -1841,7 +1861,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
               color: Colors.white, 
             ),
             onPressed: () {
-              downloadToFiles(documentName);
+              shareFile(context, clientId, documentName);
             },
           ),
           ),
