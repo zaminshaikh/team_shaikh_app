@@ -209,6 +209,7 @@ class DatabaseService {
           ...existingData,
           'uid': uid,
           'email': email,
+          'appEmail': email,
         };
 
         // Set the document with the updated data
