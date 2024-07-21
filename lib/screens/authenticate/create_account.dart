@@ -404,15 +404,48 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 children: [
       
       // Text widget to display "Client ID"                
-                  const Text(
-                    "Client ID",
-                    
-      // TextStyle to define text appearance
-                    style: TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
+                  Row(
+                    children: [
+                      const Text(
+                        "Client ID",
+                        
+                            // TextStyle to define text appearance
+                        style: TextStyle(
+                          fontSize: 16, 
+                          color: Colors.white, 
+                          fontFamily: 'Titillium Web'
+                          ),
                       ),
+                      Spacer(),
+                      GestureDetector(
+                        child: Container(
+                          color: Colors.transparent,
+                          child: Row(
+                            children: [
+                              const Text(
+                                "What is my Client ID?",
+                                    // TextStyle to define text appearance
+                                style: TextStyle(
+                                  fontSize: 16, 
+                                  color: Color.fromARGB(255, 157, 157, 157), 
+                                  fontFamily: 'Titillium Web'
+                                  ),
+                              ),
+                              const SizedBox(width: 5),
+                              Icon(
+                                Icons.help_outline_rounded, color: AppColors.defaultBlue300, size: 18,
+                              ),
+                            ],
+                          ),
+                        ),
+                        onTap: () => 
+                          CustomAlertDialog.showAlertDialog(context, 
+                          'Client ID', 
+                          'Your Client ID Number (CID) is an 8 digit numeric identification code. You will receive an email containing your CID that is specific to your account. Do not share it with anyone. If you have yet to receive your CID, please reach out to melinda@agqconsulting.com for assistance.',
+                          icon: const Icon(Icons.numbers_rounded, color: AppColors.defaultBlue300),
+                        ),
+                      ),
+                    ],
                   ),
       
       // Adding some space here
