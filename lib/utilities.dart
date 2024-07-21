@@ -1,13 +1,23 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+
+class Config {
+  static late Map<String, dynamic> _config;
+
+  static Future<void> loadConfig() async {
+    String jsonString = await rootBundle.loadString('assets/config.json');
+    _config = jsonDecode(jsonString);
+  }
+
+  static dynamic get(String key) => _config[key];
+}
 
 /// A class that provides a custom alert dialog.
 ///   

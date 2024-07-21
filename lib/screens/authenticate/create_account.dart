@@ -291,7 +291,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// The [e] parameter is the [FirebaseAuthException] that occurred.
   void handleFirebaseAuthException(BuildContext context, FirebaseAuthException e) {
     // Log the error message and stack trace
-    log('Error signing user in: $e', stackTrace: StackTrace.current);
+    log('create_account.dart:Error signing user in: $e', stackTrace: StackTrace.current);
 
     String errorMessage = 'Failed to sign up. Please try again.';
 
@@ -299,21 +299,21 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     switch (e.code) {
       case 'email-already-in-use':
         errorMessage = 'Email $_email is already in use. Please use a different email.';
-        log('$e: Email is already connected to a different _cid.');
+        log('create_account.dart:$e: Email is already connected to a different _cid.');
         break;
       case 'document-not-found':
         errorMessage = 'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.';
-        log('No document for _cid: $_cid');
+        log('create_account.dart:No document for _cid: $_cid');
         break;
       case 'user-already-exists':
         errorMessage = 'User already exists for given Client ID $_cid. Please log in instead.';
-        log('$e');
+        log('create_account.dart:$e');
         break;
       case 'invalid-email':
         errorMessage = '"$_email is not a valid email format. Please try again';
-        log('$e');
+        log('create_account.dart:$e');
       default:
-        log('FirebaseAuthException: $e');
+        log('create_account.dart:FirebaseAuthException: $e');
     }    
 
     // Show an error dialog with the error message

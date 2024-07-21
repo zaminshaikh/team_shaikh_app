@@ -298,9 +298,9 @@ class _NotificationPageState extends State<NotificationPage> {
                               ));
                             } catch (e) {
                               if (e is FirebaseException && e.code == 'not-found') {
-                                print('The document was not found');
-                                print('Notification ID: ${notification['id']}');
-                                print('UID: ${uid}');
+                                log('notification.dart: The document was not found');
+                                log('notification.dart: Notification ID: ${notification['id']}');
+                                log('notification.dart: UID: ${uid}');
                               } else {
                                 rethrow;
                               }

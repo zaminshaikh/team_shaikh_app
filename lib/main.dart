@@ -11,12 +11,13 @@ import 'screens/authenticate/create_account.dart';
 import 'screens/authenticate/login/login.dart';
 import 'screens/authenticate/login/forgot_password.dart';
 import 'screens/dashboard/dashboard.dart';
+import 'utilities.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // test
   await ScreenUtil.ensureScreenSize();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
+  await Config.loadConfig();
   runApp(const MyApp());
 }
 

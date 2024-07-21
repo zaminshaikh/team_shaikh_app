@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 import 'dart:developer';
+import 'package:team_shaikh_app/utilities.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -632,9 +633,9 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     Widget leadingIcon;
-    if (fund == 'agq') {
+    if (fund == Config.get('ASSETS_AGQ_DOC_ID')) {
       leadingIcon = SvgPicture.asset('assets/icons/agq_logo.svg');
-    } else if (fund == 'ak1') {
+    } else if (fund == Config.get('ASSETS_AK1_DOC_ID')) {
       leadingIcon = SvgPicture.asset('assets/icons/ak1_logo.svg');
     } else {
       leadingIcon = Icon(Icons.account_balance, color: Colors.white);
@@ -711,7 +712,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }).forEach((entry) {
               if (entry.value != 0) {
                 assetTilesAGQ.add(_buildAssetTile(
-                    entry.key, (entry.value).toDouble(), 'agq',
+                    entry.key, (entry.value).toDouble(), Config.get('ASSETS_AGQ_DOC_ID'),
                     companyName: userName['company']));
               }
             });
@@ -723,7 +724,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAGQ.add(
-                    _buildAssetTile(entry.key, entry.value.toDouble(), 'agq'));
+                    _buildAssetTile(entry.key, entry.value.toDouble(), Config.get('ASSETS_AGQ_DOC_ID')));
               }
             }
           } on TypeError catch (e) {
@@ -740,7 +741,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }).forEach((entry) {
               if (entry.value != 0) {
                 assetTilesAK1.add(_buildAssetTile(
-                    entry.key, (entry.value).toDouble(), 'ak1',
+                    entry.key, (entry.value).toDouble(), Config.get('ASSETS_AK1_DOC_ID'),
                     companyName: userName['company']));
               }
             });
@@ -752,7 +753,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAK1.add(
-                    _buildAssetTile(entry.key, entry.value.toDouble(), 'ak1'));
+                    _buildAssetTile(entry.key, entry.value.toDouble(), Config.get('ASSETS_AK1_DOC_ID')));
               }
             }
           } on TypeError catch (e) {
@@ -914,7 +915,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }).forEach((entry) {
               if (entry.value != 0) {
                 assetTilesAGQ.add(_buildAssetTile(
-                    entry.key, (entry.value).toDouble(), 'agq',
+                    entry.key, (entry.value).toDouble(), Config.get('ASSETS_AGQ_DOC_ID'),
                     companyName: userName['company']));
               }
             });
@@ -926,7 +927,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAGQ.add(
-                    _buildAssetTile(entry.key, entry.value.toDouble(), 'agq'));
+                    _buildAssetTile(entry.key, entry.value.toDouble(), Config.get('ASSETS_AGQ_DOC_ID')));
               }
             }
           } on TypeError catch (e) {
@@ -943,7 +944,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }).forEach((entry) {
               if (entry.key == 'total') {
                 assetTilesAK1.add(_buildAssetTile(
-                  entry.key, (entry.value).toDouble(), 'ak1',
+                  entry.key, (entry.value).toDouble(), Config.get('ASSETS_AK1_DOC_ID'),
                   companyName: userName['company']));
               }
             });
@@ -955,7 +956,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   entry.key != 'total' &&
                   entry.key != 'company') {
                 assetTilesAK1.add(
-                    _buildAssetTile(entry.key, entry.value.toDouble(), 'ak1'));
+                    _buildAssetTile(entry.key, entry.value.toDouble(), Config.get('ASSETS_AK1_DOC_ID')));
               }
             }
           } on TypeError catch (e) {

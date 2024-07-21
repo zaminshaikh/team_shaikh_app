@@ -19,7 +19,7 @@ class Wrapper extends StatelessWidget {
           } 
           // Error case
           else if (snapshot.hasError) {
-            log('StreamBuilder error: ${snapshot.error}');
+            log('wrapper.dart: StreamBuilder error: ${snapshot.error}');
             return Text('Error: ${snapshot.error}');
           } 
           // User exists case
