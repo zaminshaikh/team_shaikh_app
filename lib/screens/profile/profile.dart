@@ -42,7 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      log('User is not logged in');
+      log('profile.dart: User is not logged in');
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
@@ -272,7 +272,7 @@ List<String> assetsFormatted = [];
 
       double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
       double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
-      log('dashboard.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
+      log(' Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
       assets = NumberFormat('#,##0.00', 'en_US').format(totalAssets);
 
       if (connectedUsers.data != null) {
@@ -317,8 +317,10 @@ Future<void> shareFile(context, clientId, documentName) async {
       // Use Share.shareFiles to share the file
       await Share.shareFiles([filePath]);
     } else {
+      print('Share failed: File path is empty');
     }
   } catch (e) {
+    print('Share error: $e');
   }
 }
 
@@ -1137,7 +1139,7 @@ Column _profileForAllUsers() => Column(
 
                                     } catch (e) {
                                       // log the error for debugging
-                                      log('Error updating email: $e');
+                                      log('profile.dart: Error updating email: $e');
 
                                       // Handle error, display a message, etc.
                                       await CustomAlertDialog.showAlertDialog(
@@ -1303,7 +1305,7 @@ Column _profileForAllUsers() => Column(
 
                                     } catch (e) {
                                       // log the error for debugging
-                                      log('Error updating password: $e');
+                                      log('profile.dart: Error updating password: $e');
 
                                       // Handle error, display a message, etc.
                                       await CustomAlertDialog.showAlertDialog(
@@ -1517,6 +1519,7 @@ Column _profileForAllUsers() => Column(
                                 onChanged: (bool? value) {
                                   // This is called when the user toggles the switch.
                                     statementsSwitchValue = value ?? false;
+                                    print('$statementsSwitchValue');
                                 },
                               ),
                             ],

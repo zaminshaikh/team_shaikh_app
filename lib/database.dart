@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'utilities.dart';
 
 /// A class that provides database operations for managing users.
 ///
@@ -9,7 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class DatabaseService {
   String? cid;
   final String uid;
-  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
+  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'));
   CollectionReference? assetsSubCollection;
   CollectionReference? activitiesSubCollection; 
   CollectionReference? notificationsSubCollection; 
@@ -36,7 +37,6 @@ class DatabaseService {
   static Future<DatabaseService?> fetchCID(String uid, int code) async {
     DatabaseService service = DatabaseService(uid);
 
-
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
 
@@ -45,14 +45,14 @@ class DatabaseService {
       service.cid = querySnapshot.docs.first.id;
       switch (code) {
         case 1:
-          service.assetsSubCollection = usersCollection.doc(service.cid).collection('assets');
+          service.assetsSubCollection = usersCollection.doc(service.cid).collection(Config.get('ASSETS_SUBCOLLECTION'));
           log('database.dart: Assets subcollection set to $usersCollection/${service.cid}/assets');
           break;
         case 2:
-          service.activitiesSubCollection = usersCollection.doc(service.cid).collection('activities');
+          service.activitiesSubCollection = usersCollection.doc(service.cid).collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
           break;
         case 3:
-          service.notificationsSubCollection = usersCollection.doc(service.cid).collection('notifications');
+          service.notificationsSubCollection = usersCollection.doc(service.cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
           break;
         default:
           log('database.dart: Invalid code');
@@ -69,7 +69,7 @@ class DatabaseService {
 
   Future<void> logNotificationIds() async {
     if (notificationsSubCollection == null) {
-      log('database.dart: database.dart: Notifications subcollection is not set');
+      log('database.dart: Notifications subcollection is not set');
       return;
     }
 
@@ -78,7 +78,7 @@ class DatabaseService {
 
     // Log the document IDs
     for (var doc in querySnapshot.docs) {
-      log('database.dart: database.dart: Notification document ID: ${doc.id}');
+      log('database.dart: Notification document ID: ${doc.id}');
     }
   }
 
@@ -98,25 +98,35 @@ class DatabaseService {
   Future<void> markAsRead(String notificationId) async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null) {
-      DocumentReference docRef = usersCollection.doc(service.cid).collection('notifications').doc(notificationId);
+      log(service.cid!);  
+      log('database.dart: cid: ${service.cid}, notificationId: $notificationId');
+      DocumentReference docRef = usersCollection.doc(service.cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).doc(notificationId);
+      log('database.dart: docref: $docRef');
       DocumentSnapshot docSnap = await docRef.get();
       if (docSnap.exists) {
         return docRef.update({'isRead': true});
       } else {
+        print('Document does not exist under this cid');
         // Check if service.cid is null before calling fetchConnectedCids
         if (service.cid == null) {
+          print('service.cid is null');
           return;
         }
         // Fetch the connected users' cids
         List<String> connectedCids = await fetchConnectedCids(service.cid!);
         for (String cid in connectedCids) {
+          print ('connectedCids: $connectedCids');
           docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
+          print('docref: $docRef');
           docSnap = await docRef.get();
           if (docSnap.exists) {
+            print('Document found under cid: $cid');
             return docRef.update({'isRead': true});
           } else {
+            print('Document not found under cid: $cid');
           }
         }
+        print('Document does not exist under any connected cid');
       }
     }
   }
@@ -124,6 +134,8 @@ class DatabaseService {
   Future<void> markAllAsRead() async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null && service.cid != null) {
+      print(service.cid);  
+      print('cid: ${service.cid}');
       await _markNotificationsAsRead(service.cid!);
       List<String> connectedCids = await fetchConnectedCids(uid);
       for (String cid in connectedCids) {
@@ -133,8 +145,8 @@ class DatabaseService {
   }
 
   Future<void> _markNotificationsAsRead(String cid) async {
-    CollectionReference notificationsCollection = usersCollection.doc(cid).collection('notifications');
-    print('notificationsCollection: $notificationsCollection');
+    CollectionReference notificationsCollection = usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
+    log('database.dart: notificationsCollection: $notificationsCollection');
     QuerySnapshot querySnapshot = await notificationsCollection.get();
     for (QueryDocumentSnapshot doc in querySnapshot.docs) {
       DocumentReference docRef = doc.reference;
@@ -166,9 +178,9 @@ class DatabaseService {
   /// try {
   ///   DatabaseService db = new DatabaseService(cid, uid);
   ///   await db.linkUserToDatabase(email, cid);
-  ///   print('User linked to database successfully.');
+  ///   log('database.dart: User linked to database successfully.');
   /// } catch (e) {
-  ///   print('Error linking user to database: $e');
+  ///   log('database.dart: Error linking user to database: $e');
   /// }
   /// ```
   ///
@@ -197,6 +209,7 @@ class DatabaseService {
           ...existingData,
           'uid': uid,
           'email': email,
+          'appEmail': email,
         };
 
         // Set the document with the updated data
@@ -309,7 +322,7 @@ class DatabaseService {
     for (String connectedUser in connectedUsers) {
       DocumentSnapshot connectedUserSnapshot = await usersCollection.doc(connectedUser).get();
       Map<String, dynamic> connectedUserData = connectedUserSnapshot.data() as Map<String, dynamic>;
-      QuerySnapshot connectedUserAssetsSnapshot = await usersCollection.doc(connectedUser).collection('assets').get();
+      QuerySnapshot connectedUserAssetsSnapshot = await usersCollection.doc(connectedUser).collection(Config.get('ASSETS_SUBCOLLECTION')).get();
       List<Map<String, dynamic>> connectedUserAssets = connectedUserAssetsSnapshot.docs.map((asset) => asset.data() as Map<String, dynamic>).toList();
       connectedUsersWithAssets.add(UserWithAssets(connectedUserData, connectedUserAssets));
     }
@@ -332,7 +345,7 @@ class DatabaseService {
       await newDoc.set(oldData);
 
       // List of subcollections to duplicate
-      List<String> subcollections = ['assets', 'notifications', 'activities'];
+      List<String> subcollections = [Config.get('ASSETS_SUBCOLLECTION'), Config.get('NOTIFICATIONS_SUBCOLLECTION'), Config.get('ACTIVITIES_SUBCOLLECTION')];
 
       // Duplicate each subcollection
       for (String subcollection in subcollections) {
@@ -360,7 +373,7 @@ class DatabaseService {
     DocumentReference targetDoc = usersCollection.doc(targetCid);
 
     // List of subcollections to replace
-    List<String> subcollections = ['assets', 'notifications', 'activities'];
+    List<String> subcollections = [Config.get('ASSETS_SUBCOLLECTION'), Config.get('NOTIFICATIONS_SUBCOLLECTION'), Config.get('ACTIVITIES_SUBCOLLECTION')];
 
     // Replace each subcollection
     for (String subcollection in subcollections) {
@@ -390,7 +403,7 @@ class DatabaseService {
     var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
     var allUsers = [cid, ...connectedUsers];
     var allActivities = await Future.wait(allUsers.map((userId) async {
-      var snapshots = await usersCollection.doc(userId).collection('activities').get();
+      var snapshots = await usersCollection.doc(userId).collection(Config.get('ACTIVITIES_SUBCOLLECTION')).get();
       return snapshots.docs.map((doc) {
         Map<String, dynamic> data = doc.data();
         data['amount'] = data['amount']?.toDouble();
@@ -401,7 +414,7 @@ class DatabaseService {
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection('notifications').orderBy('time', descending: true).snapshots().asyncMap((snapshot) async {
+    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async {
       return snapshot.docs.map((doc) {
       Map<String, dynamic> data = doc.data();
       data['id'] = doc.id; 

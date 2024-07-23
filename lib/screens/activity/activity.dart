@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_expression_function_bodies, library_private_types_in_public_api, deprecated_member_use
-
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -20,10 +18,7 @@ class ActivityPage extends StatefulWidget {
   _ActivityPageState createState() => _ActivityPageState();
 }
 
-
 class _ActivityPageState extends State<ActivityPage> {
-
-
 
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
@@ -99,10 +94,10 @@ class _ActivityPageState extends State<ActivityPage> {
 
               // Update userCheckStatus for fullName
             userCheckStatus[fullName] = true;
-            print('bruh $userCheckStatus');
+            log('activity.dart: bruh $userCheckStatus');
 
   
-          print('User name: $fullName');
+          log('activity.dart: User name: $fullName');
         });
       });
       _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
@@ -120,8 +115,8 @@ class _ActivityPageState extends State<ActivityPage> {
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
-          print('Connected users: $connectedUserNames');
-          print('All users: $allUserNames');
+          log('activity.dart: Connected users: $connectedUserNames');
+          log('activity.dart: All users: $allUserNames');
         });
       });
     });
@@ -170,8 +165,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         }
                       );
                     }
-                    print('Connected users: ${connectedUserNames}');
-                    print('All checked users: ${userCheckStatus}');
+                    log('activity.dart: Connected users: ${connectedUserNames}');
+                    log('activity.dart: All checked users: ${userCheckStatus}');
                     return StreamBuilder<List<Map<String, dynamic>>>(
                       stream: _databaseService.getNotifications,
                       builder: (context, notificationsSnapshot) {
@@ -1237,7 +1232,7 @@ class _ActivityPageState extends State<ActivityPage> {
             .map((entry) => entry.key)
             .toList();
 
-        log('selectedUsers: $selectedUsers');
+        log('activity.dart: selectedUsers: $selectedUsers');
 
         // Re-evaluate allUsersChecked after updating userCheckStatus
         allUsersChecked = userCheckStatus.values.every((status) => status);
@@ -1650,8 +1645,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   Navigator.pop(context);
                                   // Implement your apply functionality here
                                   setState(() {
-                                    log('$_fundsFilter');
-                                    log('$_typeFilter');
+                                    log('activity.dart: $_fundsFilter');
+                                    log('activity.dart: $_typeFilter');
                                     filter(activities);
                                   });
                                 } // Close the bottom sheet,
@@ -2019,7 +2014,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                     userCheckStatus[userName] = value!;
                                                     updateUserCheckStatus(userName, value);
                                                   });
-                                                  log('Connected User Names: $connectedUserNames');
+                                                  log('activity.dart: Connected User Names: $connectedUserNames');
                                                   // Handle the change event here
                                                 },
                                               );
@@ -2061,8 +2056,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   Navigator.pop(context);
                                   // Implement your apply functionality here
                                   setState(() {
-                                    log('$_fundsFilter');
-                                    log('$_typeFilter');
+                                    log('activity.dart: $_fundsFilter');
+                                    log('activity.dart: $_typeFilter');
                                     filter(activities);
                                   });
                                 } // Close the bottom sheet,

@@ -27,7 +27,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        log('User is not logged in');
+        log('analytics.dart: User is not logged in');
         Navigator.pushReplacementNamed(context, '/login');
       }
     // Fetch CID using async constructor
@@ -38,7 +38,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('analytics.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
   
