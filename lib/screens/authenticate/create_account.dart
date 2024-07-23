@@ -138,6 +138,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }
   }
 
+  
+
   Dialog _emailVerificationDialog() => Dialog(
     backgroundColor: const Color.fromARGB(255, 37, 58, 86),
     shape: RoundedRectangleBorder(

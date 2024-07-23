@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,8 +36,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
 
   // database service instance
-  late DatabaseService _databaseService;
-
+  DatabaseService? _databaseService;
 
   Future<void> _initData() async {
 
@@ -55,11 +55,24 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('Database Service has been initialized with CID: ${_databaseService?.cid}');
     }
   }
   
+    String? cid;
+  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
 
+  Stream<List<String>> get getConnectedUsersWithCid => usersCollection.doc(_databaseService?.cid).snapshots().asyncMap((userSnapshot) async {
+    final data = userSnapshot.data();
+    if (data == null) {
+      return [];
+    }
+    List<String> connectedUsers = [];
+    // Safely add _databaseService.cid to the list of connected users if it's not null
+    if (_databaseService?.cid != null) {
+    }
+    return connectedUsers;
+  });
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -71,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
           );
         }
         return StreamBuilder<UserWithAssets>(
-          stream: _databaseService.getUserWithAssets,
+          stream: _databaseService?.getUserWithAssets,
           builder: (context, userSnapshot) {
             if (!userSnapshot.hasData || userSnapshot.data == null) {
               return const Center(
@@ -80,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
             }
             // Fetch connected users before building the profile page
             return StreamBuilder<List<UserWithAssets>>(
-              stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the correct stream
+              stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
               builder: (context, connectedUsersSnapshot) {
 
                 if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
@@ -89,7 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 }
                 // Once we have the connected users, proceed to fetch notifications
                 return StreamBuilder<List<Map<String, dynamic>>>(
-                  stream: _databaseService.getNotifications,
+                  stream: _databaseService?.getNotifications,
                   builder: (context, notificationsSnapshot) {
                     if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
                       return const Center(
@@ -297,17 +310,15 @@ List<String> assetsFormatted = [];
 Future<void> shareFile(context, clientId, documentName) async {
   try {
     // Call downloadFile to get the filePath
-    String filePath = await downloadFile(context, {_databaseService.cid}, 'TestPdf${_databaseService.cid}.pdf');
+    String filePath = await downloadFile(context, {_databaseService?.cid}, '');
 
     // Check if the filePath is not empty
     if (filePath.isNotEmpty) {
       // Use Share.shareFiles to share the file
       await Share.shareFiles([filePath]);
     } else {
-      print('Share failed: File path is empty');
     }
   } catch (e) {
-    print('Share error: $e');
   }
 }
 
@@ -315,16 +326,23 @@ Future<void> shareFile(context, clientId, documentName) async {
   bool activitySwitchValue = false;
   bool statementsSwitchValue = false;
 
-    List<String> connectedUserNames = [];
+  List<String> connectedUserNames = [];
+  List<String> connectedUserCids = [];
 
+  final FirebaseStorage storage = FirebaseStorage.instance;
+  List<Reference> pdfFiles = [];
+  List<Reference> pdfFilesConnectedUsers = [];
 
 
   @override
   void initState() {
     super.initState();
+    listPDFFiles();
+    fetchConnectedCids(_databaseService?.cid ?? '$cid');
+    listPDFFilesConnectedUsers();
     _selectedButton = 'settings';
         _initData().then((_) {
-      _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
+      _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
         setState(() {
           connectedUserNames = connectedUsers.map<String>((user) {
             String firstName = user.info['name']['first'] as String;
@@ -340,6 +358,56 @@ Future<void> shareFile(context, clientId, documentName) async {
     });
 
   }
+
+    Future<List<String>> fetchConnectedCids(String cid) async {
+    DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
+    if (userSnapshot.exists) {
+      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+      List<String> connectedUsers = info['connectedUsers'].cast<String>();
+      connectedUserCids = connectedUsers;
+      print('Connected users: $connectedUsers');
+      return connectedUsers;
+    } else {
+      return [];
+    }
+  }
+
+
+  Future<void> listPDFFiles() async {
+      final String? userFolder = _databaseService?.cid;
+    
+      final ListResult result = await storage.ref('testUsersStatements/$userFolder').listAll();
+      final List<Reference> allFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+    
+    
+      setState(() {
+          pdfFiles = allFiles;
+      });
+  }
+
+  Future<void> listPDFFilesConnectedUsers() async {
+  final List<String> connectedUserFolders = connectedUserCids;
+  List<Reference> allConnectedFiles = [];
+
+  for (String folder in connectedUserFolders) {
+    print('Fetching PDF files for folder: $folder');
+    final ListResult result = await storage.ref('testUsersStatements/$folder').listAll();
+    final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+    print('Found ${pdfFilesInFolder.length} PDF files in folder: $folder');
+    allConnectedFiles.addAll(pdfFilesInFolder);
+    print(allConnectedFiles);
+  }
+
+  setState(() {
+    // Use a Set to keep track of already added files
+    final existingFiles = pdfFilesConnectedUsers.map((file) => file.name).toSet();
+    
+    // Add only the new files that are not already in the list
+    final newFiles = allConnectedFiles.where((file) => !existingFiles.contains(file.name)).toList();
+    
+    pdfFilesConnectedUsers.addAll(newFiles);
+    print('Total PDF files found: ${pdfFilesConnectedUsers.length}');
+  });}
 
 // This is the selected button, initially set to an empty string
   String _selectedButton = '';
@@ -666,7 +734,7 @@ Column _profileForAllUsers() => Column(
       AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     extractAndPrintUserInfo(userSnapshot, connectedUsers);
-        String? cid = _databaseService.cid;
+        String? cid = _databaseService?.cid;
 
     return Scaffold(
         body: Stack(
@@ -704,7 +772,7 @@ Column _profileForAllUsers() => Column(
       AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     extractAndPrintUserInfo(userSnapshot, connectedUsers);
-        String? cid = _databaseService.cid;
+        String? cid = _databaseService?.cid;
     return Scaffold(
         body: Stack(
           children: [
@@ -807,10 +875,20 @@ Column _profileForAllUsers() => Column(
                 )
               ],
             ),
-            onPressed: () {
+            onPressed: () async {
               setState(() {
                 _selectedButton = 'statementsAndDocuments';
+                print('Button pressed: statementsAndDocuments selected');
               });
+                
+                print('Calling listPDFFiles()');
+                await listPDFFiles();
+                
+                print('Calling fetchConnectedCids() with cid: ${_databaseService?.cid ?? '$cid'}');
+                await fetchConnectedCids(_databaseService?.cid ?? '$cid');
+                
+                print('Calling listPDFFilesConnectedUsers()');
+                await listPDFFilesConnectedUsers();
             },
           ),
           
@@ -1439,7 +1517,6 @@ Column _profileForAllUsers() => Column(
                                 onChanged: (bool? value) {
                                   // This is called when the user toggles the switch.
                                     statementsSwitchValue = value ?? false;
-                                    print('$statementsSwitchValue');
                                 },
                               ),
                             ],
@@ -1789,10 +1866,10 @@ Column _profileForAllUsers() => Column(
   );
 
 
-// Assuming _databaseService is initialized and accessible in this context
+// Assuming _databaseService? is initialized and accessible in this context
 Widget _buildClientNameAndID(String name, String clientId) {
   // Initialize cid here, before using it in the widget tree
-  String? cid = _databaseService.cid;
+  String? cid = _databaseService?.cid;
 
   return Padding(
     padding: const EdgeInsets.fromLTRB(20, 30, 0, 20),
@@ -1829,45 +1906,211 @@ Widget _buildClientNameAndID(String name, String clientId) {
 }
 
 // This is the Statements and Documents section
-  Container _statementsAndDocuments() => Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // statements
-        ListTile(
-          contentPadding: const EdgeInsets.all(8.0),
-          title: const Text(
-            'Statement Title',
-            style: TextStyle(
-              fontSize: 20.0,
-              fontFamily: 'Titillium Web',
-              color: Colors.white,
-            ),
-          ),
-          onTap: () async {
-            await downloadFile(context, _databaseService.cid, 'TestPdf${_databaseService.cid}.pdf');
-            String filePath = await downloadFile(context, {_databaseService.cid}, 'TestPdf${_databaseService.cid}.pdf');
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PDFScreen(filePath),
+  Padding _statementsAndDocuments() => Padding(
+        padding: const EdgeInsets.fromLTRB(10, 20, 10, 120),
+        child: Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(), // Disable scrolling
+                  itemCount: pdfFiles.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(0.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            Column(
+                              children: [
+                                if (index == 0) // Only show the cid if it's the first file
+                                  Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          SizedBox(width: 15),
+                                          Text(
+                                            '${firstName ?? 'Unknown'} ${lastName ?? 'User'}',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontFamily: 'Titillium Web',
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    SizedBox(height: 10),
+                                    ],
+                                  ),
+                                if (index != 0) // Only show the divider if it's not the first file
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                    child: Divider(
+                                      color: Colors.white,
+                                      thickness: 0.2,
+                                      height: 10,
+                                    ),
+                                  ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ListTile(
+                                        splashColor: Colors.transparent,
+                                        title: Text(
+                                          pdfFiles[index].name,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Titillium Web',
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                          String filePath = await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => PDFScreen(filePath),
+                                            ),
+                                          );
+                                        },
+                                        trailing: IconButton(
+                                          icon: SvgPicture.asset(
+                                            'assets/icons/download.svg',
+                                            width: 24,
+                                            height: 24,
+                                            color: AppColors.defaultBlueGray300,
+                                          ),
+                                          onPressed: () {
+                                            shareFile(context, clientId, documentName);
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            );
-                    },
-          trailing: IconButton(
-            icon: const Icon(
-              Icons.download_rounded,
-              color: Colors.white, 
-            ),
-            onPressed: () {
-              shareFile(context, clientId, documentName);
-            },
+              Flexible(
+                fit: FlexFit.loose,
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(), // Disable scrolling
+                  itemCount: pdfFilesConnectedUsers.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(0.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            Column(
+                              children: [
+                                if (index == 0)
+                                Column(
+                                  children: [
+                                  const SizedBox(height: 25),
+                                  Row(
+                                    children: [
+                                      SizedBox(width: 15),
+                                      Text(
+                                        connectedUserNames.length == 1
+                                          ? connectedUserNames.first
+                                          : connectedUserNames.length == 2
+                                              ? connectedUserNames.join(' & ')
+                                              : '${connectedUserNames.sublist(0, connectedUserNames.length - 1).join(', ')} & ${connectedUserNames.last}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Titillium Web',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+
+                                      )
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  ],
+                                ),
+                                if (index != 0) // Only show the divider if it's not the first file
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                    child: Divider(
+                                      color: Colors.white,
+                                      thickness: 0.2,
+                                      height: 10,
+                                    ),
+                                  ),
+                              if (index < pdfFilesConnectedUsers.length) 
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ListTile(
+                                        splashColor: Colors.transparent,
+                                        title: Text(
+                                          pdfFilesConnectedUsers[index].name ,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Titillium Web',
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          await downloadFile(context, _databaseService?.cid, pdfFilesConnectedUsers[index].name);
+                                          String filePath = await downloadFile(context, _databaseService?.cid, pdfFilesConnectedUsers[index].name);
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => PDFScreen(filePath),
+                                            ),
+                                          );
+                                        },
+                                        trailing: IconButton(
+                                          icon: SvgPicture.asset(
+                                            'assets/icons/download.svg',
+                                            width: 24,
+                                            height: 24,
+                                            color: AppColors.defaultBlueGray300,
+                                          ),
+                                          onPressed: () {
+                                            shareFile(context, clientId, documentName);
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+
+
+            ],
           ),
-          ),
-      ],
-    ),
-  );
+        ),
+      );
 
 // This is the Help Center section
   Container _helpCenter() => Container(

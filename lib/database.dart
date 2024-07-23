@@ -98,35 +98,25 @@ class DatabaseService {
   Future<void> markAsRead(String notificationId) async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null) {
-      print(service.cid);  
-      print('cid: ${service.cid}, notificationId: $notificationId');
       DocumentReference docRef = usersCollection.doc(service.cid).collection('notifications').doc(notificationId);
-      print('docref: $docRef');
       DocumentSnapshot docSnap = await docRef.get();
       if (docSnap.exists) {
         return docRef.update({'isRead': true});
       } else {
-        print('Document does not exist under this cid');
         // Check if service.cid is null before calling fetchConnectedCids
         if (service.cid == null) {
-          print('service.cid is null');
           return;
         }
         // Fetch the connected users' cids
         List<String> connectedCids = await fetchConnectedCids(service.cid!);
         for (String cid in connectedCids) {
-          print ('connectedCids: $connectedCids');
           docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
-          print('docref: $docRef');
           docSnap = await docRef.get();
           if (docSnap.exists) {
-            print('Document found under cid: $cid');
             return docRef.update({'isRead': true});
           } else {
-            print('Document not found under cid: $cid');
           }
         }
-        print('Document does not exist under any connected cid');
       }
     }
   }
@@ -134,8 +124,6 @@ class DatabaseService {
   Future<void> markAllAsRead() async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null && service.cid != null) {
-      print(service.cid);  
-      print('cid: ${service.cid}');
       await _markNotificationsAsRead(service.cid!);
       List<String> connectedCids = await fetchConnectedCids(uid);
       for (String cid in connectedCids) {
