@@ -189,7 +189,7 @@ List<String> assetsFormatted = [];
       DateTime dob = user.info['dob'] != null ? (user.info['dob'] as Timestamp).toDate() : DateTime.now();
       userDob = DateFormat('MM/dd/yyyy').format(dob);
 
-      email = user.info['email'] as String;
+      email = (((user.info['appEmail'] ?? user.info['initEmail']) ?? user.info['email']) ?? 'N/A') as String;
       userEmail = email;
 
 
