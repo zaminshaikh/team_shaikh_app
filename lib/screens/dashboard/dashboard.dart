@@ -81,8 +81,23 @@ class _DashboardPageState extends State<DashboardPage> {
       future: _initData(), // Initialize the database service
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Center(
+            child: Container(
+              padding: EdgeInsets.all(26.0),
+              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Stack(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 6.0,
+                  ),
+                ],
+              ),
+            ),
           );
         }
         return StreamBuilder<UserWithAssets>(

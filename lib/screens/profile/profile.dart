@@ -33,7 +33,15 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
+class PdfFileWithCid {
+  final Reference file;
+  final String cid;
+
+  PdfFileWithCid(this.file, this.cid);
+}
+
 class _ProfilePageState extends State<ProfilePage> {
+  Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
   DatabaseService? _databaseService;
@@ -76,19 +84,49 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initData(), // Initialize the database service
+      future: _initializeWidgetFuture, // Initialize the database service
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Center(
+            child: Container(
+              padding: EdgeInsets.all(26.0),
+              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Stack(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 6.0,
+                  ),
+                ],
+              ),
+            ),
           );
         }
         return StreamBuilder<UserWithAssets>(
           stream: _databaseService?.getUserWithAssets,
           builder: (context, userSnapshot) {
             if (!userSnapshot.hasData || userSnapshot.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return Center(
+                child: Container(
+                  padding: EdgeInsets.all(26.0),
+                  margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.defaultBlue500,
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Stack(
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 6.0,
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
             // Fetch connected users before building the profile page
@@ -105,8 +143,23 @@ class _ProfilePageState extends State<ProfilePage> {
                   stream: _databaseService?.getNotifications,
                   builder: (context, notificationsSnapshot) {
                     if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
+                      return Center(
+                        child: Container(
+                          padding: EdgeInsets.all(26.0),
+                          margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                          decoration: BoxDecoration(
+                            color: AppColors.defaultBlue500,
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          child: Stack(
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 6.0,
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     }
                     unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
@@ -333,7 +386,6 @@ Future<void> shareFile(context, clientId, documentName) async {
 
   final FirebaseStorage storage = FirebaseStorage.instance;
   List<Reference> pdfFiles = [];
-  List<Reference> pdfFilesConnectedUsers = [];
 
 
   @override
@@ -387,29 +439,35 @@ Future<void> shareFile(context, clientId, documentName) async {
       });
   }
 
+  List<PdfFileWithCid> pdfFilesConnectedUsers = [];
+
   Future<void> listPDFFilesConnectedUsers() async {
-  final List<String> connectedUserFolders = connectedUserCids;
-  List<Reference> allConnectedFiles = [];
+    final List<String> connectedUserFolders = connectedUserCids;
+    List<PdfFileWithCid> allConnectedFiles = [];
 
-  for (String folder in connectedUserFolders) {
-    print('Fetching PDF files for folder: $folder');
-    final ListResult result = await storage.ref('testUsersStatements/$folder').listAll();
-    final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
-    print('Found ${pdfFilesInFolder.length} PDF files in folder: $folder');
-    allConnectedFiles.addAll(pdfFilesInFolder);
-    print(allConnectedFiles);
+    for (String folder in connectedUserFolders) {
+      print('Fetching PDF files for folder: $folder');
+      final ListResult result = await storage.ref('testUsersStatements/$folder').listAll();
+      final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+      print('Found ${pdfFilesInFolder.length} PDF files in folder: $folder');
+      
+      // Convert List<Reference> to List<PdfFileWithCid>
+      final List<PdfFileWithCid> pdfFilesWithCid = pdfFilesInFolder.map((file) => PdfFileWithCid(file, folder)).toList();
+      allConnectedFiles.addAll(pdfFilesWithCid);
+      print(allConnectedFiles);
+    }
+
+    setState(() {
+      // Use a Set to keep track of already added files
+      final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
+      
+      // Add only the new files that are not already in the list
+      final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
+      
+      pdfFilesConnectedUsers.addAll(newFiles);
+      print('Total PDF files found: ${pdfFilesConnectedUsers.length}');
+    });
   }
-
-  setState(() {
-    // Use a Set to keep track of already added files
-    final existingFiles = pdfFilesConnectedUsers.map((file) => file.name).toSet();
-    
-    // Add only the new files that are not already in the list
-    final newFiles = allConnectedFiles.where((file) => !existingFiles.contains(file.name)).toList();
-    
-    pdfFilesConnectedUsers.addAll(newFiles);
-    print('Total PDF files found: ${pdfFilesConnectedUsers.length}');
-  });}
 
 // This is the selected button, initially set to an empty string
   String _selectedButton = '';
@@ -1517,9 +1575,10 @@ Column _profileForAllUsers() => Column(
                                 value: statementsSwitchValue,
                                 activeColor: CupertinoColors.activeBlue,
                                 onChanged: (bool? value) {
-                                  // This is called when the user toggles the switch.
+                                  setState(() {
                                     statementsSwitchValue = value ?? false;
                                     print('$statementsSwitchValue');
+                                  });
                                 },
                               ),
                             ],
@@ -1933,26 +1992,6 @@ Widget _buildClientNameAndID(String name, String clientId) {
                           children: [
                             Column(
                               children: [
-                                if (index == 0) // Only show the cid if it's the first file
-                                  Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(width: 15),
-                                          Text(
-                                            '${firstName ?? 'Unknown'} ${lastName ?? 'User'}',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontFamily: 'Titillium Web',
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    SizedBox(height: 10),
-                                    ],
-                                  ),
                                 if (index != 0) // Only show the divider if it's not the first file
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
@@ -2026,33 +2065,6 @@ Widget _buildClientNameAndID(String name, String clientId) {
                           children: [
                             Column(
                               children: [
-                                if (index == 0)
-                                Column(
-                                  children: [
-                                  const SizedBox(height: 25),
-                                  Row(
-                                    children: [
-                                      SizedBox(width: 15),
-                                      Text(
-                                        connectedUserNames.length == 1
-                                          ? connectedUserNames.first
-                                          : connectedUserNames.length == 2
-                                              ? connectedUserNames.join(' & ')
-                                              : '${connectedUserNames.sublist(0, connectedUserNames.length - 1).join(', ')} & ${connectedUserNames.last}',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'Titillium Web',
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(height: 10),
-                                  ],
-                                ),
-                                if (index != 0) // Only show the divider if it's not the first file
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
                                     child: Divider(
@@ -2061,28 +2073,27 @@ Widget _buildClientNameAndID(String name, String clientId) {
                                       height: 10,
                                     ),
                                   ),
-                              if (index < pdfFilesConnectedUsers.length) 
                                 Row(
                                   children: [
                                     Expanded(
                                       child: ListTile(
                                         splashColor: Colors.transparent,
                                         title: Text(
-                                          pdfFilesConnectedUsers[index].name ,
+                                          pdfFilesConnectedUsers[index].file.name,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontFamily: 'Titillium Web',
                                           ),
                                         ),
                                         onTap: () async {
-                                          await downloadFile(context, _databaseService?.cid, pdfFilesConnectedUsers[index].name);
-                                          String filePath = await downloadFile(context, _databaseService?.cid, pdfFilesConnectedUsers[index].name);
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => PDFScreen(filePath),
-                                            ),
-                                          );
+                                          String filePath = '';
+                                          filePath = await downloadFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => PDFScreen(filePath),
+                                              ),
+                                            );
                                         },
                                         trailing: IconButton(
                                           icon: SvgPicture.asset(
@@ -2096,7 +2107,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
                                           },
                                         ),
                                       ),
-                                    ),
+                                    )
                                   ],
                                 ),
                               ],

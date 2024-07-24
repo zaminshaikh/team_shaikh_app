@@ -19,6 +19,8 @@ class ActivityPage extends StatefulWidget {
 }
 
 class _ActivityPageState extends State<ActivityPage> {
+  final Future<void> _initializeWidgetFuture = Future.value();
+
 
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
@@ -32,7 +34,7 @@ class _ActivityPageState extends State<ActivityPage> {
     end: DateTime.now(),
   );
 
-  late DatabaseService _databaseService;
+  DatabaseService? _databaseService;
 
   Future<void> _initData() async {
     // If the user is signed in (which should always be the case on this screen)
@@ -71,7 +73,7 @@ class _ActivityPageState extends State<ActivityPage> {
   bool isPendingWithdrawalChecked = true;
   bool isDepositChecked = true;
   List<String> allUserNames = [];
-  List<String> allRecipientNames = [];
+  List<String> allRecipients = [];
   Map<String, dynamic> userName = {};
   Map<String, bool> userCheckStatus = {};
   List<String> selectedUsers = [];
@@ -83,7 +85,7 @@ class _ActivityPageState extends State<ActivityPage> {
   void initState() {
     super.initState();
     _initData().then((_) {
-      _databaseService.getUserWithAssets.listen((user) {
+      _databaseService!.getUserWithAssets.listen((user) {
         setState(() {
           String firstName = user.info['name']['first'] as String;
           String lastName = user.info['name']['last'] as String;
@@ -91,16 +93,17 @@ class _ActivityPageState extends State<ActivityPage> {
   
           // Assuming allUserNames is a List<String> meant to store user names
           allUserNames.add(fullName);
+          allRecipients.add(fullName);
 
               // Update userCheckStatus for fullName
             userCheckStatus[fullName] = true;
-            log('activity.dart: bruh $userCheckStatus');
+            log('activity.dart: $userCheckStatus');
 
   
           log('activity.dart: User name: $fullName');
         });
       });
-      _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
+      _databaseService!.getConnectedUsersWithAssets.listen((connectedUsers) {
         setState(() {
           connectedUserNames = connectedUsers.map<String>((user) {
             String firstName = user.info['name']['first'] as String;
@@ -115,8 +118,11 @@ class _ActivityPageState extends State<ActivityPage> {
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
+          allRecipients.addAll(connectedUserNames);
           log('activity.dart: Connected users: $connectedUserNames');
           log('activity.dart: All users: $allUserNames');
+          log('activity.dart: All recipients: $allRecipients');
+
         });
       });
     });
@@ -124,39 +130,99 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initData(),
+      future: _initializeWidgetFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Center(
+            child: Container(
+              padding: EdgeInsets.all(26.0),
+              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Stack(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 6.0,
+                  ),
+                ],
+              ),
+            ),
           );
         }
         return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: _databaseService.getActivities,
+          stream: _databaseService?.getActivities,
           builder: (context, activitiesSnapshot) {
             if (!activitiesSnapshot.hasData || activitiesSnapshot.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return  Center(
+                child: Container(
+                  padding: EdgeInsets.all(26.0),
+                  margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.defaultBlue500,
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Stack(
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 6.0,
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
             return StreamBuilder<UserWithAssets>(
-              stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
+              stream: _databaseService!.getUserWithAssets, // Assuming this is the stream for the user
               builder: (context, userSnapshot) {
                 if (!userSnapshot.hasData || userSnapshot.data == null) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return Center(
+                    child: Container(
+                      padding: EdgeInsets.all(26.0),
+                      margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.defaultBlue500,
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      child: Stack(
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 6.0,
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
                 return StreamBuilder<List<UserWithAssets>>(
-                  stream: _databaseService.getConnectedUsersWithAssets, 
+                  stream: _databaseService!.getConnectedUsersWithAssets, 
                   builder: (context, connectedUsers) {
                     if (!connectedUsers.hasData || connectedUsers.data == null) {
                       return StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: _databaseService.getNotifications,
+                        stream: _databaseService!.getNotifications,
                         builder: (context, notificationsSnapshot) {
                           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
+                            return  Center(
+                              child: Container(
+                                padding: EdgeInsets.all(26.0),
+                                margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                                decoration: BoxDecoration(
+                                  color: AppColors.defaultBlue500,
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      strokeWidth: 6.0,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           }
                           unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
@@ -168,11 +234,26 @@ class _ActivityPageState extends State<ActivityPage> {
                     log('activity.dart: Connected users: ${connectedUserNames}');
                     log('activity.dart: All checked users: ${userCheckStatus}');
                     return StreamBuilder<List<Map<String, dynamic>>>(
-                      stream: _databaseService.getNotifications,
+                      stream: _databaseService!.getNotifications,
                       builder: (context, notificationsSnapshot) {
                         if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Center(
+                            child: Container(
+                              padding: EdgeInsets.all(26.0),
+                              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                              decoration: BoxDecoration(
+                                color: AppColors.defaultBlue500,
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              child: Stack(
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 6.0,
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         }
                         unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
@@ -693,12 +774,11 @@ class _ActivityPageState extends State<ActivityPage> {
   } 
 
   
-  
   Widget _buildActivity(
     
     Map<String, dynamic> activity,
-    bool showDivider,
-  ) {
+      bool showDivider,
+    ) {
     if (userCheckStatus[activity['recipient']] == true) {
       // Assuming activity['time'] is a Timestamp object
       Timestamp timestamp = activity['time'];
@@ -1218,7 +1298,8 @@ class _ActivityPageState extends State<ActivityPage> {
               )
           ],
         );
-    }
+    } else {
+      }
 
     return Container();  
 }
@@ -1421,9 +1502,9 @@ class _ActivityPageState extends State<ActivityPage> {
           child: GestureDetector(
             onTap: () {},
             child: DraggableScrollableSheet(
-              initialChildSize: 0.9,
+              initialChildSize: 0.8,
               minChildSize: 0.8,
-              maxChildSize: 0.9,
+              maxChildSize: 0.8,
               builder: (_, controller) {
                 return Container(
                   decoration: const BoxDecoration(

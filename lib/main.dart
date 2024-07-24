@@ -28,6 +28,12 @@ class MyApp extends StatelessWidget {
   // The build method to define the structure of the app
   @override
   Widget build(BuildContext context) => MaterialApp(
+
+    builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(boldText: false),
+          child: child!,
+    ),
+
       // Title of the application
       title: 'Team Shaikh Investments',
 

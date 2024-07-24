@@ -18,9 +18,11 @@ class NotificationPage extends StatefulWidget {
 String uid = '';
 
 class _NotificationPageState extends State<NotificationPage> {
+    final Future<void> _initializeWidgetFuture = Future.value();
+
 
   // database service instance
-  late DatabaseService _databaseService;
+  DatabaseService? _databaseService;
   
 
   Future<void> _initData() async {
@@ -41,10 +43,10 @@ class _NotificationPageState extends State<NotificationPage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('notification.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('notification.dart: Database Service has been initialized with CID: ${_databaseService?.cid}');
 
       // Call the logNotificationIds method
-      await _databaseService.logNotificationIds();
+      await _databaseService?.logNotificationIds();
     }
   
     
@@ -54,20 +56,50 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-    future: _initData(), // Initialize the database service
+    future: _initializeWidgetFuture,
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(
-          child: CircularProgressIndicator(),
+        return Center(
+          child: Container(
+            padding: EdgeInsets.all(26.0),
+            margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+            decoration: BoxDecoration(
+              color: AppColors.defaultBlue500,
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            child: Stack(
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 6.0,
+                ),
+              ],
+            ),
+          ),
         );
       }
       return StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _databaseService.getNotifications,
+        stream: _databaseService?.getNotifications,
         builder: (context, notificationsSnapshot) {
           // Wait for the user snapshot to have data
           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: Container(
+                padding: EdgeInsets.all(26.0),
+                margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                decoration: BoxDecoration(
+                  color: AppColors.defaultBlue500,
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                child: Stack(
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 6.0,
+                    ),
+                  ],
+                ),
+              ),
             );
           }
           // If there are no notifications, display a message
