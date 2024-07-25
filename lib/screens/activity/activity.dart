@@ -1612,6 +1612,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
                                                   ),
                                                   value: agqIsChecked,
+                                                  activeColor: Colors.white,
                                                   onChanged: (bool? value) {
                                                     editFilter(1, value!, 'AGQ');
                                                     setState(() {
@@ -1931,6 +1932,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                             builder: (BuildContext context, StateSetter setState) => Column(
                                               children: <Widget>[
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'AGQ Consulting LLC',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -1955,6 +1962,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   },
                                                 ),
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'AK1 Holdings LP',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -2000,6 +2013,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                             builder: (BuildContext context, StateSetter setState) => Column(
                                               children: <Widget>[
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'Profit',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -2022,6 +2041,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   },
                                                 ),
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'Withdrawal',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -2044,6 +2069,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   },
                                                 ),
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'Deposit',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -2089,6 +2120,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                             }
                                             return StatefulBuilder(
                                               builder: (BuildContext context, StateSetter setState) => CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: Text(
                                                     recipient,
                                                     style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
