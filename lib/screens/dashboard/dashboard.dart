@@ -105,8 +105,23 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context, userSnapshot) {
               // Wait for the user snapshot to have data
               if (!userSnapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Container(
+                    padding: EdgeInsets.all(26.0),
+                    margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.defaultBlue500,
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    child: Stack(
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 6.0,
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               }
               // Once we have the user snapshot, we can build the dashboard
@@ -123,8 +138,23 @@ class _DashboardPageState extends State<DashboardPage> {
                       stream: _databaseService.getNotifications,
                       builder: (context, notificationsSnapshot) {
                         if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Center(
+                            child: Container(
+                              padding: EdgeInsets.all(26.0),
+                              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                              decoration: BoxDecoration(
+                                color: AppColors.defaultBlue500,
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              child: Stack(
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 6.0,
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         }
                         unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;

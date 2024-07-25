@@ -112,13 +112,20 @@ class _ActivityPageState extends State<ActivityPage> {
           }).toList();
   
           // Update userCheckStatus for each connected user
-          for (var userName in connectedUserNames) {
-            userCheckStatus[userName] = true;
+          for (var recipient in allRecipients) {
+            userCheckStatus[recipient] = true;
           }
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
-          allRecipients.addAll(connectedUserNames);
+          // Ensure allRecipients is a Set to avoid duplicates
+          Set<String> allRecipientsSet = allRecipients.toSet();
+
+          // Add connectedUserNames to the set
+          allRecipientsSet.addAll(connectedUserNames);
+
+          // Convert the set back to a list if needed
+          allRecipients = allRecipientsSet.toList();
           log('activity.dart: Connected users: $connectedUserNames');
           log('activity.dart: All users: $allUserNames');
           log('activity.dart: All recipients: $allRecipients');
@@ -741,35 +748,42 @@ class _ActivityPageState extends State<ActivityPage> {
         !_isSameDay(activityDate, previousActivityDate) ||
         userCheckStatus[activities[index - 1]['recipient']] != true;
 
-    if (userCheckStatus[activity['recipient']] == true) {
-      if (isFirstVisibleActivityOfTheDay) {
-        return Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 25.0, 20.0, 25.0), // Add padding to the top only if it's not the latest date
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  DateFormat('MMMM d, yyyy').format(activityDate),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
+    if (userCheckStatus.containsKey(activity['recipient'])) {
+      if (userCheckStatus[activity['recipient']] == true) {
+        if (isFirstVisibleActivityOfTheDay) {
+          return Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 25.0, 20.0, 25.0), // Add padding to the top only if it's not the latest date
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    DateFormat('MMMM d, yyyy').format(activityDate),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
                   ),
                 ),
-              ),
-            ), // Day header
-            _buildActivity(activity, !isLastActivityForTheDay), // Activity
-          ],
-        );
+              ), // Day header
+              _buildActivity(activity, !isLastActivityForTheDay), // Activity
+            ],
+          );
+        } else {
+          return _buildActivity(activity, !isLastActivityForTheDay);
+        }
       } else {
         return _buildActivity(activity, !isLastActivityForTheDay);
       }
     } else {
-      
+      print('Recipient not found: ${activity['recipient']}');
+      if (!allRecipients.contains(activity['recipient'])) {
+        allRecipients.add(activity['recipient']);
+      }
+      print(allRecipients);
       return _buildActivity(activity, !isLastActivityForTheDay);
-
     }
   } 
 
@@ -2072,41 +2086,44 @@ class _ActivityPageState extends State<ActivityPage> {
                                     ),      
                                     Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                      child: ExpansionTile(
-                                        title: const Row(
-                                          children: [
-                                            Text('By Users', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                            SizedBox(width: 10), // Add some spacing between the title and the date
-                                          ],
-                                        ),
-                                        iconColor: Colors.white,
-                                        collapsedIconColor: Colors.white,
-                                        children: allUserNames.map((userName) {
-                                          return StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState) {
-                                              return CheckboxListTile(
-                                                title: Text(
-                                                  userName,
-                                                  style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                ),
-                                                value: userCheckStatus[userName],
-                                                onChanged: (bool? value) {
-                                                  setState(() {
-                                                    userCheckStatus[userName] = value!;
-                                                    updateUserCheckStatus(userName, value);
-                                                  });
-                                                  log('activity.dart: Connected User Names: $connectedUserNames');
-                                                  // Handle the change event here
-                                                },
-                                              );
-                                            },
-                                          );
-                                        }).toList(),
+                                        child: ExpansionTile(
+                                          title: const Row(
+                                            children: [
+                                              Text('By Recipients', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                              SizedBox(width: 10), // Add some spacing between the title and the date
+                                            ],
+                                          ),
+                                          iconColor: Colors.white,
+                                          collapsedIconColor: Colors.white,
+                                          children: allRecipients.map((recipient) {
+                                            // Ensure userCheckStatus[recipient] is initialized
+                                            if (userCheckStatus[recipient] == null) {
+                                              userCheckStatus[recipient] = false; // or true, depending on your default value
+                                            }
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context, StateSetter setState) {
+                                                return CheckboxListTile(
+                                                  title: Text(
+                                                    recipient,
+                                                    style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: userCheckStatus[recipient],
+                                                  onChanged: (bool? value) {
+                                                    setState(() {
+                                                      userCheckStatus[recipient] = value!;
+                                                      updateUserCheckStatus(recipient, value);
+                                                    });
+                                                    // Handle the change event here
+                                                  },
+                                                );
+                                              },
+                                            );
+                                          }).toList(),
+                                        )
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                                    ],
+                                  ),
+                                );
                               } else if (index == 2) {
                               return Container(
                               );

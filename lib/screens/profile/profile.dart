@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -363,12 +365,21 @@ List<String> assetsFormatted = [];
 Future<void> shareFile(context, clientId, documentName) async {
   try {
     // Call downloadFile to get the filePath
-    String filePath = await downloadFile(context, {_databaseService?.cid}, '');
+    String filePath = await downloadFile(context, clientId, documentName);
+
+    // Debugging: Print the filePath
+    print('Downloaded file path: $filePath');
 
     // Check if the filePath is not empty
     if (filePath.isNotEmpty) {
-      // Use Share.shareFiles to share the file
-      await Share.shareFiles([filePath]);
+      // Check if the filePath is a file
+      File file = File(filePath);
+      if (await file.exists()) {
+        // Use Share.shareFiles to share the file
+        await Share.shareFiles([filePath]);
+      } else {
+        print('Share failed: File does not exist');
+      }
     } else {
       print('Share failed: File path is empty');
     }
@@ -2031,7 +2042,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
                                             color: AppColors.defaultBlueGray300,
                                           ),
                                           onPressed: () {
-                                            shareFile(context, clientId, documentName);
+                                            shareFile(context, _databaseService?.cid, pdfFiles[index].name);
                                           },
                                         ),
                                       ),
@@ -2103,7 +2114,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
                                             color: AppColors.defaultBlueGray300,
                                           ),
                                           onPressed: () {
-                                            shareFile(context, clientId, documentName);
+                                            shareFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
                                           },
                                         ),
                                       ),
