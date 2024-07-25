@@ -1,4 +1,4 @@
-// Importing Flutter Library & Google button Library
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
@@ -31,32 +31,32 @@ class _LoginPageState extends State<LoginPage> {
   
   // Sign user in method
   Future<bool> signUserIn(context) async {
-    print('Attempting to sign user in...'); // Debugging output
+    log('Attempting to sign user in...'); // Debugging output
     try {
-      print('Calling FirebaseAuth to sign in with email and password...'); // Debugging output
+      log('Calling FirebaseAuth to sign in with email and password...'); // Debugging output
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
-      print('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
-      print('Sign in successful, proceeding to dashboard...'); // Debugging output
+      log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
+      log('Sign in successful, proceeding to dashboard...'); // Debugging output
       return true;
     } on FirebaseAuthException catch (e) {
-      print('Caught FirebaseAuthException: $e'); // Debugging output
+      log('Caught FirebaseAuthException: $e'); // Debugging output
       String errorMessage = '';
       if (e.code == 'user-not-found') {
         errorMessage = 'Email not found. Please check your email or sign up for a new account.';
-        print('Error: $errorMessage'); // Debugging output
+        log('Error: $errorMessage'); // Debugging output
       } else {
         errorMessage = 'Error signing in. Please check your email and password. $e';
-        print('Error: $errorMessage'); // Debugging output
+        log('Error: $errorMessage'); // Debugging output
       }
-      print('Showing error dialog...'); // Debugging output
+      log('Showing error dialog...'); // Debugging output
       await CustomAlertDialog.showAlertDialog(context, 'Error logging in', errorMessage);
-      print('Error dialog shown, returning false...'); // Debugging output
+      log('Error dialog shown, returning false...'); // Debugging output
       return false;
     } catch (e) {
-      print('An unexpected error occurred: $e'); // Debugging output for any other exceptions
+      log('An unexpected error occurred: $e'); // Debugging output for any other exceptions
       return false;
     }
   }

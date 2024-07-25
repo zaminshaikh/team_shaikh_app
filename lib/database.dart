@@ -98,35 +98,35 @@ class DatabaseService {
   Future<void> markAsRead(String notificationId) async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null) {
-      print(service.cid);  
-      print('cid: ${service.cid}, notificationId: $notificationId');
+      log('${service.cid}');  
+      log('cid: ${service.cid}, notificationId: $notificationId');
       DocumentReference docRef = usersCollection.doc(service.cid).collection('notifications').doc(notificationId);
-      print('docref: $docRef');
+      log('docref: $docRef');
       DocumentSnapshot docSnap = await docRef.get();
       if (docSnap.exists) {
         return docRef.update({'isRead': true});
       } else {
-        print('Document does not exist under this cid');
+        log('Document does not exist under this cid');
         // Check if service.cid is null before calling fetchConnectedCids
         if (service.cid == null) {
-          print('service.cid is null');
+          log('service.cid is null');
           return;
         }
         // Fetch the connected users' cids
         List<String> connectedCids = await fetchConnectedCids(service.cid!);
         for (String cid in connectedCids) {
-          print ('connectedCids: $connectedCids');
+          log ('connectedCids: $connectedCids');
           docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
-          print('docref: $docRef');
+          log('docref: $docRef');
           docSnap = await docRef.get();
           if (docSnap.exists) {
-            print('Document found under cid: $cid');
+            log('Document found under cid: $cid');
             return docRef.update({'isRead': true});
           } else {
-            print('Document not found under cid: $cid');
+            log('Document not found under cid: $cid');
           }
         }
-        print('Document does not exist under any connected cid');
+        log('Document does not exist under any connected cid');
       }
     }
   }
@@ -134,8 +134,7 @@ class DatabaseService {
   Future<void> markAllAsRead() async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null && service.cid != null) {
-      print(service.cid);  
-      print('cid: ${service.cid}');
+      log('cid: ${service.cid}');
       await _markNotificationsAsRead(service.cid!);
       List<String> connectedCids = await fetchConnectedCids(uid);
       for (String cid in connectedCids) {
@@ -146,7 +145,7 @@ class DatabaseService {
 
   Future<void> _markNotificationsAsRead(String cid) async {
     CollectionReference notificationsCollection = usersCollection.doc(cid).collection('notifications');
-    print('notificationsCollection: $notificationsCollection');
+    log('notificationsCollection: $notificationsCollection');
     QuerySnapshot querySnapshot = await notificationsCollection.get();
     for (QueryDocumentSnapshot doc in querySnapshot.docs) {
       DocumentReference docRef = doc.reference;
@@ -178,9 +177,9 @@ class DatabaseService {
   /// try {
   ///   DatabaseService db = new DatabaseService(cid, uid);
   ///   await db.linkUserToDatabase(email, cid);
-  ///   print('User linked to database successfully.');
+  ///   log('User linked to database successfully.');
   /// } catch (e) {
-  ///   print('Error linking user to database: $e');
+  ///   log('Error linking user to database: $e');
   /// }
   /// ```
   ///

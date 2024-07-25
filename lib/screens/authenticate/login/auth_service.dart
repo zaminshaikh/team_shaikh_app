@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'dart:developer';
 
 void main() => runApp(const MyApp());
 
@@ -25,7 +26,7 @@ class AuthService {
           options: const AuthenticationOptions(biometricOnly: true),
         );
       } catch (e) {
-        print(e);
+        log('$e');
         return false;
       }
     } else {
@@ -56,7 +57,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 	  _authService.authenticateWithBiometrics().then((isAuthenticated) {
 		if (!isAuthenticated) {
 		  // Handle authentication failure or redirect to a locked screen
-		  print('Authentication failed');
+		  log('Authentication failed');
 		}
 	  });
 	}

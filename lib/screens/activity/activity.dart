@@ -96,10 +96,10 @@ class _ActivityPageState extends State<ActivityPage> {
 
               // Update userCheckStatus for fullName
             userCheckStatus[fullName] = true;
-            print('bruh $userCheckStatus');
+            log('bruh $userCheckStatus');
 
   
-          print('User name: $fullName');
+          log('User name: $fullName');
         });
       });
       _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
@@ -117,8 +117,8 @@ class _ActivityPageState extends State<ActivityPage> {
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
-          print('Connected users: $connectedUserNames');
-          print('All users: $allUserNames');
+          log('Connected users: $connectedUserNames');
+          log('All users: $allUserNames');
         });
       });
     });
@@ -167,8 +167,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         }
                       );
                     }
-                    print('Connected users: $connectedUserNames');
-                    print('All checked users: $userCheckStatus');
+                    log('Connected users: $connectedUserNames');
+                    log('All checked users: $userCheckStatus');
                     return StreamBuilder<List<Map<String, dynamic>>>(
                       stream: _databaseService.getNotifications,
                       builder: (context, notificationsSnapshot) {

@@ -1418,7 +1418,7 @@ Column _profileForAllUsers() => Column(
                                 onChanged: (bool? value) {
                                   // This is called when the user toggles the switch.
                                     statementsSwitchValue = value ?? false;
-                                    print('$statementsSwitchValue');
+                                    log('$statementsSwitchValue');
                                 },
                               ),
                             ],

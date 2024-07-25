@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,7 +17,7 @@ void downloadToFiles(String documentName) async {
   var file = File(path);
   var res = await http.get(Uri.parse('https://source.unsplash.com/random')); 
   await file.writeAsBytes(res.bodyBytes);
-  print('File downloaded to: $path');
+  log('File downloaded to: $path');
 
   // Open share options
 }
@@ -40,10 +41,10 @@ Future<String> downloadFile(context, clientId, documentName) async {
       final file = File(filePath);
       await file.writeAsBytes(bytes);
     } else {
-      print('Download failed: File data is null');
+      log('Download failed: File data is null');
     }
   } catch (e) {
-    print('Download error: $e');
+    log('Download error: $e');
   }
 
   return filePath;
