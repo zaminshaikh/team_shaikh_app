@@ -53,6 +53,13 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
     _slideAnimationController.forward();
   }
 
+  @override
+  void dispose() {
+    _fadeAnimationController.dispose();
+    _slideAnimationController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
