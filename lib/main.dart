@@ -22,12 +22,13 @@ Future<void> main() async {
 }
 
 // StatelessWidget representing the entire application
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget with WidgetsBindingObserver {
   const MyApp({super.key});
+
 
   // The build method to define the structure of the app
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => MaterialApp (
 
     builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(boldText: false),

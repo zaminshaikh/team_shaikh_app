@@ -1,14 +1,17 @@
 // Importing Flutter Library & Google button Library
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, deprecated_member_use
 
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:local_auth/local_auth.dart';
 
 
 // Creating a stateful widget for the Login page
@@ -25,12 +28,14 @@ class LoginPage extends StatefulWidget {
 
 
 // State class for the LoginPage
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   // Boolean variable to set password visibility to hidden
   bool hidePassword = true;
   // Boolean variable to set the remember me checkbox to unchecked, and initializing that the user does not want the app to remember them
   bool rememberMe = false;
+
+  final LocalAuthentication auth = LocalAuthentication();
   
   // Sign user in method
   Future<bool> signUserIn(context) async {
@@ -63,8 +68,55 @@ class _LoginPageState extends State<LoginPage> {
       return false;
     }
   }
-  
 
+    @override
+    void initState() {
+      super.initState();
+      WidgetsBinding.instance.addObserver(this);
+      if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+        _authenticate(context);
+      }
+    }
+
+  
+  Future<void> _authenticate(BuildContext context) async {
+    bool authenticated = false;
+    print('Starting authentication process...');
+    
+    try {
+      print('Attempting to authenticate...');
+      authenticated = await auth.authenticate(
+        localizedReason: 'Please authenticate to login',
+        options: const AuthenticationOptions(
+          useErrorDialogs: true,
+          stickyAuth: true,
+        ),
+      );
+      print('Authentication attempt completed.');
+    } catch (e) {
+      print('Error during authentication: $e');
+    }
+
+    if (authenticated) {
+      // Handle successful authentication
+      await signUserIn(context);
+      // ignore: unawaited_futures
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          ),
+        );
+        print('Authenticated successfully');
+      
+    } else {
+      // Handle failed authentication
+      print('Failed to authenticate');
+    }
+    
+    print('Authentication process finished.');
+  }
 
   // The build method for the login screen widget
   @override
@@ -340,71 +392,79 @@ class _LoginPageState extends State<LoginPage> {
           // Spacing
           const SizedBox(height: 20.0),
           
-          // Google Sign-In Button
-          // Container(
-          //   height: 55,
-          //   decoration: BoxDecoration(
-          //     color: Colors.transparent, 
-          //     borderRadius: BorderRadius.circular(25),
-          //     border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
-          //   ),
-          //   child: const Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //       Icon(
-          //         FontAwesomeIcons.google,
-          //         color: Colors.blue,
-          //       ),
-          //       SizedBox(width: 15),
-          //       Text(
-          //         'Sign in with Google',
-          //         style: TextStyle(
-          //           fontSize: 18, 
-          //           color: Colors.blue, 
-          //           fontWeight: FontWeight.bold, 
-          //           fontFamily: 'Titillium Web'
-          //           ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // Spacing
-          // const SizedBox(height: 30.0),
+          Container(
+            height: 55,
+            decoration: BoxDecoration(
+              color: Colors.transparent, 
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  FontAwesomeIcons.google,
+                  color: Colors.blue,
+                ),
+                SizedBox(width: 15),
+                Text(
+                  'Sign in with Google',
+                  style: TextStyle(
+                    fontSize: 18, 
+                    color: Colors.blue, 
+                    fontWeight: FontWeight.bold, 
+                    fontFamily: 'Titillium Web'
+                    ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 30.0),
           
-          // Login with Face ID
-          // GestureDetector(
-          //   behavior: HitTestBehavior.translucent,
-          //   onTap: () {
-          //   },
-          //   child: const Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //       TextButton(
-          //         onPressed: null,
-          //         child: Row(
-          //           children: [
-          //             Text(
-          //               'Login with Face ID',
-          //               style: TextStyle(
-          //                 fontSize: 18, 
-          //                 fontWeight: FontWeight.bold, 
-          //                 color: Colors.blue, 
-          //                 fontFamily: 'Titillium Web'
-          //               ),
-          //             ),
-          //             SizedBox(width: 10),
-          //             Icon(
-          //               Icons.face,
-          //               color: Colors.blue,
-          //               size: 20,
-          //             ),
-          //           ],
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // Spacing
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+                _authenticate(context);
+              } else {
+                CustomAlertDialog.showAlertDialog(
+                  context,
+                  'Face ID Not Available',
+                  'Please enter your email and password. It seems this may be your first time signing in, and Face ID requires an initial login with your credentials.'
+                );
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: null,
+                  child: Row(
+                    children: [
+                      Text(
+                        'Login with Face ID',
+                        style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.blue, 
+                          fontFamily: 'Titillium Web'
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      SvgPicture.asset(
+                        'assets/icons/face_id.svg',
+                        color: Colors.blue, 
+                        height: 30,
+                        width: 30,
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 40.0),
           
           // Sign-Up Section

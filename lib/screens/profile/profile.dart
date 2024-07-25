@@ -15,7 +15,6 @@ import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/utilities.dart';
@@ -178,8 +177,6 @@ class _ProfilePageState extends State<ProfilePage> {
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
 
-    emailController.clear();
-    passwordController.clear();
 
     
 

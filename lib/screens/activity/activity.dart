@@ -99,10 +99,6 @@ class _ActivityPageState extends State<ActivityPage> {
 
               // Update userCheckStatus for fullName
             userCheckStatus[fullName] = true;
-            log('activity.dart: $userCheckStatus');
-
-  
-          log('activity.dart: User name: $fullName');
         });
       });
       _databaseService!.getConnectedUsersWithAssets.listen((connectedUsers) {
@@ -128,10 +124,6 @@ class _ActivityPageState extends State<ActivityPage> {
 
           // Convert the set back to a list if needed
           allRecipients = allRecipientsSet.toList();
-          log('activity.dart: Connected users: $connectedUserNames');
-          log('activity.dart: All users: $allUserNames');
-          log('activity.dart: All recipients: $allRecipients');
-
         });
       });
     });
@@ -1503,8 +1495,11 @@ class _ActivityPageState extends State<ActivityPage> {
     }
 
   showModalBottomSheet(
+    
     context: context,
     isScrollControlled: true,
+    isDismissible: false,
+    enableDrag: false,
     backgroundColor: Colors.transparent,
     builder: (context) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),
@@ -2544,7 +2539,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                       ),
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                       child: const Text(
-                                        'All Connected Users',
+                                        'All Recipients',
                                         style: TextStyle(
                                           color: AppColors.defaultBlueGray100,
                                           fontSize: 16,

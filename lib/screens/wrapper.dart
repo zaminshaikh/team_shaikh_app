@@ -2,44 +2,83 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
+import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/authenticate/faceid.dart';
 
-// Return either dashboard or authenticate
-class Wrapper extends StatelessWidget {
+class Wrapper extends StatefulWidget {
   const Wrapper({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      body: StreamBuilder( 
-        stream: FirebaseAuth.instance.userChanges(), // Use stream to update on any changes to the user
+  _WrapperState createState() => _WrapperState();
+}
+
+class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
+  bool _hasNavigatedToFaceIdPage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    print('WrapperState: Observer added');
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    print('WrapperState: Observer removed when app is in background.');
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    print('WrapperState: AppLifecycleState changed to $state');
+    if (state == AppLifecycleState.resumed) {
+      print('App is in foreground.');
+    } else if (state == AppLifecycleState.inactive) {
+      if (!_hasNavigatedToFaceIdPage) {
+        _hasNavigatedToFaceIdPage = true;
+        Future.delayed(Duration.zero, () {
+          if (context != null) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => FaceIdPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+              ),
+            );
+          }
+        });
+      }
+      print('App is in background.');
+      _hasNavigatedToFaceIdPage = false; // Reset the flag when the app goes to the background
+    } else if (state == AppLifecycleState.paused) {
+      print('App is in background.');
+      _hasNavigatedToFaceIdPage = false; // Reset the flag when the app goes to the background
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: StreamBuilder(
+        stream: FirebaseAuth.instance.userChanges(),
         builder: (context, snapshot) {
-          // If data is still loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
-          } 
-          // Error case
-          else if (snapshot.hasError) {
+          } else if (snapshot.hasError) {
             log('wrapper.dart: StreamBuilder error: ${snapshot.error}');
             return Text('Error: ${snapshot.error}');
-          } 
-          // User exists case
-          else if (snapshot.hasData) {
-            // ignore: unused_local_variable
+          } else if (snapshot.hasData) {
             final user = snapshot.data as User;
-            // Check verification status (create_account.dart case)
-            // if (user.emailVerified) {
-            //   log('wrapper.dart: User email (${user.email}) with uid (${user.uid}) is verified. Returning dashboard...');
-            //   return DashboardPage();
-            // } else {
-            //   log('wrapper.dart: User email is not verified.');
-            //   return const CircularProgressIndicator();
-            // }
             return const DashboardPage();
-          } 
-          // Else return login
-          log('wrapper.dart: User is not logged in yet.');
-          return const LoginPage();
+          } else {
+            log('wrapper.dart: User is not logged in yet.');
+            return const OnboardingPage();
+          }
         },
       ),
     );
+  }
 }
