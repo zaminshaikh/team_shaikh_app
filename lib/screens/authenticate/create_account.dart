@@ -198,7 +198,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 await CustomAlertDialog.showAlertDialog(context, 'Success', 'Email verified successfully.', icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green));
                 if (!mounted) {return;} 
                 await Navigator.pushReplacement(context, PageRouteBuilder(
-                  pageBuilder: (context, animation1, animation2) => DashboardPage(),
+                  pageBuilder: (context, animation1, animation2) => const DashboardPage(),
                   transitionDuration: const Duration(seconds: 0),
                 ));
                 } else {
@@ -336,13 +336,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
       // Logo and branding
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     AppColors.defaultBlue500, // Start color
-                    const Color.fromARGB(255, 17, 24, 39), // End color
+                    Color.fromARGB(255, 17, 24, 39), // End color
                   ],
                 ),
               ),
@@ -374,7 +374,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       children: [
               // Text widget to display "Create An Account"                
             const Text(
-              "Create An Account",
+              'Create An Account',
       
       // TextStyle to define text appearance
               style: TextStyle(
@@ -405,7 +405,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       
       // Text widget to display "Client ID"                
                   const Text(
-                    "Client ID",
+                    'Client ID',
                     
       // TextStyle to define text appearance
                     style: TextStyle(
@@ -486,7 +486,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       
       // Text widget to display "Email"                
                   const Text(
-                    "Email",
+                    'Email',
                     
       // TextStyle to define text appearance
                     style: TextStyle(
@@ -571,7 +571,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       
       // Text widget to display "Password"
                   const Text(
-                    "Password",
+                    'Password',
                     
       // TextStyle to define text appearance
                     style: TextStyle(
@@ -1001,7 +1001,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Next",
+                      'Next',
       
                       // TextStyle to define text appearance
                       style: TextStyle(
@@ -1062,7 +1062,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   child: const TextButton(
                     onPressed: null, // Set onPressed to null or add your logic inside the GestureDetector
                     child: Text(
-                      "Login",
+                      'Login',
       
       // TextStyle to define text appearance
                       style: TextStyle(

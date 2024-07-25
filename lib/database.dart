@@ -413,13 +413,11 @@ class DatabaseService {
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection('notifications').orderBy('time', descending: true).snapshots().asyncMap((snapshot) async {
-      return snapshot.docs.map((doc) {
+    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection('notifications').orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
       Map<String, dynamic> data = doc.data();
       data['id'] = doc.id; 
       return data;
-      }).toList();
-    });
+      }).toList());
 }
 
 

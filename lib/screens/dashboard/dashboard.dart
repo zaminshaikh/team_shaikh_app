@@ -15,6 +15,8 @@ import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 
 /// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }

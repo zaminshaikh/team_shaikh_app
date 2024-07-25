@@ -1,13 +1,7 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/activity/activity.dart';
-import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 /// A class that provides a custom alert dialog.
 ///   
@@ -52,12 +46,12 @@ class CustomAlertDialog {
               },
               child: Container(
                 width: double.infinity, // This will make the container take up the full width of the AlertDialog
-                padding: EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                padding: const EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
                 decoration: BoxDecoration(
                   color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
                   borderRadius: BorderRadius.circular(20), // This will make the corners rounded
                 ),
-                child: Text(
+                child: const Text(
                   'Continue',
                   textAlign: TextAlign.center, // This will center the text
                 ),

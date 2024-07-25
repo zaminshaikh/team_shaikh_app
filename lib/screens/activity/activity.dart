@@ -167,8 +167,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         }
                       );
                     }
-                    print('Connected users: ${connectedUserNames}');
-                    print('All checked users: ${userCheckStatus}');
+                    print('Connected users: $connectedUserNames');
+                    print('All checked users: $userCheckStatus');
                     return StreamBuilder<List<Map<String, dynamic>>>(
                       stream: _databaseService.getNotifications,
                       builder: (context, notificationsSnapshot) {
@@ -1299,7 +1299,7 @@ class _ActivityPageState extends State<ActivityPage> {
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    DashboardPage(),
+                    const DashboardPage(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) =>
                         child,

@@ -33,7 +33,7 @@ class Wrapper extends StatelessWidget {
             //   log('wrapper.dart: User email is not verified.');
             //   return const CircularProgressIndicator();
             // }
-            return DashboardPage();
+            return const DashboardPage();
           } 
           // Else return login
           log('wrapper.dart: User is not logged in yet.');

@@ -4,17 +4,15 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 class PDFScreen extends StatelessWidget {
   final String path;
 
-  PDFScreen(this.path);
+  const PDFScreen(this.path, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Text('PDF Preview'),
+        title: const Text('PDF Preview'),
       ),
       body: PDFView(
         filePath: path,
       ),
     );
-  }
 }

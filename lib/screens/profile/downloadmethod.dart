@@ -1,8 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:team_shaikh_app/database.dart';
@@ -15,7 +12,7 @@ String documentName = 'TestPdf$clientId.pdf'; // Construct the document name
 
 void downloadToFiles(String documentName) async {
   Directory downloadDir = await getApplicationDocumentsDirectory();
-  var path = "${downloadDir.path}/$documentName";
+  var path = '${downloadDir.path}/$documentName';
   var file = File(path);
   var res = await http.get(Uri.parse('https://source.unsplash.com/random')); 
   await file.writeAsBytes(res.bodyBytes);

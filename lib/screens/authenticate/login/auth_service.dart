@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -61,9 +63,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) {
-	return MaterialApp(
+  Widget build(BuildContext context) => const MaterialApp(
 	  home: DashboardPage(), // Your example page
 	);
-  }
 }

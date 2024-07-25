@@ -8,7 +8,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
-import 'package:team_shaikh_app/main.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -125,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await Navigator.pushAndRemoveUntil(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => OnboardingPage(),
+        pageBuilder: (context, animation1, animation2) => const OnboardingPage(),
         transitionDuration: Duration.zero,
       ),
       (route) => false,
@@ -1682,7 +1681,7 @@ Column _profileForAllUsers() => Column(
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    DashboardPage(),
+                    const DashboardPage(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) =>
                         child,
