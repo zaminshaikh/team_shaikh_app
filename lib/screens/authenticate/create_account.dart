@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -200,7 +202,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 await CustomAlertDialog.showAlertDialog(context, 'Success', 'Email verified successfully.', icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green));
                 if (!mounted) {return;} 
                 await Navigator.pushReplacement(context, PageRouteBuilder(
-                  pageBuilder: (context, animation1, animation2) => DashboardPage(),
+                  pageBuilder: (context, animation1, animation2) => const DashboardPage(),
                   transitionDuration: const Duration(seconds: 0),
                 ));
                 } else {
@@ -286,7 +288,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _updatePasswordSecurityIndicator();
   }
 
-  // TODO: Delete exceptions for Firebase and other errors and replace with boolean error handling
+  
   /// Handles [FirebaseAuthException] and displays an error dialog with the appropriate error message.
   ///
   /// The [context] parameter is the [BuildContext] of the current widget.
@@ -338,13 +340,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
       // Logo and branding
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     AppColors.defaultBlue500, // Start color
-                    const Color.fromARGB(255, 17, 24, 39), // End color
+                    Color.fromARGB(255, 17, 24, 39), // End color
                   ],
                 ),
               ),
@@ -376,7 +378,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       children: [
               // Text widget to display "Create An Account"                
             const Text(
-              "Create An Account",
+              'Create An Account',
       
       // TextStyle to define text appearance
               style: TextStyle(
@@ -409,7 +411,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   Row(
                     children: [
                       const Text(
-                        "Client ID",
+                        'Client ID',
                         
                             // TextStyle to define text appearance
                         style: TextStyle(
@@ -418,14 +420,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           fontFamily: 'Titillium Web'
                           ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       GestureDetector(
                         child: Container(
                           color: Colors.transparent,
-                          child: Row(
+                          child: const Row(
                             children: [
-                              const Text(
-                                "What is my Client ID?",
+                              Text(
+                                'What is my Client ID?',
                                     // TextStyle to define text appearance
                                 style: TextStyle(
                                   fontSize: 16, 
@@ -433,7 +435,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                                   fontFamily: 'Titillium Web'
                                   ),
                               ),
-                              const SizedBox(width: 5),
+                              SizedBox(width: 5),
                               Icon(
                                 Icons.help_outline_rounded, color: AppColors.defaultBlue300, size: 18,
                               ),
@@ -521,7 +523,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       
       // Text widget to display "Email"                
                   const Text(
-                    "Email",
+                    'Email',
                     
       // TextStyle to define text appearance
                     style: TextStyle(
@@ -606,7 +608,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       
       // Text widget to display "Password"
                   const Text(
-                    "Password",
+                    'Password',
                     
       // TextStyle to define text appearance
                     style: TextStyle(
@@ -1036,7 +1038,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Next",
+                      'Next',
       
                       // TextStyle to define text appearance
                       style: TextStyle(
@@ -1097,7 +1099,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   child: const TextButton(
                     onPressed: null, // Set onPressed to null or add your logic inside the GestureDetector
                     child: Text(
-                      "Login",
+                      'Login',
       
       // TextStyle to define text appearance
                       style: TextStyle(

@@ -1,8 +1,9 @@
+// ignore_for_file: library_private_types_in_public_api, unused_element, use_build_context_synchronously
+
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
@@ -61,13 +62,13 @@ class _NotificationPageState extends State<NotificationPage> {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return Center(
           child: Container(
-            padding: EdgeInsets.all(26.0),
-            margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+            padding: const EdgeInsets.all(26.0),
+            margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
             decoration: BoxDecoration(
               color: AppColors.defaultBlue500,
               borderRadius: BorderRadius.circular(15.0),
             ),
-            child: Stack(
+            child: const Stack(
               children: [
                 CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -85,13 +86,13 @@ class _NotificationPageState extends State<NotificationPage> {
           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
             return Center(
               child: Container(
-                padding: EdgeInsets.all(26.0),
-                margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                padding: const EdgeInsets.all(26.0),
+                margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                 decoration: BoxDecoration(
                   color: AppColors.defaultBlue500,
                   borderRadius: BorderRadius.circular(15.0),
                 ),
-                child: Stack(
+                child: const Stack(
                   children: [
                     CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -117,7 +118,7 @@ class _NotificationPageState extends State<NotificationPage> {
                           SvgPicture.asset(
                             'assets/icons/empty_notifications.svg',
                           ),
-                          Text(
+                          const Text(
                             'No notifications.',
                             style: TextStyle(
                               color: Colors.white,
@@ -196,10 +197,17 @@ class _NotificationPageState extends State<NotificationPage> {
                   // Refresh the page
                 });
               },
-              child: Row(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.defaultBlue500,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding to the button
+              ),
+              child: const Row(
                 mainAxisSize: MainAxisSize.min, // Add this
                 children: [
-                  const Icon(Icons.checklist_rounded, color: Colors.white),
+                  Icon(Icons.checklist_rounded, color: Colors.white),
                   Text(
                     ' Mark All As Read',
                     style: TextStyle(
@@ -210,13 +218,6 @@ class _NotificationPageState extends State<NotificationPage> {
                     ),
                   ),
                 ],
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.defaultBlue500,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding to the button
               ),
             ),
           ),
@@ -256,15 +257,15 @@ class _NotificationPageState extends State<NotificationPage> {
     switch (notification['type']) {
       case 'activity':
         title = 'New Activity';
-        route = ActivityPage(); // replace with your actual Activity page widget
+        route = const ActivityPage(); // replace with your actual Activity page widget
         break;
       case 'statement':
         title = 'New Statement';
-        route = ProfilePage(); // replace with your actual Profile page widget
+        route = const ProfilePage(); // replace with your actual Profile page widget
         break;
       default:
         title = 'New Notification';
-        route = NotificationPage(); // replace with your actual Notification page widget
+        route = const NotificationPage(); // replace with your actual Notification page widget
         break;
     }
 
@@ -324,7 +325,7 @@ class _NotificationPageState extends State<NotificationPage> {
                               DatabaseService databaseService = DatabaseService(uid);
                               await databaseService.markAsRead(notification['id']);
                 
-                              Navigator.pushReplacement(context, PageRouteBuilder(
+                              await Navigator.pushReplacement(context, PageRouteBuilder(
                                 pageBuilder: (context, animation1, animation2) => route,
                                 transitionDuration: Duration.zero,
                               ));
@@ -332,7 +333,7 @@ class _NotificationPageState extends State<NotificationPage> {
                               if (e is FirebaseException && e.code == 'not-found') {
                                 log('notification.dart: The document was not found');
                                 log('notification.dart: Notification ID: ${notification['id']}');
-                                log('notification.dart: UID: ${uid}');
+                                log('notification.dart: UID: $uid');
                               } else {
                                 rethrow;
                               }
@@ -409,16 +410,6 @@ class _NotificationPageState extends State<NotificationPage> {
         ],
       ),
     ),
-    // TODO(@zaminshaikh): Implement the settings button (commented out below).
-      // actions: [
-      //   Padding(
-      //     padding: const EdgeInsets.only(right: 10.0),
-      //     child: IconButton(
-      //       icon: const Icon(Icons.settings, color: Colors.white, size: 30.0),
-      //       onPressed: () {},
-      //     )
-      //   ),
-      // ],
-    );
+  );
 
 }

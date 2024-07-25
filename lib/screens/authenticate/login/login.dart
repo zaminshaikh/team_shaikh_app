@@ -1,4 +1,6 @@
 // Importing Flutter Library & Google button Library
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -78,13 +80,13 @@ class _LoginPageState extends State<LoginPage> {
 
           // Logo and branding
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.defaultBlue500, // Start color
-                  const Color.fromARGB(255, 17, 24, 39), // End color
+                  Color.fromARGB(255, 17, 24, 39), // End color
                 ],
               ),
             ),
@@ -279,7 +281,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ForgotPasswordPage()), // Navigate to the Log In page
+                        MaterialPageRoute(builder: (context) => const ForgotPasswordPage()), // Navigate to the Log In page
                       );
                     },
                     child: const TextButton(
@@ -305,10 +307,10 @@ class _LoginPageState extends State<LoginPage> {
             onTap: () async {
               bool success = await signUserIn(context);
               if (success) {
-                Navigator.pushReplacement(
+                await Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => DashboardPage(),
+                    pageBuilder: (context, animation1, animation2) => const DashboardPage(),
                     transitionDuration: Duration.zero,
                   ),
                 );

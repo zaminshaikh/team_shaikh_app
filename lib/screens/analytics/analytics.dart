@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +11,6 @@ import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
-import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 
 class AnalyticsPage extends StatefulWidget {
@@ -28,13 +29,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         log('analytics.dart: User is not logged in');
-        Navigator.pushReplacementNamed(context, '/login');
+        await Navigator.pushReplacementNamed(context, '/login');
       }
     // Fetch CID using async constructor
     DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
     // If there is no matching CID, redirect to login page
     if (service == null) {
-      Navigator.pushReplacementNamed(context, '/login');
+      await Navigator.pushReplacementNamed(context, '/login');
 } else {
       // Otherwise set the database service instance
       _databaseService = service;
@@ -43,11 +44,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
   
   /// Formats the given amount as a currency string.
-  String _currencyFormat(double amount) => NumberFormat.currency(
-    symbol: '\$',
-    decimalDigits: 2,
-    locale: 'en_US',
-  ).format(amount);
 
   String dropdownValue = 'last-year';
 
@@ -58,13 +54,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: Container(
-              padding: EdgeInsets.all(26.0),
-              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              padding: const EdgeInsets.all(26.0),
+              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
               decoration: BoxDecoration(
                 color: AppColors.defaultBlue500,
                 borderRadius: BorderRadius.circular(15.0),
               ),
-              child: Stack(
+              child: const Stack(
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -82,13 +78,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               if (!userSnapshot.hasData || userSnapshot.data == null) {
                 return Center(
                   child: Container(
-                    padding: EdgeInsets.all(26.0),
-                    margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                    padding: const EdgeInsets.all(26.0),
+                    margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                     decoration: BoxDecoration(
                       color: AppColors.defaultBlue500,
                       borderRadius: BorderRadius.circular(15.0),
                     ),
-                    child: Stack(
+                    child: const Stack(
                       children: [
                         CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -106,13 +102,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   if (!connectedUsers.hasData || connectedUsers.data == null) {
                     return Center(
                       child: Container(
-                        padding: EdgeInsets.all(26.0),
-                        margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                        padding: const EdgeInsets.all(26.0),
+                        margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                         decoration: BoxDecoration(
                           color: AppColors.defaultBlue500,
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        child: Stack(
+                        child: const Stack(
                           children: [
                             CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -129,13 +125,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
                         return Center(
                           child: Container(
-                            padding: EdgeInsets.all(26.0),
-                            margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                            padding: const EdgeInsets.all(26.0),
+                            margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                             decoration: BoxDecoration(
                               color: AppColors.defaultBlue500,
                               borderRadius: BorderRadius.circular(15.0),
                             ),
-                            child: Stack(
+                            child: const Stack(
                               children: [
                                 CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -158,21 +154,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Scaffold buildAnalyticsPage(AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {
-      'first': firstName,
-      'last': lastName,
-      'company': companyName
-    };
-
     // Total assets of one user
     double totalUserAssets = 0.00,
         totalAGQ = 0.00,
         totalAK1 = 0.00,
         totalAssets = 0.00;
-    double latestIncome = 0.00;
 
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
@@ -184,7 +170,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = double.parse(asset['ytd'].toString());
           totalUserAssets += asset['total'];
           totalAssets += asset['total'];
       }
@@ -284,22 +269,20 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    transitionDuration: Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) {
-                      return SlideTransition(
+                    transitionDuration: const Duration(milliseconds: 450),
+                    pageBuilder: (_, __, ___) => const NotificationPage(),
+                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
                         position: Tween<Offset>(
-                          begin: Offset(1.0, 0.0),
-                          end: Offset(0.0, 0.0),
+                          begin: const Offset(1.0, 0.0),
+                          end: const Offset(0.0, 0.0),
                         ).animate(animation),
                         child: child,
-                      );
-                    },
+                      ),
                   ),
                 );
               },
               child: Container(
-                color: Color.fromRGBO(239, 232, 232, 0),
+                color: const Color.fromRGBO(239, 232, 232, 0),
                 padding: const EdgeInsets.all(10.0),
                 child: ClipRect(
                   child: Stack(
@@ -318,7 +301,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                             child: Center(
                               child: SvgPicture.asset(
                                 'assets/icons/bell.svg',
-                                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                                 height: 32,
                               ),
                             ),
@@ -329,16 +312,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         child: unreadNotificationsCount > 0
                             ? Container(
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF267DB5),
+                                  color: const Color(0xFF267DB5),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                constraints: BoxConstraints(
+                                constraints: const BoxConstraints(
                                   minWidth: 18,
                                   minHeight: 18,
                                 ),
                                 child: Text(
                                   '$unreadNotificationsCount',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontFamily: 'Titillium Web',
@@ -370,7 +353,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }),
           child: Container(
             width: double.infinity,
-            color: Color.fromRGBO(94, 181, 171, 0),
+            color: const Color.fromRGBO(94, 181, 171, 0),
             child: Container(
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
@@ -381,9 +364,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 borderRadius: BorderRadius.circular(20.0),
               ),
               child: Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Text(title,
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontFamily: 'Titillium Web')),
@@ -505,12 +488,12 @@ Widget bottomTitlesWidget(double value, TitleMeta meta) {
 }
 
 FlTitlesData get titlesData => FlTitlesData(
-  topTitles: AxisTitles(
+  topTitles: const AxisTitles(
     sideTitles: SideTitles(
       showTitles: false
       )
     ),
-  rightTitles: AxisTitles(
+  rightTitles: const AxisTitles(
     sideTitles: SideTitles(
       showTitles: false
       )
@@ -559,6 +542,7 @@ String getDropdownValueName(String dropDownValue) {
   }
 
 
+    // ignore: unused_element
     Widget _buildLineChartSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Padding(
       padding: const EdgeInsets.only(bottom: 25),
       child: Container(
@@ -577,7 +561,7 @@ String getDropdownValueName(String dropDownValue) {
               padding: const EdgeInsets.all(5.0),
               child: Row(
                 children: [
-                  Text(
+                  const Text(
                     'Asset Timeline',
                     style: TextStyle(
                       fontSize: 20,
@@ -587,7 +571,7 @@ String getDropdownValueName(String dropDownValue) {
                     ),
                   ),
 
-                  Spacer(),
+                  const Spacer(),
 
                   GestureDetector(
                     onTap: () {
@@ -595,49 +579,47 @@ String getDropdownValueName(String dropDownValue) {
                         context: context,
                         backgroundColor: AppColors.defaultBlueGray800,
         builder: (BuildContext context) => SingleChildScrollView(
-          child: Container(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20.0),
-                topRight: Radius.circular(20.0),
-              ),
-              child: Container(
-                color: AppColors.defaultBlueGray800,
-                child: Wrap(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Column(
-                        children: [
-                          const SizedBox(
-                              height: 20.0), // Add some space at the top
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20.0, 0, 0, 0),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Choose Time Period',
-                                style: TextStyle(
-                                    fontSize: 22.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontFamily: 'Titillium Web'),
-                              ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+            ),
+            child: Container(
+              color: AppColors.defaultBlueGray800,
+              child: Wrap(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                            height: 20.0), // Add some space at the top
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Choose Time Period',
+                              style: TextStyle(
+                                  fontSize: 22.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontFamily: 'Titillium Web'),
                             ),
                           ),
-                          const SizedBox(height: 20.0), // Add some space between the title and the options
-                          _buildOption(context, 'Last Week', 'last-week'),
-                          _buildOption(context, 'Last Month', 'last-month'),
-                          _buildOption(context, 'Last 6 Months', 'last-6-months'),
-                          _buildOption(context, 'Last Year', 'last-year'),
-                          _buildOption(context, 'Customize Time Period', 'custom-time-period'),
-                          const SizedBox(
-                              height: 20.0), // Add some space at the bottom
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 20.0), // Add some space between the title and the options
+                        _buildOption(context, 'Last Week', 'last-week'),
+                        _buildOption(context, 'Last Month', 'last-month'),
+                        _buildOption(context, 'Last 6 Months', 'last-6-months'),
+                        _buildOption(context, 'Last Year', 'last-year'),
+                        _buildOption(context, 'Customize Time Period', 'custom-time-period'),
+                        const SizedBox(
+                            height: 20.0), // Add some space at the bottom
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -660,7 +642,7 @@ String getDropdownValueName(String dropDownValue) {
                           children: [
                             Text(
                               getDropdownValueName(dropdownValue),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -692,18 +674,16 @@ String getDropdownValueName(String dropDownValue) {
                   AspectRatio(
                     aspectRatio: 1,
                     child: Padding(
-                      padding: EdgeInsets.only( right: 10),
+                      padding: const EdgeInsets.only( right: 10),
                       child: LineChart(
                         LineChartData(
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
-                            getDrawingHorizontalLine: (value) {
-                              return FlLine(
-                                color: const Color.fromARGB(255, 102, 102, 102),
+                            getDrawingHorizontalLine: (value) => const FlLine(
+                                color: Color.fromARGB(255, 102, 102, 102),
                                 strokeWidth: 0.5,
-                              );
-                            },
+                              ),
                           ),
                           titlesData: titlesData,
 
@@ -717,12 +697,12 @@ String getDropdownValueName(String dropDownValue) {
                           lineBarsData: [
                             LineChartBarData(
                               spots: [
-                                FlSpot(0, 2000),
-                                FlSpot(1, 6000),
-                                FlSpot(2, 4000),
-                                FlSpot(3, 5000),
-                                FlSpot(4, 4000),
-                                FlSpot(5, 3000),
+                                const FlSpot(0, 2000),
+                                const FlSpot(1, 6000),
+                                const FlSpot(2, 4000),
+                                const FlSpot(3, 5000),
+                                const FlSpot(4, 4000),
+                                const FlSpot(5, 3000),
                               ],
                               isCurved: true,
                               color: AppColors.defaultBlue500,
@@ -730,14 +710,12 @@ String getDropdownValueName(String dropDownValue) {
                               isStrokeCapRound: true,
                               dotData: FlDotData(
                                 show: true,
-                                getDotPainter: (spot, percent, barData, index) {
-                                  return FlDotCirclePainter(
+                                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
                                     radius: 4,
                                     color: AppColors.defaultBlueGray500,
                                     strokeWidth: 0,
                                     strokeColor: Colors.transparent,
-                                  );
-                                },
+                                  ),
                               ),
                               belowBarData: BarAreaData(
                                 gradient: LinearGradient(
@@ -774,8 +752,8 @@ String getDropdownValueName(String dropDownValue) {
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
-                  SizedBox(width: 20),
-                  Text(
+                  const SizedBox(width: 20),
+                  const Text(
                     'Total assets timeline',
                     style: TextStyle(
                       fontSize: 18,
@@ -927,13 +905,13 @@ String getDropdownValueName(String dropDownValue) {
               children: [
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.circle,
                       size: 20,
                       color: Color.fromARGB(255, 12, 94, 175),
                     ),
-                    SizedBox(width: 10),
-                    Text(
+                    const SizedBox(width: 10),
+                    const Text(
                       'AGQ Fund',
                       style: TextStyle(
                         fontSize: 16,
@@ -942,29 +920,29 @@ String getDropdownValueName(String dropDownValue) {
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    Spacer(), // This will push the following widgets to the right
+                    const Spacer(), // This will push the following widgets to the right
                     Text(
                       '${percentageAGQ.toStringAsFixed(1)}%',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 15,
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.circle,
                       size: 20,
                       color: Color.fromARGB(255, 49, 153, 221),
                     ),
-                    SizedBox(width: 10),
-                    Text(
+                    const SizedBox(width: 10),
+                    const Text(
                       'AK1 Fund',
                       style: TextStyle(
                         fontSize: 16,
@@ -973,17 +951,17 @@ String getDropdownValueName(String dropDownValue) {
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    Spacer(), // This will push the following widgets to the right
+                    const Spacer(), // This will push the following widgets to the right
                     Text(
                       '${percentageAK1.toStringAsFixed(1)}%',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 15,
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                   ],
                 ),
               ],
@@ -1020,7 +998,7 @@ String getDropdownValueName(String dropDownValue) {
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    DashboardPage(),
+                    const DashboardPage(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) =>
                         child,
@@ -1028,7 +1006,7 @@ String getDropdownValueName(String dropDownValue) {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/dashboard_hollowed.svg',
@@ -1050,7 +1028,7 @@ String getDropdownValueName(String dropDownValue) {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/analytics_filled.svg',
@@ -1072,7 +1050,7 @@ String getDropdownValueName(String dropDownValue) {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/activity_hollowed.svg',
@@ -1094,7 +1072,7 @@ String getDropdownValueName(String dropDownValue) {
             );
           },
           child: Container(
-            color: Color.fromRGBO(239, 232, 232, 0),
+            color: const Color.fromRGBO(239, 232, 232, 0),
             padding: const EdgeInsets.all(20.0),
             child: SvgPicture.asset(
               'assets/icons/profile_hollowed.svg',

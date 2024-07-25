@@ -106,27 +106,20 @@ class DatabaseService {
       if (docSnap.exists) {
         return docRef.update({'isRead': true});
       } else {
-        print('Document does not exist under this cid');
         // Check if service.cid is null before calling fetchConnectedCids
         if (service.cid == null) {
-          print('service.cid is null');
           return;
         }
         // Fetch the connected users' cids
         List<String> connectedCids = await fetchConnectedCids(service.cid!);
         for (String cid in connectedCids) {
-          print ('connectedCids: $connectedCids');
           docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
-          print('docref: $docRef');
           docSnap = await docRef.get();
           if (docSnap.exists) {
-            print('Document found under cid: $cid');
             return docRef.update({'isRead': true});
           } else {
-            print('Document not found under cid: $cid');
           }
         }
-        print('Document does not exist under any connected cid');
       }
     }
   }
@@ -134,8 +127,6 @@ class DatabaseService {
   Future<void> markAllAsRead() async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null && service.cid != null) {
-      print(service.cid);  
-      print('cid: ${service.cid}');
       await _markNotificationsAsRead(service.cid!);
       List<String> connectedCids = await fetchConnectedCids(uid);
       for (String cid in connectedCids) {
@@ -414,13 +405,11 @@ class DatabaseService {
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async {
-      return snapshot.docs.map((doc) {
+    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
       Map<String, dynamic> data = doc.data();
       data['id'] = doc.id; 
       return data;
-      }).toList();
-    });
+      }).toList());
 }
 
 

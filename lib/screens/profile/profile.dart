@@ -2,19 +2,16 @@
 
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
-import 'package:team_shaikh_app/main.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -43,7 +40,7 @@ class PdfFileWithCid {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  Future<void> _initializeWidgetFuture = Future.value();
+  final Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
   DatabaseService? _databaseService;
@@ -91,13 +88,13 @@ class _ProfilePageState extends State<ProfilePage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: Container(
-              padding: EdgeInsets.all(26.0),
-              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              padding: const EdgeInsets.all(26.0),
+              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
               decoration: BoxDecoration(
                 color: AppColors.defaultBlue500,
                 borderRadius: BorderRadius.circular(15.0),
               ),
-              child: Stack(
+              child: const Stack(
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -114,13 +111,13 @@ class _ProfilePageState extends State<ProfilePage> {
             if (!userSnapshot.hasData || userSnapshot.data == null) {
               return Center(
                 child: Container(
-                  padding: EdgeInsets.all(26.0),
-                  margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                  padding: const EdgeInsets.all(26.0),
+                  margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                   decoration: BoxDecoration(
                     color: AppColors.defaultBlue500,
                     borderRadius: BorderRadius.circular(15.0),
                   ),
-                  child: Stack(
+                  child: const Stack(
                     children: [
                       CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -147,13 +144,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
                       return Center(
                         child: Container(
-                          padding: EdgeInsets.all(26.0),
-                          margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                          padding: const EdgeInsets.all(26.0),
+                          margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                           decoration: BoxDecoration(
                             color: AppColors.defaultBlue500,
                             borderRadius: BorderRadius.circular(15.0),
                           ),
-                          child: Stack(
+                          child: const Stack(
                             children: [
                               CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -196,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await Navigator.pushAndRemoveUntil(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => OnboardingPage(),
+        pageBuilder: (context, animation1, animation2) => const OnboardingPage(),
         transitionDuration: Duration.zero,
       ),
       (route) => false,
@@ -368,7 +365,6 @@ Future<void> shareFile(context, clientId, documentName) async {
     String filePath = await downloadFile(context, clientId, documentName);
 
     // Debugging: Print the filePath
-    print('Downloaded file path: $filePath');
 
     // Check if the filePath is not empty
     if (filePath.isNotEmpty) {
@@ -378,13 +374,10 @@ Future<void> shareFile(context, clientId, documentName) async {
         // Use Share.shareFiles to share the file
         await Share.shareFiles([filePath]);
       } else {
-        print('Share failed: File does not exist');
       }
     } else {
-      print('Share failed: File path is empty');
     }
   } catch (e) {
-    print('Share error: $e');
   }
 }
 
@@ -430,7 +423,6 @@ Future<void> shareFile(context, clientId, documentName) async {
       Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
       List<String> connectedUsers = info['connectedUsers'].cast<String>();
       connectedUserCids = connectedUsers;
-      print('Connected users: $connectedUsers');
       return connectedUsers;
     } else {
       return [];
@@ -457,15 +449,12 @@ Future<void> shareFile(context, clientId, documentName) async {
     List<PdfFileWithCid> allConnectedFiles = [];
 
     for (String folder in connectedUserFolders) {
-      print('Fetching PDF files for folder: $folder');
       final ListResult result = await storage.ref('testUsersStatements/$folder').listAll();
       final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
-      print('Found ${pdfFilesInFolder.length} PDF files in folder: $folder');
       
       // Convert List<Reference> to List<PdfFileWithCid>
       final List<PdfFileWithCid> pdfFilesWithCid = pdfFilesInFolder.map((file) => PdfFileWithCid(file, folder)).toList();
       allConnectedFiles.addAll(pdfFilesWithCid);
-      print(allConnectedFiles);
     }
 
     setState(() {
@@ -476,7 +465,6 @@ Future<void> shareFile(context, clientId, documentName) async {
       final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
       
       pdfFilesConnectedUsers.addAll(newFiles);
-      print('Total PDF files found: ${pdfFilesConnectedUsers.length}');
     });
   }
 
@@ -949,16 +937,12 @@ Column _profileForAllUsers() => Column(
             onPressed: () async {
               setState(() {
                 _selectedButton = 'statementsAndDocuments';
-                print('Button pressed: statementsAndDocuments selected');
               });
                 
-                print('Calling listPDFFiles()');
                 await listPDFFiles();
                 
-                print('Calling fetchConnectedCids() with cid: ${_databaseService?.cid ?? '$cid'}');
                 await fetchConnectedCids(_databaseService?.cid ?? '$cid');
                 
-                print('Calling listPDFFilesConnectedUsers()');
                 await listPDFFilesConnectedUsers();
             },
           ),
@@ -1588,7 +1572,6 @@ Column _profileForAllUsers() => Column(
                                 onChanged: (bool? value) {
                                   setState(() {
                                     statementsSwitchValue = value ?? false;
-                                    print('$statementsSwitchValue');
                                   });
                                 },
                               ),
@@ -1852,7 +1835,7 @@ Column _profileForAllUsers() => Column(
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    DashboardPage(),
+                    const DashboardPage(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) =>
                         child,
@@ -1981,159 +1964,157 @@ Widget _buildClientNameAndID(String name, String clientId) {
 // This is the Statements and Documents section
   Padding _statementsAndDocuments() => Padding(
         padding: const EdgeInsets.fromLTRB(10, 20, 10, 120),
-        child: Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                fit: FlexFit.loose,
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(), // Disable scrolling
-                  itemCount: pdfFiles.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          children: [
-                            Column(
-                              children: [
-                                if (index != 0) // Only show the divider if it's not the first file
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                    child: Divider(
-                                      color: Colors.white,
-                                      thickness: 0.2,
-                                      height: 10,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              fit: FlexFit.loose,
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+                itemCount: pdfFiles.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Column(
+                            children: [
+                              if (index != 0) // Only show the divider if it's not the first file
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                  child: Divider(
+                                    color: Colors.white,
+                                    thickness: 0.2,
+                                    height: 10,
+                                  ),
+                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ListTile(
+                                      splashColor: Colors.transparent,
+                                      title: Text(
+                                        pdfFiles[index].name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Titillium Web',
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                        String filePath = await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => PDFScreen(filePath),
+                                          ),
+                                        );
+                                      },
+                                      trailing: IconButton(
+                                        icon: SvgPicture.asset(
+                                          'assets/icons/download.svg',
+                                          width: 24,
+                                          height: 24,
+                                          color: AppColors.defaultBlueGray300,
+                                        ),
+                                        onPressed: () {
+                                          shareFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                        },
+                                      ),
                                     ),
                                   ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ListTile(
-                                        splashColor: Colors.transparent,
-                                        title: Text(
-                                          pdfFiles[index].name,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontFamily: 'Titillium Web',
-                                          ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Flexible(
+              fit: FlexFit.loose,
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+                itemCount: pdfFilesConnectedUsers.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Column(
+                            children: [
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                  child: Divider(
+                                    color: Colors.white,
+                                    thickness: 0.2,
+                                    height: 10,
+                                  ),
+                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ListTile(
+                                      splashColor: Colors.transparent,
+                                      title: Text(
+                                        pdfFilesConnectedUsers[index].file.name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Titillium Web',
                                         ),
-                                        onTap: () async {
-                                          await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
-                                          String filePath = await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                      ),
+                                      onTap: () async {
+                                        String filePath = '';
+                                        filePath = await downloadFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
                                           await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) => PDFScreen(filePath),
                                             ),
                                           );
-                                        },
-                                        trailing: IconButton(
-                                          icon: SvgPicture.asset(
-                                            'assets/icons/download.svg',
-                                            width: 24,
-                                            height: 24,
-                                            color: AppColors.defaultBlueGray300,
-                                          ),
-                                          onPressed: () {
-                                            shareFile(context, _databaseService?.cid, pdfFiles[index].name);
-                                          },
+                                      },
+                                      trailing: IconButton(
+                                        icon: SvgPicture.asset(
+                                          'assets/icons/download.svg',
+                                          width: 24,
+                                          height: 24,
+                                          color: AppColors.defaultBlueGray300,
                                         ),
+                                        onPressed: () {
+                                          shareFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
+                                        },
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
-              Flexible(
-                fit: FlexFit.loose,
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(), // Disable scrolling
-                  itemCount: pdfFilesConnectedUsers.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          children: [
-                            Column(
-                              children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                    child: Divider(
-                                      color: Colors.white,
-                                      thickness: 0.2,
-                                      height: 10,
-                                    ),
-                                  ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ListTile(
-                                        splashColor: Colors.transparent,
-                                        title: Text(
-                                          pdfFilesConnectedUsers[index].file.name,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontFamily: 'Titillium Web',
-                                          ),
-                                        ),
-                                        onTap: () async {
-                                          String filePath = '';
-                                          filePath = await downloadFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
-                                            await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => PDFScreen(filePath),
-                                              ),
-                                            );
-                                        },
-                                        trailing: IconButton(
-                                          icon: SvgPicture.asset(
-                                            'assets/icons/download.svg',
-                                            width: 24,
-                                            height: 24,
-                                            color: AppColors.defaultBlueGray300,
-                                          ),
-                                          onPressed: () {
-                                            shareFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
-                                          },
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
-
-
-            ],
-          ),
+            )
+        
+        
+          ],
         ),
       );
 

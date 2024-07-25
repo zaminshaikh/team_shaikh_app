@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, library_private_types_in_public_api
+
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -142,13 +144,13 @@ class _ActivityPageState extends State<ActivityPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: Container(
-              padding: EdgeInsets.all(26.0),
-              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              padding: const EdgeInsets.all(26.0),
+              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
               decoration: BoxDecoration(
                 color: AppColors.defaultBlue500,
                 borderRadius: BorderRadius.circular(15.0),
               ),
-              child: Stack(
+              child: const Stack(
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -165,13 +167,13 @@ class _ActivityPageState extends State<ActivityPage> {
             if (!activitiesSnapshot.hasData || activitiesSnapshot.data == null) {
               return  Center(
                 child: Container(
-                  padding: EdgeInsets.all(26.0),
-                  margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                  padding: const EdgeInsets.all(26.0),
+                  margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                   decoration: BoxDecoration(
                     color: AppColors.defaultBlue500,
                     borderRadius: BorderRadius.circular(15.0),
                   ),
-                  child: Stack(
+                  child: const Stack(
                     children: [
                       CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -188,13 +190,13 @@ class _ActivityPageState extends State<ActivityPage> {
                 if (!userSnapshot.hasData || userSnapshot.data == null) {
                   return Center(
                     child: Container(
-                      padding: EdgeInsets.all(26.0),
-                      margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                      padding: const EdgeInsets.all(26.0),
+                      margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                       decoration: BoxDecoration(
                         color: AppColors.defaultBlue500,
                         borderRadius: BorderRadius.circular(15.0),
                       ),
-                      child: Stack(
+                      child: const Stack(
                         children: [
                           CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -215,13 +217,13 @@ class _ActivityPageState extends State<ActivityPage> {
                           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
                             return  Center(
                               child: Container(
-                                padding: EdgeInsets.all(26.0),
-                                margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                                padding: const EdgeInsets.all(26.0),
+                                margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                                 decoration: BoxDecoration(
                                   color: AppColors.defaultBlue500,
                                   borderRadius: BorderRadius.circular(15.0),
                                 ),
-                                child: Stack(
+                                child: const Stack(
                                   children: [
                                     CircularProgressIndicator(
                                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -238,21 +240,21 @@ class _ActivityPageState extends State<ActivityPage> {
                         }
                       );
                     }
-                    log('activity.dart: Connected users: ${connectedUserNames}');
-                    log('activity.dart: All checked users: ${userCheckStatus}');
+                    log('activity.dart: Connected users: $connectedUserNames');
+                    log('activity.dart: All checked users: $userCheckStatus');
                     return StreamBuilder<List<Map<String, dynamic>>>(
                       stream: _databaseService!.getNotifications,
                       builder: (context, notificationsSnapshot) {
                         if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
                           return Center(
                             child: Container(
-                              padding: EdgeInsets.all(26.0),
-                              margin: EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                              padding: const EdgeInsets.all(26.0),
+                              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
                               decoration: BoxDecoration(
                                 color: AppColors.defaultBlue500,
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
-                              child: Stack(
+                              child: const Stack(
                                 children: [
                                   CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -656,15 +658,13 @@ class _ActivityPageState extends State<ActivityPage> {
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 450),
                     pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) {
-                      return SlideTransition(
+                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
                         position: Tween<Offset>(
                           begin: const Offset(1.0, 0.0),
                           end: const Offset(0.0, 0.0),
                         ).animate(animation),
                         child: child,
-                      );
-                    },
+                      ),
                   ),
                 );
               },
@@ -778,11 +778,9 @@ class _ActivityPageState extends State<ActivityPage> {
         return _buildActivity(activity, !isLastActivityForTheDay);
       }
     } else {
-      print('Recipient not found: ${activity['recipient']}');
       if (!allRecipients.contains(activity['recipient'])) {
         allRecipients.add(activity['recipient']);
       }
-      print(allRecipients);
       return _buildActivity(activity, !isLastActivityForTheDay);
     }
   } 
@@ -1385,7 +1383,7 @@ class _ActivityPageState extends State<ActivityPage> {
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    DashboardPage(),
+                    const DashboardPage(),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) =>
                         child,
@@ -1508,8 +1506,7 @@ class _ActivityPageState extends State<ActivityPage> {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) {
-      return GestureDetector(
+    builder: (context) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: Container(
           color: const Color.fromRGBO(0, 0, 0, 0.001),
@@ -1519,8 +1516,7 @@ class _ActivityPageState extends State<ActivityPage> {
               initialChildSize: 0.8,
               minChildSize: 0.8,
               maxChildSize: 0.8,
-              builder: (_, controller) {
-                return Container(
+              builder: (_, controller) => Container(
                   decoration: const BoxDecoration(
                     color: AppColors.defaultBlueGray800,
                     borderRadius: BorderRadius.only(
@@ -1790,13 +1786,11 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ],
                   ),
-                );
-              },
+                ),
             ),
           ),
         ),
-      );
-    },
+      ),
   );
 
 }
@@ -1836,8 +1830,7 @@ class _ActivityPageState extends State<ActivityPage> {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) {
-      return GestureDetector(
+    builder: (context) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: Container(
           color: const Color.fromRGBO(0, 0, 0, 0.001),
@@ -1847,8 +1840,7 @@ class _ActivityPageState extends State<ActivityPage> {
               initialChildSize: 0.9,
               minChildSize: 0.8,
               maxChildSize: 0.9,
-              builder: (_, controller) {
-                return Container(
+              builder: (_, controller) => Container(
                   decoration: const BoxDecoration(
                     color: AppColors.defaultBlueGray800,
                     borderRadius: BorderRadius.only(
@@ -2101,8 +2093,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                               userCheckStatus[recipient] = false; // or true, depending on your default value
                                             }
                                             return StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) {
-                                                return CheckboxListTile(
+                                              builder: (BuildContext context, StateSetter setState) => CheckboxListTile(
                                                   title: Text(
                                                     recipient,
                                                     style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -2115,8 +2106,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                     });
                                                     // Handle the change event here
                                                   },
-                                                );
-                                              },
+                                                ),
                                             );
                                           }).toList(),
                                         )
@@ -2209,13 +2199,11 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ],
                   ),
-                );
-              },
+                ),
             ),
           ),
         ),
-      );
-    },
+      ),
   );
 
 }
@@ -2313,8 +2301,7 @@ class _ActivityPageState extends State<ActivityPage> {
       );
       
     // Helper method to build fund buttons
-    Widget _buildFundButton(String fundName) {
-      return ButtonTheme(
+    Widget _buildFundButton(String fundName) => ButtonTheme(
         minWidth: 0, // Min width set to 0
         padding: EdgeInsets.zero, // Remove padding
         child: Container(
@@ -2334,11 +2321,9 @@ class _ActivityPageState extends State<ActivityPage> {
           ),
         ),
       );
-    }
 
     // Helper method to build activity type buttons
-    Widget _buildActivityTypeButton(String activityType) {
-      return ButtonTheme(
+    Widget _buildActivityTypeButton(String activityType) => ButtonTheme(
         minWidth: 0, // Min width set to 0
         padding: EdgeInsets.zero, // Remove padding
         child: Container(
@@ -2358,10 +2343,8 @@ class _ActivityPageState extends State<ActivityPage> {
           ),
         ),
       );
-    }
 
-  Widget _buildNoActivityMessage() {
-    return const Padding(
+  Widget _buildNoActivityMessage() => const Padding(
       padding: EdgeInsets.all(30.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -2385,7 +2368,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ],
       ),
     );
-  }
 
   Widget _buildSelectedOptionsDisplay() {
     String getButtonText(DateTime startDate, DateTime endDate) {
@@ -2512,14 +2494,12 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   Expanded(
                   child: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
+                      shaderCallback: (Rect bounds) => const LinearGradient(
                           colors: [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
                           stops: [0.0, 0.1, 0.9, 1.0],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
-                        ).createShader(bounds);
-                      },
+                        ).createShader(bounds),
                       blendMode: BlendMode.dstIn,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,

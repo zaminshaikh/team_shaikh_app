@@ -1,6 +1,7 @@
 // Import Flutter Library
+// ignore_for_file: library_private_types_in_public_api, non_constant_identifier_names, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
@@ -23,6 +24,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
 // Making a build method to contain the UI for the Forgot Password page
   @override
+  // ignore: prefer_expression_function_bodies
   Widget build(BuildContext context) {
 
 // Making a Scaffold Widget containing the components of the Forgot Password page
@@ -42,13 +44,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       
           // Logo and branding
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.defaultBlue500, // Start color
-                  const Color.fromARGB(255, 17, 24, 39), // End color
+                  Color.fromARGB(255, 17, 24, 39), // End color
                 ],
               ),
             ),
@@ -79,10 +81,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Column(
+                  const Column(
                     children: [
                   
-                      const Text(
+                      Text(
                         'Forgot Password?',
                             // TextStyle to define text appearance
                         style: TextStyle(
@@ -215,10 +217,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         log('forgot_password.dart: Password reset email sent successfully!');
                         
                         // Show a dialog to inform the user
-                        showDialog(
+                        await showDialog(
                           context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
+                          builder: (BuildContext context) => AlertDialog(
                               title: const Text('Success'),
                               content: const Text('Password reset email sent successfully!'),
                               actions: [
@@ -229,16 +230,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                       context,
                                       PageRouteBuilder(
                                         pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          return child;
-                                        },
+                                        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                                       ),
                                     );                              },
                                   child: const Text('OK'),
                                 ),
                               ],
-                            );
-                          },
+                            ),
                         );
                         
                       } catch (e) {
@@ -246,10 +244,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         log('forgot_password.dart: Error sending password reset email: $e');
                         
                         // Show an error dialog
-                        showDialog(
+                        await showDialog(
                           context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
+                          builder: (BuildContext context) => AlertDialog(
                               title: const Text('Error'),
                               content: const Text('Failed to send password reset email. Please try again.'),
                               actions: [
@@ -260,8 +257,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                   child: const Text('OK'),
                                 ),
                               ],
-                            );
-                          },
+                            ),
                         );
                       }
                     },

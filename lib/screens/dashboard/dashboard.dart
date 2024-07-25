@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, deprecated_member_use
 import 'dart:developer';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +16,8 @@ import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 
 /// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }
@@ -939,6 +941,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       );
 
+  // ignore: unused_element
   Widget _buildConnectedUserBreakdownSection(
       Map<String, String> userName,
       double totalUserAssets,

@@ -1,6 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart'; // Adjust the import path as necessary
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:local_auth/local_auth.dart';
@@ -8,6 +8,8 @@ import 'package:local_auth/local_auth.dart';
 
 
 class OnboardingPage extends StatefulWidget {
+  const OnboardingPage({super.key});
+
   @override
   _OnboardingPageState createState() => _OnboardingPageState();
 }
@@ -55,8 +57,7 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
 
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(left: 40, right: 40),
         child: Center( // This centers the content horizontally.
@@ -76,21 +77,21 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text('Welcome to Team Shaikh!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                    Text('Please log in or create a new account to continue.', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300)),
-                    SizedBox(height: 30),
+                    const Text('Welcome to Team Shaikh!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    const Text('Please log in or create a new account to continue.', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300)),
+                    const SizedBox(height: 30),
                     GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => LoginPage()), // Navigate to the Log In page
+                            MaterialPageRoute(builder: (context) => const LoginPage()), // Navigate to the Log In page
                           );
                         },
                         child: Container(
                           height: 55,
                           decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 7, 48, 89),
+                            color: const Color.fromARGB(255, 7, 48, 89),
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: const Center(
@@ -107,12 +108,12 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
                         ),
                       ),
 
-                    SizedBox(height: 10), // Provides spacing between the buttons
+                    const SizedBox(height: 10), // Provides spacing between the buttons
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => CreateAccountPage()), // Navigate to the Sign Up page
+                          MaterialPageRoute(builder: (context) => const CreateAccountPage()), // Navigate to the Sign Up page
                         );
                       },
                         child: Container(
@@ -142,5 +143,4 @@ class _OnboardingPageState extends State<OnboardingPage> with TickerProviderStat
         ),
       ),
     );
-  }
 }
