@@ -10,6 +10,7 @@ import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/auth_service.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/wrapper.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:local_auth/local_auth.dart';
@@ -30,6 +31,8 @@ class LoginPage extends StatefulWidget {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  String? email = '';
+
 
 // State class for the LoginPage
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
@@ -47,16 +50,26 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     void initState() {
       super.initState();
       print('Show Alert: $showAlert');
-      if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-        _authenticate(context);
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (previousUserLoggedIn) {
+          emailController.text = email!;
+          User? user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            _authenticate(context);
+          }
+          print(previousUserLoggedIn);
+        }
+
+        if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+          _authenticate(context);
+        }
+      });
     }
+
 
     @override
     void dispose() {
       WidgetsBinding.instance.removeObserver(this);
-      emailController.dispose();
-      passwordController.dispose();
       super.dispose();
     }
 
@@ -113,8 +126,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     }
 
     if (authenticated) {
-      // Handle successful authentication
-      await signUserIn(context);
       // ignore: unawaited_futures
         Navigator.pushReplacement(
           context,

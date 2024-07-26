@@ -13,6 +13,11 @@ class Wrapper extends StatefulWidget {
   _WrapperState createState() => _WrapperState();
 }
 
+  final isLoggedIn = false;
+
+
+bool previousUserLoggedIn = false;
+
 class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
   bool _hasNavigatedToFaceIdPage = false;
 
@@ -60,10 +65,10 @@ class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
   
   bool _isUserLoggedIn() {
     final user = FirebaseAuth.instance.currentUser;
-    final isLoggedIn = user != null;
     print('WrapperState: User is ${isLoggedIn ? "logged in" : "not logged in"}');
     return isLoggedIn;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +83,11 @@ class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
             return Text('Error: ${snapshot.error}');
           } else if (snapshot.hasData) {
             final user = snapshot.data as User;
-            return const DashboardPage();
+            previousUserLoggedIn = true;
+            log('wrapper.dart: User is logged in as ${user.email}');
+            email = user.email;
+
+            return const LoginPage();
           } else {
             log('wrapper.dart: User is not logged in yet.');
             return const OnboardingPage();
