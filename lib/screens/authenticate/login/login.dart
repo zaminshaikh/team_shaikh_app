@@ -7,16 +7,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/auth_service.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:team_shaikh_app/services/google_auth_service.dart';
 
 
 // Creating a stateful widget for the Login page
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  final bool showAlert;
+
+  const LoginPage({Key? key, this.showAlert = false}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -29,6 +33,7 @@ class LoginPage extends StatefulWidget {
 
 // State class for the LoginPage
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
+    bool _isDialogShown = false;
 
   // Boolean variable to set password visibility to hidden
   bool hidePassword = true;
@@ -37,44 +42,54 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   final LocalAuthentication auth = LocalAuthentication();
   
-  // Sign user in method
-  Future<bool> signUserIn(context) async {
-    log('login.dart: Attempting to sign user in...'); // Debugging output
-    try {
-      log('login.dart: Calling FirebaseAuth to sign in with email and password...'); // Debugging output
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
-      log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
-      return true;
-    } on FirebaseAuthException catch (e) {
-      log('login.dart: Caught FirebaseAuthException: $e'); // Debugging output
-      String errorMessage = '';
-      if (e.code == 'user-not-found') {
-        errorMessage = 'Email not found. Please check your email or sign up for a new account.';
-        log('login.dart: Error: $errorMessage'); // Debugging output
-      } else {
-        errorMessage = 'Error signing in. Please check your email and password. $e';
-        log('login.dart: Error: $errorMessage'); // Debugging output
-      }
-      log('login.dart: Showing error dialog...'); // Debugging output
-      await CustomAlertDialog.showAlertDialog(context, 'Error logging in', errorMessage);
-      log('login.dart: Error dialog shown, returning false...'); // Debugging output
-      return false;
-    } catch (e) {
-      log('login.dart: An unexpected error occurred: $e'); // Debugging output for any other exceptions
-      return false;
-    }
-  }
 
     @override
     void initState() {
       super.initState();
-      WidgetsBinding.instance.addObserver(this);
+      print('Show Alert: $showAlert');
       if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
         _authenticate(context);
+      }
+    }
+
+      @override
+      void dispose() {
+        WidgetsBinding.instance.removeObserver(this);
+        emailController.dispose();
+        passwordController.dispose();
+        super.dispose();
+      }
+
+
+    // Sign user in method
+    Future<bool> signUserIn(context) async {
+      log('login.dart: Attempting to sign user in...'); // Debugging output
+      try {
+        log('login.dart: Calling FirebaseAuth to sign in with email and password...'); // Debugging output
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+        log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
+        log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
+        return true;
+      } on FirebaseAuthException catch (e) {
+        log('login.dart: Caught FirebaseAuthException: $e'); // Debugging output
+        String errorMessage = '';
+        if (e.code == 'user-not-found') {
+          errorMessage = 'Email not found. Please check your email or sign up for a new account.';
+          log('login.dart: Error: $errorMessage'); // Debugging output
+        } else {
+          errorMessage = 'Error signing in. Please check your email and password. $e';
+          log('login.dart: Error: $errorMessage'); // Debugging output
+        }
+        log('login.dart: Showing error dialog...'); // Debugging output
+        await CustomAlertDialog.showAlertDialog(context, 'Error logging in', errorMessage);
+        log('login.dart: Error dialog shown, returning false...'); // Debugging output
+        return false;
+      } catch (e) {
+        log('login.dart: An unexpected error occurred: $e'); // Debugging output for any other exceptions
+        return false;
       }
     }
 
@@ -128,6 +143,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.center,
 
         children: <Widget>[
+
 
 
           // Logo and branding
@@ -392,31 +408,34 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           // Spacing
           const SizedBox(height: 20.0),
           
-          Container(
-            height: 55,
-            decoration: BoxDecoration(
-              color: Colors.transparent, 
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  FontAwesomeIcons.google,
-                  color: Colors.blue,
-                ),
-                SizedBox(width: 15),
-                Text(
-                  'Sign in with Google',
-                  style: TextStyle(
-                    fontSize: 18, 
-                    color: Colors.blue, 
-                    fontWeight: FontWeight.bold, 
-                    fontFamily: 'Titillium Web'
-                    ),
-                ),
-              ],
+          GestureDetector(
+            onTap: () => GoogleAuthService().signInWithGoogle(context),
+            child: Container(
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.transparent, 
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    FontAwesomeIcons.google,
+                    color: Colors.blue,
+                  ),
+                  SizedBox(width: 15),
+                  Text(
+                    'Sign in with Google',
+                    style: TextStyle(
+                      fontSize: 18, 
+                      color: Colors.blue, 
+                      fontWeight: FontWeight.bold, 
+                      fontFamily: 'Titillium Web'
+                      ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -515,4 +534,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       ),
     ),
   );
+
+  Object showAlert(BuildContext context) {
+    if (widget.showAlert) {
+      return CustomAlertDialog.showAlertDialog(
+        context,
+        'Error',
+        'An error occurred while signing in. Please try again.',
+      );
+    } else {
+      return Container();
+    }
+  }
+
 }

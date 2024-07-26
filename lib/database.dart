@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'utilities.dart';
 
 /// A class that provides database operations for managing users.
@@ -34,7 +35,7 @@ class DatabaseService {
 
 
   // Asynchronous factory constructor
-  static Future<DatabaseService?> fetchCID(String uid, int code) async {
+  static Future<DatabaseService?> fetchCID(BuildContext context, String uid, int code) async {
     DatabaseService service = DatabaseService(uid);
 
     // Access Firestore and get the document
@@ -61,6 +62,9 @@ class DatabaseService {
       log('database.dart: CID: ${service.cid}');
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
+      
+
+
       return null;
     }
 
@@ -95,8 +99,8 @@ class DatabaseService {
   }
 
   // ignore: prefer_expression_function_bodies
-  Future<void> markAsRead(String notificationId) async {
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+Future<void> markAsRead(BuildContext context, String uid, String notificationId) async {
+  DatabaseService? service = await DatabaseService.fetchCID(context, uid, 3);
     if (service != null) {
       log(service.cid!);  
       log('database.dart: cid: ${service.cid}, notificationId: $notificationId');
@@ -124,8 +128,8 @@ class DatabaseService {
     }
   }
 
-  Future<void> markAllAsRead() async {
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+  Future<void> markAllAsRead(BuildContext context) async {
+    DatabaseService? service = await DatabaseService.fetchCID(context, uid, 3);
     if (service != null && service.cid != null) {
       await _markNotificationsAsRead(service.cid!);
       List<String> connectedCids = await fetchConnectedCids(uid);
@@ -305,7 +309,6 @@ class DatabaseService {
   Stream<List<UserWithAssets>> get getConnectedUsersWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
     Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
     List<String> connectedUsers = info['connectedUsers'].cast<String>();
-    log('database.dart: Connected users: $connectedUsers');
     if ( connectedUsers.isEmpty ) {
       return [];
     }
