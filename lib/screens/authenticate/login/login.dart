@@ -1,5 +1,5 @@
 // Importing Flutter Library & Google button Library
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, deprecated_member_use
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, deprecated_member_use, empty_catches
 
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
-import 'package:team_shaikh_app/screens/authenticate/login/auth_service.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/wrapper.dart';
@@ -36,7 +35,6 @@ class LoginPage extends StatefulWidget {
 
 // State class for the LoginPage
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
-    bool _isDialogShown = false;
 
   // Boolean variable to set password visibility to hidden
   bool hidePassword = true;
@@ -49,7 +47,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     @override
     void initState() {
       super.initState();
-      print('Show Alert: $showAlert');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (previousUserLoggedIn) {
           emailController.text = email!;
@@ -57,7 +54,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           if (user != null) {
             _authenticate(context);
           }
-          print(previousUserLoggedIn);
         }
 
         if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
@@ -109,10 +105,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   
   Future<void> _authenticate(BuildContext context) async {
     bool authenticated = false;
-    print('Starting authentication process...');
     
     try {
-      print('Attempting to authenticate...');
       authenticated = await auth.authenticate(
         localizedReason: 'Please authenticate to login',
         options: const AuthenticationOptions(
@@ -120,9 +114,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           stickyAuth: true,
         ),
       );
-      print('Authentication attempt completed.');
     } catch (e) {
-      print('Error during authentication: $e');
     }
 
     if (authenticated) {
@@ -134,14 +126,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
           ),
         );
-        print('Authenticated successfully');
       
     } else {
       // Handle failed authentication
-      print('Failed to authenticate');
     }
     
-    print('Authentication process finished.');
   }
 
   // The build method for the login screen widget
@@ -472,7 +461,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                   onPressed: null,
                   child: Row(
                     children: [
-                      Text(
+                      const Text(
                         'Login with Face ID',
                         style: TextStyle(
                           fontSize: 18, 
@@ -481,7 +470,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                           fontFamily: 'Titillium Web'
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       SvgPicture.asset(
                         'assets/icons/face_id.svg',
                         color: Colors.blue, 

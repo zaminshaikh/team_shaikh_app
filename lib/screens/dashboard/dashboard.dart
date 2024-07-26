@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, deprecated_member_use
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, deprecated_member_use, use_build_context_synchronously
 import 'dart:developer';
 import 'package:team_shaikh_app/screens/wrapper.dart';
 import 'package:team_shaikh_app/utilities.dart';

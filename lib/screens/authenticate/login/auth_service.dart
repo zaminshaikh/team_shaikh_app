@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:developer';
-import 'dart:developer';
 
 void main() => runApp(const MyApp());
 

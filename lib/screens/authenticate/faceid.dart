@@ -1,9 +1,8 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, empty_catches, sort_child_properties_last
 
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 
 class FaceIdPage extends StatefulWidget {
@@ -38,10 +37,8 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
 
   Future<void> _authenticate(BuildContext context) async {
     bool authenticated = false;
-    print('Starting authentication process...');
     
     try {
-      print('Attempting to authenticate...');
       authenticated = await auth.authenticate(
         localizedReason: 'Please authenticate to login',
         options: const AuthenticationOptions(
@@ -49,9 +46,7 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
           stickyAuth: true,
         ),
       );
-      print('Authentication attempt completed.');
     } catch (e) {
-      print('Error during authentication: $e');
     }
 
     if (authenticated) {
@@ -62,13 +57,10 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
           transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
         ),
       );
-      print('Authenticated successfully');
     } else {
       // Handle failed authentication
-      print('Failed to authenticate');
     }
     
-    print('Authentication process finished.');
   }
 
   @override

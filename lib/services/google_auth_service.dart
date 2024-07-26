@@ -1,8 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart'; // For debugPrint
 import 'package:flutter/material.dart'; // For Navigator
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
@@ -54,26 +55,26 @@ class GoogleAuthService {
 
           showAlert = true;
           await showGoogleFailAlert(context);
-          Navigator.pushReplacement(
+          await Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => LoginPage()),
+            MaterialPageRoute(builder: (context) => const LoginPage()),
           );
           return null;
         }
       } else {
         debugPrint('GoogleAuthService: User UID is null. Redirecting to login.');
         showAlert = true;
-        Navigator.pushReplacement(
+        await Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(builder: (context) => const LoginPage()),
         );
         return null;
       }
 
       // Navigate to Dashboard
-      Navigator.pushReplacement(
+      await Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => DashboardPage()),
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
       );
 
       return userCredential;
@@ -89,7 +90,7 @@ class GoogleAuthService {
           context,
           'Google Sign-In Failed',
           'The Gmail Account you tried to sign in with has not been registered with the app yet. Please try again or sign in with your email and password.',
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.google,
             color: Colors.blue,
           )
