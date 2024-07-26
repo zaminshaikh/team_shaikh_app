@@ -34,10 +34,11 @@ class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     print('WrapperState: AppLifecycleState changed to $state');
+  
     if (state == AppLifecycleState.resumed) {
       print('App is in foreground.');
     } else if (state == AppLifecycleState.inactive) {
-      if (!_hasNavigatedToFaceIdPage) {
+      if (!_hasNavigatedToFaceIdPage && _isUserLoggedIn()) {
         _hasNavigatedToFaceIdPage = true;
         Future.delayed(Duration.zero, () {
           if (context != null) {
@@ -51,12 +52,17 @@ class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
           }
         });
       }
-      print('App is in background.');
-      _hasNavigatedToFaceIdPage = false; // Reset the flag when the app goes to the background
     } else if (state == AppLifecycleState.paused) {
       print('App is in background.');
       _hasNavigatedToFaceIdPage = false; // Reset the flag when the app goes to the background
     }
+  }
+  
+  bool _isUserLoggedIn() {
+    final user = FirebaseAuth.instance.currentUser;
+    final isLoggedIn = user != null;
+    print('WrapperState: User is ${isLoggedIn ? "logged in" : "not logged in"}');
+    return isLoggedIn;
   }
 
   @override
@@ -79,5 +85,6 @@ class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
           }
         },
       ),
+    );
   }
 }

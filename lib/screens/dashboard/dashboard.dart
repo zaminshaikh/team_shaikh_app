@@ -45,7 +45,7 @@ class CustomSlideIndicator extends SlideIndicator {
 
 class _DashboardPageState extends State<DashboardPage> {
   // database service instance
-  late DatabaseService _databaseService;
+  DatabaseService? _databaseService;
 
   Future<void> _initData() async {
     // Allow for user data changes to sync and update
@@ -59,7 +59,7 @@ class _DashboardPageState extends State<DashboardPage> {
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
 
     // If there is no matching CID, redirect to login page
     if (service == null && mounted) {
@@ -67,7 +67,7 @@ class _DashboardPageState extends State<DashboardPage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service!;
-      log('dashboard.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('dashboard.dart: Database Service has been initialized with CID: ${_databaseService?.cid}');
     }
   }
 
@@ -103,7 +103,7 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
         return StreamBuilder<UserWithAssets>(
-            stream: _databaseService.getUserWithAssets,
+            stream: _databaseService?.getUserWithAssets,
             builder: (context, userSnapshot) {
               // Wait for the user snapshot to have data
               if (!userSnapshot.hasData) {
@@ -128,7 +128,7 @@ class _DashboardPageState extends State<DashboardPage> {
               }
               // Once we have the user snapshot, we can build the dashboard
               return StreamBuilder<List<UserWithAssets>>(
-                  stream: _databaseService.getConnectedUsersWithAssets,
+                  stream: _databaseService?.getConnectedUsersWithAssets,
                   builder: (context, connectedUsersSnapshot) {
 
                     if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
@@ -137,7 +137,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     }
                     // Otherwise, we build the dashboard with connected users
                     return StreamBuilder<List<Map<String, dynamic>>>(
-                      stream: _databaseService.getNotifications,
+                      stream: _databaseService?.getNotifications,
                       builder: (context, notificationsSnapshot) {
                         if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
                           return Center(
@@ -180,7 +180,7 @@ class _DashboardPageState extends State<DashboardPage> {
       'last': lastName,
       'company': companyName
     };
-    String? cid = _databaseService.cid;
+    String? cid = _databaseService?.cid;
     // Total assets of one user
     double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
     double latestIncome = 0.00;
@@ -258,7 +258,7 @@ class _DashboardPageState extends State<DashboardPage> {
       'last': lastName,
       'company': companyName
     };
-    String? cid = _databaseService.cid;
+    String? cid = _databaseService?.cid;
     double totalUserAssets = 0.00,
         totalAGQ = 0.00,
         totalAK1 = 0.00,

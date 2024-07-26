@@ -52,7 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
     // If there is no matching CID, redirect to login page
     // ignore: duplicate_ignore
     if (service == null) {

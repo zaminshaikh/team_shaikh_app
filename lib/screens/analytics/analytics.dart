@@ -32,7 +32,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         await Navigator.pushReplacementNamed(context, '/login');
       }
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
     // If there is no matching CID, redirect to login page
     if (service == null) {
       await Navigator.pushReplacementNamed(context, '/login');

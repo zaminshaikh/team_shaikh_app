@@ -648,14 +648,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
-  sign_in_button:
-    dependency: "direct main"
-    description:
-      name: sign_in_button
-      sha256: "977b9b0415d2f3909e642275dfabba7919ba8e111324641b76cae6d1acbd183e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -745,10 +737,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_ios
-      sha256: "7068716403343f6ba4969b4173cbf3b84fc768042124bc2c011e5d782b24fe89"
+      sha256: e43b677296fadce447e987a2f519dcf5f6d1e527dc35d01ffab4fff5b8a7063e
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.0"
+    version: "6.3.1"
   url_launcher_linux:
     dependency: transitive
     description:

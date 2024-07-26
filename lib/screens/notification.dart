@@ -36,7 +36,7 @@ class _NotificationPageState extends State<NotificationPage> {
     uid = user!.uid;
 
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+    DatabaseService? service = await DatabaseService.fetchCID(context, uid, 3);
     // If there is no matching CID, redirect to login page
     if (service == null) {
       if (!mounted) { return; }
@@ -192,7 +192,7 @@ class _NotificationPageState extends State<NotificationPage> {
             child: ElevatedButton(
               onPressed: () async {
                 DatabaseService service = DatabaseService(uid);
-                await service.markAllAsRead();
+                await service.markAllAsRead(context);
                 setState(() {
                   // Refresh the page
                 });
@@ -323,7 +323,7 @@ class _NotificationPageState extends State<NotificationPage> {
                             try {
                               // Mark the notification as read
                               DatabaseService databaseService = DatabaseService(uid);
-                              await databaseService.markAsRead(notification['id']);
+                              await databaseService.markAsRead(context, uid, notification['id']);
                 
                               await Navigator.pushReplacement(context, PageRouteBuilder(
                                 pageBuilder: (context, animation1, animation2) => route,

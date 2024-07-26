@@ -7,12 +7,10 @@ import 'dart:developer';
 import 'dart:developer';
 
 void main() => runApp(const MyApp());
-void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  const MyApp({super.key});
 
   @override
   _MyAppState createState() => _MyAppState();
