@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart'; // For debugPrint
 import 'package:flutter/material.dart'; // For Navigator
@@ -43,6 +44,7 @@ class GoogleAuthService {
         if (service == null) {
           debugPrint('GoogleAuthService: UID does not exist in Firestore. Redirecting to login.');
           showAlert = true;
+          await showGoogleFailAlert(context);
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => LoginPage()),
@@ -71,6 +73,23 @@ class GoogleAuthService {
       rethrow;
     }
   }
+
+      Future<bool> showGoogleFailAlert(context) async {
+      if (showAlert) {
+        await CustomAlertDialog.showAlertDialog(
+          context,
+          'Google Sign-In Failed',
+          'The Gmail Account you tried to sign in with has not been registered with the app yet. Please try again or sign in with your email and password.',
+          icon: Icon(
+            FontAwesomeIcons.google,
+            color: Colors.blue,
+          )
+        );
+        return false;
+      }
+      return true;
+    }
+
 
   Future<void> signOut() async {
     debugPrint('GoogleAuthService: Starting sign-out process.');

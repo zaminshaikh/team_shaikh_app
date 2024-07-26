@@ -52,13 +52,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       }
     }
 
-      @override
-      void dispose() {
-        WidgetsBinding.instance.removeObserver(this);
-        emailController.dispose();
-        passwordController.dispose();
-        super.dispose();
-      }
+    @override
+    void dispose() {
+      WidgetsBinding.instance.removeObserver(this);
+      emailController.dispose();
+      passwordController.dispose();
+      super.dispose();
+    }
 
 
     // Sign user in method
@@ -535,16 +535,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     ),
   );
 
-  Object showAlert(BuildContext context) {
-    if (widget.showAlert) {
-      return CustomAlertDialog.showAlertDialog(
-        context,
-        'Error',
-        'An error occurred while signing in. Please try again.',
-      );
-    } else {
-      return Container();
-    }
-  }
+  
 
 }
