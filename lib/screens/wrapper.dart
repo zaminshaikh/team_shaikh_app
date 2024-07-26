@@ -13,7 +13,7 @@ class Wrapper extends StatefulWidget {
   _WrapperState createState() => _WrapperState();
 }
 
-  final isLoggedIn = false;
+  var isLoggedIn = false;
 
 
 bool previousUserLoggedIn = false;

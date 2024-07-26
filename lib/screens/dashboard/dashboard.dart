@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, deprecated_member_use
 import 'dart:developer';
+import 'package:team_shaikh_app/screens/wrapper.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,8 @@ class _DashboardPageState extends State<DashboardPage> {
     // Allow for user data changes to sync and update
     // This will display circular progess indicator
     await Future.delayed(const Duration(seconds: 1));
+
+    isLoggedIn = true;
 
     User? user = FirebaseAuth.instance.currentUser;
     // If we do not have a user and the context is valid
