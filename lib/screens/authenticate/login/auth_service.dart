@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:developer';
+import 'dart:developer';
 
+void main() => runApp(const MyApp());
 void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   const MyApp({super.key});
 
   @override

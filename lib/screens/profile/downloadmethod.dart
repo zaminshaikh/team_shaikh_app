@@ -15,6 +15,7 @@ String documentName = '';
 void downloadToFiles(String documentName) async {
   Directory downloadDir = await getApplicationDocumentsDirectory();
   var path = '${downloadDir.path}/$documentName';
+  var path = '${downloadDir.path}/$documentName';
   var file = File(path);
   var res = await http.get(Uri.parse('https://source.unsplash.com/random')); 
   await file.writeAsBytes(res.bodyBytes);
