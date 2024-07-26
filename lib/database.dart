@@ -8,6 +8,8 @@ import 'utilities.dart';
 ///
 /// This class is responsible for linking new users to the database and retrieving user data from the database.
 /// It interacts with the 'users' collection in the Firestore database.
+  List<String> connectedUsersCids = [];
+  bool allConnectedCidsExistInTestUsers = false;
 class DatabaseService {
   String? cid;
   final String uid;
@@ -49,7 +51,6 @@ class DatabaseService {
       switch (code) {
         case 1:
           service.assetsSubCollection = usersCollection.doc(service.cid).collection(Config.get('ASSETS_SUBCOLLECTION'));
-          log('database.dart: Assets subcollection set to $usersCollection/${service.cid}/assets');
           break;
         case 2:
           service.activitiesSubCollection = usersCollection.doc(service.cid).collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
@@ -62,6 +63,10 @@ class DatabaseService {
       }
       // Now you can use 'cid' in your code
       log('database.dart: CID: ${service.cid}');
+      log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
+      connectedUsersCids = await service.fetchConnectedCids(service.cid!);
+
+
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
       
@@ -72,6 +77,32 @@ class DatabaseService {
 
     return service;
   }
+
+  // Method to check if all connectedUsersCids exist in the testUsers collection
+  Future<bool> checkConnectedUsersExistInTestUsers() async {
+    CollectionReference testUsersCollection = FirebaseFirestore.instance.collection('testUsers');
+
+    // List to store CIDs that need to be removed
+    List<String> cidsToRemove = [];
+
+    for (String connectedCid in connectedUsersCids) {
+      DocumentSnapshot docSnapshot = await testUsersCollection.doc(connectedCid).get();
+      if (docSnapshot.exists) {
+        log('database.dart: Connected user CID $connectedCid exists in testUsers collection.');
+      } else {
+        log('database.dart: Connected user CID $connectedCid does NOT exist in testUsers collection.');
+        log('database.dart: Marking connected user CID $connectedCid for removal.');
+        cidsToRemove.add(connectedCid);
+      }
+    }
+
+    // Remove CIDs that do not exist in the testUsers collection
+    connectedUsersCids.removeWhere((cid) => cidsToRemove.contains(cid));
+
+    // Return true if all connected CIDs exist in the testUsers collection
+    return cidsToRemove.isEmpty;
+  }
+
 
   Future<void> logNotificationIds() async {
     if (notificationsSubCollection == null) {
@@ -118,6 +149,7 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
         }
         // Fetch the connected users' cids
         List<String> connectedCids = await fetchConnectedCids(service.cid!);
+        
         for (String cid in connectedCids) {
           docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
           docSnap = await docRef.get();
