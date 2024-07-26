@@ -98,7 +98,7 @@ class DatabaseService {
   Future<void> markAsRead(String notificationId) async {
     DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
     if (service != null) {
-      log(service.cid!);  
+      log('${service.cid}');  
       log('database.dart: cid: ${service.cid}, notificationId: $notificationId');
       DocumentReference docRef = usersCollection.doc(service.cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).doc(notificationId);
       log('database.dart: docref: $docRef');

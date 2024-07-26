@@ -79,6 +79,5 @@ class _WrapperState extends State<Wrapper> with WidgetsBindingObserver {
           }
         },
       ),
-    );
   }
 }
