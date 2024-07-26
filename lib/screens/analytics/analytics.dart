@@ -12,6 +12,8 @@ import 'package:team_shaikh_app/utilities.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:intl/intl.dart';
+
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
@@ -19,7 +21,81 @@ class AnalyticsPage extends StatefulWidget {
   _AnalyticsPageState createState() => _AnalyticsPageState();
 }
 
+class Analytics {
+  late DateTime now;
+  late DateTime firstDayOfCurrentMonth;
+  late DateTime lastDayOfPreviousMonth;
+  late int daysInLastMonth;
+  late List<String> lastSixMonths;
+  String? lastWeekRange;
+  String? lastMonthRange;
+  String? lastSixMonthsRange;
+  String? lastYearRange;
+
+  Analytics() {
+    now = DateTime.now();
+    firstDayOfCurrentMonth = DateTime(now.year, now.month, 1);
+    lastDayOfPreviousMonth = firstDayOfCurrentMonth.subtract(Duration(days: 1));
+    daysInLastMonth = lastDayOfPreviousMonth.day;
+    lastSixMonths = _calculateLastSixMonths();
+    lastWeekRange = _calculateLastWeekRange();
+    lastMonthRange = _calculateLastMonthRange();
+    lastSixMonthsRange = _calculateLastSixMonthsRange();
+    lastYearRange = _calculateLastYearRange();
+  }
+
+  List<String> _calculateLastSixMonths() {
+    List<String> months = [];
+    for (int i = 0; i < 6; i++) {
+      DateTime month = DateTime(now.year, now.month - i, 1);
+      months.add(DateFormat('MMM').format(month));
+    }
+    return months.reversed.toList(); // Reverse to get the months in order
+  }
+
+  String _calculateLastWeekRange() {
+    DateTime endOfLastWeek = now.subtract(Duration(days: now.weekday));
+    DateTime startOfLastWeek = endOfLastWeek.subtract(Duration(days: 6));
+    String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfLastWeek);
+    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastWeek);
+    return '$formattedStart - $formattedEnd';
+  }
+
+  String _calculateLastMonthRange() {
+    DateTime startOfLastMonth = DateTime(now.year, now.month - 1, 1);
+    DateTime endOfLastMonth = DateTime(now.year, now.month, 0);
+    print('Start of Last Month: $startOfLastMonth');
+    print('End of Last Month: $endOfLastMonth');
+    String formattedStart = DateFormat('MMMM d, yyyy').format(startOfLastMonth);
+    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastMonth);
+    return '$formattedStart - $formattedEnd';
+  }
+
+  String _calculateLastSixMonthsRange() {
+    DateTime startOfSixMonthsAgo = DateTime(now.year, now.month - 5, 1);
+    DateTime endOfLastMonth = DateTime(now.year, now.month, 0);
+    print('Start of Six Months Ago: $startOfSixMonthsAgo');
+    print('End of Last Month: $endOfLastMonth');
+    String formattedStart = DateFormat('MMMM d, yyyy').format(startOfSixMonthsAgo);
+    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastMonth);
+    return '$formattedStart - $formattedEnd';
+  }
+
+  String _calculateLastYearRange() {
+    DateTime startOfLastYear = DateTime(now.year - 1, 1, 1);
+    DateTime endOfLastYear = DateTime(now.year - 1, 12, 31);
+    print('Start of Last Year: $startOfLastYear');
+    print('End of Last Year: $endOfLastYear');
+    String formattedStart = DateFormat('MMMM d, yyyy').format(startOfLastYear);
+    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastYear);
+    return '$formattedStart - $formattedEnd';
+  }
+}
+
 class _AnalyticsPageState extends State<AnalyticsPage> {
+
+  
+  Analytics analytics = Analytics();
 
   // database service instance
   late DatabaseService _databaseService;
@@ -46,6 +122,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   /// Formats the given amount as a currency string.
 
   String dropdownValue = 'last-year';
+
+  
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -160,6 +238,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         totalAK1 = 0.00,
         totalAssets = 0.00;
 
+  print('Days in last month: ${analytics.daysInLastMonth}');
+
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
       switch (asset['fund']) {
@@ -206,6 +286,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
+                      // Line chart section
+                      _buildLineChartSection(totalUserAssets, percentageAGQ, percentageAK1),
                       // Assets structure section
                       _buildAssetsStructureSection(
                           totalAssets, percentageAGQ, percentageAK1),
@@ -378,12 +460,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
 String text = ''; 
 
+
+
 Widget bottomTitlesWidget(double value, TitleMeta meta) {
   const style = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.bold
   );
-  switch (value.toInt()) {
+switch (value.toInt()) {
     case 0:
       if (dropdownValue == 'last-week') {
         text = 'Sun';
@@ -391,9 +475,12 @@ Widget bottomTitlesWidget(double value, TitleMeta meta) {
       if (dropdownValue == 'last-month') {
         text = '1';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
-        text = 'Jan';
+      if (dropdownValue == 'last-6-months' ) {
+        text = analytics.lastSixMonths[0];
       } 
+      if (dropdownValue == 'last-year') {
+        text = 'Jan';
+      }
       break;
     case 1:
       if (dropdownValue == 'last-week') {
@@ -402,82 +489,97 @@ Widget bottomTitlesWidget(double value, TitleMeta meta) {
       if (dropdownValue == 'last-month') {
         text = '15';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
-        text = 'Feb';
+      if (dropdownValue == 'last-6-months' ) {
+        text = analytics.lastSixMonths[1];
       } 
+      if (dropdownValue == 'last-year') {
+        text = 'Feb';
+      }
       break;
     case 2:
       if (dropdownValue == 'last-week') {
         text = 'Tue';
       } 
       if (dropdownValue == 'last-month') {
-        text = '30';
+        text =  '${analytics.daysInLastMonth}';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-6-months' ) {
+        text = analytics.lastSixMonths[2];
+      } 
+      if (dropdownValue == 'last-year') {
         text = 'Mar';
-      } 
+      }
       break;
     case 3:
       if (dropdownValue == 'last-week') {
         text = 'Wed';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
-        text = 'Apr';
+      if (dropdownValue == 'last-6-months' ) {
+        text = analytics.lastSixMonths[3];
       } 
+      if (dropdownValue == 'last-year') {
+        text = 'Apr';
+      }
       break;
     case 4:
       if (dropdownValue == 'last-week') {
         text = 'Thu';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
-        text = 'May';
+      if (dropdownValue == 'last-6-months' ) {
+        text = analytics.lastSixMonths[4];
       } 
+      if (dropdownValue == 'last-year') {
+        text = 'May';
+      }
       break;
     case 5:
       if (dropdownValue == 'last-week') {
         text = 'Fri';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
-        text = 'Jun';
+      if (dropdownValue == 'last-6-months' ) {
+        text = analytics.lastSixMonths[5];
       } 
+      if (dropdownValue == 'last-year') {
+        text = 'Jun';
+      }
       break;
     case 6:
       if (dropdownValue == 'last-week') {
         text = 'Sat';
       } 
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-year') {
         text = 'Jul';
       } 
       break;
     case 7:
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-year') {
         text = 'Aug';
       } 
       break;
     case 8:
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-year') {
         text = 'Sep';
       } 
       break;
     case 9:
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-year') {
         text = 'Oct';
       } 
       break;
     case 10:
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-year') {
         text = 'Nov';
       } 
       break;
     case 11:
-      if (dropdownValue == 'last-6-months' || dropdownValue == 'last-year') {
+      if (dropdownValue == 'last-year') {
         text = 'Dec';
       } 
       break;
     default:
       return Container();
   }
-  return SideTitleWidget(
+    return SideTitleWidget(
     axisSide: meta.axisSide,
     space: 3,
     child: Text(
@@ -547,7 +649,6 @@ String getDropdownValueName(String dropDownValue) {
       padding: const EdgeInsets.only(bottom: 25),
       child: Container(
         width: double.infinity,
-        height: 520,
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: const Color.fromARGB(255, 30, 41, 59),
@@ -555,6 +656,7 @@ String getDropdownValueName(String dropDownValue) {
         ),
         child: Column(
           children: [
+            const SizedBox(height: 10),
         
             
             Padding(
@@ -578,52 +680,52 @@ String getDropdownValueName(String dropDownValue) {
                       showModalBottomSheet(
                         context: context,
                         backgroundColor: AppColors.defaultBlueGray800,
-        builder: (BuildContext context) => SingleChildScrollView(
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20.0),
-              topRight: Radius.circular(20.0),
-            ),
-            child: Container(
-              color: AppColors.defaultBlueGray800,
-              child: Wrap(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                            height: 20.0), // Add some space at the top
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Choose Time Period',
-                              style: TextStyle(
-                                  fontSize: 22.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontFamily: 'Titillium Web'),
+                      builder: (BuildContext context) => SingleChildScrollView(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0),
+                          ),
+                          child: Container(
+                            color: AppColors.defaultBlueGray800,
+                            child: Wrap(
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(
+                                          height: 20.0), // Add some space at the top
+                                      const Padding(
+                                        padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            'Choose Time Period',
+                                            style: TextStyle(
+                                                fontSize: 22.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web'),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20.0), // Add some space between the title and the options
+                                      _buildOption(context, 'Last Week', 'last-week'),
+                                      _buildOption(context, 'Last Month', 'last-month'),
+                                      _buildOption(context, 'Last 6 Months', 'last-6-months'),
+                                      _buildOption(context, 'Last Year', 'last-year'),
+                                      _buildOption(context, 'Customize Time Period', 'custom-time-period'),
+                                      const SizedBox(
+                                          height: 20.0), // Add some space at the bottom
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20.0), // Add some space between the title and the options
-                        _buildOption(context, 'Last Week', 'last-week'),
-                        _buildOption(context, 'Last Month', 'last-month'),
-                        _buildOption(context, 'Last 6 Months', 'last-6-months'),
-                        _buildOption(context, 'Last Year', 'last-year'),
-                        _buildOption(context, 'Customize Time Period', 'custom-time-period'),
-                        const SizedBox(
-                            height: 20.0), // Add some space at the bottom
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+                      ),
                       );
                     },
                     child: Container(
@@ -739,7 +841,6 @@ String getDropdownValueName(String dropDownValue) {
               ),
             ),
 
-
             Padding(
               padding: const EdgeInsets.only(left: 15.0),
               child: Row(
@@ -765,6 +866,45 @@ String getDropdownValueName(String dropDownValue) {
                 ],
               ),
             ), 
+            const SizedBox(height: 40),
+            Builder(
+              builder: (context) {
+                String displayText;
+                switch (dropdownValue) {
+                  case 'last-week':
+                    displayText = '${analytics.lastWeekRange}';
+                    break;
+                  case 'last-month':
+                    displayText = '${analytics.lastMonthRange}';
+                    break;
+                  case 'last-6-months':
+                    displayText = '${analytics.lastSixMonthsRange}';
+                    break;
+                  case 'last-year':
+                    displayText = '${analytics.lastYearRange}';
+                    break;
+                  default:
+                    displayText = 'Select a range';
+                }
+                return Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: Text(
+                      displayText,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                        fontStyle: FontStyle.italic
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
