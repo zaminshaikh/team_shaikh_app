@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +28,10 @@ Future<void> main() async {
   });
 }
 
+
+
 // StatelessWidget representing the entire application
-class MyApp extends StatelessWidget with WidgetsBindingObserver {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
 
@@ -70,5 +73,18 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
       // determine whether to show the home page or the authenticate page
       home: const Wrapper(),
 
+      // Routes for different pages in the app
+      routes: {
+        '/create_account': (context) => const CreateAccountPage(),
+        '/login': (context) => const LoginPage(),
+        '/forgot_password': (context) => const ForgotPasswordPage(),
+        '/dashboard': (context) => const DashboardPage(),
+        '/analytics': (context) => const AnalyticsPage(),
+        '/activity': (context) => const ActivityPage(),
+        '/profile': (context) => const ProfilePage(),
+        '/notification': (context) => const NotificationPage(),
+      },
+
     );
 }
+

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -42,7 +43,15 @@ class GoogleAuthService {
       if (user != null) {
         final DatabaseService? service = await DatabaseService.fetchCID(context, user.uid, 1);
         if (service == null) {
-          debugPrint('GoogleAuthService: UID does not exist in Firestore. Redirecting to login.');
+          debugPrint('GoogleAuthService: UID does not exist in Firestore. Deleting UID and redirecting to login.');
+
+          try {
+            // Delete the UID from Firestore
+            await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+          } catch (e) {
+            debugPrint('Error deleting UID from Firestore: $e');
+          }
+
           showAlert = true;
           await showGoogleFailAlert(context);
           Navigator.pushReplacement(
