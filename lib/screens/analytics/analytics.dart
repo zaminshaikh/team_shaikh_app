@@ -264,70 +264,75 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           double xValue = -1.0; // Assign an initial value to xValue
         
           if (dropdownValue == 'last-year') {
-            xValue = (dateTime.month.toDouble() - 1) + (dateTime.day.toDouble() / 31);
+            if (dateTime.year == DateTime.now().year - 1) {
+              xValue = (dateTime.month.toDouble() - 1) + (dateTime.day.toDouble() / 31);
+            } else {
+              return null; // Return null if the point is not from the last year
+            }
           } else if (dropdownValue == 'last-6-months') {
             bool found = false;
-            for (var month in timeline.lastSixMonths) {
-              if (DateFormat('MMM').format(dateTime) == month) {
-                xValue = (timeline.lastSixMonths.indexOf(month).toDouble() + (dateTime.day.toDouble() / 31));
-                found = true;
-                break;
+            DateTime now = DateTime.now();
+            DateTime sixMonthsAgo = DateTime(now.year, now.month - 6, now.day);
+
+            if (dateTime.isAfter(sixMonthsAgo) && dateTime.isBefore(now) && dateTime.month != now.month) {
+              for (var month in timeline.lastSixMonths) {
+                if (DateFormat('MMM').format(dateTime) == month) {
+                  xValue = (timeline.lastSixMonths.indexOf(month).toDouble() + (dateTime.day.toDouble() / 31));
+                  found = true;
+                  break;
+                }
               }
             }
+
             if (!found) {
-              return null; // Return null if the month is not found in lastSixMonths
+                return null; // Return null if the month is not found in lastSixMonths
             }
           } else if (dropdownValue == 'last-month') {
             bool found = false;
-            // Assuming timeline.lastMonth contains the days of the last month
-            int totalDays = timeline.daysInLastMonth;
-              int day = dateTime.day;
-              
-              if (day <= 15) {
-                found = true;
-                xValue = (day / 15) * 1; // Scale day to the range 0-1
-              } else {
-                found = true;
-                xValue = 1 + ((day - 15) / (totalDays - 15)); // Scale day to the range 1-2
-              }
+            DateTime now = DateTime.now();
+            DateTime lastMonth = DateTime(now.year, now.month - 1);
+
+            if (dateTime.year == lastMonth.year && dateTime.month == lastMonth.month) {
+                int totalDays = DateTime(lastMonth.year, lastMonth.month + 1, 0).day; // Get the total days in the last month
+                int day = dateTime.day;
+
+                if (day <= 15) {
+                    found = true;
+                    xValue = (day / 15) * 1; // Scale day to the range 0-1
+                } else {
+                    found = true;
+                    xValue = 1 + ((day - 15) / (totalDays - 15)); // Scale day to the range 1-2
+                }
+            }
 
             if (!found) {
-              return null; // Return null if the day is not found in lastMonth
+                return null; // Return null if the point is not from the last month
             }
           } else if (dropdownValue == 'last-week') {
             bool found = false;
-            // Assuming timeline.lastWeek contains the days of the last week
+            DateTime now = DateTime.now();
+            DateTime startOfWeek = now.subtract(Duration(days: now.weekday));
+            DateTime startOfLastWeek = startOfWeek.subtract(Duration(days: 7));
+            DateTime endOfLastWeek = startOfWeek.subtract(Duration(seconds: 1));
+
+            // Check if dateTime is within the last week
+            if (dateTime.isAfter(startOfLastWeek) && dateTime.isBefore(endOfLastWeek)) {
+              found = true;
               int day = dateTime.weekday;
-              
-              if (day == 1) {
-                found = true;
-                day = 1;
-              } if (day == 2) {
-                found = true;
-                day = 2;
-              } if (day == 3) {
-                found = true;
-                day = 3;
-              } if (day == 4) {
-                found = true;
-                day = 4;
-              } if (day == 5) {
-                found = true;
-                day = 5;
-              } if (day == 6) {
-                found = true;
-                day = 6;
-              } if (day == 7) {
-                found = true;
-                day = 0;
+
+              // Map the day to the range 0-6 (Monday to Sunday)
+              if (day == 7) {
+                day = 0; // Sunday
               }
 
-              xValue = (day.toDouble()); // Scale day to the range 0-1
+              xValue = day.toDouble(); // Scale day to the range 0-6
+            }
+
             if (!found) {
               return null; // Return null if the day is not found in lastWeek
             }
           }
-          return FlSpot(xValue, point['amount'].toDouble());
+        return FlSpot(xValue, point['amount'].toDouble());
         }).where((spot) => spot != null).cast<FlSpot>().toList(); 
         break; // Assuming you only need the first asset with graphPoints
       }
