@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -21,7 +22,7 @@ class AnalyticsPage extends StatefulWidget {
   _AnalyticsPageState createState() => _AnalyticsPageState();
 }
 
-class Analytics {
+class Timeline {
   late DateTime now;
   late DateTime firstDayOfCurrentMonth;
   late DateTime lastDayOfPreviousMonth;
@@ -32,10 +33,12 @@ class Analytics {
   String? lastSixMonthsRange;
   String? lastYearRange;
 
-  Analytics() {
+  
+
+  Timeline() {
     now = DateTime.now();
     firstDayOfCurrentMonth = DateTime(now.year, now.month, 1);
-    lastDayOfPreviousMonth = firstDayOfCurrentMonth.subtract(Duration(days: 1));
+    lastDayOfPreviousMonth = firstDayOfCurrentMonth.subtract(const Duration(days: 1));
     daysInLastMonth = lastDayOfPreviousMonth.day;
     lastSixMonths = _calculateLastSixMonths();
     lastWeekRange = _calculateLastWeekRange();
@@ -54,8 +57,11 @@ class Analytics {
   }
 
   String _calculateLastWeekRange() {
-    DateTime endOfLastWeek = now.subtract(Duration(days: now.weekday));
-    DateTime startOfLastWeek = endOfLastWeek.subtract(Duration(days: 6));
+    DateTime now = DateTime.now();
+    // Calculate the end of last week (Saturday)
+    DateTime endOfLastWeek = now.subtract(Duration(days: now.weekday % 7 + 1));
+    // Calculate the start of last week (Sunday)
+    DateTime startOfLastWeek = endOfLastWeek.subtract(const Duration(days: 6));
     String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfLastWeek);
     String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastWeek);
     return '$formattedStart - $formattedEnd';
@@ -64,8 +70,6 @@ class Analytics {
   String _calculateLastMonthRange() {
     DateTime startOfLastMonth = DateTime(now.year, now.month - 1, 1);
     DateTime endOfLastMonth = DateTime(now.year, now.month, 0);
-    print('Start of Last Month: $startOfLastMonth');
-    print('End of Last Month: $endOfLastMonth');
     String formattedStart = DateFormat('MMMM d, yyyy').format(startOfLastMonth);
     String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastMonth);
     return '$formattedStart - $formattedEnd';
@@ -74,8 +78,6 @@ class Analytics {
   String _calculateLastSixMonthsRange() {
     DateTime startOfSixMonthsAgo = DateTime(now.year, now.month - 5, 1);
     DateTime endOfLastMonth = DateTime(now.year, now.month, 0);
-    print('Start of Six Months Ago: $startOfSixMonthsAgo');
-    print('End of Last Month: $endOfLastMonth');
     String formattedStart = DateFormat('MMMM d, yyyy').format(startOfSixMonthsAgo);
     String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastMonth);
     return '$formattedStart - $formattedEnd';
@@ -84,8 +86,6 @@ class Analytics {
   String _calculateLastYearRange() {
     DateTime startOfLastYear = DateTime(now.year - 1, 1, 1);
     DateTime endOfLastYear = DateTime(now.year - 1, 12, 31);
-    print('Start of Last Year: $startOfLastYear');
-    print('End of Last Year: $endOfLastYear');
     String formattedStart = DateFormat('MMMM d, yyyy').format(startOfLastYear);
     String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastYear);
     return '$formattedStart - $formattedEnd';
@@ -95,7 +95,7 @@ class Analytics {
 class _AnalyticsPageState extends State<AnalyticsPage> {
 
   
-  Analytics analytics = Analytics();
+  Timeline timeline = Timeline();
 
   // database service instance
   late DatabaseService _databaseService;
@@ -112,7 +112,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     // If there is no matching CID, redirect to login page
     if (service == null) {
       await Navigator.pushReplacementNamed(context, '/login');
-} else {
+    } else {
       // Otherwise set the database service instance
       _databaseService = service;
       log('analytics.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
@@ -122,8 +122,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   /// Formats the given amount as a currency string.
 
   String dropdownValue = 'last-year';
-
   
+  List<FlSpot> spots = [];
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -238,8 +238,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         totalAK1 = 0.00,
         totalAssets = 0.00;
 
-  print('Days in last month: ${analytics.daysInLastMonth}');
-
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
       switch (asset['fund']) {
@@ -254,6 +252,87 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           totalAssets += asset['total'];
       }
     }
+    // Find the asset with graphPoints and print them
+    for (var asset in user.assets) {
+      if (asset.containsKey('graphPoints')) {
+        List<Map<String, dynamic>> graphPoints = List<Map<String, dynamic>>.from(asset['graphPoints']);
+        log('analytics.dart: graphPoints found: $graphPoints');
+
+        // Convert the graphPoints array into a list of FlSpot objects
+        spots = graphPoints.map((point) {
+          DateTime dateTime = (point['time'] as Timestamp).toDate();
+          double xValue = -1.0; // Assign an initial value to xValue
+        
+          if (dropdownValue == 'last-year') {
+            xValue = (dateTime.month.toDouble() - 1) + (dateTime.day.toDouble() / 31);
+          } else if (dropdownValue == 'last-6-months') {
+            bool found = false;
+            for (var month in timeline.lastSixMonths) {
+              if (DateFormat('MMM').format(dateTime) == month) {
+                xValue = (timeline.lastSixMonths.indexOf(month).toDouble() + (dateTime.day.toDouble() / 31));
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              return null; // Return null if the month is not found in lastSixMonths
+            }
+          } else if (dropdownValue == 'last-month') {
+            bool found = false;
+            // Assuming timeline.lastMonth contains the days of the last month
+            int totalDays = timeline.daysInLastMonth;
+              int day = dateTime.day;
+              
+              if (day <= 15) {
+                found = true;
+                xValue = (day / 15) * 1; // Scale day to the range 0-1
+              } else {
+                found = true;
+                xValue = 1 + ((day - 15) / (totalDays - 15)); // Scale day to the range 1-2
+              }
+
+            if (!found) {
+              return null; // Return null if the day is not found in lastMonth
+            }
+          } else if (dropdownValue == 'last-week') {
+            bool found = false;
+            // Assuming timeline.lastWeek contains the days of the last week
+              int day = dateTime.weekday;
+              
+              if (day == 1) {
+                found = true;
+                day = 1;
+              } if (day == 2) {
+                found = true;
+                day = 2;
+              } if (day == 3) {
+                found = true;
+                day = 3;
+              } if (day == 4) {
+                found = true;
+                day = 4;
+              } if (day == 5) {
+                found = true;
+                day = 5;
+              } if (day == 6) {
+                found = true;
+                day = 6;
+              } if (day == 7) {
+                found = true;
+                day = 0;
+              }
+
+              xValue = (day.toDouble()); // Scale day to the range 0-1
+            if (!found) {
+              return null; // Return null if the day is not found in lastWeek
+            }
+          }
+          return FlSpot(xValue, point['amount'].toDouble());
+        }).where((spot) => spot != null).cast<FlSpot>().toList(); 
+        break; // Assuming you only need the first asset with graphPoints
+      }
+    }
+
 
     // This calculation is for the total assets of all connected users combined
     for (var user in connectedUsers.data!) {
@@ -476,7 +555,7 @@ switch (value.toInt()) {
         text = '1';
       } 
       if (dropdownValue == 'last-6-months' ) {
-        text = analytics.lastSixMonths[0];
+        text = timeline.lastSixMonths[0];
       } 
       if (dropdownValue == 'last-year') {
         text = 'Jan';
@@ -490,7 +569,7 @@ switch (value.toInt()) {
         text = '15';
       } 
       if (dropdownValue == 'last-6-months' ) {
-        text = analytics.lastSixMonths[1];
+        text = timeline.lastSixMonths[1];
       } 
       if (dropdownValue == 'last-year') {
         text = 'Feb';
@@ -501,10 +580,10 @@ switch (value.toInt()) {
         text = 'Tue';
       } 
       if (dropdownValue == 'last-month') {
-        text =  '${analytics.daysInLastMonth}';
+        text =  '${timeline.daysInLastMonth}';
       } 
       if (dropdownValue == 'last-6-months' ) {
-        text = analytics.lastSixMonths[2];
+        text = timeline.lastSixMonths[2];
       } 
       if (dropdownValue == 'last-year') {
         text = 'Mar';
@@ -515,7 +594,7 @@ switch (value.toInt()) {
         text = 'Wed';
       } 
       if (dropdownValue == 'last-6-months' ) {
-        text = analytics.lastSixMonths[3];
+        text = timeline.lastSixMonths[3];
       } 
       if (dropdownValue == 'last-year') {
         text = 'Apr';
@@ -526,7 +605,7 @@ switch (value.toInt()) {
         text = 'Thu';
       } 
       if (dropdownValue == 'last-6-months' ) {
-        text = analytics.lastSixMonths[4];
+        text = timeline.lastSixMonths[4];
       } 
       if (dropdownValue == 'last-year') {
         text = 'May';
@@ -537,7 +616,7 @@ switch (value.toInt()) {
         text = 'Fri';
       } 
       if (dropdownValue == 'last-6-months' ) {
-        text = analytics.lastSixMonths[5];
+        text = timeline.lastSixMonths[5];
       } 
       if (dropdownValue == 'last-year') {
         text = 'Jun';
@@ -771,73 +850,62 @@ String getDropdownValueName(String dropDownValue) {
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.only( right: 10),
-                      child: LineChart(
-                        LineChartData(
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            getDrawingHorizontalLine: (value) => const FlLine(
-                                color: Color.fromARGB(255, 102, 102, 102),
-                                strokeWidth: 0.5,
-                              ),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Padding(
+                  padding: const EdgeInsets.only( right: 10),
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (value) => const FlLine(
+                            color: Color.fromARGB(255, 102, 102, 102),
+                            strokeWidth: 0.5,
                           ),
-                          titlesData: titlesData,
-
-                          borderData: FlBorderData(
-                            show: false,
-                          ),
-                          minX: 0,
-                          maxX: maxX(dropdownValue),
-                          minY: 0,
-                          maxY: 10000,
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: [
-                                const FlSpot(0, 2000),
-                                const FlSpot(1, 6000),
-                                const FlSpot(2, 4000),
-                                const FlSpot(3, 5000),
-                                const FlSpot(4, 4000),
-                                const FlSpot(5, 3000),
-                              ],
-                              isCurved: true,
-                              color: AppColors.defaultBlue500,
-                              barWidth: 3,
-                              isStrokeCapRound: true,
-                              dotData: FlDotData(
-                                show: true,
-                                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                                    radius: 4,
-                                    color: AppColors.defaultBlueGray500,
-                                    strokeWidth: 0,
-                                    strokeColor: Colors.transparent,
-                                  ),
-                              ),
-                              belowBarData: BarAreaData(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    AppColors.defaultBlue500,
-                                    AppColors.defaultBlue500,
-                                    AppColors.defaultBlue500.withOpacity(0.2),
-                                  ],
-                                ),
-                                show: true,
-                              ),
-                            ),
-                          ],
-                        )
                       ),
-                    ),
+                      titlesData: titlesData,
+              
+                      borderData: FlBorderData(
+                        show: false,
+                      ),
+                      minX: 0,
+                      maxX: maxX(dropdownValue),
+                      minY: 0,
+                      maxY: 10000,
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: AppColors.defaultBlue500,
+                          barWidth: 3,
+                          isStrokeCapRound: true,
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                                radius: 4,
+                                color: AppColors.defaultBlueGray500,
+                                strokeWidth: 0,
+                                strokeColor: Colors.transparent,
+                              ),
+                          ),
+                          belowBarData: BarAreaData(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.defaultBlue500,
+                                AppColors.defaultBlue500,
+                                AppColors.defaultBlue500.withOpacity(0.2),
+                              ],
+                            ),
+                            show: true,
+                          ),
+                        ),
+                      ],
+                    )
                   ),
-                ],
+                ),
               ),
             ),
 
@@ -872,16 +940,16 @@ String getDropdownValueName(String dropDownValue) {
                 String displayText;
                 switch (dropdownValue) {
                   case 'last-week':
-                    displayText = '${analytics.lastWeekRange}';
+                    displayText = '${timeline.lastWeekRange}';
                     break;
                   case 'last-month':
-                    displayText = '${analytics.lastMonthRange}';
+                    displayText = '${timeline.lastMonthRange}';
                     break;
                   case 'last-6-months':
-                    displayText = '${analytics.lastSixMonthsRange}';
+                    displayText = '${timeline.lastSixMonthsRange}';
                     break;
                   case 'last-year':
-                    displayText = '${analytics.lastYearRange}';
+                    displayText = '${timeline.lastYearRange}';
                     break;
                   default:
                     displayText = 'Select a range';
