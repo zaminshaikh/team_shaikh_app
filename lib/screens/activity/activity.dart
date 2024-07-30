@@ -109,10 +109,6 @@ class _ActivityPageState extends State<ActivityPage> {
             return '$firstName $lastName';
           }).toList();
   
-          // Update userCheckStatus for each connected user
-          for (var recipient in allRecipients) {
-            userCheckStatus[recipient] = true;
-          }
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
@@ -124,6 +120,11 @@ class _ActivityPageState extends State<ActivityPage> {
 
           // Convert the set back to a list if needed
           allRecipients = allRecipientsSet.toList();
+          // Update userCheckStatus for each connected user
+          for (var recipient in allRecipients) {
+            userCheckStatus[recipient] = true;
+          }
+          print('activity.dart: All recipients: $allRecipients');
         });
       });
     });
@@ -772,6 +773,7 @@ class _ActivityPageState extends State<ActivityPage> {
     } else {
       if (!allRecipients.contains(activity['recipient'])) {
         allRecipients.add(activity['recipient']);
+        userCheckStatus[activity['recipient']] = true;
       }
       return _buildActivity(activity, !isLastActivityForTheDay);
     }
