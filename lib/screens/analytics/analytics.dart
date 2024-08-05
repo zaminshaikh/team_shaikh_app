@@ -35,7 +35,7 @@ class Analytics {
   Analytics() {
     now = DateTime.now();
     firstDayOfCurrentMonth = DateTime(now.year, now.month, 1);
-    lastDayOfPreviousMonth = firstDayOfCurrentMonth.subtract(Duration(days: 1));
+    lastDayOfPreviousMonth = firstDayOfCurrentMonth.subtract(const Duration(days: 1));
     daysInLastMonth = lastDayOfPreviousMonth.day;
     lastSixMonths = _calculateLastSixMonths();
     lastWeekRange = _calculateLastWeekRange();
