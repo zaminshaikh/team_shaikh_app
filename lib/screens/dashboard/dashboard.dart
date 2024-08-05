@@ -848,10 +848,10 @@ class _DashboardPageState extends State<DashboardPage> {
       Stack(
         children: [
           ExpandableCarousel(
-            options: CarouselOptions(
+            options: ExpandableCarouselOptions(
               viewportFraction: 1.0,
               autoPlay: false,
-              controller: CarouselController(),
+              controller: ExpandableCarouselController(),
               floatingIndicator: false,
               restorationId: 'expandable_carousel',
               slideIndicator: CustomSlideIndicator(),
