@@ -53,6 +53,8 @@ class PushNotificationService {
   }
 
   Future<void> _showNotification(RemoteNotification notification) async {
+    log('Showing notification with title: ${notification.title} and body: ${notification.body}');
+    
     const notifications.AndroidNotificationDetails androidPlatformChannelSpecifics = notifications.AndroidNotificationDetails(
       'your_channel_id',
       'your_channel_name',
@@ -61,14 +63,21 @@ class PushNotificationService {
       priority: notifications.Priority.high,
       showWhen: false,
     );
+
     const notifications.NotificationDetails platformChannelSpecifics = notifications.NotificationDetails(android: androidPlatformChannelSpecifics);
-    await _flutterLocalNotificationsPlugin.show(
-      0,
-      notification.title,
-      notification.body,
-      platformChannelSpecifics,
-      payload: 'item x',
-    );
+
+    try {
+      await _flutterLocalNotificationsPlugin.show(
+        0,
+        notification.title,
+        notification.body,
+        platformChannelSpecifics,
+        payload: 'item x',
+      );
+      log('Notification shown successfully');
+    } catch (e) {
+      log('Error showing notification: $e');
+    }
   }
 }
 
