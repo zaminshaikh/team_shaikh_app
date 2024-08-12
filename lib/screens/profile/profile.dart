@@ -224,14 +224,14 @@ List<String> assetsFormatted = [];
       for (var asset in user.assets) {
         switch (asset['fund']) {
           case 'AGQ':
-            totalAGQ += asset['total'];
+            totalAGQ += asset['total'] ?? 0;
             break;
           case 'AK1':
-            totalAK1 += asset['total'];
+            totalAK1 += asset['total'] ?? 0;
             break;
           default:
-            totalAssets += asset['total'];
-            totalUserAssets += asset['total'];
+            totalAssets += asset['total'] ?? 0;
+            totalUserAssets += asset['total'] ?? 0;
         }
       }
 
@@ -241,13 +241,13 @@ List<String> assetsFormatted = [];
           for (var asset in user.assets) {
             switch (asset['fund']) {
               case 'AGQ':
-                totalAGQ += asset['total'];
+                totalAGQ += asset['total'] ?? 0;
                 break;
               case 'AK1':
-                totalAK1 += asset['total'];
+                totalAK1 += asset['total'] ?? 0;
                 break;
               default:
-                totalAssets += asset['total'];
+                totalAssets += asset['total'] ?? 0;
             }
           }
         }
@@ -278,8 +278,8 @@ List<String> assetsFormatted = [];
     double userTotalAssets = 0.0; // Ensure this is a double for calculations
 
     for (var asset in user.assets) {
-      // Assuming asset['total'] is a double. If it's a string, parse it first.
-      userTotalAssets += asset['total'];
+      // Assuming asset['total'] ?? 0 is a double. If it's a string, parse it first.
+      userTotalAssets += asset['total'] ?? 0;
     }
 
     // Format the total assets after summing them up

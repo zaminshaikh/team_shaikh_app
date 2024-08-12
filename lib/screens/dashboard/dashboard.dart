@@ -144,14 +144,14 @@ class _DashboardPageState extends State<DashboardPage> {
     for (var asset in user.assets) {
       switch (asset['fund']) {
         case 'AGQ':
-          totalUserAGQ += asset['total'];
+          totalUserAGQ += asset['total'] ?? 0;
           break;
         case 'AK1':
-          totalUserAK1 += asset['total'];
+          totalUserAK1 += asset['total'] ?? 0;
           break;
         default:
             latestIncome = double.parse(asset['ytd'].toString());
-          totalUserAssets += asset['total'];
+          totalUserAssets += asset['total'] ?? 0;
       }
     }
     double percentageAGQ =
@@ -223,15 +223,15 @@ class _DashboardPageState extends State<DashboardPage> {
     for (var asset in user.assets) {
       switch (asset['fund']) {
         case 'AGQ':
-          totalAGQ += asset['total'];
+          totalAGQ += asset['total'] ?? 0;
           break;
         case 'AK1':
-          totalAK1 += asset['total'];
+          totalAK1 += asset['total'] ?? 0;
           break;
         default:
           latestIncome = double.parse(asset['ytd'].toString());
-          totalAssets += asset['total'];
-          totalUserAssets += asset['total'];
+          totalAssets += asset['total'] ?? 0;
+          totalUserAssets += asset['total'] ?? 0;
       }
     }
 
@@ -240,13 +240,13 @@ class _DashboardPageState extends State<DashboardPage> {
       for (var asset in user.assets) {
         switch (asset['fund']) {
           case 'AGQ':
-            totalAGQ += asset['total'];
+            totalAGQ += asset['total'] ?? 0;
             break;
           case 'AK1':
-            totalAK1 += asset['total'];
+            totalAK1 += asset['total'] ?? 0;
             break;
           default:
-            totalAssets += asset['total'];
+            totalAssets += asset['total'] ?? 0;
         }
       }
     }
@@ -873,8 +873,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   case 'AK1':
                     break;
                   default:
-                    latestIncome = (asset['ytd'] is int) ? (asset['ytd'] as int).toDouble() : asset['ytd'] as double;
-                    totalUserAssets += (asset['total'] is int) ? (asset['total'] as int).toDouble() : asset['total'] as double;                }
+                    latestIncome += ((asset['ytd'] ?? 0 ) is int) ? ((asset['ytd'] ?? 0 ) as int).toDouble() : (asset['ytd'] ?? 0) as double;
+                    totalUserAssets += ((asset['total']?? 0 ) is int) ? ((asset['total'] ?? 0) as int).toDouble() : (asset['total'] ?? 0) as double; }
               }
               return Builder(
                 builder: (BuildContext context) => Column(
