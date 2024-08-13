@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:team_shaikh_app/push_notification.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import '/firebase_options.dart';
@@ -84,6 +85,7 @@ class MyApp extends StatelessWidget {
         '/activity': (context) => const ActivityPage(),
         '/profile': (context) => const ProfilePage(),
         '/notification': (context) => const NotificationPage(),
+        '/onboarding': (context) => const OnboardingPage(),
       },
 
     );

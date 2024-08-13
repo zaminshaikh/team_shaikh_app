@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -396,19 +397,21 @@ Future<void> shareFile(context, clientId, documentName) async {
     fetchConnectedCids(_databaseService?.cid ?? '$cid');
     listPDFFilesConnectedUsers();
     _selectedButton = 'settings';
-        _initData().then((_) {
+    _initData().then((_) {
       _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
-        setState(() {
-          connectedUserNames = connectedUsers.map<String>((user) {
-            String firstName = user.info['name']['first'] as String;
-            String lastName = user.info['name']['last'] as String;
-            Map<String, String> userName = {
-              'first': firstName,
-              'last': lastName,
-            };
-            return userName.values.join(' ');
-          }).toList();
-        });
+        if (mounted) {
+          setState(() {
+            connectedUserNames = connectedUsers.map<String>((user) {
+              String firstName = user.info['name']['first'] as String;
+              String lastName = user.info['name']['last'] as String;
+              Map<String, String> userName = {
+                'first': firstName,
+                'last': lastName,
+              };
+              return userName.values.join(' ');
+            }).toList();
+          });
+        }
       });
     });
 
@@ -433,10 +436,12 @@ Future<void> shareFile(context, clientId, documentName) async {
       final ListResult result = await storage.ref('testUsersStatements/$userFolder').listAll();
       final List<Reference> allFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
     
-    
-      setState(() {
-          pdfFiles = allFiles;
-      });
+
+        if (mounted) {
+          setState(() {
+            pdfFiles = allFiles;
+          });
+        }
   }
 
   List<PdfFileWithCid> pdfFilesConnectedUsers = [];
@@ -454,15 +459,17 @@ Future<void> shareFile(context, clientId, documentName) async {
       allConnectedFiles.addAll(pdfFilesWithCid);
     }
 
-    setState(() {
-      // Use a Set to keep track of already added files
-      final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
-      
-      // Add only the new files that are not already in the list
-      final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
-      
-      pdfFilesConnectedUsers.addAll(newFiles);
-    });
+    if (mounted) {
+      setState(() {
+        // Use a Set to keep track of already added files
+        final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
+        
+        // Add only the new files that are not already in the list
+        final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
+        
+        pdfFilesConnectedUsers.addAll(newFiles);
+      });
+    }
   }
 
 // This is the selected button, initially set to an empty string
@@ -896,9 +903,11 @@ Column _profileForAllUsers() => Column(
               ],
             ),
             onPressed: () {
-              setState(() {
-                _selectedButton = 'settings';
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedButton = 'settings';
+                });
+              }
             },
           ),
           
@@ -932,15 +941,17 @@ Column _profileForAllUsers() => Column(
               ],
             ),
             onPressed: () async {
-              setState(() {
-                _selectedButton = 'statementsAndDocuments';
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedButton = 'statementsAndDocuments';
+                });
+              }
                 
-                await listPDFFiles();
-                
-                await fetchConnectedCids(_databaseService?.cid ?? '$cid');
-                
-                await listPDFFilesConnectedUsers();
+              await listPDFFiles();
+              
+              await fetchConnectedCids(_databaseService?.cid ?? '$cid');
+              
+              await listPDFFilesConnectedUsers();
             },
           ),
           
@@ -974,9 +985,13 @@ Column _profileForAllUsers() => Column(
               ],
             ),
             onPressed: () {
-              setState(() {
-                _selectedButton = 'helpCenter';
-              });
+
+              if (mounted) {  
+                setState(() {
+                  _selectedButton = 'helpCenter';
+                });
+              }
+
             },
           ),
 
@@ -1011,9 +1026,11 @@ Column _profileForAllUsers() => Column(
               ],
             ),
             onPressed: () {
-              setState(() {
-                _selectedButton = 'profiles';
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedButton = 'profiles';
+                });
+              }
             },
           ),
 
@@ -1047,9 +1064,11 @@ Column _profileForAllUsers() => Column(
                 ),],
             ),
             onPressed: () {
-              setState(() {
-                _selectedButton = 'legalAndPolicies';
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedButton = 'legalAndPolicies';
+                });
+              }
             },
           ),
           
@@ -1465,9 +1484,11 @@ Column _profileForAllUsers() => Column(
                         activeColor: CupertinoColors.activeBlue,
                         onChanged: (bool? value) {
                           // This is called when the user toggles the switch.
-                          setState(() {
-                            hapticsSwitchValue = value ?? false;
-                          });
+                          if (mounted) {
+                            setState(() {
+                              hapticsSwitchValue = value ?? false;
+                            }); 
+                          }
                         },
                       ),
                     ],
@@ -1530,9 +1551,11 @@ Column _profileForAllUsers() => Column(
                                 activeColor: CupertinoColors.activeBlue,
                                 onChanged: (bool? value) {
                                   // This is called when the user toggles the switch.
-                                  setState(() {
-                                    activitySwitchValue = value ?? false;
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      activitySwitchValue = value ?? false;
+                                    }); 
+                                  }
                                 },
                               ),
                             ],
@@ -1567,9 +1590,11 @@ Column _profileForAllUsers() => Column(
                                 value: statementsSwitchValue,
                                 activeColor: CupertinoColors.activeBlue,
                                 onChanged: (bool? value) {
-                                  setState(() {
-                                    statementsSwitchValue = value ?? false;
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      statementsSwitchValue = value ?? false;
+                                    });
+                                  }
                                 },
                               ),
                             ],
@@ -1623,7 +1648,15 @@ Column _profileForAllUsers() => Column(
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => signUserOut(context),
+                        onTap: () async {
+                          List<dynamic> tokens = await _databaseService!.getField('tokens');
+                          // Get the current token
+                          String currentToken = await FirebaseMessaging.instance.getToken() ?? '';
+                          tokens.remove(currentToken);
+                          // Update the list of tokens in the database for the user
+                          await _databaseService!.updateField('tokens', tokens);
+                          signUserOut(context);
+                        },
                         child: Container(
                           height: 55,
                           decoration: BoxDecoration(
