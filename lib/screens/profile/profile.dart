@@ -879,7 +879,7 @@ Column _profileForAllUsers() => Column(
             child: Row(
               children: [
                 Text(
-                  'Help Center',
+                  'Help',
                   style: TextStyle(
                     color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
                     fontSize: 16,
@@ -908,18 +908,18 @@ Column _profileForAllUsers() => Column(
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
-                color: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+                color: _selectedButton == 'disclaimer' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
               ),
-              backgroundColor: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : Colors.transparent,
+              backgroundColor: _selectedButton == 'disclaimer' ? AppColors.defaultBlue500 : Colors.transparent,
             ),
             child: Row(
               children: [
                 Text(
-                  'Legal & Policies',
+                  'Disclaimer',
                   style: TextStyle(
-                    color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
+                    color: _selectedButton == 'disclaimer' ? Colors.white : AppColors.defaultBlueGray500,
                     fontSize: 16,
-                    fontWeight: _selectedButton == 'legalAndPolicies' ? FontWeight.bold : FontWeight.w400,
+                    fontWeight: _selectedButton == 'disclaimer' ? FontWeight.bold : FontWeight.w400,
                     fontFamily: 'Titillium Web'
                   ),
                 ),
@@ -927,13 +927,13 @@ Column _profileForAllUsers() => Column(
                 SvgPicture.asset(
                   'assets/icons/profile_legal_policies_icon.svg',
                   // ignore: deprecated_member_use
-                  color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
+                  color: _selectedButton == 'disclaimer' ? Colors.white : AppColors.defaultBlueGray500,
                   height: 20,
                 ),],
             ),
             onPressed: () {
               setState(() {
-                _selectedButton = 'legalAndPolicies';
+                _selectedButton = 'disclaimer';
               });
             },
           ),
@@ -944,32 +944,32 @@ Column _profileForAllUsers() => Column(
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
-                color: _selectedButton == 'statementsAndDocuments' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+                color: _selectedButton == 'documents' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
               ),
-              backgroundColor: _selectedButton == 'statementsAndDocuments' ? AppColors.defaultBlue500 : Colors.transparent,
+              backgroundColor: _selectedButton == 'documents' ? AppColors.defaultBlue500 : Colors.transparent,
             ),
             child: Row(
               children: [
                 Text(
-                  'Statements and Documents',
+                  'Documents',
                   style: TextStyle(
-                    color: _selectedButton == 'statementsAndDocuments' ? Colors.white : AppColors.defaultBlueGray500,
+                    color: _selectedButton == 'documents' ? Colors.white : AppColors.defaultBlueGray500,
                     fontSize: 16,
-                    fontWeight: _selectedButton == 'statementsAndDocuments' ? FontWeight.bold : FontWeight.w400,
+                    fontWeight: _selectedButton == 'documents' ? FontWeight.bold : FontWeight.w400,
                     fontFamily: 'Titillium Web'
                   ),
                 ),
                 const SizedBox(width: 10),
                 SvgPicture.asset(
                   'assets/icons/profile_statements_icon.svg',
-                  color: _selectedButton == 'statementsAndDocuments' ? Colors.white : AppColors.defaultBlueGray500,
+                  color: _selectedButton == 'documents' ? Colors.white : AppColors.defaultBlueGray500,
                   height: 20,
                 )
               ],
             ),
             onPressed: () async {
               setState(() {
-                _selectedButton = 'statementsAndDocuments';
+                _selectedButton = 'documents';
               });
                 
                 await listPDFFiles();
@@ -1067,6 +1067,116 @@ Column _profileForAllUsers() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
       children: [
                   const SizedBox(height: 25),
+
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start, 
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        children: [
+                          const Text(
+                            'Notifications',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            'Activity',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+
+                          const SizedBox(height: 5),
+                          const Text(
+                            'Let me know about new activity within my portfolio.',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CupertinoSwitch(
+                                // This bool value toggles the switch.
+                                value: activitySwitchValue,
+                                activeColor: CupertinoColors.activeBlue,
+                                onChanged: (bool? value) {
+                                  // This is called when the user toggles the switch.
+                                  setState(() {
+                                    activitySwitchValue = value ?? false;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          const Text(
+                            'Statement',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            'Let me know when I recieve a new statement.',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CupertinoSwitch(
+                                // This bool value toggles the switch.
+                                value: statementsSwitchValue,
+                                activeColor: CupertinoColors.activeBlue,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    statementsSwitchValue = value ?? false;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+
+
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  const Divider( 
+                    color: Colors.white,
+                    thickness: 0.2,
+                    height: 20,
+                  ),
+
+                  const SizedBox(height: 15),
 
                   // Security Section with options to change email and password
                   Row(
@@ -1244,7 +1354,7 @@ Column _profileForAllUsers() => Column(
                           );
                         },
                         child: Container(
-                          height: 55,
+                          height: 45,
                           decoration: BoxDecoration(
                             color: Colors.transparent,
                             borderRadius: BorderRadius.circular(25),
@@ -1257,7 +1367,7 @@ Column _profileForAllUsers() => Column(
                             child: Text(
                               'Change Email',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Titillium Web',
@@ -1409,7 +1519,7 @@ Column _profileForAllUsers() => Column(
                           );
                         },
                         child: Container(
-                          height: 55,
+                          height: 45,
                           decoration: BoxDecoration(
                             color: Colors.transparent,
                             borderRadius: BorderRadius.circular(25),
@@ -1422,7 +1532,7 @@ Column _profileForAllUsers() => Column(
                             child: Text(
                               'Change Password',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Titillium Web',
@@ -1436,46 +1546,6 @@ Column _profileForAllUsers() => Column(
                     ],
                   ),
 
-                  // Haptics Section with options to change haptics
-                  const Text(
-                    'Haptics',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    'Enable haptics if you want to receive vibration feedback.',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CupertinoSwitch(
-                        // This bool value toggles the switch.
-                        value: hapticsSwitchValue,
-                        activeColor: CupertinoColors.activeBlue,
-                        onChanged: (bool? value) {
-                          // This is called when the user toggles the switch.
-                          setState(() {
-                            hapticsSwitchValue = value ?? false;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-
-
-                  const SizedBox(height: 15),
-
                   const Divider( 
                     color: Colors.white,
                     thickness: 0.2,
@@ -1484,112 +1554,6 @@ Column _profileForAllUsers() => Column(
 
                   const SizedBox(height: 15),
 
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start, 
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, 
-                        children: [
-                          const Text(
-                            'Notifications',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          const Text(
-                            'Activity',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Let me know about new activity within my portfolio.',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CupertinoSwitch(
-                                // This bool value toggles the switch.
-                                value: activitySwitchValue,
-                                activeColor: CupertinoColors.activeBlue,
-                                onChanged: (bool? value) {
-                                  // This is called when the user toggles the switch.
-                                  setState(() {
-                                    activitySwitchValue = value ?? false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          const Text(
-                            'Statement',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Let me know when I recieve a new statement.',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CupertinoSwitch(
-                                // This bool value toggles the switch.
-                                value: statementsSwitchValue,
-                                activeColor: CupertinoColors.activeBlue,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    statementsSwitchValue = value ?? false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-
-
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  const Divider( 
-                    color: Colors.white,
-                    thickness: 0.2,
-                    height: 20,
-                  ),
-
-                  const SizedBox(height: 15),
 
                   const Row(
                     children: [
@@ -1625,7 +1589,7 @@ Column _profileForAllUsers() => Column(
                       GestureDetector(
                         onTap: () => signUserOut(context),
                         child: Container(
-                          height: 55,
+                          height: 45,
                           decoration: BoxDecoration(
                             color: const Color.fromARGB(255, 149, 28, 28),
                             borderRadius: BorderRadius.circular(25),
@@ -1634,7 +1598,7 @@ Column _profileForAllUsers() => Column(
                             child: Text(
                               'Logout',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Titillium Web',
@@ -1659,14 +1623,14 @@ Column _profileForAllUsers() => Column(
     switch (_selectedButton) {
       case 'settings':
         return _settings(); // replace with your actual Settings page widget
-      case 'statementsAndDocuments':
-        return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
+      case 'documents':
+        return _documents(); // replace with your actual Statements and Documents page widget
       case 'helpCenter':
        return _helpCenter(); // replace with your actual Help Center page widget
       case 'profiles':
        return _profileForUser(); // replace with your actual Profiles page widget
-      case 'legalAndPolicies':
-       return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
+      case 'disclaimer':
+       return _disclaimer(); // replace with your actual Legal and Policies page widget
       default:
         return Container(); // return an empty container by default
     }
@@ -1677,14 +1641,14 @@ Column _profileForAllUsers() => Column(
     switch (_selectedButton) {
       case 'settings':
         return _settings(); // replace with your actual Settings page widget
-      case 'statementsAndDocuments':
-        return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
+      case 'documents':
+        return _documents(); // replace with your actual Statements and Documents page widget
       case 'helpCenter':
        return _helpCenter(); // replace with your actual Help Center page widget
       case 'profiles':
        return _profileForAllUsers(); // replace with your actual Profiles page widget   
-      case 'legalAndPolicies':
-       return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
+      case 'disclaimer':
+       return _disclaimer(); // replace with your actual Legal and Policies page widget
       default:
         return Container(); // return an empty container by default
     }
@@ -1959,7 +1923,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
 }
 
 // This is the Statements and Documents section
-  Padding _statementsAndDocuments() => Padding(
+  Padding _documents() => Padding(
         padding: const EdgeInsets.fromLTRB(10, 20, 10, 120),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -2551,7 +2515,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
 
 
 // This is the Legal and Policies section
-  Container _legalAndPolicies() => Container(
+  Container _disclaimer() => Container(
     padding: const EdgeInsets.all(20),
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
