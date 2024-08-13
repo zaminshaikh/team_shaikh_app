@@ -69,9 +69,6 @@ class DatabaseService {
 
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
-      
-
-
       return null;
     }
 
@@ -269,6 +266,48 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
       // Catch any other exceptions
       log('database.dart: Error creating/updating: $e', stackTrace: StackTrace.current);
       rethrow; // Rethrow to propagate the exception to the caller
+    }
+  }
+
+  /// Returns a field from the user document.
+  /// 
+  /// Parameters:
+  /// - [uid]: The ID of the user.
+  /// - [fieldName]: The name of the field to retrieve.
+  /// 
+  /// Returns:
+  /// - A Future that completes with the value of the specified field.
+  Future<dynamic> getField(String fieldName) async {
+    try {
+      DocumentSnapshot userDoc = await usersCollection.doc(cid).get();
+      if (userDoc.exists) {
+        if ((userDoc.data() as Map<String, dynamic>).containsKey(fieldName)) {
+          return userDoc.get(fieldName);
+        } else {
+          return null; // Field does not exist
+        }
+      } else {
+        throw Exception('User document does not exist');
+      }
+    } catch (e) {
+      log('database.dart: Error getting field: $e', stackTrace: StackTrace.current);
+      return null;
+    }
+  }
+
+  /// Updates a field in the user document.
+  /// 
+  /// Parameters:
+  /// - [fieldName]: The name of the field to update.
+  /// - [newValue]: The new value to set for the field.
+  /// 
+  /// Returns:
+  /// - A Future that completes when the field is updated.
+  Future<void> updateField(String fieldName, dynamic newValue) async {
+    try {
+      await usersCollection.doc(cid).update({fieldName: newValue});
+    } catch (e) {
+      throw Exception('Error updating field: $e');
     }
   }
 
