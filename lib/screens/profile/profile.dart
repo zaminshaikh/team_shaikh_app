@@ -395,7 +395,7 @@ Future<void> shareFile(context, clientId, documentName) async {
     listPDFFiles();
     fetchConnectedCids(_databaseService?.cid ?? '$cid');
     listPDFFilesConnectedUsers();
-    _selectedButton = 'settings';
+    _selectedButton = 'helpCenter';
         _initData().then((_) {
       _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
         setState(() {
@@ -868,42 +868,78 @@ Column _profileForAllUsers() => Column(
         children: <Widget>[
           const SizedBox(width: 20), // Add initial width
 
-          // Settings button
+          // Help Center button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
-                color: _selectedButton == 'settings' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+                color: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
               ),
-              backgroundColor: _selectedButton == 'settings' ? AppColors.defaultBlue500 : Colors.transparent,
+              backgroundColor: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : Colors.transparent,
             ),
             child: Row(
               children: [
                 Text(
-                  'Settings',
+                  'Help Center',
                   style: TextStyle(
-                    color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
+                    color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
                     fontSize: 16,
-                    fontWeight: _selectedButton == 'settings' ? FontWeight.bold : FontWeight.w400,
+                    fontWeight: _selectedButton == 'helpCenter' ? FontWeight.bold : FontWeight.w400,
                     fontFamily: 'Titillium Web'
                   ),
                 ),
                 const SizedBox(width: 10),
                 SvgPicture.asset(
-                  'assets/icons/profile_settings_icon.svg',
-                  color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
+                  'assets/icons/profile_help_center_icon.svg',
+                  color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
                   height: 20,
                 )
               ],
             ),
             onPressed: () {
               setState(() {
-                _selectedButton = 'settings';
+                _selectedButton = 'helpCenter';
               });
             },
           ),
-          
+
           const SizedBox(width: 10), // Add width
-          
+
+          // Legal and Policies button
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              side: BorderSide(
+                color: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+              ),
+              backgroundColor: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Legal & Policies',
+                  style: TextStyle(
+                    color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
+                    fontSize: 16,
+                    fontWeight: _selectedButton == 'legalAndPolicies' ? FontWeight.bold : FontWeight.w400,
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SvgPicture.asset(
+                  'assets/icons/profile_legal_policies_icon.svg',
+                  // ignore: deprecated_member_use
+                  color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
+                  height: 20,
+                ),],
+            ),
+            onPressed: () {
+              setState(() {
+                _selectedButton = 'legalAndPolicies';
+              });
+            },
+          ),
+
+          const SizedBox(width: 10), // Add width          
+                    
           // Statements and Documents button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -942,44 +978,44 @@ Column _profileForAllUsers() => Column(
                 
                 await listPDFFilesConnectedUsers();
             },
-          ),
-          
+          ),      
+
           const SizedBox(width: 10), // Add width
-          
-          // Help Center button
+
+          // Settings button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               side: BorderSide(
-                color: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
+                color: _selectedButton == 'settings' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
               ),
-              backgroundColor: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : Colors.transparent,
+              backgroundColor: _selectedButton == 'settings' ? AppColors.defaultBlue500 : Colors.transparent,
             ),
             child: Row(
               children: [
                 Text(
-                  'Help Center',
+                  'Settings',
                   style: TextStyle(
-                    color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
+                    color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
                     fontSize: 16,
-                    fontWeight: _selectedButton == 'helpCenter' ? FontWeight.bold : FontWeight.w400,
+                    fontWeight: _selectedButton == 'settings' ? FontWeight.bold : FontWeight.w400,
                     fontFamily: 'Titillium Web'
                   ),
                 ),
                 const SizedBox(width: 10),
                 SvgPicture.asset(
-                  'assets/icons/profile_help_center_icon.svg',
-                  color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
+                  'assets/icons/profile_settings_icon.svg',
+                  color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
                   height: 20,
                 )
               ],
             ),
             onPressed: () {
               setState(() {
-                _selectedButton = 'helpCenter';
+                _selectedButton = 'settings';
               });
             },
           ),
-
+          
           const SizedBox(width: 10), // Add width
 
           // Profiles button
@@ -1013,42 +1049,6 @@ Column _profileForAllUsers() => Column(
             onPressed: () {
               setState(() {
                 _selectedButton = 'profiles';
-              });
-            },
-          ),
-
-          const SizedBox(width: 10), // Add width          
-
-          // Legal and Policies button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Legal & Policies',
-                  style: TextStyle(
-                    color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'legalAndPolicies' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_legal_policies_icon.svg',
-                  // ignore: deprecated_member_use
-                  color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                ),],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'legalAndPolicies';
               });
             },
           ),
