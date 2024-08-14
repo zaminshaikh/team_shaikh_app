@@ -24,26 +24,6 @@ class DashboardPage extends StatefulWidget {
 }
 int unreadNotificationsCount = 0;
 
-class CustomSlideIndicator extends SlideIndicator {
-   CustomSlideIndicator();
-
-  @override
-  Widget build(int currentPage, double pageDelta, int itemCount) => Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List<Widget>.generate(itemCount, (index) => Container(
-          width: 10.0,
-          height: 10.0,
-          margin: EdgeInsets.symmetric(vertical: 0.0, horizontal: 5.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: currentPage == index
-                ? Color.fromRGBO(255, 255, 255, 0.802)
-                : Color.fromRGBO(255, 255, 255, 0.504)
-          ),
-        )),
-    );
-}
-
 class _DashboardPageState extends State<DashboardPage> {
   // database service instance
   DatabaseService? _databaseService;
@@ -199,8 +179,8 @@ class _DashboardPageState extends State<DashboardPage> {
           totalUserAK1 += asset['total'];
           break;
         default:
-            latestIncome = double.parse(asset['ytd'].toString());
-          totalUserAssets += asset['total'];
+            latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
+            totalUserAssets += asset['total'] ?? 0;
       }
     }
     double percentageAGQ =
@@ -278,9 +258,9 @@ class _DashboardPageState extends State<DashboardPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          latestIncome = double.parse(asset['ytd'].toString());
-          totalAssets += asset['total'];
-          totalUserAssets += asset['total'];
+          latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
+          totalAssets += asset['total'] ?? 0;
+          totalUserAssets += asset['total'] ?? 0;
       }
     }
 
@@ -289,13 +269,13 @@ class _DashboardPageState extends State<DashboardPage> {
       for (var asset in user.assets) {
         switch (asset['fund']) {
           case 'AGQ':
-            totalAGQ += asset['total'];
+            totalAGQ += asset['total'] ?? 0;
             break;
           case 'AK1':
-            totalAK1 += asset['total'];
+            totalAK1 += asset['total'] ?? 0;
             break;
           default:
-            totalAssets += asset['total'];
+            totalAssets += asset['total'] ?? 0;
         }
       }
     }
@@ -894,56 +874,48 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildConnectedUsersSection(List<UserWithAssets> connectedUsers) =>
-      Stack(
-        children: [
-          ExpandableCarousel(
-            options: CarouselOptions(
-              viewportFraction: 1.0,
-              autoPlay: false,
-              controller: CarouselController(),
-              floatingIndicator: false,
-              restorationId: 'expandable_carousel',
-              slideIndicator: CustomSlideIndicator(),
-            ),
-            items: connectedUsers.map((user) {
-              String firstName = user.info['name']['first'] as String;
-              String lastName = user.info['name']['last'] as String;
-              String companyName = user.info['name']['company'] as String;
-              Map<String, String> userName = {
-                'first': firstName,
-                'last': lastName,
-                'company': companyName
-              };
-              double totalUserAssets = 0.00, latestIncome = 0.00;
-              for (var asset in user.assets) {
-                switch (asset['fund']) {
-                  case 'AGQ':
-                    break;
-                  case 'AK1':
-                    break;
-                  default:
-                    latestIncome = (asset['ytd'] is int) ? (asset['ytd'] as int).toDouble() : asset['ytd'] as double;
-                    totalUserAssets += (asset['total'] is int) ? (asset['total'] as int).toDouble() : asset['total'] as double;                }
-              }
-              return Builder(
-                builder: (BuildContext context) => Column(
-                  children: [
-                    _buildUserBreakdownSection(
-                      userName,
-                      totalUserAssets,
-                      latestIncome,
-                      user.assets,
-                      isConnectedUser: true,
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                ),
-              );
-            }).toList(),
-          )
-        ],
+      Column(
+        children: connectedUsers.map((user) {
+          String firstName = user.info['name']['first'] as String;
+          String lastName = user.info['name']['last'] as String;
+          String companyName = user.info['name']['company'] as String;
+          Map<String, String> userName = {
+            'first': firstName,
+            'last': lastName,
+            'company': companyName
+          };
+          double totalUserAssets = 0.00, latestIncome = 0.00;
+          for (var asset in user.assets) {
+            switch (asset['fund']) {
+              case 'AGQ':
+                break;
+              case 'AK1':
+                break;
+              default:
+                latestIncome = (asset['ytd'] is int) 
+                    ? (asset['ytd'] as int).toDouble() 
+                    : (asset['ytd'] as double?) ?? 0.0;
+                totalUserAssets += (asset['total'] is int) 
+                    ? (asset['total'] as int).toDouble() 
+                    : (asset['total'] as double?) ?? 0.0;
+            }
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildUserBreakdownSection(
+                userName,
+                totalUserAssets,
+                latestIncome,
+                user.assets,
+                isConnectedUser: true,
+              ),
+              SizedBox(height: 20),
+          ],
+          );
+        }).toList(),
       );
-
+      
   // ignore: unused_element
   Widget _buildConnectedUserBreakdownSection(
       Map<String, String> userName,
@@ -1094,192 +1066,199 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildAssetsStructureSection(
-          double totalUserAssets, double percentageAGQ, double percentageAK1) =>
-      Container(
-        width: 400,
-        height: 520,
-        padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 30, 41, 59),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            const Row(
-              children: [
-                SizedBox(width: 5),
-                Text(
-                  'Assets Structure',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                  ),
-                )
-              ],
-            ),
-            const SizedBox(height: 60),
-            Container(
-              width: 250,
-              height: 250,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Stack(
+            double totalUserAssets, double percentageAGQ, double percentageAK1) =>
+        Container(
+          width: 400,
+          height: 520,
+          padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 30, 41, 59),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              const Row(
                 children: [
-                  PieChart(
-                    PieChartData(
-                      startDegreeOffset: 120,
-                      centerSpaceRadius: 100,
-                      sectionsSpace: 10,
-                      sections: [
-                        PieChartSectionData(
-                          color: const Color.fromARGB(255, 12, 94, 175),
-                          radius: 25,
-                          value: percentageAGQ,
-                          showTitle: false,
-                        ),
-                        PieChartSectionData(
-                          color: const Color.fromARGB(255, 49, 153, 221),
-                          radius: 25,
-                          value: percentageAK1,
-                          showTitle: false,
-                        ),
-                      ],
+                  SizedBox(width: 5),
+                  Text(
+                    'Assets Structure',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Total',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        Text(
-                          _currencyFormat(totalUserAssets),
-                          style: TextStyle(
-                            fontSize: 22,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  )
                 ],
               ),
-            ),
-            const SizedBox(height: 30),
-            const Row(
-              children: [
-                SizedBox(width: 30),
-                Text(
-                  'Type',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color.fromARGB(255, 216, 216, 216),
-                    fontFamily: 'Titillium Web',
-                  ),
+              const SizedBox(height: 60),
+              Container(
+                width: 250,
+                height: 250,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                Spacer(), // This will push the following widgets to the right
-                Text(
-                  '%',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color.fromARGB(255, 216, 216, 216),
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                SizedBox(width: 10),
-              ],
-            ),
-            const SizedBox(height: 5),
-            const Divider(
-              thickness: 1.2,
-              height: 1,
-              color: Color.fromARGB(255, 102, 102, 102),
-            ),
-            const SizedBox(height: 10),
-            Column(
-              children: [
-                Row(
+                child: Stack(
                   children: [
-                    Icon(
-                      Icons.circle,
-                      size: 20,
-                      color: Color.fromARGB(255, 12, 94, 175),
+                    PieChart(
+                      PieChartData(
+                        startDegreeOffset: 120,
+                        centerSpaceRadius: 100,
+                        sectionsSpace: 10,
+                        sections: [
+                          if (percentageAGQ > 0)
+                            PieChartSectionData(
+                              color: const Color.fromARGB(255, 12, 94, 175),
+                              radius: 25,
+                              value: percentageAGQ,
+                              showTitle: false,
+                            ),
+                          if (percentageAK1 > 0)
+                            PieChartSectionData(
+                              color: const Color.fromARGB(255, 49, 153, 221),
+                              radius: 25,
+                              value: percentageAK1,
+                              showTitle: false,
+                            ),
+                        ],
+                      ),
                     ),
-                    SizedBox(width: 10),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Total',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          Text(
+                            _currencyFormat(totalUserAssets),
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+              if (percentageAGQ > 0 || percentageAK1 > 0) ...[
+                const Row(
+                  children: [
+                    SizedBox(width: 30),
                     Text(
-                      'AGQ Fund',
+                      'Type',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                        color: Color.fromARGB(255, 216, 216, 216),
                         fontFamily: 'Titillium Web',
                       ),
                     ),
                     Spacer(), // This will push the following widgets to the right
                     Text(
-                      '${percentageAGQ.toStringAsFixed(1)}%',
+                      '%',
                       style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 216, 216, 216),
                         fontFamily: 'Titillium Web',
                       ),
                     ),
                     SizedBox(width: 10),
                   ],
                 ),
-                SizedBox(height: 20),
-                Row(
+                const SizedBox(height: 5),
+                const Divider(
+                  thickness: 1.2,
+                  height: 1,
+                  color: Color.fromARGB(255, 102, 102, 102),
+                ),
+                const SizedBox(height: 10),
+                Column(
                   children: [
-                    Icon(
-                      Icons.circle,
-                      size: 20,
-                      color: Color.fromARGB(255, 49, 153, 221),
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'AK1 Fund',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Titillium Web',
+                    if (percentageAGQ > 0)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            size: 20,
+                            color: Color.fromARGB(255, 12, 94, 175),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'AGQ Fund',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          Spacer(), // This will push the following widgets to the right
+                          Text(
+                            '${percentageAGQ.toStringAsFixed(1)}%',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                        ],
                       ),
-                    ),
-                    Spacer(), // This will push the following widgets to the right
-                    Text(
-                      '${percentageAK1.toStringAsFixed(1)}%',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Titillium Web',
+                    if (percentageAGQ > 0 && percentageAK1 > 0)
+                      SizedBox(height: 20),
+                    if (percentageAK1 > 0)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            size: 20,
+                            color: Color.fromARGB(255, 49, 153, 221),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'AK1 Fund',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          Spacer(), // This will push the following widgets to the right
+                          Text(
+                            '${percentageAK1.toStringAsFixed(1)}%',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                        ],
                       ),
-                    ),
-                    SizedBox(width: 10),
                   ],
                 ),
               ],
-            )
-          ],
-        ),
-      );
-
+            ],
+          ),
+        );
+        
   Widget _buildBottomNavigationBar(BuildContext context) => Container(
     margin: const EdgeInsets.only(bottom: 30, right: 20, left: 20),
     height: 80,
