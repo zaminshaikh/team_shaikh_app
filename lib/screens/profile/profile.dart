@@ -1348,8 +1348,15 @@ Column _profileForAllUsers() => Column(
                                         // Show a message to inform the user that the password has been changed.
                                         await CustomAlertDialog.showAlertDialog(
                                           context,
-                                          'Password Change Successful',
+                                          'Success',
+
                                           'Your password has been updated successfully.',
+
+                                          icon: Icon(
+                                            Icons.check_circle_outline_rounded,
+                                            color: Colors.green,
+                                            size: 28,
+                                          ),
                                         );
                                       }
 

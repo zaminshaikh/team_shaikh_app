@@ -1,6 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:developer';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +60,6 @@ class Timeline {
       DateTime month = DateTime(now.year, now.month - i, 1);
       months.add(DateFormat('MMM').format(month));
     }
-    print('analytics.dart: Last six months: ${months.reversed.toList()}');
     return months.reversed.toList(); // Reverse to get the months in order
   }
 
@@ -78,7 +79,6 @@ class Timeline {
     DateTime endOfRange = now;
     String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfRange);
     String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfRange);
-    print('analytics.dart: Last week range: $formattedStart - $formattedEnd');
     return '$formattedStart - $formattedEnd';
   }
 
@@ -123,7 +123,6 @@ class Timeline {
     DateTime endOfLastYear = now;
     String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfLastYear);
     String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastYear);
-    print('analytics.dart: Last year range: $formattedStart - $formattedEnd');
     return '$formattedStart - $formattedEnd';
   }
 
@@ -134,7 +133,6 @@ class Timeline {
       DateTime month = DateTime(now.year, now.month - i, 1);
       months.add(DateFormat('MM').format(month));
     }
-    print('analytics.dart: Last 12 months: ${months.reversed.toList()}');
     return months.reversed.toList(); // Reverse to get the months in order
   }
 
@@ -152,7 +150,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        log('analytics.dart: User is not logged in');
         await Navigator.pushReplacementNamed(context, '/login');
       }
     // Fetch CID using async constructor
@@ -163,18 +160,58 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('analytics.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
     }
   }
   
   /// Formats the given amount as a currency string.
 
   String dropdownValue = 'last-year';
+
+  double maxAmount = 0.0;
   
   List<FlSpot> spots = [];
   List<DateTime> foundSpotsDatesInLastSixMonths = [];
   List<DateTime> foundSpotsDatesInLastWeek = [];
   List<DateTime> foundSpotsDatesInLastMonth = [];
+
+  List<DateTime> unfoundLastYearDates = [];
+  List<Map<String, dynamic>> unfoundLastYearPoints = [];
+  double unfoundLastYearAmount = 0.0;
+
+  List<DateTime> unfoundLastWeekDates = [];
+  List<Map<String, dynamic>> unfoundLastWeekPoints = [];
+  double unfoundLastWeekAmount = 0.0;
+
+  List<DateTime> unfoundLastMonthDates = [];
+  List<Map<String, dynamic>> unfoundLastMonthPoints = [];
+  double unfoundLastMonthAmount = 0.0;
+
+  List<DateTime> unfoundLastSixMonthsDates = [];
+  List<Map<String, dynamic>> unfoundLastSixMonthsPoints = [];
+  double unfoundLastSixMonthsAmount = 0.0;
+
+  List<DateTime> unfoundCustomDates = [];
+  List<Map<String, dynamic>> unfoundCustomPoints = [];
+  double unfoundCustomAmount = 0.0;
+
+
+
+  List<double> lastYearxValues = [];
+  List<DateTime> lastYearDates = [];
+
+  List<double> lastMonthxValues = [];
+  List<DateTime> lastMonthDates = [];
+
+  List<double> lastSixMonthsxValues = [];
+  List<DateTime> lastSixMonthsDates = [];
+
+  List<double> lastWeekxValues = [];
+  List<DateTime> lastWeekDates = [];
+
+  List<double> customxValues = [];
+  List<DateTime> customDates = [];
+
+  
 
 
   @override
@@ -308,7 +345,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     for (var asset in user.assets) {
       if (asset.containsKey('graphPoints')) {
         List<Map<String, dynamic>> graphPoints = List<Map<String, dynamic>>.from(asset['graphPoints']);
-        log('analytics.dart: graphPoints found: $graphPoints');
     
         bool spotAssignedZero = false; // Initialize spotAssignedZero
         bool pointAssignedLastCase = false; // Initialize pointAssignedLastCase
@@ -318,47 +354,112 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           DateTime dateTime = (point['time'] as Timestamp).toDate();
           double xValue = -1.0; // Assign an initial value to xValue
     
-          if (dropdownValue == 'last-year') {
+          if (dropdownValue == 'custom-time-period') {
             bool found = false;
-            DateTime now = DateTime.now();
-            bool isLeapYear = (now.year % 4 == 0 && now.year % 100 != 0) || (now.year % 400 == 0);
-            int daysToSubtract = isLeapYear ? 366 : 365;
-            DateTime startOfLastYear = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
-            DateTime endOfLastWeek = DateTime(now.year, now.month, now.day);
-
-            // Normalize dateTime to only include the date part
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-
-            // Check if normalizedDateTime is within the last year
-            if (normalizedDateTime.isAfter(startOfLastYear.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfLastWeek.add(const Duration(days: 1)))) {
+            DateTime startDate = DateTime(lastCustomRange.start.year, lastCustomRange.start.month, lastCustomRange.start.day);
+            DateTime endDate = DateTime(lastCustomRange.end.year, lastCustomRange.end.month, lastCustomRange.end.day);
+            
+            
+            // Check if normalizedDateTime is within the custom date range
+            if (normalizedDateTime.isAfter(startDate.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endDate.add(const Duration(days: 1)))) {
               found = true;
-              int dayDifference = normalizedDateTime.difference(startOfLastYear).inDays;
-              xValue = (dayDifference / 365) * 12; // Scale day to the range 0-12
-              print('Day difference: $dayDifference');
-              print('Calculated xValue: $xValue');
+              int dayDifference = normalizedDateTime.difference(startDate).inDays;
+              int totalDays = endDate.difference(startDate).inDays + 1; // Calculate total days in the custom period
+              xValue = (dayDifference / totalDays) * maxX(dropdownValue); // Scale day to the range 0-maxX
+              
+              
+              // Use sets to ensure unique values
+              Set<DateTime> uniqueDates = customDates.toSet();
+              Set<double> uniqueXValues = customxValues.toSet();
+              
+              uniqueDates.add(normalizedDateTime);
+              uniqueXValues.add(xValue);
+              
+              
+              if (!uniqueXValues.contains(0)) {
+                uniqueXValues.add(0);
+              }
+              if (!uniqueXValues.contains(maxX(dropdownValue))) {
+                uniqueXValues.add(maxX(dropdownValue));
+              }
+              if (!uniqueDates.contains(startDate)) {
+                uniqueDates.add(startDate);
+              }
+              if (!uniqueDates.contains(endDate)) {
+                uniqueDates.add(endDate);
+              }
+              
+              // Convert sets back to lists
+              customDates = uniqueDates.toList();
+              customxValues = uniqueXValues.toList();
+              
+              customDates.sort((a, b) => a.compareTo(b));
+              customxValues.sort((a, b) => a.compareTo(b));
+              
+              
               if (dayDifference == 0) {
                 spotAssignedZero = true;
-                print('spotAssignedZero: $spotAssignedZero');
               }
-              if (dayDifference == 365) {
+              if (dayDifference == totalDays) {
                 pointAssignedLastCase = true;
-                print('pointAssignedLastCase: $pointAssignedLastCase');
               }
-            }          
-            if (!found) {
-              return null; // Return null if the point is not from the last week
             }
+            
+            if (!found) {
+              unfoundCustomDates.add(normalizedDateTime);
+              unfoundCustomPoints.add(point); // Add the point to the list of unfound points
+              return null; // Return null if the point is not from the custom date range
+            }
+            
+            // Sort the dates in order
+            unfoundCustomDates.sort((a, b) => a.compareTo(b));
+            
+            
+            // Print the last date in the list
+            if (unfoundCustomDates.isNotEmpty) {
+              DateTime lastUnfoundDate = unfoundCustomDates.last;
+              
+              // Find the corresponding point for the last unfound date
+              var lastUnfoundPoint = unfoundCustomPoints[unfoundCustomDates.indexOf(lastUnfoundDate)];
+              
+              
+              // Ensure the amount is correctly accessed and parsed
+              if (lastUnfoundPoint.containsKey('amount')) {
+                double amount = lastUnfoundPoint['amount'].toDouble();
+                unfoundCustomAmount = amount; // Ensure unfoundCustomPeriodAmount is set correctly
+              }
+            }
+            
+            // Ensure both lists have the same length
+            if (customDates.length == customxValues.length) {
+              // Combine dates and xValues into a list of tuples
+              List<MapEntry<DateTime, double>> combinedList = [];
+              for (int i = 0; i < customDates.length; i++) {
+                combinedList.add(MapEntry(customDates[i], customxValues[i]));
+              }
+              
+              
+              // Sort the combined list by date and then by xValue
+              combinedList.sort((a, b) {
+                int dateComparison = a.key.compareTo(b.key);
+                if (dateComparison != 0) {
+                  return dateComparison;
+                } else {
+                  return a.value.compareTo(b.value);
+                }
+              });
+              
+              
+              // Extract sorted dates and xValues back into their respective lists
+              customDates = combinedList.map((entry) => entry.key).toList();
+              customxValues = combinedList.map((entry) => entry.value).toList();
+              
+            }
+          }
           
-            if (pointAssignedLastCase) { // Step 3: Print the message
-              print('Point assigned in the last case');
-            } else {
-              print('Point not assigned in the last case');
-            } 
-          }          
-
           else if (dropdownValue == 'last-6-months') {
             // Clear the list and set once when the dropdown value is selected
-          
             bool found = false;
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
             DateTime now = DateTime.now();
@@ -371,185 +472,456 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               int dayDifference = normalizedDateTime.difference(sixMonthsAgo).inDays;
               int totalDays = endOfsixMonthsAgo.difference(sixMonthsAgo).inDays + 1; // Calculate total days in the last 6 months
               xValue = (dayDifference / totalDays) * 5; // Scale day to the range 0-12
-              print('Day difference: $dayDifference');
-              print('Calculated xValue: $xValue');
-              print('Specific date for this spot: $normalizedDateTime');
+          
+              // Use sets to ensure unique values
+              Set<DateTime> uniqueDates = lastSixMonthsDates.toSet();
+              Set<double> uniqueXValues = lastSixMonthsxValues.toSet();
+          
+              uniqueDates.add(normalizedDateTime);
+              uniqueXValues.add(xValue);
+          
+              if (!uniqueXValues.contains(0)) {
+                uniqueXValues.add(0);
+              }
+              if (!uniqueXValues.contains(maxX(dropdownValue))) {
+                uniqueXValues.add(maxX(dropdownValue));
+              }
+              if (!uniqueDates.contains(sixMonthsAgo)) {
+                uniqueDates.add(sixMonthsAgo);
+              }
+              if (!uniqueDates.contains(endOfsixMonthsAgo)) {
+                uniqueDates.add(endOfsixMonthsAgo);
+              }
+          
+              // Convert sets back to lists
+              lastSixMonthsDates = uniqueDates.toList();
+              lastSixMonthsxValues = uniqueXValues.toList();
+          
+              lastSixMonthsDates.sort((a, b) => a.compareTo(b));
+              lastSixMonthsxValues.sort((a, b) => a.compareTo(b));
+          
               if (dayDifference == 0) {
                 spotAssignedZero = true;
-                print('spotAssignedZero: $spotAssignedZero');
               }
               if (dayDifference == 365) {
                 pointAssignedLastCase = true;
-                print('pointAssignedLastCase: $pointAssignedLastCase');
               }
             }
           
             if (!found) {
+              unfoundLastSixMonthsDates.add(normalizedDateTime);
+              unfoundLastSixMonthsPoints.add(point); // Add the point to the list of unfound points
               return null; // Return null if the point is not from the last 6 months
             }
+
+            // Sort the dates in order
+            unfoundLastSixMonthsDates.sort((a, b) => a.compareTo(b));
+
+            // Print the list of dates
+
+            // Print the last date in the list
+            if (unfoundLastSixMonthsDates.isNotEmpty) {
+              DateTime lastUnfoundDate = unfoundLastSixMonthsDates.last;
+
+              // Find the corresponding point for the last unfound date
+              var lastUnfoundPoint = unfoundLastSixMonthsPoints[unfoundLastSixMonthsDates.indexOf(lastUnfoundDate)];
+
+              // Debugging: Check the structure of the point
+
+              // Ensure the amount is correctly accessed and parsed
+              if (lastUnfoundPoint.containsKey('amount')) {
+                double amount = lastUnfoundPoint['amount'].toDouble();
+                unfoundLastSixMonthsAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+              } else {
+              }
+            }
+            
           
-            // Ensure endOfsixMonthsAgo is added at the end only once
+            // Ensure both lists have the same length
+            if (lastSixMonthsDates.length == lastSixMonthsxValues.length) {
+              // Combine dates and xValues into a list of tuples
+              List<MapEntry<DateTime, double>> combinedList = [];
+              for (int i = 0; i < lastSixMonthsDates.length; i++) {
+                combinedList.add(MapEntry(lastSixMonthsDates[i], lastSixMonthsxValues[i]));
+              }
+          
+              // Sort the combined list by date and then by xValue
+              combinedList.sort((a, b) {
+                int dateComparison = a.key.compareTo(b.key);
+                if (dateComparison != 0) {
+                  return dateComparison;
+                } else {
+                  return a.value.compareTo(b.value);
+                }
+              });
+          
+              // Extract sorted dates and xValues back into their respective lists
+              lastSixMonthsDates = combinedList.map((entry) => entry.key).toList();
+              lastSixMonthsxValues = combinedList.map((entry) => entry.value).toList();
+          
+              // Print the index values of lastSixMonthsDates and lastSixMonthsxValues
+              for (int i = 0; i < lastSixMonthsDates.length; i++) {
+              }
+            } else {
+            }
           }
+
+          else if (dropdownValue == 'last-year') {
+            bool found = false;
+            DateTime now = DateTime.now();
+            bool isLeapYear = (now.year % 4 == 0 && now.year % 100 != 0) || (now.year % 400 == 0);
+            int daysToSubtract = isLeapYear ? 366 : 365;
+            DateTime startOfLastYear = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
+            DateTime endOfLastWeek = DateTime(now.year, now.month, now.day);
           
+            // Normalize dateTime to only include the date part
+            DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
+          
+            // Check if normalizedDateTime is within the last year
+            if (normalizedDateTime.isAfter(startOfLastYear.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfLastWeek.add(const Duration(days: 1)))) {
+              found = true;
+              int dayDifference = normalizedDateTime.difference(startOfLastYear).inDays;
+              xValue = (dayDifference / 365) * 12; // Scale day to the range 0-12
+              if (!lastYearxValues.contains(0)) {
+                lastYearxValues.add(0);
+              }
+              if (!lastYearxValues.contains(maxX(dropdownValue))) {
+                lastYearxValues.add(maxX(dropdownValue));
+              }
+              if (!lastYearDates.contains(startOfLastYear)) {
+                lastYearDates.add(startOfLastYear);
+              }
+          
+              // Add xValue and date to the lists if the date is not already present
+              if (!lastYearDates.contains(normalizedDateTime)) {
+                lastYearxValues.add(xValue);
+                lastYearDates.add(normalizedDateTime);
+              }
+              lastYearxValues.sort((a, b) => a.compareTo(b));
+              lastYearDates.sort((a, b) => a.compareTo(b));
+          
+              if (dayDifference == 0) {
+                spotAssignedZero = true;
+              }
+              if (dayDifference == 365) {
+                pointAssignedLastCase = true;
+              }
+            }
+          
+            if (!found) {
+              unfoundLastYearDates.add(normalizedDateTime);
+              unfoundLastYearPoints.add(point); // Add the point to the list of unfound points
+              return null; // Return null if the point is not from the last year
+            }
+          
+            if (pointAssignedLastCase) { // Step 3: Print the message
+            } else {
+            }
+          
+            // Sort the dates in order
+            unfoundLastYearDates.sort((a, b) => a.compareTo(b));
+          
+            // Print the list of dates
+          
+            // Print the last date in the list
+            if (unfoundLastYearDates.isNotEmpty) {
+              DateTime lastUnfoundDate = unfoundLastYearDates.last;
+          
+              // Find the corresponding point for the last unfound date
+              var lastUnfoundPoint = unfoundLastYearPoints[unfoundLastYearDates.indexOf(lastUnfoundDate)];
+          
+              // Debugging: Check the structure of the point
+          
+              // Ensure the amount is correctly accessed and parsed
+              if (lastUnfoundPoint.containsKey('amount')) {
+                double amount = lastUnfoundPoint['amount'].toDouble();
+                unfoundLastYearAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+              } else {
+              }
+            }
+          
+            // Add today's date at the end of lastYearDates if not already present
+            DateTime today = DateTime(now.year, now.month, now.day);
+            if (!lastYearDates.contains(today)) {
+              lastYearDates.add(today);
+            }
+          
+            // Combine dates and xValues into a list of tuples
+            List<MapEntry<DateTime, double>> combinedList = [];
+            for (int i = 0; i < lastYearDates.length; i++) {
+              combinedList.add(MapEntry(lastYearDates[i], lastYearxValues[i]));
+            }
+          
+            // Sort the combined list by date and then by xValue
+            combinedList.sort((a, b) {
+              int dateComparison = a.key.compareTo(b.key);
+              if (dateComparison != 0) {
+                return dateComparison;
+              } else {
+                return a.value.compareTo(b.value);
+              }
+            });
+          
+            // Extract sorted dates and xValues back into their respective lists
+            lastYearDates = combinedList.map((entry) => entry.key).toList();
+            lastYearxValues = combinedList.map((entry) => entry.value).toList();
+          
+            // Print the index values of lastYearDates and lastYearxValues
+            for (int i = 0; i < lastYearDates.length; i++) {
+            }
+          }
+
           else if (dropdownValue == 'last-month') {
             bool found = false;
             DateTime now = DateTime.now();
             DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
             DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
-              if (!foundSpotsDatesInLastMonth.contains(startOfLastMonth)) {
-                foundSpotsDatesInLastMonth.add(startOfLastMonth);
-              }
-
-            // Print the specific range of dates
-            print('Start of last month: $startOfLastMonth');
-            print('End of last month: $endOfLastMonth');
           
             // Normalize dateTime to only include the date part
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-            print('Normalized dateTime: $normalizedDateTime');
           
             // Check if normalizedDateTime is within the last month
             if (normalizedDateTime.isAfter(startOfLastMonth.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfLastMonth.add(const Duration(days: 1)))) {
               int totalDays = endOfLastMonth.difference(startOfLastMonth).inDays + 1; // Calculate total days in the last month
               int day = normalizedDateTime.difference(startOfLastMonth).inDays + 1; // Calculate the day of the month
-              print('Day: $day, Total days: $totalDays');
-              if (!foundSpotsDatesInLastMonth.contains(normalizedDateTime)) {
-                foundSpotsDatesInLastMonth.add(normalizedDateTime);
-              }
           
               found = true;
               xValue = 2 * (day - 1) / (totalDays - 1); // Scale day to the range 0-2
-              print('xValue: $xValue');
+          
+              // Use sets to ensure unique values
+              Set<DateTime> uniqueDates = lastMonthDates.toSet();
+              Set<double> uniqueXValues = lastMonthxValues.toSet();
+          
+              uniqueDates.add(normalizedDateTime);
+              uniqueXValues.add(xValue);
+              uniqueDates.add(startOfLastMonth);
+              uniqueDates.add(endOfLastMonth);
+              uniqueXValues.add(0);
+              uniqueXValues.add(2);
+          
+              // Convert sets back to lists
+              lastMonthDates = uniqueDates.toList();
+              lastMonthxValues = uniqueXValues.toList();
+          
+              lastMonthDates.sort((a, b) => a.compareTo(b));
+              lastMonthxValues.sort((a, b) => a.compareTo(b));
+          
               if (day == 1) {
                 spotAssignedZero = true;
               }
             } else {
-              print('$normalizedDateTime Date is not within the last month');
-            }
-          
-            if (!found) {
-              print('Point not found in the last month');
+              unfoundLastMonthDates.add(normalizedDateTime);
+              unfoundLastMonthPoints.add(point); // Add the point to the list of unfound points
               return null; // Return null if the point is not from the last month
             }
-            if (!foundSpotsDatesInLastMonth.contains(endOfLastMonth)) {
-              foundSpotsDatesInLastMonth.add(endOfLastMonth);
+          
+            // Sort the dates in order
+            unfoundLastMonthDates.sort((a, b) => a.compareTo(b));
+          
+
+
+            // Print the last date in the list
+            if (unfoundLastMonthDates.isNotEmpty) {
+              DateTime lastUnfoundDate = unfoundLastMonthDates.last;
+          
+              // Find the corresponding point for the last unfound date
+              var lastUnfoundPoint = unfoundLastMonthPoints[unfoundLastMonthDates.indexOf(lastUnfoundDate)];
+          
+              // Ensure the amount is correctly accessed and parsed
+              if (lastUnfoundPoint.containsKey('amount')) {
+                double amount = lastUnfoundPoint['amount'].toDouble();
+                unfoundLastMonthAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+              }
             }
           
-            // Sort the dates in chronological order
-            foundSpotsDatesInLastMonth.sort((a, b) => a.compareTo(b));
+            // Ensure both lists have the same length before combining
+            if (lastMonthDates.length == lastMonthxValues.length) {
+              // Combine dates and xValues into a list of tuples
+              List<MapEntry<DateTime, double>> combinedList = [];
+              for (int i = 0; i < lastMonthDates.length; i++) {
+                combinedList.add(MapEntry(lastMonthDates[i], lastMonthxValues[i]));
+              }
           
-            print('Added today\'s date: $endOfLastMonth'); // Print the added date
-            print('Found spots dates in the last week: $foundSpotsDatesInLastMonth');
-
+              // Sort the combined list by date and then by xValue
+              combinedList.sort((a, b) {
+                int dateComparison = a.key.compareTo(b.key);
+                if (dateComparison != 0) {
+                  return dateComparison;
+                } else {
+                  return a.value.compareTo(b.value);
+                }
+              });
+          
+              // Extract sorted dates and xValues back into their respective lists
+              lastMonthDates = combinedList.map((entry) => entry.key).toList();
+              lastMonthxValues = combinedList.map((entry) => entry.value).toList();
+          
+              // Print the index values of lastMonthDates and lastMonthxValues
+              for (int i = 0; i < lastMonthDates.length; i++) {
+              }
+            } else {
+            }
           }
 
           else if (dropdownValue == 'last-week') {
-            bool found = false;
-            DateTime now = DateTime.now();
-            DateTime startOfLastWeek = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
-            DateTime endOfLastWeek = DateTime(now.year, now.month, now.day);
-              if (!foundSpotsDatesInLastWeek.contains(startOfLastWeek)) {
-                foundSpotsDatesInLastWeek.add(startOfLastWeek);
-              }
-
-          
-            // Normalize dateTime to only include the date part
-            DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-          
-            // Check if normalizedDateTime is within the last week
-            if (normalizedDateTime.isAfter(startOfLastWeek.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfLastWeek.add(const Duration(days: 1)))) {
-              found = true;
-              print('Found date: $normalizedDateTime'); // Print the found date
-              int dayDifference = normalizedDateTime.difference(startOfLastWeek).inDays;
-              xValue = dayDifference.toDouble(); // Scale day to the range 0-6
-          
-              if (!foundSpotsDatesInLastWeek.contains(normalizedDateTime)) {
-                foundSpotsDatesInLastWeek.add(normalizedDateTime);
-              }
-          
-              if (dayDifference == 0) {
-                spotAssignedZero = true;
-                print('spotAssignedZero: $spotAssignedZero');
-              }
-              if (dayDifference == 6) {
-                pointAssignedLastCase = true;
-                print('pointAssignedLastCase: $pointAssignedLastCase');
-              }
-            }
-          
-            if (!found) {
-              return null; // Return null if the point is not from the last week
-            }
-          
-            if (pointAssignedLastCase) { // Step 3: Print the message
-              print('Point assigned in the last case');
-            } else {
-              print('Point not assigned in the last case');
-            }
-          
-            // Add today's date at the end of foundSpotsDatesInLastWeek
-            if (!foundSpotsDatesInLastWeek.contains(endOfLastWeek)) {
-              foundSpotsDatesInLastWeek.add(endOfLastWeek);
-            }
-          
-            // Sort the dates in chronological order
-            foundSpotsDatesInLastWeek.sort((a, b) => a.compareTo(b));
-          
-            print('Added today\'s date: $endOfLastWeek'); // Print the added date
-            print('Found spots dates in the last week: $foundSpotsDatesInLastWeek');
-          }
-
-          else if (dropdownValue == 'custom-time-period') {
-            bool found = false;
-            final int numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 1;
-            print('analytics.dart: Number of days: $numberOfDays');
-            
-            // Normalize dateTime to only include the date part
-            DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-            
-            // Check if normalizedDateTime is within the custom date range
-            if (normalizedDateTime.isAfter(firstCustomDate) && normalizedDateTime.isBefore(lastCustomDate)) {
-              found = true;
-              foundSpotsDatesInLastSixMonths.add(normalizedDateTime);
-              print('Found date: $normalizedDateTime within the custom date range');
-              print('$normalizedDateTime has an amount of ${point['amount'].toDouble()}');
+              bool found = false;
+              DateTime now = DateTime.now();
+              DateTime startOfLastWeek = now.subtract(Duration(days: 6));
+              DateTime endOfLastWeek = now;
               
-              // Calculate the position of the specific date within the custom range
-              int dayDifference = normalizedDateTime.difference(firstCustomDate).inDays;
+              // Normalize dates to remove the time component
+              DateTime normalizedNow = DateTime(now.year, now.month, now.day);
+              DateTime normalizedStartOfLastWeek = DateTime(startOfLastWeek.year, startOfLastWeek.month, startOfLastWeek.day);
+              DateTime normalizedEndOfLastWeek = DateTime(endOfLastWeek.year, endOfLastWeek.month, endOfLastWeek.day);
               
-              // Scale this position to the maxX value
-              double calculatedXValue = (dayDifference / numberOfDays) * maxX(dropdownValue);
-              if (numberOfDays <= 7) {
-                xValue = calculatedXValue.roundToDouble() + 1;
+              // Normalize dateTime to only include the date part
+              DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
+              
+              // Check if normalizedDateTime is within the last week
+              if (normalizedDateTime.isAfter(normalizedStartOfLastWeek) && normalizedDateTime.isBefore(normalizedEndOfLastWeek.add(const Duration(days: 1)))) {
+                  int totalDays = endOfLastWeek.difference(startOfLastWeek).inDays + 1; // Calculate total days in the last week
+                  int day = normalizedDateTime.difference(startOfLastWeek).inDays; // Calculate the day of the week, starting from 0
+              
+              
+                  found = true;
+                  xValue = day.toDouble() + 1; // Scale day to the range 0-6
+
+                  // Use sets to ensure unique values
+                  Set<DateTime> uniqueDates = lastWeekDates.map((date) => DateTime(date.year, date.month, date.day)).toSet();
+                  Set<double> uniqueXValues = lastWeekxValues.toSet();
+          
+                  DateTime normalizedDate = DateTime(normalizedDateTime.year, normalizedDateTime.month, normalizedDateTime.day);
+                  uniqueDates.add(normalizedDate);
+                  uniqueXValues.add(xValue);
+          
+                  DateTime normalizedStartOfLastWeek = DateTime(startOfLastWeek.year, startOfLastWeek.month, startOfLastWeek.day);
+                  DateTime normalizedEndOfLastWeek = DateTime(endOfLastWeek.year, endOfLastWeek.month, endOfLastWeek.day);
+          
+                  if (!uniqueXValues.contains(0)) {
+                      uniqueXValues.add(0);
+                  }
+                  if (!uniqueXValues.contains(6)) {
+                      uniqueXValues.add(6);
+                  }
+                  if (!uniqueDates.contains(normalizedStartOfLastWeek)) {
+                      uniqueDates.add(normalizedStartOfLastWeek);
+                  }
+                  if (!uniqueDates.contains(normalizedEndOfLastWeek)) {
+                      uniqueDates.add(normalizedEndOfLastWeek);
+                  }
+          
+                  // Convert sets back to lists
+                  lastWeekDates = uniqueDates.toList();
+                  lastWeekxValues = uniqueXValues.toList();
+          
+                  lastWeekDates.sort((a, b) => a.compareTo(b));
+                  lastWeekxValues.sort((a, b) => a.compareTo(b));
+          
+          
+                  if (xValue == 0) {
+                      spotAssignedZero = true;
+                  }
+
+                  } else {
+                      unfoundLastWeekDates.add(normalizedDateTime);
+                      unfoundLastWeekPoints.add(point); // Add the point to the list of unfound points
+                  return null; // Return null if the point is not from the last week
+              }
+          
+              // Sort the dates in order
+              unfoundLastWeekDates.sort((a, b) => a.compareTo(b));
+          
+              // Print the list of dates
+          
+              // Print the last date in the list
+              if (unfoundLastWeekDates.isNotEmpty) {
+                  DateTime lastUnfoundDate = unfoundLastWeekDates.last;
+          
+                  // Find the corresponding point for the last unfound date
+                  var lastUnfoundPoint = unfoundLastWeekPoints[unfoundLastWeekDates.indexOf(lastUnfoundDate)];
+          
+                  // Debugging: Check the structure of the point
+          
+                  // Ensure the amount is correctly accessed and parsed
+                  if (lastUnfoundPoint.containsKey('amount')) {
+                      double amount = lastUnfoundPoint['amount'].toDouble();
+                      unfoundLastWeekAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+                  } else {
+                      unfoundLastWeekAmount = 0.0;
+                  }
               } else {
-                xValue = calculatedXValue;
+                  unfoundLastWeekAmount = 0.0;
               }
-              print('Calculated xValue: $xValue');
-            }          
-            if (!found) {
-              return null; // Return null if the point is not from the custom date range
-            }
+          
+              // Ensure both lists have the same length before combining
+              if (lastWeekDates.length == lastWeekxValues.length) {
+                  // Combine dates and xValues into a list of tuples
+                  List<MapEntry<DateTime, double>> combinedList = [];
+                  for (int i = 0; i < lastWeekDates.length; i++) {
+                      combinedList.add(MapEntry(lastWeekDates[i], lastWeekxValues[i]));
+                  }
+          
+                  // Sort the combined list by date and then by xValue
+                  combinedList.sort((a, b) {
+                      int dateComparison = a.key.compareTo(b.key);
+                      if (dateComparison != 0) {
+                          return dateComparison;
+                      } else {
+                          return a.value.compareTo(b.value);
+                      }
+                  });
+          
+                  // Extract sorted dates and xValues back into their respective lists
+                  lastWeekDates = combinedList.map((entry) => entry.key).toList();
+                  lastWeekxValues = combinedList.map((entry) => entry.value).toList();
+          
+                  // Print the index values of lastWeekDates and lastWeekxValues
+                  for (int i = 0; i < lastWeekDates.length; i++) {
+                  }
+              } else {
+              }
           }
+          
           return FlSpot(xValue, point['amount'].toDouble());
-        }).where((spot) => spot != null).cast<FlSpot>().toList();
-    
-        // Check if spotAssignedZero is false and add a point at the origin
-        if (!spotAssignedZero && spots.isNotEmpty) {
-          spots.insert(0, FlSpot(0, 0)); 
-          print(spots);
-        }
-        
-        // Check if pointAssignedLastCase is false and add a point at the last spot's xValue
-        if (!pointAssignedLastCase && spots.isNotEmpty) {
-          double lastXValue = maxX(dropdownValue); // Assuming the last case xValue is 6 for 'last-week'
-          double lastAmount = spots.last.y;
-          spots.add(FlSpot(lastXValue, lastAmount));
-          print('Added last case spot: (${lastXValue}, ${lastAmount})');
-        }
+          }).where((spot) => spot != null).cast<FlSpot>().toList();
+          
+          // Determine the amount based on the dropdownValue
+          double amount;
+          if (dropdownValue == 'last-week') {
+            amount = unfoundLastWeekAmount;
+          } else if (dropdownValue == 'last-month') {
+            amount = unfoundLastMonthAmount;
+          } else if (dropdownValue == 'last-6-months') {
+            amount = unfoundLastSixMonthsAmount;
+          } else {
+            amount = unfoundLastYearAmount;
+          }
+          
+          // Check if spotAssignedZero is false and add a point at the origin
+          if (!spotAssignedZero) {
+            spots.insert(0, FlSpot(0, amount)); 
+          }          
+          
+          // Check if pointAssignedLastCase is false and add a point at the last spot's xValue
+          if (!pointAssignedLastCase && spots.isNotEmpty) {
+            double lastXValue = maxX(dropdownValue); 
+            
+            // Find the spot with the highest x-value
+            double lastAmount = spots.reduce((a, b) => a.x > b.x ? a : b).y;
+            
+            spots.add(FlSpot(lastXValue, lastAmount));
+          }
+          
+          // Sort the spots by x-value
+          spots.sort((a, b) => a.x.compareTo(b.x));
 
-        break; // Assuming you only need the first asset with graphPoints
+          if (spots.isNotEmpty) {
+            maxAmount = spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
+          }
+          
+          break; // Assuming you only need the first asset with graphPoints
+        }
       }
-    }
 
 
     // This calculation is for the total assets of all connected users combined
@@ -570,7 +942,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
     double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
-    log('analytics.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
 
     return Scaffold(
       body: Stack(
@@ -610,10 +981,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   String _abbreviateNumber(double value) {
     if (value >= 1000000) {
       double result = value / 1000000;
-      return result == result.toInt() ? result.toInt().toString() + 'M' : result.toStringAsFixed(1) + 'M';
+      return result == result.toInt() ? '${result.toInt()}M' : '${result.toStringAsFixed(1)}M';
     } else if (value >= 1000 && value < 1000000) {
       double result = value / 1000;
-      return result == result.toInt() ? result.toInt().toString() + 'K' : result.toStringAsFixed(1) + 'K';
+      return result == result.toInt() ? '${result.toInt()}K' : '${result.toStringAsFixed(1)}K';
     } else {
       return value.toStringAsFixed(0);
     }
@@ -738,6 +1109,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   DateTimeRange lastCustomRange = DateTimeRange(start: DateTime.now(), end: DateTime.now());
   DateTime lastCustomDate = DateTime.now();
   DateTime firstCustomDate = DateTime.now();
+
+    void onCustomRangeSelected(DateTimeRange newCustomRange) {
+      customDates.clear();
+      customxValues.clear();
+      unfoundCustomDates.clear();
+      unfoundCustomPoints.clear();
+  
+    // Update with the new selected range
+    lastCustomRange = newCustomRange;
+  
+  }
   
   Widget _buildOption(BuildContext context, String title, String value) => Padding(
         padding: const EdgeInsets.all(8.0),
@@ -745,11 +1127,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           onTap: () async {
             setState(() {
               foundSpotsDatesInLastSixMonths.clear();
-              print('Found spots dates cleared: $foundSpotsDatesInLastSixMonths');
             });
 
             if (value == 'custom-time-period') {
-              print('Custom time period selected');
               final DateTimeRange? dateTimeRange = await showDateRangePicker(
                 context: context,
                 firstDate: DateTime(2000),
@@ -774,11 +1154,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ),
               );
               if (dateTimeRange != null) {
-                print('Date range selected: ${dateTimeRange.start} to ${dateTimeRange.end}');
                 final DateFormat formatter = DateFormat('MMMM dd, yyyy');
                 final String formattedStart = formatter.format(dateTimeRange.start);
                 final String formattedEnd = formatter.format(dateTimeRange.end);
-                print('Formatted date range: $formattedStart to $formattedEnd');
 
 
                 final DateTime startDate = dateTimeRange.start;
@@ -787,6 +1165,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
  
                 setState(() {
+                  onCustomRangeSelected(dateTimeRange);
+
                   firstCustomDate = startDate;
                   lastCustomDate = endDate;
                   lastCustomRange = dateTimeRange;
@@ -795,12 +1175,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 });
                 Navigator.pop(context); // Close the bottom sheet
               } else {
-                print('Date range selection was canceled');
               }
             } else {
               setState(() {
                 dropdownValue = value;
-                print('Selected value: $dropdownValue');
                 Navigator.pop(context); // Close the bottom sheet
               });
             }
@@ -857,32 +1235,29 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           text = DateFormat('MMM dd yyyy').format(firstDate);
         }
       } else if (numberOfDays > 12) {
-        if (lastCustomRange != null) {
-          final int numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 1;
-          final int numberOfMonths = lastCustomRange.end.month - lastCustomRange.start.month + 
-                                     (lastCustomRange.end.year - lastCustomRange.start.year) * 12;
-          print('analytics.dart: Number of days: $numberOfDays, Number of months: $numberOfMonths');
-          final DateTime firstDate = lastCustomRange.start;
-          final DateTime middleDate = lastCustomRange.start.add(Duration(days: numberOfDays ~/ 2));
-          final DateTime lastDate = lastCustomRange.end;
-    
-          
-            switch (value.toInt()) {
-              case 0:
-                text = DateFormat('MMM dd, yy').format(firstDate); // Format the first date
-                break;
-              case 1:
-                text = DateFormat('MMM dd').format(middleDate); // Format the middle date
-                break;
-              case 2:
-                text = DateFormat('MMM dd, yy').format(lastDate); // Format the last date
-                break;
-              default:
-                text = '';
+        final int numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 1;
+        final int numberOfMonths = lastCustomRange.end.month - lastCustomRange.start.month + 
+                                   (lastCustomRange.end.year - lastCustomRange.start.year) * 12;
+        final DateTime firstDate = lastCustomRange.start;
+        final DateTime middleDate = lastCustomRange.start.add(Duration(days: numberOfDays ~/ 2));
+        final DateTime lastDate = lastCustomRange.end;
+  
+        
+          switch (value.toInt()) {
+            case 0:
+              text = DateFormat('MMM dd, yy').format(firstDate); // Format the first date
+              break;
+            case 1:
+              text = DateFormat('MMM dd').format(middleDate); // Format the middle date
+              break;
+            case 2:
+              text = DateFormat('MMM dd, yy').format(lastDate); // Format the last date
+              break;
+            default:
+              text = '';
+          }
+        
             }
-          
-        }
-      }
     } else {
     
     switch (value.toInt()) {
@@ -1078,22 +1453,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       case 'last-year':
         return 12;
       case 'custom-time-period':
-        if (lastCustomRange != null) {
-          double numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 0;
-          if (numberOfDays == 0) {
-          print('analytics.dart: Number of days: $numberOfDays');
-            return 1;
-          }
-          if (numberOfDays >= 12) {
-          print('analytics.dart: Number of days: $numberOfDays');
-            return 2; 
-          }
-          print('analytics.dart: Number of days: $numberOfDays');
-          return numberOfDays;
-        } else {
-          return 0; // Return 0 if lastCustomRange is null
+        double numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 0;
+        if (numberOfDays == 0) {
+          return 1;
         }
-        default:
+        if (numberOfDays >= 12) {
+          return 2; 
+        }
+        return numberOfDays;
+              default:
         return 6;
     }
   }
@@ -1106,7 +1474,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   final existingDates = dates.map((date) => date.toIso8601String()).toSet();
 
   // Iterate from startDate to endDate and add missing dates
-  for (DateTime date = startDate; date.isBefore(endDate) || date.isAtSameMomentAs(endDate); date = date.add(Duration(days: 1))) {
+  for (DateTime date = startDate; date.isBefore(endDate) || date.isAtSameMomentAs(endDate); date = date.add(const Duration(days: 1))) {
     if (!existingDates.contains(date.toIso8601String())) {
       dates.add(date);
     }
@@ -1116,6 +1484,53 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   dates.sort((a, b) => a.compareTo(b));
 }
 
+  double roundToNearest(double value) {
+    
+    if (value >= 100000000) {
+      double result = (value / 100000000).round() * 100000000;
+      return result;
+    } else if (value >= 10000000) {
+      double result = (value / 10000000).round() * 10000000;
+      return result;
+    } else if (value >= 1000000) {
+      double result = (value / 1000000).round() * 1000000;
+      return result;
+    } else if (value >= 100000) {
+      double result = (value / 100000).round() * 100000;
+      return result;
+    } else if (value >= 10000) {
+      double result = (value / 10000).round() * 10000;
+      return result;
+    } else if (value >= 1000) {
+      double result = (value / 1000).round() * 1000;
+      return result;
+    } else if (value >= 500) {
+      double result = (value / 500).round() * 500;
+      return result;
+    } else {
+      double result = value.round().toDouble();
+      return result;
+    }
+  }
+
+  double calculateMaxY(double maxAmount) {
+    double roundedMaxAmount = roundToNearest(maxAmount);
+    double maxY = (roundedMaxAmount * 1.5).roundToDouble();
+
+    if (maxY >= 10000000) {
+      maxY = (maxY / 10000000).round() * 10000000;
+    } else if (maxY >= 1000000) {
+      maxY = (maxY / 1000000).round() * 1000000;
+    } else if (maxY >= 100000) {
+      maxY = (maxY / 100000).round() * 100000;
+    } else if (maxY >= 10000) {
+      maxY = (maxY / 10000).round() * 10000;
+    } else if (maxY >= 1000) {
+      maxY = (maxY / 1000).round() * 1000;
+    }
+
+    return maxY;
+  }
 
     // ignore: unused_element
     Widget _buildLineChartSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Padding(
@@ -1265,7 +1680,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       minX: 0,
                       maxX: maxX(dropdownValue),
                       minY: 0,
-                      maxY: 10000000,
+                      maxY: calculateMaxY(maxAmount),
                       lineBarsData: [
                         LineChartBarData(
                           spots: spots,
@@ -1303,36 +1718,92 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                           tooltipRoundedRadius: 16.0,
                           getTooltipItems: (List<LineBarSpot> touchedSpots) {
                             if (dropdownValue == 'last-week') {
-                              // Ensure foundSpotsDatesInLastWeek is sorted
                               foundSpotsDatesInLastWeek.sort((a, b) => a.compareTo(b));
-                      
                               DateTime now = DateTime.now();
                               DateTime startOfLastWeek = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
                               DateTime endOfLastWeek = DateTime(now.year, now.month, now.day);
-                      
-                              // Ensure the dates range from startOfLastWeek to endOfLastWeek
                               ensureEnoughDates(foundSpotsDatesInLastWeek, startOfLastWeek, endOfLastWeek);
-                            }
-                            if (dropdownValue == 'last-month') {
-                              // Ensure foundSpotsDatesInLastWeek is sorted
+                            } else if (dropdownValue == 'last-month') {
                               foundSpotsDatesInLastMonth.sort((a, b) => a.compareTo(b));
-                      
                               DateTime now = DateTime.now();
                               DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
                               DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
-                      
-                              // Ensure the dates range from startOfLastWeek to endOfLastWeek
-                            }
-                      
+                              ensureEnoughDates(foundSpotsDatesInLastMonth, startOfLastMonth, endOfLastMonth);
+                            } else if (dropdownValue == 'last-6-months') {
+                              DateTime now = DateTime.now();
+                              DateTime startOfLast6Months = DateTime(now.year, now.month - 6, now.day);
+                              DateTime endOfLast6Months = DateTime(now.year, now.month, now.day);
+                            } else if (dropdownValue == 'custom-time-period') {
+                              // Handle custom time period
+                              customDates.sort((a, b) => a.compareTo(b));
+                            }                    
                             return touchedSpots.map((barSpot) {
                               final flSpot = barSpot;
                               final yValue = flSpot.y;
+                              final xValue = flSpot.x;
                       
-                              // Format the y-value as currency
+                              if (dropdownValue == 'last-week') {
+                                if (!lastWeekxValues.contains(xValue)) {
+                                  lastWeekxValues.add(xValue);
+                                  lastWeekDates.add(DateTime.now().subtract(Duration(days: (6 - xValue.toInt()))));
+                                }
+                              } else if (dropdownValue == 'last-month') {
+                                if (!lastMonthxValues.contains(xValue)) {
+                                  lastMonthxValues.add(xValue);
+                                  DateTime now = DateTime.now();
+                                  DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
+                                  lastMonthDates.add(startOfLastMonth.add(Duration(days: xValue.toInt())));
+                                }
+                              } else if (dropdownValue == 'last-6-months') {
+                                if (!lastSixMonthsxValues.contains(xValue)) {
+                                  lastSixMonthsxValues.add(xValue);
+                                  lastSixMonthsDates.add(DateTime.now().subtract(Duration(days: (180 - xValue.toInt()))));
+                                }
+                              } else if (dropdownValue == 'custom-time-period') {
+                                if (!customxValues.contains(xValue)) {
+                                  customxValues.add(xValue);
+                                  customDates.add(customDates[xValue.toInt()]); // Assuming customDates is already populated with the correct dates
+                                }
+                              } else {
+                                if (!lastYearxValues.contains(xValue)) {
+                                  lastYearxValues.add(xValue);
+                                  DateTime now = DateTime.now();
+                                  DateTime startOfLastYear = DateTime(now.year - 1, now.month, now.day);
+                                  lastYearDates.add(startOfLastYear.add(Duration(days: xValue.toInt())));
+                                }
+                              }
+                      
+                              int index;
+                              if (dropdownValue == 'last-week') {
+                                index = lastWeekxValues.indexOf(xValue);
+                              } else if (dropdownValue == 'last-month') {
+                                index = lastMonthxValues.indexOf(xValue);
+                              } else if (dropdownValue == 'last-6-months') {
+                                index = lastSixMonthsxValues.indexOf(xValue);
+                              } else if (dropdownValue == 'custom-time-period') {
+                                index = customxValues.indexOf(xValue);
+                              } else {
+                                index = lastYearxValues.indexOf(xValue);
+                              }
+                      
+                              DateTime correspondingDate;
+                              if (dropdownValue == 'last-week') {
+                                correspondingDate = lastWeekDates[index];
+                              } else if (dropdownValue == 'last-month') {
+                                correspondingDate = lastMonthDates[index];
+                              } else if (dropdownValue == 'last-6-months') {
+                                correspondingDate = lastSixMonthsDates[index];
+                              } else if (dropdownValue == 'custom-time-period') {
+                                correspondingDate = customDates[index];
+                              } else {
+                                correspondingDate = lastYearDates[index];
+                              }
+                      
                               final formattedYValue = NumberFormat.currency(symbol: '\$').format(yValue);
+                              final formattedDate = DateFormat('MMM, dd').format(correspondingDate);
                       
                               return LineTooltipItem(
-                                formattedYValue,
+                                '$formattedYValue\n$formattedDate',
                                 const TextStyle(
                                   color: AppColors.defaultBlue300,
                                   fontWeight: FontWeight.bold,
@@ -1381,19 +1852,19 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 String displayText;
                 switch (dropdownValue) {
                   case 'last-week':
-                    displayText = '${timeline.lastWeekRange}';
+                    displayText = timeline.lastWeekRange;
                     break;
                   case 'last-month':
-                    displayText = '${timeline.lastMonthRange}';
+                    displayText = timeline.lastMonthRange;
                     break;
                   case 'last-6-months':
-                    displayText = '${timeline.lastSixMonthsRange}';
+                    displayText = timeline.lastSixMonthsRange;
                     break;
                   case 'last-year':
-                    displayText = '${timeline.lastYearRange}';
+                    displayText = timeline.lastYearRange;
                     break;
                   case 'custom-time-period':
-                    displayText = '$lastCustomDateRange';
+                    displayText = lastCustomDateRange;
                     break;
                   default:
                     displayText = 'Select a range';
@@ -1470,19 +1941,19 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                               ),
                             ),
                             if (spots.isEmpty) // Check if spots is empty
-                              Column(
+                              const Column(
                                 children: [
-                                  const SizedBox(height: 25),
+                                  SizedBox(height: 25),
                                   Row(
                                     children: [
-                                      const SizedBox(width: 10),
-                                      const Icon(
+                                      SizedBox(width: 10),
+                                      Icon(
                                         Icons.circle,
                                         size: 20,
                                         color: AppColors.defaultBlue500,
                                       ),
-                                      const SizedBox(width: 10),
-                                      const Text(
+                                      SizedBox(width: 10),
+                                      Text(
                                         'No data available for this time period',
                                         style: TextStyle(
                                           fontSize: 16,

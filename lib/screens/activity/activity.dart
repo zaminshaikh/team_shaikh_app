@@ -124,7 +124,6 @@ class _ActivityPageState extends State<ActivityPage> {
           for (var recipient in allRecipients) {
             userCheckStatus[recipient] = true;
           }
-          print('activity.dart: All recipients: $allRecipients');
         });
       });
     });

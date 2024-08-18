@@ -13,7 +13,6 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 
 /// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
@@ -1068,9 +1067,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildAssetsStructureSection(
             double totalUserAssets, double percentageAGQ, double percentageAK1) =>
         Container(
-          width: 400,
-          height: 520,
-          padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
+          padding: const EdgeInsets.fromLTRB(15, 15, 15, 20),
           decoration: BoxDecoration(
             color: const Color.fromARGB(255, 30, 41, 59),
             borderRadius: BorderRadius.circular(15),

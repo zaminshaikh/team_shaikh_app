@@ -21,7 +21,6 @@ String uid = '';
 class _NotificationPageState extends State<NotificationPage> {
     final Future<void> _initializeWidgetFuture = Future.value();
 
-
   // database service instance
   DatabaseService? _databaseService;
   
@@ -53,13 +52,13 @@ class _NotificationPageState extends State<NotificationPage> {
     
   }
 
-
-
   @override
   Widget build(BuildContext context) => FutureBuilder(
     future: _initializeWidgetFuture,
     builder: (context, snapshot) {
+      // Check if the Future is still loading
       if (snapshot.connectionState == ConnectionState.waiting) {
+        print('FutureBuilder: Waiting for future to complete');
         return Center(
           child: Container(
             padding: const EdgeInsets.all(26.0),
@@ -79,11 +78,14 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         );
       }
+  
+      // StreamBuilder to listen to notifications stream
       return StreamBuilder<List<Map<String, dynamic>>>(
         stream: _databaseService?.getNotifications,
         builder: (context, notificationsSnapshot) {
-          // Wait for the user snapshot to have data
-          if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+          // Handle error state
+          if (notificationsSnapshot.hasError) {
+            print('StreamBuilder: Error loading notifications');
             return Center(
               child: Container(
                 padding: const EdgeInsets.all(26.0),
@@ -92,19 +94,22 @@ class _NotificationPageState extends State<NotificationPage> {
                   color: AppColors.defaultBlue500,
                   borderRadius: BorderRadius.circular(15.0),
                 ),
-                child: const Stack(
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 6.0,
-                    ),
-                  ],
+                child: const Text(
+                  'Error loading notifications.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
                 ),
               ),
             );
           }
-          // If there are no notifications, display a message
-          if (notificationsSnapshot.data!.isEmpty) {
+  
+          // Check if the snapshot has data
+          if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+            print('StreamBuilder: No data available');
             return Scaffold(
               body: CustomScrollView(
                 slivers: <Widget>[
@@ -135,45 +140,88 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
             );
           }
-          
-          // Once we have the user snapshot, we can build the activity page
-          // use unreadNotificationsCount as needed
+  
+          // Check if there are no notifications
+          if (notificationsSnapshot.data!.isEmpty) {
+            print('StreamBuilder: No notifications found');
+            return Scaffold(
+              body: CustomScrollView(
+                slivers: <Widget>[
+                  _buildAppBar(context),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          SvgPicture.asset(
+                            'assets/icons/empty_notifications.svg',
+                          ),
+                          const Text(
+                            'No notifications.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+  
+          // Build the notification page with the data
+          print('StreamBuilder: Notifications found, building notification page');
           return _buildNotificationPage(notificationsSnapshot);
         }
       );
     }
-  );  
-
-  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
-    body: Stack(
-      children: [
-        CustomScrollView(
-          slivers: <Widget>[
-            _buildAppBar(context),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  Map<String, dynamic> notification = notificationsSnapshot.data![index];
-                  DateTime previousNotificationDate = index > 0 ? (notificationsSnapshot.data![index - 1]['time'] as Timestamp).toDate() : DateTime(0);
-                  if (index == 0 || !_isSameDay(previousNotificationDate, (notification['time'] as Timestamp).toDate())) {
-                    return _buildNotificationWithDayHeader(notification, previousNotificationDate);
-                  }
-                  return _buildNotification(notification, true);
-                },
-                childCount: notificationsSnapshot.data!.length,
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 150),
-            ),
-          ],
-        ),
-      ],
-    ),
-    floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
-    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
   );
-
+  
+  // Function to build the notification page
+  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
+    print('Building notification page');
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(context),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    // Get the notification data
+                    Map<String, dynamic> notification = notificationsSnapshot.data![index];
+                    print('Building notification item at index $index: $notification');
+                    // Get the previous notification date
+                    DateTime previousNotificationDate = index > 0 ? (notificationsSnapshot.data![index - 1]['time'] as Timestamp).toDate() : DateTime(0);
+                    // Check if the current notification is on a different day than the previous one
+                    if (index == 0 || !_isSameDay(previousNotificationDate, (notification['time'] as Timestamp).toDate())) {
+                      print('Notification at index $index is on a different day');
+                      return _buildNotificationWithDayHeader(notification, previousNotificationDate);
+                    }
+                    return _buildNotification(notification, true);
+                  },
+                  childCount: notificationsSnapshot.data!.length,
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 150),
+              ),
+            ],
+          ),
+        ],
+      ),
+      floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+  
   Widget _buildMarkAllAsReadButton(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
     // Assuming notifications is your list of notifications
     bool hasUnreadNotifications = notificationsSnapshot.data!.any((notification) => !notification['isRead'] );
@@ -246,7 +294,6 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
   
-
   bool _isSameDay(DateTime date1, DateTime date2) => 
     date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
     
@@ -369,7 +416,6 @@ class _NotificationPageState extends State<NotificationPage> {
       ],
     );
   }
-
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
