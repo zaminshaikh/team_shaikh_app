@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -296,8 +297,8 @@ List<String> assetsFormatted = [];
             totalAK1 += asset['total'];
             break;
           default:
-            totalAssets += asset['total'];
-            totalUserAssets += asset['total'];
+            totalAssets += asset['total'] ?? 0;
+            totalUserAssets += asset['total'] ?? 0;
         }
       }
 
@@ -313,7 +314,7 @@ List<String> assetsFormatted = [];
                 totalAK1 += asset['total'];
                 break;
               default:
-                totalAssets += asset['total'];
+                totalAssets += asset['total'] ?? 0;
             }
           }
         }
@@ -345,7 +346,7 @@ List<String> assetsFormatted = [];
 
     for (var asset in user.assets) {
       // Assuming asset['total'] is a double. If it's a string, parse it first.
-      userTotalAssets += asset['total'];
+      userTotalAssets += asset['total'] ?? 0;
     }
 
     // Format the total assets after summing them up
@@ -398,17 +399,19 @@ Future<void> shareFile(context, clientId, documentName) async {
     _selectedButton = 'helpCenter';
         _initData().then((_) {
       _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
-        setState(() {
-          connectedUserNames = connectedUsers.map<String>((user) {
-            String firstName = user.info['name']['first'] as String;
-            String lastName = user.info['name']['last'] as String;
-            Map<String, String> userName = {
-              'first': firstName,
-              'last': lastName,
-            };
-            return userName.values.join(' ');
-          }).toList();
-        });
+        if (mounted) {
+          setState(() {
+            connectedUserNames = connectedUsers.map<String>((user) {
+              String firstName = user.info['name']['first'] as String;
+              String lastName = user.info['name']['last'] as String;
+              Map<String, String> userName = {
+                'first': firstName,
+                'last': lastName,
+              };
+              return userName.values.join(' ');
+            }).toList();
+          });
+        }
       });
     });
 
@@ -433,10 +436,12 @@ Future<void> shareFile(context, clientId, documentName) async {
       final ListResult result = await storage.ref('testUsersStatements/$userFolder').listAll();
       final List<Reference> allFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
     
-    
-      setState(() {
-          pdfFiles = allFiles;
-      });
+
+        if (mounted) {
+          setState(() {
+            pdfFiles = allFiles;
+          });
+        }
   }
 
   List<PdfFileWithCid> pdfFilesConnectedUsers = [];
@@ -454,15 +459,17 @@ Future<void> shareFile(context, clientId, documentName) async {
       allConnectedFiles.addAll(pdfFilesWithCid);
     }
 
-    setState(() {
-      // Use a Set to keep track of already added files
-      final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
-      
-      // Add only the new files that are not already in the list
-      final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
-      
-      pdfFilesConnectedUsers.addAll(newFiles);
-    });
+    if (mounted) {
+      setState(() {
+        // Use a Set to keep track of already added files
+        final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
+        
+        // Add only the new files that are not already in the list
+        final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
+        
+        pdfFilesConnectedUsers.addAll(newFiles);
+      });
+    }
   }
 
 // This is the selected button, initially set to an empty string
@@ -972,11 +979,11 @@ Column _profileForAllUsers() => Column(
                 _selectedButton = 'documents';
               });
                 
-                await listPDFFiles();
-                
-                await fetchConnectedCids(_databaseService?.cid ?? '$cid');
-                
-                await listPDFFilesConnectedUsers();
+              await listPDFFiles();
+              
+              await fetchConnectedCids(_databaseService?.cid ?? '$cid');
+              
+              await listPDFFilesConnectedUsers();
             },
           ),      
 
@@ -1047,9 +1054,11 @@ Column _profileForAllUsers() => Column(
               ],
             ),
             onPressed: () {
-              setState(() {
-                _selectedButton = 'profiles';
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedButton = 'profiles';
+                });
+              }
             },
           ),
           
@@ -1458,8 +1467,15 @@ Column _profileForAllUsers() => Column(
                                         // Show a message to inform the user that the password has been changed.
                                         await CustomAlertDialog.showAlertDialog(
                                           context,
-                                          'Password Change Successful',
+                                          'Success',
+
                                           'Your password has been updated successfully.',
+
+                                          icon: Icon(
+                                            Icons.check_circle_outline_rounded,
+                                            color: Colors.green,
+                                            size: 28,
+                                          ),
                                         );
                                       }
 
@@ -1587,7 +1603,15 @@ Column _profileForAllUsers() => Column(
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: () => signUserOut(context),
+                        onTap: () async {
+                          List<dynamic> tokens = await _databaseService!.getField('tokens');
+                          // Get the current token
+                          String currentToken = await FirebaseMessaging.instance.getToken() ?? '';
+                          tokens.remove(currentToken);
+                          // Update the list of tokens in the database for the user
+                          await _databaseService!.updateField('tokens', tokens);
+                          signUserOut(context);
+                        },
                         child: Container(
                           height: 45,
                           decoration: BoxDecoration(

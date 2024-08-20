@@ -2,10 +2,12 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, deprecated_member_use, empty_catches
 
 import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
@@ -118,6 +120,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     }
 
     if (authenticated) {
+
       // ignore: unawaited_futures
         Navigator.pushReplacement(
           context,
@@ -375,6 +378,32 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             onTap: () async {
               bool success = await signUserIn(context);
               if (success) {
+                String? token = await FirebaseMessaging.instance.getToken();
+                if (token != null) {
+                  User? user = FirebaseAuth.instance.currentUser;
+                  // If we do not have a user and the context is valid
+                  if (user == null && mounted) {
+                    log('login.dart: User is not logged in');
+                    await Navigator.pushReplacementNamed(context, '/login');
+                  }
+                  // Fetch CID using async constructor
+                  DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
+
+                  if (service != null) {
+                    try { 
+                      List<dynamic> tokens = (await service.getField('tokens') ?? []);
+
+                      
+                      if (!tokens.contains(token)){
+                        tokens = [...tokens, token];   
+                        await service.updateField('tokens', tokens);
+                      }
+
+                    } catch (e) {
+                      log('login.dart: Error fetching tokens: $e');
+                    }
+                  }
+                }
                 await Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(

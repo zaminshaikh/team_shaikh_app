@@ -109,10 +109,6 @@ class _ActivityPageState extends State<ActivityPage> {
             return '$firstName $lastName';
           }).toList();
   
-          // Update userCheckStatus for each connected user
-          for (var recipient in allRecipients) {
-            userCheckStatus[recipient] = true;
-          }
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
@@ -124,6 +120,10 @@ class _ActivityPageState extends State<ActivityPage> {
 
           // Convert the set back to a list if needed
           allRecipients = allRecipientsSet.toList();
+          // Update userCheckStatus for each connected user
+          for (var recipient in allRecipients) {
+            userCheckStatus[recipient] = true;
+          }
         });
       });
     });
@@ -772,6 +772,7 @@ class _ActivityPageState extends State<ActivityPage> {
     } else {
       if (!allRecipients.contains(activity['recipient'])) {
         allRecipients.add(activity['recipient']);
+        userCheckStatus[activity['recipient']] = true;
       }
       return _buildActivity(activity, !isLastActivityForTheDay);
     }
@@ -1596,54 +1597,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                       child: ExpansionTile(
                                         title: const Row(
                                           children: [
-                                            Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                            SizedBox(width: 10), // Add some spacing between the title and the date
-                                          ],
-                                        ),
-                                        iconColor: Colors.white,
-                                        collapsedIconColor: Colors.white,
-                                        children: [
-                                          StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState) => Column(
-                                              children: <Widget>[
-                                                CheckboxListTile(
-                                                  title: const Text(
-                                                    'AGQ Consulting LLC',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: agqIsChecked,
-                                                  activeColor: Colors.white,
-                                                  onChanged: (bool? value) {
-                                                    editFilter(1, value!, 'AGQ');
-                                                    setState(() {
-                                                      agqIsChecked = value;
-                                                    });
-                                                  },
-                                                ),
-                                                CheckboxListTile(
-                                                  title: const Text(
-                                                    'AK1 Holdings LP',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: ak1IsChecked,
-                                                  onChanged: (bool? value) {
-                                                    editFilter(1, value!, 'AK1');
-                                                    setState(() {
-                                                      ak1IsChecked = value;
-                                                    });
-                                                  },
-                                                ),
-                                              ], 
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                      child: ExpansionTile(
-                                        title: const Row(
-                                          children: [
                                             Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                                             SizedBox(width: 10), // Add some spacing between the title and the date
                                           ],
@@ -1914,87 +1867,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                             ],
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                      child: ExpansionTile(
-                                        title: const Row(
-                                          children: [
-                                            Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                            SizedBox(width: 10), // Add some spacing between the title and the date
-                                          ],
-                                        ),
-                                        iconColor: Colors.white,
-                                        collapsedIconColor: Colors.white,
-                                        children: [
-                                          StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState) => Column(
-                                              children: <Widget>[
-                                                CheckboxListTile(
-                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-                                                    if (states.contains(MaterialState.selected)) {
-                                                      return AppColors.defaultBlue500; // Color when selected
-                                                    }
-                                                    return Colors.transparent; // Color when unselected
-                                                  }),
-                                                  title: const Text(
-                                                    'AGQ Consulting LLC',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: agqIsChecked,
-                                                  onChanged: (bool? value) {
-                                                    // If trying to uncheck, and the other checkbox is not checked, show the dialog instead of changing the state
-                                                    if (value == false && !ak1IsChecked) {
-                                                      CustomAlertDialog.showAlertDialog(
-                                                        context,
-                                                        'Action Required',
-                                                        'At least one fund must be selected at all times.',
-                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
-                                                      );
-                                                    } else {
-                                                      // Proceed with the state change if the new value is true or the other checkbox is checked
-                                                      editFilter(1, value!, 'AGQ');
-                                                      setState(() {
-                                                        agqIsChecked = value;
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                                CheckboxListTile(
-                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-                                                    if (states.contains(MaterialState.selected)) {
-                                                      return AppColors.defaultBlue500; // Color when selected
-                                                    }
-                                                    return Colors.transparent; // Color when unselected
-                                                  }),
-                                                  title: const Text(
-                                                    'AK1 Holdings LP',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: ak1IsChecked,
-                                                  onChanged: (bool? value) {
-                                                    if (value == false && !agqIsChecked) {
-                                                      // Show dialog if trying to uncheck the last remaining checkbox
-                                                      CustomAlertDialog.showAlertDialog(
-                                                        context,
-                                                        'Action Required',
-                                                        'At least one fund must be selected at all times.',
-                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
-                                                      );
-                                                    } else if (value != null) {
-                                                      // Proceed with updating the filter and checkbox state
-                                                      editFilter(1, value, 'AK1');
-                                                      setState(() {
-                                                        ak1IsChecked = value;
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ),
                                     Padding(
@@ -2609,22 +2481,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                         ),
                                       )).toList(),
                                     ),
-                                  ),
-                                // For Funds Button(s) and Type of Activity Button(s), wrap each _buildFundButton and _buildActivityTypeButton call in a Padding widget
-                                if (_fundsFilter.contains('AGQ') && !_fundsFilter.contains('AK1'))
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: _buildFundButton('AGQ'),
-                                  ),
-                                if (_fundsFilter.contains('AK1') && !_fundsFilter.contains('AGQ'))
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: _buildFundButton('AK1'),
-                                  ),
-                                if (_fundsFilter.contains('AK1') && _fundsFilter.contains('AGQ'))
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: _buildFundButton('All Funds'),
                                   ),
                                 // Repeat the same pattern for Type of Activity Button(s)
                                 if (_typeFilter.contains('income') && _typeFilter.contains('deposit') && _typeFilter.contains('withdrawal'))
