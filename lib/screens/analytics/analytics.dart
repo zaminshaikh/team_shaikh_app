@@ -161,6 +161,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // Otherwise set the database service instance
       _databaseService = service;
     }
+
+
   }
   
   /// Formats the given amount as a currency string.
@@ -345,6 +347,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     for (var asset in user.assets) {
       if (asset.containsKey('graphPoints')) {
         List<Map<String, dynamic>> graphPoints = List<Map<String, dynamic>>.from(asset['graphPoints']);
+ 
     
         bool spotAssignedZero = false; // Initialize spotAssignedZero
         bool pointAssignedLastCase = false; // Initialize pointAssignedLastCase
@@ -955,7 +958,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   delegate: SliverChildListDelegate(
                     [
                       // Line chart section
-                      _buildLineChartSection(totalUserAssets, percentageAGQ, percentageAK1),
+                      _buildLineChartSection(),
                       // Assets structure section
                       _buildAssetsStructureSection(
                           totalAssets, percentageAGQ, percentageAK1),
@@ -1533,7 +1536,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
     // ignore: unused_element
-    Widget _buildLineChartSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Padding(
+    Widget _buildLineChartSection() => Padding(
       padding: const EdgeInsets.only(bottom: 25),
       child: Container(
         width: double.infinity,
