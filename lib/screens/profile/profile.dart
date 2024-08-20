@@ -297,8 +297,8 @@ List<String> assetsFormatted = [];
             totalAK1 += asset['total'];
             break;
           default:
-            totalAssets += asset['total'];
-            totalUserAssets += asset['total'];
+            totalAssets += asset['total'] ?? 0;
+            totalUserAssets += asset['total'] ?? 0;
         }
       }
 
@@ -314,7 +314,7 @@ List<String> assetsFormatted = [];
                 totalAK1 += asset['total'];
                 break;
               default:
-                totalAssets += asset['total'];
+                totalAssets += asset['total'] ?? 0;
             }
           }
         }
@@ -346,7 +346,7 @@ List<String> assetsFormatted = [];
 
     for (var asset in user.assets) {
       // Assuming asset['total'] is a double. If it's a string, parse it first.
-      userTotalAssets += asset['total'];
+      userTotalAssets += asset['total'] ?? 0;
     }
 
     // Format the total assets after summing them up
@@ -1367,8 +1367,15 @@ Column _profileForAllUsers() => Column(
                                         // Show a message to inform the user that the password has been changed.
                                         await CustomAlertDialog.showAlertDialog(
                                           context,
-                                          'Password Change Successful',
+                                          'Success',
+
                                           'Your password has been updated successfully.',
+
+                                          icon: Icon(
+                                            Icons.check_circle_outline_rounded,
+                                            color: Colors.green,
+                                            size: 28,
+                                          ),
                                         );
                                       }
 
