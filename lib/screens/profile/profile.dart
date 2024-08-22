@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
 import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,12 +17,17 @@ import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
+import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
+import 'package:team_shaikh_app/screens/profile/components/documents.dart';
+import 'package:team_shaikh_app/screens/profile/components/help.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
 import 'PDFPreview.dart';
 import 'downloadmethod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -244,6 +248,12 @@ List<String> totalAssetsList = [];
 List<double> latestIncomes = [];
 List<String> assetsFormatted = [];
 
+  bool hapticsSwitchValue = false;
+  bool activitySwitchValue = false;
+  bool statementsSwitchValue = false;
+  List<String> connectedUserNames = [];
+  List<String> connectedUserCids = [];
+
 
   void extractAndPrintUserInfo(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
 
@@ -357,34 +367,28 @@ List<String> assetsFormatted = [];
     
   }
   
-Future<void> shareFile(context, clientId, documentName) async {
-  try {
-    // Call downloadFile to get the filePath
-    String filePath = await downloadFile(context, clientId, documentName);
+  Future<void> shareFile(context, clientId, documentName) async {
+    try {
+      // Call downloadFile to get the filePath
+      String filePath = await downloadFile(context, clientId, documentName);
 
-    // Debugging: Print the filePath
+      // Debugging: Print the filePath
 
-    // Check if the filePath is not empty
-    if (filePath.isNotEmpty) {
-      // Check if the filePath is a file
-      File file = File(filePath);
-      if (await file.exists()) {
-        // Use Share.shareFiles to share the file
-        await Share.shareFiles([filePath]);
+      // Check if the filePath is not empty
+      if (filePath.isNotEmpty) {
+        // Check if the filePath is a file
+        File file = File(filePath);
+        if (await file.exists()) {
+          // Use Share.shareFiles to share the file
+          await Share.shareFiles([filePath]);
+        } else {
+        }
       } else {
       }
-    } else {
+    } catch (e) {
     }
-  } catch (e) {
   }
-}
 
-  bool hapticsSwitchValue = false;
-  bool activitySwitchValue = false;
-  bool statementsSwitchValue = false;
-
-  List<String> connectedUserNames = [];
-  List<String> connectedUserCids = [];
 
   final FirebaseStorage storage = FirebaseStorage.instance;
   List<Reference> pdfFiles = [];
@@ -848,6 +852,7 @@ Column _profileForAllUsers() => Column(
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
+                        buildSampleCupertinoListSection(),
                         _buildButtonRow(),
                         _buildSelectedPageWithConnectedUsers(),
                       ],
@@ -874,42 +879,6 @@ Column _profileForAllUsers() => Column(
       child: Row(
         children: <Widget>[
           const SizedBox(width: 20), // Add initial width
-
-          // Help Center button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Help',
-                  style: TextStyle(
-                    color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'helpCenter' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_help_center_icon.svg',
-                  color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                )
-              ],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'helpCenter';
-              });
-            },
-          ),
-
-          const SizedBox(width: 10), // Add width
 
           // Legal and Policies button
           ElevatedButton(
@@ -1067,6 +1036,144 @@ Column _profileForAllUsers() => Column(
       ),
     );
 
+// This is the list of vertical buttons
+Widget buildSampleCupertinoListSection() {
+  return Padding(
+    padding: const EdgeInsets.all(20.0),
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.defaultBlueGray800, // Gray background
+        borderRadius: BorderRadius.circular(12.0), // Rounded borders
+      ),
+      child: Column(
+        children: [
+          SizedBox(height: 10),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_help_center_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: Text(
+              'Help',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HelpPage()),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/info.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: Text(
+              'Disclaimer',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DisclaimerPage()),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_statements_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: Text(
+              'Documents',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DocumentsPage()),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_settings_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: Text(
+              'Settings',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: CupertinoListTileChevron(),
+            onTap: () {
+              print('Settings tapped');
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_profiles_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: Text(
+              'Profiles',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: CupertinoListTileChevron(),
+            onTap: () {
+              print('Profiles tapped');
+            },
+          ),
+          SizedBox(height: 10),
+        ],
+      ),
+    ),
+  );
+}
 
 // This is the settings section
   Padding _settings() => Padding(
@@ -1643,6 +1750,7 @@ Column _profileForAllUsers() => Column(
     );
   
 // This is the function to display the selected page 
+  
   Widget _buildSelectedPage() {
     switch (_selectedButton) {
       case 'settings':
