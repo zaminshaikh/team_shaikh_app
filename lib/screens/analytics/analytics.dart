@@ -406,7 +406,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (!found) {
               unfoundCustomDates.add(normalizedDateTime);
               unfoundCustomPoints.add(point); // Add the point to the list of unfound points
-              return null; // Return null if the point is not from the custom date range
+              // return null; // Return null if the point is not from the custom date range
             }
             
             // Sort the dates in order
@@ -508,7 +508,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (!found) {
               unfoundLastSixMonthsDates.add(normalizedDateTime);
               unfoundLastSixMonthsPoints.add(point); // Add the point to the list of unfound points
-              return null; // Return null if the point is not from the last 6 months
+              // return null; // Return null if the point is not from the last 6 months
             }
           
             // Sort the dates in order
@@ -617,7 +617,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (!found) {
               unfoundLastYearDates.add(normalizedDateTime);
               unfoundLastYearPoints.add(point); // Add the point to the list of unfound points
-              return null; // Return null if the point is not from the last year
+              // return null; // Return null if the point is not from the last year
             }
           
             if (pointAssignedLastCase) { // Step 3: Print the message
@@ -724,7 +724,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               unfoundLastMonthPoints.add(point); // Add the point to the list of unfound points
           
           
-              return null; // Return null if the point is not from the last month
             }
           
             // Sort the dates in order
