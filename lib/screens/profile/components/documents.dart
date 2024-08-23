@@ -10,7 +10,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/screens/notification.dart';
 import 'dart:developer';
 import 'package:team_shaikh_app/screens/profile/PDFPreview.dart';
 import 'package:team_shaikh_app/screens/profile/downloadmethod.dart';
@@ -143,15 +142,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
         );
       }
     );  
-    
-  
   
   List<String> connectedUserNames = [];
   List<String> connectedUserCids = [];
-
-
-
-  
   
   Future<void> shareFile(context, clientId, documentName) async {
     try {
@@ -196,15 +189,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
-
-
   @override
   void initState() {
     super.initState();
-    // Call the function to show the documents section during initialization
-    showDocumentsSection();
     // Initialize other data
     _initData().then((_) {
+      // Ensure _databaseService is initialized before calling _initializeDocuments
+      _initializeDocuments();
+  
       _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
         if (mounted) {
           setState(() {
@@ -223,29 +215,33 @@ class _DocumentsPageState extends State<DocumentsPage> {
     });
   }
 
+  Future<void> _initializeDocuments() async {
+    
+    await showDocumentsSection();
+  }
+
   Future<void> showDocumentsSection() async {
     // Update the state to indicate that the 'documents' button is selected
     setState(() {
-      _selectedButton = 'documents';
     });
-  
-  
+
+
     // List the PDF files available
     await listPDFFiles();
-  
+
     // Fetch the connected CIDs using the database service's CID or a fallback CID
     await fetchConnectedCids(_databaseService?.cid ?? '$cid');
-  
+
     // List the PDF files for connected users
     await listPDFFilesConnectedUsers();
-  }
-  
+
+  } 
+
   final FirebaseStorage storage = FirebaseStorage.instance;
   List<Reference> pdfFiles = [];
 
   Future<void> listPDFFiles() async {
     final String? userFolder = _databaseService?.cid;
-
     final ListResult result = await storage.ref('testUsersStatements/$userFolder').listAll();
     final List<Reference> allFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
 
@@ -257,9 +253,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
     for (int i = 0; i < pdfFiles.length; i++) {
     }
   }
-  
+
   List<PdfFileWithCid> pdfFilesConnectedUsers = [];
- 
+
   Future<List<String>> fetchConnectedCids(String cid) async {
     DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
     if (userSnapshot.exists) {
@@ -270,7 +266,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     } else {
       return [];
     }
-  }
+  } 
 
   Future<void> listPDFFilesConnectedUsers() async {
     final List<String> connectedUserFolders = connectedUserCids;
@@ -296,10 +292,11 @@ class _DocumentsPageState extends State<DocumentsPage> {
         pdfFilesConnectedUsers.addAll(newFiles);
       });
     }
-  }
+
+    // Print statements
+  } 
   
   // This is the selected button, initially set to an empty string
-  String _selectedButton = '';
   
   Scaffold buildDocumentsPage(
     BuildContext context,
@@ -317,7 +314,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
-                      _buildButton(),
                       _documents(),
                     ],
                   ),
@@ -330,41 +326,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
     );
   }
   
-  // This is the row with buttons
-  Widget _buildButton() => 
-
-      // Statements and Documents button
-      ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          side: BorderSide(
-            color: _selectedButton == 'documents' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-          ),
-          backgroundColor: _selectedButton == 'documents' ? AppColors.defaultBlue500 : Colors.transparent,
-        ),
-        child: Row(
-          children: [
-            Text(
-              'Documents',
-              style: TextStyle(
-                color: _selectedButton == 'documents' ? Colors.white : AppColors.defaultBlueGray500,
-                fontSize: 16,
-                fontWeight: _selectedButton == 'documents' ? FontWeight.bold : FontWeight.w400,
-                fontFamily: 'Titillium Web'
-              ),
-            ),
-            const SizedBox(width: 10),
-            SvgPicture.asset(
-              'assets/icons/profile_statements_icon.svg',
-              color: _selectedButton == 'documents' ? Colors.white : AppColors.defaultBlueGray500,
-              height: 20,
-            )
-          ],
-        ),
-        onPressed: () async {
-          await showDocumentsSection();
-        },
-      );
-    
 // This is the Statements and Documents section
   Padding _documents() => Padding(
         padding: const EdgeInsets.fromLTRB(10, 20, 10, 120),
@@ -531,112 +492,33 @@ class _DocumentsPageState extends State<DocumentsPage> {
     snap: false,
     floating: true,
     pinned: true,
-    flexibleSpace: const SafeArea(
-      child: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left: 20.0, right: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Documents',
-                  style: TextStyle(
-                    fontSize: 27,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-        ],
-      ),
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+      onPressed: () {
+        Navigator.pop(context);
+      },
     ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 5.0, bottom: 5.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: const Offset(0.0, 0.0),
-                        ).animate(animation),
-                        child: child,
-                      ),
-                  ),
-                );
-              },
-              child: Container(
-                color: const Color.fromRGBO(239, 232, 232, 0),
-                padding: const EdgeInsets.all(10.0),
-                child: ClipRect(
-                  child: Stack(
-                    children: <Widget>[
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.transparent, // Change this color to the one you want
-                                width: 0.3, // Adjust width to your need
-                              ),
-                              shape: BoxShape.rectangle, // or BoxShape.rectangle if you want a rectangle
-                            ),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/icons/bell.svg',
-                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                height: 32,
-                              ),
-                            ),
-                          ),
-                      Positioned(
-                        right: 0,
-                        top: 5,
-                        child: unreadNotificationsCount > 0
-                            ? Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF267DB5),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
-                                ),
-                                child: Text(
-                                  '$unreadNotificationsCount',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontFamily: 'Titillium Web',
-                                    fontSize: 12,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              )
-                            : Container(),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+    flexibleSpace: const SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(left: 60.0, right: 20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Documents',
+              style: TextStyle(
+                fontSize: 27,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
               ),
             ),
-          ),
-        ],
-    );
+          ],
+        ),
+      ),
+    ),
+  );
 
 
   
