@@ -20,6 +20,7 @@ import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/components/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/help.dart';
+import 'package:team_shaikh_app/screens/profile/components/settings.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
@@ -1141,6 +1142,10 @@ Widget buildSampleCupertinoListSection() {
             ),
             trailing: const CupertinoListTileChevron(),
             onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
             },
           ),
           const Padding(
