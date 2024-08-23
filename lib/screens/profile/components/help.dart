@@ -1,16 +1,10 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/screens/notification.dart';
-import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -22,39 +16,12 @@ class HelpPage extends StatefulWidget {
   _HelpPageState createState() => _HelpPageState();
 }
 
-class PdfFileWithCid {
-  final Reference file;
-  final String cid;
-
-  PdfFileWithCid(this.file, this.cid);
-}
-
 class _HelpPageState extends State<HelpPage> {
   final Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
   DatabaseService? _databaseService;
 
-  Future<void> _initData() async {
-
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      log('profile.dart: User is not logged in');
-      await Navigator.pushReplacementNamed(context, '/login');
-    }
-    // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
-    // If there is no matching CID, redirect to login page
-    // ignore: duplicate_ignore
-    if (service == null) {
-      // ignore: use_build_context_synchronously
-      await Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      // Otherwise set the database service instance
-      _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService?.cid}');
-    }
-  }
   
     String? cid;
   static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');

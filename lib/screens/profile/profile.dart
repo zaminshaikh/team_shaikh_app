@@ -26,7 +26,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'PDFPreview.dart';
 import 'downloadmethod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -1047,14 +1046,14 @@ Widget buildSampleCupertinoListSection() {
       ),
       child: Column(
         children: [
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           CupertinoListTile(
             leading: SvgPicture.asset(
               'assets/icons/profile_help_center_icon.svg',
               color: Colors.white,
               height: 20,
             ),
-            title: Text(
+            title: const Text(
               'Help',
               style: TextStyle(
                 fontFamily: 'Titillium Web',
@@ -1062,16 +1061,16 @@ Widget buildSampleCupertinoListSection() {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            trailing: CupertinoListTileChevron(),
+            trailing: const CupertinoListTileChevron(),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HelpPage()),
+                MaterialPageRoute(builder: (context) => const HelpPage()),
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Divider(color: CupertinoColors.separator, thickness: 1.5),
           ),
           CupertinoListTile(
@@ -1080,7 +1079,7 @@ Widget buildSampleCupertinoListSection() {
               color: Colors.white,
               height: 20,
             ),
-            title: Text(
+            title: const Text(
               'Disclaimer',
               style: TextStyle(
                 fontFamily: 'Titillium Web',
@@ -1088,16 +1087,16 @@ Widget buildSampleCupertinoListSection() {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            trailing: CupertinoListTileChevron(),
+            trailing: const CupertinoListTileChevron(),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => DisclaimerPage()),
+                MaterialPageRoute(builder: (context) => const DisclaimerPage()),
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Divider(color: CupertinoColors.separator, thickness: 1.5),
           ),
           CupertinoListTile(
@@ -1106,7 +1105,7 @@ Widget buildSampleCupertinoListSection() {
               color: Colors.white,
               height: 20,
             ),
-            title: Text(
+            title: const Text(
               'Documents',
               style: TextStyle(
                 fontFamily: 'Titillium Web',
@@ -1114,16 +1113,16 @@ Widget buildSampleCupertinoListSection() {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            trailing: CupertinoListTileChevron(),
+            trailing: const CupertinoListTileChevron(),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => DocumentsPage()),
+                MaterialPageRoute(builder: (context) => const DocumentsPage()),
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Divider(color: CupertinoColors.separator, thickness: 1.5),
           ),
           CupertinoListTile(
@@ -1132,7 +1131,7 @@ Widget buildSampleCupertinoListSection() {
               color: Colors.white,
               height: 20,
             ),
-            title: Text(
+            title: const Text(
               'Settings',
               style: TextStyle(
                 fontFamily: 'Titillium Web',
@@ -1140,13 +1139,12 @@ Widget buildSampleCupertinoListSection() {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            trailing: CupertinoListTileChevron(),
+            trailing: const CupertinoListTileChevron(),
             onTap: () {
-              print('Settings tapped');
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
           ),
           CupertinoListTile(
@@ -1155,7 +1153,7 @@ Widget buildSampleCupertinoListSection() {
               color: Colors.white,
               height: 20,
             ),
-            title: Text(
+            title: const Text(
               'Profiles',
               style: TextStyle(
                 fontFamily: 'Titillium Web',
@@ -1163,12 +1161,11 @@ Widget buildSampleCupertinoListSection() {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            trailing: CupertinoListTileChevron(),
+            trailing: const CupertinoListTileChevron(),
             onTap: () {
-              print('Profiles tapped');
             },
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
         ],
       ),
     ),
@@ -1578,7 +1575,7 @@ Widget buildSampleCupertinoListSection() {
 
                                           'Your password has been updated successfully.',
 
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.check_circle_outline_rounded,
                                             color: Colors.green,
                                             size: 28,

@@ -1,7 +1,8 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:developer';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/scheduler.dart' as scheduler;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as notifications;
 
 class PushNotificationService {
