@@ -1,11 +1,9 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
@@ -23,12 +21,6 @@ class SettingsPage extends StatefulWidget {
   _SettingsPageState createState() => _SettingsPageState();
 }
 
-class PdfFileWithCid {
-  final Reference file;
-  final String cid;
-
-  PdfFileWithCid(this.file, this.cid);
-}
 
 class _SettingsPageState extends State<SettingsPage> {
   final Future<void> _initializeWidgetFuture = Future.value();

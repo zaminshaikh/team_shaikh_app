@@ -21,6 +21,7 @@ import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/components/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/help.dart';
 import 'package:team_shaikh_app/screens/profile/components/settings.dart';
+import 'package:team_shaikh_app/screens/profile/components/profiles.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
 import 'package:url_launcher/url_launcher.dart';
@@ -815,8 +816,6 @@ Column _profileForAllUsers() => Column(
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        _buildButtonRow(),
-                        _buildSelectedPage(),
                       ],
                     ),
                   ),
@@ -853,8 +852,6 @@ Column _profileForAllUsers() => Column(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         buildSampleCupertinoListSection(),
-                        _buildButtonRow(),
-                        _buildSelectedPageWithConnectedUsers(),
                       ],
                     ),
                   ),
@@ -872,169 +869,6 @@ Column _profileForAllUsers() => Column(
       );   
   }
 
-
-// This is the row with buttons
-  Widget _buildButtonRow() => SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: <Widget>[
-          const SizedBox(width: 20), // Add initial width
-
-          // Legal and Policies button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'disclaimer' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'disclaimer' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Disclaimer',
-                  style: TextStyle(
-                    color: _selectedButton == 'disclaimer' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'disclaimer' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_legal_policies_icon.svg',
-                  // ignore: deprecated_member_use
-                  color: _selectedButton == 'disclaimer' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                ),],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'disclaimer';
-              });
-            },
-          ),
-
-          const SizedBox(width: 10), // Add width          
-                    
-          // Statements and Documents button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'documents' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'documents' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Documents',
-                  style: TextStyle(
-                    color: _selectedButton == 'documents' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'documents' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_statements_icon.svg',
-                  color: _selectedButton == 'documents' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                )
-              ],
-            ),
-            onPressed: () async {
-              setState(() {
-                _selectedButton = 'documents';
-              });
-                
-              await listPDFFiles();
-              
-              await fetchConnectedCids(_databaseService?.cid ?? '$cid');
-              
-              await listPDFFilesConnectedUsers();
-            },
-          ),      
-
-          const SizedBox(width: 10), // Add width
-
-          // Settings button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'settings' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'settings' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Settings',
-                  style: TextStyle(
-                    color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'settings' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_settings_icon.svg',
-                  color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                )
-              ],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'settings';
-              });
-            },
-          ),
-          
-          const SizedBox(width: 10), // Add width
-
-          // Profiles button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'profiles' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'profiles' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Profiles',
-                  style: TextStyle(
-                    color: _selectedButton == 'profiles' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'profiles' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_profiles_icon.svg',
-                  // ignore: deprecated_member_use
-                  color: _selectedButton == 'profiles' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                ),
-              ],
-            ),
-            onPressed: () {
-              if (mounted) {
-                setState(() {
-                  _selectedButton = 'profiles';
-                });
-              }
-            },
-          ),
-          
-          const SizedBox(width: 20), // Add width
-        ],
-      ),
-    );
 
 // This is the list of vertical buttons
 Widget buildSampleCupertinoListSection() {
@@ -1168,6 +1002,10 @@ Widget buildSampleCupertinoListSection() {
             ),
             trailing: const CupertinoListTileChevron(),
             onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilesPage()),
+              );
             },
           ),
           const SizedBox(height: 10),
@@ -1751,43 +1589,6 @@ Widget buildSampleCupertinoListSection() {
       
     );
   
-// This is the function to display the selected page 
-  
-  Widget _buildSelectedPage() {
-    switch (_selectedButton) {
-      case 'settings':
-        return _settings(); // replace with your actual Settings page widget
-      case 'documents':
-        return _documents(); // replace with your actual Statements and Documents page widget
-      case 'helpCenter':
-       return _helpCenter(); // replace with your actual Help Center page widget
-      case 'profiles':
-       return _profileForUser(); // replace with your actual Profiles page widget
-      case 'disclaimer':
-       return _disclaimer(); // replace with your actual Legal and Policies page widget
-      default:
-        return Container(); // return an empty container by default
-    }
-  }
-
-// This is the function to display the selected page 
-  Widget _buildSelectedPageWithConnectedUsers() {
-    switch (_selectedButton) {
-      case 'settings':
-        return _settings(); // replace with your actual Settings page widget
-      case 'documents':
-        return _documents(); // replace with your actual Statements and Documents page widget
-      case 'helpCenter':
-       return _helpCenter(); // replace with your actual Help Center page widget
-      case 'profiles':
-       return _profileForAllUsers(); // replace with your actual Profiles page widget   
-      case 'disclaimer':
-       return _disclaimer(); // replace with your actual Legal and Policies page widget
-      default:
-        return Container(); // return an empty container by default
-    }
-  }
-
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
