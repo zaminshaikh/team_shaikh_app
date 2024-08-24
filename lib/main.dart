@@ -42,7 +42,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp (
 
     builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(boldText: false),
+          data: MediaQuery.of(context).copyWith(
+            boldText: false,
+            textScaleFactor: 1,
+          ),
           child: child!,
     ),
 
