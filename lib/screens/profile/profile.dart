@@ -492,6 +492,7 @@ List<String> assetsFormatted = [];
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
+                        buildSampleCupertinoListSection(),
                       ],
                     ),
                   ),
