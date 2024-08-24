@@ -342,7 +342,6 @@ List<String> assetsFormatted = [];
     
   }
   
-
   @override
   void initState() {
     super.initState();
@@ -365,7 +364,6 @@ List<String> assetsFormatted = [];
     });
 
   }
-
 
 // This is the Profiless section
   Container _profilesForUser() => Container(
@@ -519,7 +517,6 @@ List<String> assetsFormatted = [];
     ),
   
   );
-
 
 // This is the Profiless section
   Column _profilesForConnectedUser() => Column(
@@ -692,6 +689,7 @@ Column _profilesForAllUsers() => Column(
           children: [
             CustomScrollView(
               slivers: <Widget>[
+                _buildAppBar(context), 
                 SliverPadding(
                   padding: const EdgeInsets.all(0.0),
                   sliver: SliverList(
@@ -736,8 +734,6 @@ Column _profilesForAllUsers() => Column(
         ),
       );   
   }
-
-
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
