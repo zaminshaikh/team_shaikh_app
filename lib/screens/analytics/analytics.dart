@@ -208,9 +208,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   List<double> customxValues = [];
   List<DateTime> customDates = [];
 
-  
-
-
   @override
   Widget build(BuildContext context) => FutureBuilder(
       future: _initData(), // Initialize the database service
@@ -956,7 +953,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           return FlSpot(xValue, point['amount'].toDouble());
           }).where((spot) => spot != null).cast<FlSpot>().toList();
           
-          // Print and remove spots with xValue of -1
+          // Print and remove spots with xValue of below 0
           spots.removeWhere((spot) {
             if (spot.x < 0) {
               return true;
@@ -972,8 +969,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             amount = unfoundLastMonthAmount;
           } else if (dropdownValue == 'last-6-months') {
             amount = unfoundLastSixMonthsAmount;
-          } else {
+          } else if (dropdownValue == 'custom-time-period') {
+            amount = unfoundCustomAmount;
+          } else if (dropdownValue == 'last-year') {
             amount = unfoundLastYearAmount;
+          } else {
+            amount = 0.0;
           }
           
           // Check if spotAssignedZero is false and add a point at the origin
@@ -999,8 +1000,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }
           
           break; // Assuming you only need the first asset with graphPoints
-        }
       }
+    }
 
 
     // This calculation is for the total assets of all connected users combined
