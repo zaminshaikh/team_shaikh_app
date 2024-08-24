@@ -549,7 +549,7 @@ class _HelpPageState extends State<HelpPage> {
             ),
             CustomExpansionTile(
               title: 'Can I export my financial data?',
-              content: 'Yes, you can export your financial data. Go to the settings page and look for the "Export Data" option. Follow the instructions to export your data in a suitable format.',
+              content: 'Yes, you can export your financial statements and documents. Go to the documents page and look for the download button. Wait for the options dialog to appear to export your document in your preffered format.',
             ),
 
             SizedBox(height: 20),
