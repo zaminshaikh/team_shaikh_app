@@ -917,7 +917,7 @@ List<String> assetsFormatted = [];
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Documents',
+              'Settings',
               style: TextStyle(
                 fontSize: 27,
                 color: Colors.white,
