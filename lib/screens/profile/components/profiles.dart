@@ -524,7 +524,7 @@ List<String> assetsFormatted = [];
 // This is the Profiless section
   Column _profilesForConnectedUser() => Column(
     children: [
-      Row(
+      const Row(
         children: [
           SizedBox(width: 20),
 
@@ -542,132 +542,130 @@ List<String> assetsFormatted = [];
       
       Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-        child: Container(
-          child: ListView.builder(
-            
-            itemCount: connectedUserNames.length,
-            itemBuilder: (context, index) => Container(
-            margin: const EdgeInsets.only(bottom: 20),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(10), 
-              border: Border.all(color: Colors.white, width: 1), // Add this line
-            ),
-            
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // name and icon
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        connectedUserNames[index], 
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      Text(
-                        'DOB: ${userDobs[index]}', 
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Beneficiary: ${beneficiaries[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'First Deposit Date: ${userFirstDepositDates[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Initial Email: ${initEmails[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Current Email: ${userEmails[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Phone Number: ${phoneNumbers[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Address: ${addresses[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Assets:', 
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-            
-                      const SizedBox(height: 10),
-            
-                      Text(
-                        '\$${totalAssetsList[index]}', // Adjusted
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),                  ],
-                  ),
-            
-                  const Spacer(),
+        child: ListView.builder(
           
-                ],
-              ),
+          itemCount: connectedUserNames.length,
+          itemBuilder: (context, index) => Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10), 
+            border: Border.all(color: Colors.white, width: 1), // Add this line
+          ),
+          
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // name and icon
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      connectedUserNames[index], 
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      'DOB: ${userDobs[index]}', 
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Beneficiary: ${beneficiaries[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'First Deposit Date: ${userFirstDepositDates[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Initial Email: ${initEmails[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Current Email: ${userEmails[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Phone Number: ${phoneNumbers[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Address: ${addresses[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Assets:', 
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+          
+                    const SizedBox(height: 10),
+          
+                    Text(
+                      '\$${totalAssetsList[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),                  ],
+                ),
+          
+                const Spacer(),
+        
+              ],
             ),
           ),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-          ),
+        ),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
         ),
       ),
   
