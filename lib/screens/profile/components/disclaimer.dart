@@ -143,15 +143,64 @@ class _DisclaimerPageState extends State<DisclaimerPage> {
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Legal & Policies',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 20),
+            Text(
+              'AGQ Consulting LLC',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'AGQ Consulting LLC is a Florida limited liability company exempt from the registration '
+              'requirements of the Investment Company Act of 1940 pursuant to Section 3(c)(1) thereof. '
+              'Our private offerings are available for up to one hundred (100) accredited investors of '
+              'which no more than thirty-five (35) may be non-accredited investors and rely on the '
+              'registration exemption under Rule 506 of Regulation D under the Securities Act of 1933. '
+              'A Form D claiming such exemption as a safe harbor is on file with the SEC and applicable '
+              'states. AGQ is domiciled at 195 International Parkway, Suite 103, Lake Mary, Florida 32746 '
+              'and is under the purview of the State of Florida and United States laws. '
+              'Please contact AGQ at management@agqconsulting.com. Thank you.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            SizedBox(height: 50),
+            Text(
+              'AK1 Holdings L.P.',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'AK1 Holdings L.P. is a limited partnership that is exempt from the registration requirements '
+              'of the Investment Company Act of 1940 pursuant to Section 3(c)(1) thereof. Our private offerings '
+              'are available to accredited investors only and rely on the registration exemptions under Regulation '
+              'D under the Securities Act of 1933. A Form D claiming such exemption is on file with the SEC. '
+              'AK1 Holdings L.P. is domiciled at 195 International Parkway, Suite 103, Lake Mary, Florida 32746 and '
+              'is under the purview of the State of Florida and United States laws. A copy of the subscription agreement, '
+              'risk factors and fees is available upon request. Thank you.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            SizedBox(height: 40),
+          ],
+        )
       ],
     ),
   );

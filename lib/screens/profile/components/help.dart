@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +8,67 @@ import 'package:team_shaikh_app/resources.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class CustomExpansionTile extends StatefulWidget {
+  final String title;
+  final String content;
+
+  const CustomExpansionTile({
+    Key? key,
+    required this.title,
+    required this.content,
+  }) : super(key: key);
+
+  @override
+  _CustomExpansionTileState createState() => _CustomExpansionTileState();
+}
+
+class _CustomExpansionTileState extends State<CustomExpansionTile> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data: ThemeData(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+      ),
+      child: ExpansionTile(
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontFamily: 'Titillium Web',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        iconColor: Colors.white,
+        collapsedIconColor: Colors.white,
+        trailing: Icon(
+          _isExpanded ? Icons.remove : Icons.add,
+          color: _isExpanded ? Colors.blue : Colors.white,
+        ),
+        children: <Widget>[
+          ListTile(
+            title: Text(
+              widget.content,
+              style: const TextStyle(
+                fontSize: 14,
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+        onExpansionChanged: (bool expanded) {
+          setState(() {
+            _isExpanded = expanded;
+          });
+        },
+      ),
+    );
+  }
+}
 
 class HelpPage extends StatefulWidget {
   const HelpPage({Key? key}) : super(key: key);
@@ -448,116 +509,53 @@ class _HelpPageState extends State<HelpPage> {
           ],
        ),
 
-
         const SizedBox(height: 40), 
 
-
         // FAQ Section
-        Column(
+        const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'FAQ',
-              style: TextStyle(
-                fontSize: 25,
-                color: Color.fromRGBO(255, 255, 255, 1),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
+            Row(
+              children: [
+                SizedBox(width: 10),
+                Text(
+                  'FAQ',
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Color.fromRGBO(255, 255, 255, 1),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ],
             ),
-            
-            const SizedBox(height: 10), 
+            SizedBox(height: 10), 
 
-            Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: const ExpansionTile(
-                title: Text(
-                  'How do I reset my password?',
-                  style: TextStyle(
-                    fontFamily: 'Titillium Web',
-                    color: Colors.white,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: <Widget>[
-                  ListTile(
-                    title: Text(
-                      'To reset your password, go to the settings page and click on "Change Password". Follow the instructions provided.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                ],
-              ),
+            CustomExpansionTile(
+              title: 'Is the app secure?',
+              content: 'Yes, the Team Shaikh App is designed with strong security measures to protect your data and ensure your privacy.',
             ),
-            
-            Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: const ExpansionTile(
-                title: Text(
-                  'Where can I find the user manual?',
-                  style: TextStyle(
-                    fontFamily: 'Titillium Web',
-                    color: Colors.white,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: <Widget>[
-                  ListTile(
-                    title: Text(
-                      'The user manual is available in the Help section of our app. You can also access it directly from our website.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                ],
-              ),
+            CustomExpansionTile(
+              title: 'How do I contact customer support?',
+              content: 'If you have any questions or issues, please feel free to reach out to melindafromflorida@gmail.com. If it is urgent or of high priority, please contact Kashif or Sonny Shaikh. Their numbers are listed higher on the page.',
+            ),
+            CustomExpansionTile(
+              title: 'How do I update my personal information?',
+              content: 'To update your personal information, including changing your email and password, go to the settings page, under the "Security" section. If there is anything that seems incorrect about your personal information, please reach out to melindafromflorida@gmail.com.',
+            ),
+            CustomExpansionTile(
+              title: 'What happens if my phone is lost or stolen?',
+              content: 'The app requires a PIN or Face ID for access, so it should be secure. However, if you believe that the app may still be accessible, we can temporarily disable your account for your safety.',
+            ),
+            CustomExpansionTile(
+              title: 'Can I export my financial data?',
+              content: 'Yes, you can export your financial data. Go to the settings page and look for the "Export Data" option. Follow the instructions to export your data in a suitable format.',
             ),
 
-            Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: const ExpansionTile(
-                title: Text(
-                  'How to contact customer support?',
-                  style: TextStyle(
-                    fontFamily: 'Titillium Web',
-                    color: Colors.white,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: <Widget>[
-                  ListTile(
-                    title: Text(
-                      'Customer support can be reached via email at support@example.com, or you can call us at +123456789. Our team is available 24/7 to assist you.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
+            SizedBox(height: 20),
           
           ],
-        ),        
-        
+        ),
       ],      
     ),
     
