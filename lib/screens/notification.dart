@@ -58,7 +58,6 @@ class _NotificationPageState extends State<NotificationPage> {
     builder: (context, snapshot) {
       // Check if the Future is still loading
       if (snapshot.connectionState == ConnectionState.waiting) {
-        print('FutureBuilder: Waiting for future to complete');
         return Center(
           child: Container(
             padding: const EdgeInsets.all(26.0),
@@ -85,7 +84,6 @@ class _NotificationPageState extends State<NotificationPage> {
         builder: (context, notificationsSnapshot) {
           // Handle error state
           if (notificationsSnapshot.hasError) {
-            print('StreamBuilder: Error loading notifications');
             return Center(
               child: Container(
                 padding: const EdgeInsets.all(26.0),
@@ -109,7 +107,6 @@ class _NotificationPageState extends State<NotificationPage> {
   
           // Check if the snapshot has data
           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-            print('StreamBuilder: No data available');
             return Scaffold(
               body: CustomScrollView(
                 slivers: <Widget>[
@@ -143,7 +140,6 @@ class _NotificationPageState extends State<NotificationPage> {
   
           // Check if there are no notifications
           if (notificationsSnapshot.data!.isEmpty) {
-            print('StreamBuilder: No notifications found');
             return Scaffold(
               body: CustomScrollView(
                 slivers: <Widget>[
@@ -176,7 +172,6 @@ class _NotificationPageState extends State<NotificationPage> {
           }
   
           // Build the notification page with the data
-          print('StreamBuilder: Notifications found, building notification page');
           return _buildNotificationPage(notificationsSnapshot);
         }
       );
@@ -185,7 +180,6 @@ class _NotificationPageState extends State<NotificationPage> {
   
   // Function to build the notification page
   Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
-    print('Building notification page');
     return Scaffold(
       body: Stack(
         children: [
@@ -197,12 +191,10 @@ class _NotificationPageState extends State<NotificationPage> {
                   (BuildContext context, int index) {
                     // Get the notification data
                     Map<String, dynamic> notification = notificationsSnapshot.data![index];
-                    print('Building notification item at index $index: $notification');
                     // Get the previous notification date
                     DateTime previousNotificationDate = index > 0 ? (notificationsSnapshot.data![index - 1]['time'] as Timestamp).toDate() : DateTime(0);
                     // Check if the current notification is on a different day than the previous one
                     if (index == 0 || !_isSameDay(previousNotificationDate, (notification['time'] as Timestamp).toDate())) {
-                      print('Notification at index $index is on a different day');
                       return _buildNotificationWithDayHeader(notification, previousNotificationDate);
                     }
                     return _buildNotification(notification, true);

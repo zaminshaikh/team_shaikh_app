@@ -15,7 +15,7 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 class ActivityPage extends StatefulWidget {
-  const ActivityPage({Key? key}) : super(key: key);
+  const ActivityPage({Key? key}    ) : super(key: key);
   @override
   _ActivityPageState createState() => _ActivityPageState();
 }
@@ -31,12 +31,13 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1', 'AGQ'];
 
+  DatabaseService? _databaseService;
+  
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
     end: DateTime.now(),
   );
 
-  DatabaseService? _databaseService;
 
   Future<void> _initData() async {
     // If the user is signed in (which should always be the case on this screen)

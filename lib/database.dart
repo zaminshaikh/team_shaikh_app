@@ -17,6 +17,7 @@ class DatabaseService {
   CollectionReference? assetsSubCollection;
   CollectionReference? activitiesSubCollection; 
   CollectionReference? notificationsSubCollection; 
+  CollectionReference? graphPointsSubCollection;
 
   /// A new instance of [DatabaseService] with the given [cid] and [uid].
   /// 
@@ -43,7 +44,7 @@ class DatabaseService {
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
 
-      log('database.dart: UID $uid found in Firestore.');
+    log('database.dart: UID $uid found in Firestore.');
 
     if (querySnapshot.size > 0) {
       // Document found, access the 'cid' field
@@ -51,6 +52,7 @@ class DatabaseService {
       switch (code) {
         case 1:
           service.assetsSubCollection = usersCollection.doc(service.cid).collection(Config.get('ASSETS_SUBCOLLECTION'));
+          service.graphPointsSubCollection = service.assetsSubCollection?.doc(Config.get('ASSETS_GENERAL_DOC_ID')).collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
           break;
         case 2:
           service.activitiesSubCollection = usersCollection.doc(service.cid).collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
@@ -362,9 +364,39 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
   Stream<UserWithAssets> get getUserWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
     Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
     QuerySnapshot assetsSnapshot = await assetsSubCollection!.get();
-    List<Map<String, dynamic>> assets = assetsSnapshot.docs.map((asset) => asset.data() as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> assets = assetsSnapshot.docs.map((asset) => {
+      ...asset.data() as Map<String, dynamic>,
+      'id': asset.id,
+    }).toList();
+    for (int i = 0; i < assets.length; i++) {
+      if (assets[i]['id'] == 'general') {
+        assets[i] = {
+          ...assets[i],
+          'graphPoints': await getGraphPoints,
+        };
+      }
+      // Log the asset after updating
+      print('Asset after update: ${assets[i]}');
+    }
+
     return UserWithAssets(info, assets);
   });
+  
+  Future<List<Map<String, dynamic>>> get getGraphPoints async {
+      if (graphPointsSubCollection == null) {
+        throw Exception('GraphPoints subcollection not set');
+      }
+
+      // Fetch the documents in the graphPoints subcollection
+      QuerySnapshot querySnapshot = await graphPointsSubCollection!.get();
+
+      // Convert the documents to a List<Map<String, dynamic>>
+      List<Map<String, dynamic>> graphPoints = querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+
+      return graphPoints;
+  }
 
   /// Retrieves a stream of connected users with their assets.
   ///

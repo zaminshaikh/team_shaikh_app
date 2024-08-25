@@ -1371,7 +1371,7 @@ Column _profileForAllUsers() => Column(
 
                                           'Your password has been updated successfully.',
 
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.check_circle_outline_rounded,
                                             color: Colors.green,
                                             size: 28,
