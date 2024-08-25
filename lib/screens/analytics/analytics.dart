@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -158,6 +159,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // Otherwise set the database service instance
       _databaseService = service;
     }
+
+
   }
   
   /// Formats the given amount as a currency string.
@@ -316,8 +319,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     UserWithAssets user = userSnapshot.data!;
     // Total assets of one user
-    double totalUserAssets = 0.00,
-        totalAGQ = 0.00,
+    double totalAGQ = 0.00,
         totalAK1 = 0.00,
         totalAssets = 0.00;
 
@@ -331,7 +333,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           totalAK1 += asset['total'];
           break;
         default:
-          totalUserAssets += asset['total'] ?? 0;
           totalAssets += asset['total'] ?? 0;
       }
     }
@@ -339,6 +340,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     for (var asset in user.assets) {
       if (asset.containsKey('graphPoints')) {
         List<Map<String, dynamic>> graphPoints = List<Map<String, dynamic>>.from(asset['graphPoints']);
+ 
     
         bool spotAssignedZero = false; // Initialize spotAssignedZero
         bool pointAssignedLastCase = false; // Initialize pointAssignedLastCase
@@ -717,7 +719,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }
 
           else if (dropdownValue == 'last-month') {
-            bool found = false;
             DateTime now = DateTime.now();
             DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
             DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
@@ -732,7 +733,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               int day = normalizedDateTime.difference(startOfLastMonth).inDays + 1; // Calculate the day of the month
           
           
-              found = true;
               xValue = 2 * (day - 1) / (totalDays - 1); // Scale day to the range 0-2
           
               // Use sets to ensure unique values
@@ -813,31 +813,28 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }
 
           else if (dropdownValue == 'last-week') {
-            bool found = false;
-            DateTime now = DateTime.now();
-            DateTime startOfLastWeek = now.subtract(Duration(days: 6));
-            DateTime endOfLastWeek = now;
-          
-          
-            // Normalize dates to remove the time component
-            DateTime normalizedStartOfLastWeek = DateTime(startOfLastWeek.year, startOfLastWeek.month, startOfLastWeek.day);
-            DateTime normalizedEndOfLastWeek = DateTime(endOfLastWeek.year, endOfLastWeek.month, endOfLastWeek.day);
-          
-            // Normalize dateTime to only include the date part
-            DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-          
-            // Check if normalizedDateTime is within the last week
-            if (normalizedDateTime.isAfter(normalizedStartOfLastWeek) && normalizedDateTime.isBefore(normalizedEndOfLastWeek.add(const Duration(days: 1)))) {
-              int totalDays = endOfLastWeek.difference(startOfLastWeek).inDays + 1; // Calculate total days in the last week
-              int day = normalizedDateTime.difference(startOfLastWeek).inDays; // Calculate the day of the week, starting from 0
-          
-          
-              found = true;
-              xValue = day.toDouble(); // Scale day to the range 0-6
-          
-              // Use sets to ensure unique values
-              Set<DateTime> uniqueDates = lastWeekDates.map((date) => DateTime(date.year, date.month, date.day)).toSet();
-              Set<double> uniqueXValues = lastWeekxValues.toSet();
+              DateTime now = DateTime.now();
+              DateTime startOfLastWeek = now.subtract(const Duration(days: 6));
+              DateTime endOfLastWeek = now;
+              
+              // Normalize dates to remove the time component
+              DateTime normalizedStartOfLastWeek = DateTime(startOfLastWeek.year, startOfLastWeek.month, startOfLastWeek.day);
+              DateTime normalizedEndOfLastWeek = DateTime(endOfLastWeek.year, endOfLastWeek.month, endOfLastWeek.day);
+              
+              // Normalize dateTime to only include the date part
+              DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
+              
+              // Check if normalizedDateTime is within the last week
+              if (normalizedDateTime.isAfter(normalizedStartOfLastWeek) && normalizedDateTime.isBefore(normalizedEndOfLastWeek.add(const Duration(days: 1)))) {
+// Calculate total days in the last week
+                  int day = normalizedDateTime.difference(startOfLastWeek).inDays; // Calculate the day of the week, starting from 0
+              
+              
+                  xValue = day.toDouble() + 1; // Scale day to the range 0-6
+
+                  // Use sets to ensure unique values
+                  Set<DateTime> uniqueDates = lastWeekDates.map((date) => DateTime(date.year, date.month, date.day)).toSet();
+                  Set<double> uniqueXValues = lastWeekxValues.toSet();
           
               DateTime normalizedDate = DateTime(normalizedDateTime.year, normalizedDateTime.month, normalizedDateTime.day);
               uniqueDates.add(normalizedDate);
@@ -1035,7 +1032,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   delegate: SliverChildListDelegate(
                     [
                       // Line chart section
-                      _buildLineChartSection(totalUserAssets, percentageAGQ, percentageAK1),
+                      _buildLineChartSection(),
                       // Assets structure section
                       _buildAssetsStructureSection(
                           totalAssets, percentageAGQ, percentageAK1),
@@ -1315,8 +1312,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         }
       } else if (numberOfDays > 12) {
         final int numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 1;
-        final int numberOfMonths = lastCustomRange.end.month - lastCustomRange.start.month + 
-                                   (lastCustomRange.end.year - lastCustomRange.start.year) * 12;
         final DateTime firstDate = lastCustomRange.start;
         final DateTime middleDate = lastCustomRange.start.add(Duration(days: numberOfDays ~/ 2));
         final DateTime lastDate = lastCustomRange.end;
@@ -1612,7 +1607,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
     // ignore: unused_element
-    Widget _buildLineChartSection(double totalUserAssets, double percentageAGQ, double percentageAK1) => Padding(
+    Widget _buildLineChartSection() => Padding(
       padding: const EdgeInsets.only(bottom: 25),
       child: Container(
         width: double.infinity,
@@ -1809,9 +1804,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                               DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
                               ensureEnoughDates(foundSpotsDatesInLastMonth, startOfLastMonth, endOfLastMonth);
                             } else if (dropdownValue == 'last-6-months') {
-                              DateTime now = DateTime.now();
-                              DateTime startOfLast6Months = DateTime(now.year, now.month - 6, now.day);
-                              DateTime endOfLast6Months = DateTime(now.year, now.month, now.day);
                             } else if (dropdownValue == 'custom-time-period') {
                               // Handle custom time period
                               customDates.sort((a, b) => a.compareTo(b));

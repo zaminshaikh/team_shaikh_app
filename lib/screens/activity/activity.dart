@@ -2205,27 +2205,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
       );
       
-    // Helper method to build fund buttons
-    Widget _buildFundButton(String fundName) => ButtonTheme(
-        minWidth: 0, // Min width set to 0
-        padding: EdgeInsets.zero, // Remove padding
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.defaultBlueGray700,
-            borderRadius: BorderRadius.circular(15), // Adjust the radius as needed
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Adjust padding as needed
-          child: Text(
-            fundName, // Button text
-            style: const TextStyle(
-              color: AppColors.defaultBlueGray100,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ),
-      );
 
     // Helper method to build activity type buttons
     Widget _buildActivityTypeButton(String activityType) => ButtonTheme(

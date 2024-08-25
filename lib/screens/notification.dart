@@ -179,8 +179,7 @@ class _NotificationPageState extends State<NotificationPage> {
   );
   
   // Function to build the notification page
-  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
-    return Scaffold(
+  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
       body: Stack(
         children: [
           CustomScrollView(
@@ -212,7 +211,6 @@ class _NotificationPageState extends State<NotificationPage> {
       floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
-  }
   
   Widget _buildMarkAllAsReadButton(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
     // Assuming notifications is your list of notifications
