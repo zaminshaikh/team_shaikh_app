@@ -64,8 +64,8 @@ class DatabaseService {
           log('database.dart: Invalid code');
       }
       // Now you can use 'cid' in your code
-      log('database.dart: CID: ${service.cid}');
-      log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
+      // log('database.dart: CID: ${service.cid}');
+      // log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
       connectedUsersCids = await service.fetchConnectedCids(service.cid!);
 
 
