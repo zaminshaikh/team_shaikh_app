@@ -43,7 +43,7 @@ class DatabaseService {
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
 
-      log('database.dart: UID $uid found in Firestore.');
+      // log('database.dart: UID $uid found in Firestore.');
 
     if (querySnapshot.size > 0) {
       // Document found, access the 'cid' field
@@ -62,8 +62,8 @@ class DatabaseService {
           log('database.dart: Invalid code');
       }
       // Now you can use 'cid' in your code
-      log('database.dart: CID: ${service.cid}');
-      log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
+      // log('database.dart: CID: ${service.cid}');
+      // log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
       connectedUsersCids = await service.fetchConnectedCids(service.cid!);
 
 

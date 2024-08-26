@@ -54,6 +54,7 @@ dependencies:
   local_auth: ^2.2.0
   mime: ^1.0.0
   path_provider: ^2.1.2
+  provider: ^6.0.0  # Add this line
   share_plus: ^7.2.2
   shared_preferences: ^2.2.3
   url_launcher: ^6.3.0

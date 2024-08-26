@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, deprecated_member_use, use_build_context_synchronously
 import 'dart:developer';
-import 'package:team_shaikh_app/screens/wrapper.dart';
+import 'package:team_shaikh_app/screens/authenticate/faceid.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,52 +13,73 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+
+
 
 /// Represents the dashboard page of the application.
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final bool fromFaceIdPage;
+
+  const DashboardPage({super.key, this.fromFaceIdPage = false});
 
   @override
   _DashboardPageState createState() => _DashboardPageState();
 }
+
 int unreadNotificationsCount = 0;
 
 class _DashboardPageState extends State<DashboardPage> {
   // database service instance
   DatabaseService? _databaseService;
+  AppState? appState;
+
+  @override
+  void initState() {
+    print('dashboard.dart: has been initialized');
+    super.initState();
+
+    // Initialize appState if it's null
+    if (appState == null) {
+      appState = AppState();
+    }
+
+    // Check if hasNavigatedToFaceIDPage is null and set it to false if it is
+    if (appState?.hasNavigatedToFaceIDPage == null) {
+      appState?.setHasNavigatedToFaceIDPage(false);
+      print('hasNavigatedToFaceIDPage was null, set to false');
+    }
+
+    print('Current value of hasNavigatedToFaceIDPage: ${appState?.hasNavigatedToFaceIDPage}');
+    if (widget.fromFaceIdPage) {
+      print('User navigated to dashboard from FaceIdPage: ${widget.fromFaceIdPage}');
+      appState?.setHasNavigatedToFaceIDPage(false);
+      print('hasNavigatedToFaceIDPage set to false');
+      print('Updated value of hasNavigatedToFaceIDPage: ${appState?.hasNavigatedToFaceIDPage}');
+      appState?.setJustAuthenticated(true);
+    } else {
+      print('User navigated to dashboard from somewhere else');
+    }
+    _initData();
+  }
 
   Future<void> _initData() async {
-    // Allow for user data changes to sync and update
-    // This will display circular progess indicator
     await Future.delayed(const Duration(seconds: 1));
 
-    isLoggedIn = true;
-
     User? user = FirebaseAuth.instance.currentUser;
-    // If we do not have a user and the context is valid
     if (user == null && mounted) {
       log('dashboard.dart: User is not logged in');
       await Navigator.pushReplacementNamed(context, '/login');
     }
-    // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
 
-    // If there is no matching CID, redirect to login page
+    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
     if (service == null && mounted) {
       await Navigator.pushReplacementNamed(context, '/login');
     } else {
-      // Otherwise set the database service instance
       _databaseService = service!;
-      log('dashboard.dart: Database Service has been initialized with CID: ${_databaseService?.cid}');
     }
   }
-
-  /// Formats the given amount as a currency string.
-  String _currencyFormat(double amount) => NumberFormat.currency(
-        symbol: '\$',
-        decimalDigits: 2,
-        locale: 'en_US',
-      ).format(amount);
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -151,6 +172,12 @@ class _DashboardPageState extends State<DashboardPage> {
             });
       });
 
+  /// Formats the given amount as a currency string.
+  String _currencyFormat(double amount) => NumberFormat.currency(
+        symbol: '\$',
+        decimalDigits: 2,
+        locale: 'en_US',
+      ).format(amount);
 
   Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
     UserWithAssets user = userSnapshot.data!;

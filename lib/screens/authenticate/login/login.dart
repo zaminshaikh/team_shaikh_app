@@ -11,7 +11,6 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/screens/wrapper.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:local_auth/local_auth.dart';
@@ -50,13 +49,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     void initState() {
       super.initState();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (previousUserLoggedIn) {
-          emailController.text = email!;
-          User? user = FirebaseAuth.instance.currentUser;
-          if (user != null) {
-            _authenticate(context);
-          }
-        }
 
         if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
           _authenticate(context);
