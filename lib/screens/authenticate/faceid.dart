@@ -75,9 +75,11 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           appState?.setHasNavigatedToFaceIDPage(true);
           print('hasNavigatedToFaceIDPage reset to true in didChangeAppLifecycleState');
-          _authenticate(context).then((_) {
-            _isAuthenticating = false; // Reset the flag after authentication completes
-          });
+          if (mounted){
+            _authenticate(context).then((_) {
+              _isAuthenticating = false; // Reset the flag after authentication completes
+            });
+          }
         });
       }
     }
