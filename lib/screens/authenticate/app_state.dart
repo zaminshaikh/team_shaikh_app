@@ -16,7 +16,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     // Print statement to indicate that _hasNavigatedToFaceIDPage has been updated
-    print('hasNavigatedToFaceIDPage set to: $_hasNavigatedToFaceIDPage');
   }
 
   // Setter for _justAuthenticated
@@ -25,6 +24,5 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     // Print statement to indicate that _justAuthenticated has been updated
-    print('justAuthenticated set to: $_justAuthenticated');
   }
 }

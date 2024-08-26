@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, unnecessary_null_comparison
 
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -465,7 +465,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }
           
           else if (dropdownValue == 'last-6-months') {
-            print('Last 6 months selected');
             // Clear the list and set once when the dropdown value is selected
             bool found = false;
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
@@ -473,10 +472,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             DateTime sixMonthsAgo = DateTime(now.year, now.month - 5, now.day);
             DateTime endOfsixMonthsAgo = DateTime(now.year, now.month, now.day);
           
-            print('Normalized DateTime: $normalizedDateTime');
-            print('Now: $now');
-            print('Six Months Ago: $sixMonthsAgo');
-            print('End of Six Months Ago: $endOfsixMonthsAgo');
           
             // Check if normalizedDateTime is within the last 6 months
             if (normalizedDateTime.isAfter(sixMonthsAgo.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfsixMonthsAgo.add(const Duration(days: 1)))) {
@@ -485,9 +480,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               int totalDays = endOfsixMonthsAgo.difference(sixMonthsAgo).inDays + 1; // Calculate total days in the last 6 months
               xValue = (dayDifference / totalDays) * 5; // Scale day to the range 0-12
           
-              print('Day Difference: $dayDifference');
-              print('Total Days: $totalDays');
-              print('xValue: $xValue');
           
               // Use sets to ensure unique values
               Set<DateTime> uniqueDates = lastSixMonthsDates.toSet();
@@ -496,8 +488,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               uniqueDates.add(normalizedDateTime);
               uniqueXValues.add(xValue);
           
-              print('Unique Dates: $uniqueDates');
-              print('Unique X Values: $uniqueXValues');
           
               if (!uniqueXValues.contains(0)) {
                 uniqueXValues.add(0);
@@ -519,8 +509,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               lastSixMonthsDates.sort((a, b) => a.compareTo(b));
               lastSixMonthsxValues.sort((a, b) => a.compareTo(b));
           
-              print('Sorted Last Six Months Dates: $lastSixMonthsDates');
-              print('Sorted Last Six Months X Values: $lastSixMonthsxValues');
           
               if (dayDifference == 0) {
                 spotAssignedZero = true;
@@ -533,12 +521,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (!found) {
               unfoundLastSixMonthsDates.add(normalizedDateTime);
               unfoundLastSixMonthsPoints.add(point); // Add the point to the list of unfound points
-              print('Point not found in last 6 months: $normalizedDateTime');
             }
           
             // Sort the dates in order
             unfoundLastSixMonthsDates.sort((a, b) => a.compareTo(b));
-            print('Unfound Last Six Months Dates: $unfoundLastSixMonthsDates');
           
             // Print the last date in the list
             if (unfoundLastSixMonthsDates.isNotEmpty) {
@@ -547,16 +533,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               // Find the corresponding point for the last unfound date
               var lastUnfoundPoint = unfoundLastSixMonthsPoints[unfoundLastSixMonthsDates.indexOf(lastUnfoundDate)];
           
-              print('Last Unfound Date: $lastUnfoundDate');
-              print('Last Unfound Point: $lastUnfoundPoint');
           
               // Ensure the amount is correctly accessed and parsed
               if (lastUnfoundPoint.containsKey('amount')) {
                 double amount = lastUnfoundPoint['amount'].toDouble();
                 unfoundLastSixMonthsAmount = amount; // Ensure unfoundLastYearAmount is set correctly
-                print('Unfound Last Six Months Amount: $unfoundLastSixMonthsAmount');
               } else {
-                print('Last Unfound Point does not contain amount');
               }
             }
           
@@ -582,15 +564,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               lastSixMonthsDates = combinedList.map((entry) => entry.key).toList();
               lastSixMonthsxValues = combinedList.map((entry) => entry.value).toList();
           
-              print('Final Sorted Last Six Months Dates: $lastSixMonthsDates');
-              print('Final Sorted Last Six Months X Values: $lastSixMonthsxValues');
           
               // Print the index values of lastSixMonthsDates and lastSixMonthsxValues
               for (int i = 0; i < lastSixMonthsDates.length; i++) {
-                print('Index $i: Date ${lastSixMonthsDates[i]}, X Value ${lastSixMonthsxValues[i]}');
               }
             } else {
-              print('Error: lastSixMonthsDates and lastSixMonthsxValues lists have different lengths');
             }
           
             // Ensure a point at x=0 is added if there are no points in the last 6 months
@@ -607,9 +585,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               lastSixMonthsDates.sort((a, b) => a.compareTo(b));
               lastSixMonthsxValues.sort((a, b) => a.compareTo(b));
           
-              print('Added point at x=0');
-              print('Final Last Six Months Dates: $lastSixMonthsDates');
-              print('Final Last Six Months X Values: $lastSixMonthsxValues');
             }
           }
 

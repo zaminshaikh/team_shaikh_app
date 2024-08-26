@@ -376,7 +376,6 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
         };
       }
       // Log the asset after updating
-      print('Asset after update: ${assets[i]}');
     }
 
     return UserWithAssets(info, assets);

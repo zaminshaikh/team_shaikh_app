@@ -33,7 +33,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]).then((_) {
-    print('running app');
     runApp(
       ChangeNotifierProvider(
         create: (context) => AppState(),
@@ -54,35 +53,30 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   AppState? appState;
-  AppLifecycleState? _appLifecycleState; 
 
   @override
   void initState() {
     super.initState();
-    print('MyApp initialized');
     WidgetsBinding.instance.addObserver(this);
     appState?.setHasNavigatedToFaceIDPage(false);
   }
 
   @override
   void dispose() {
-    print('MyApp disposed');
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _appLifecycleState = state; // Update the lifecycle state
+// Update the lifecycle state
     final appState = Provider.of<AppState>(context, listen: false);
-    print('AppLifecycleState changed: $state');
   
     if ((state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) &&
         !appState.hasNavigatedToFaceIDPage &&
         isAuthenticated()) { // Check if the user is authenticated
-      print('Navigating to FaceIdPage');
       appState.setHasNavigatedToFaceIDPage(true);
       navigatorKey.currentState?.pushReplacement(
         PageRouteBuilder(
@@ -96,23 +90,18 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         appState.setJustAuthenticated(false);
       }
       if (appState.hasNavigatedToFaceIDPage) {
-        print('Navigation to FaceIdPage did not occur because hasNavigatedToFaceIDPage is true');
       } else {
-        print('Navigation to FaceIdPage did not occur because AppLifecycleState is $state');
       }
     }
   }
 
   bool isAuthenticated() {
-    print('Checking if user is authenticated');
     final user = FirebaseAuth.instance.currentUser;
-    print('User is authenticated: ${user != null}');
     return user != null;
   }
   
   @override
   Widget build(BuildContext context) {
-    print('MyApp built');
     return MaterialApp(
       navigatorKey: navigatorKey,
       builder: (context, child) => MediaQuery(
