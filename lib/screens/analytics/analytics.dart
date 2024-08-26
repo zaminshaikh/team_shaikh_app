@@ -813,6 +813,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }
 
           else if (dropdownValue == 'last-week') {
+              bool found = false;
               DateTime now = DateTime.now();
               DateTime startOfLastWeek = now.subtract(const Duration(days: 6));
               DateTime endOfLastWeek = now;
@@ -826,7 +827,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               
               // Check if normalizedDateTime is within the last week
               if (normalizedDateTime.isAfter(normalizedStartOfLastWeek) && normalizedDateTime.isBefore(normalizedEndOfLastWeek.add(const Duration(days: 1)))) {
-// Calculate total days in the last week
+                  found = true;// Calculate total days in the last week
                   int day = normalizedDateTime.difference(startOfLastWeek).inDays; // Calculate the day of the week, starting from 0
               
               

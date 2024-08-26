@@ -173,32 +173,6 @@ class _DisclaimerPageState extends State<DisclaimerPage> {
                 fontFamily: 'Titillium Web',
               ),
             ),
-            SizedBox(height: 50),
-            Text(
-              'AK1 Holdings L.P.',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'AK1 Holdings L.P. is a limited partnership that is exempt from the registration requirements '
-              'of the Investment Company Act of 1940 pursuant to Section 3(c)(1) thereof. Our private offerings '
-              'are available to accredited investors only and rely on the registration exemptions under Regulation '
-              'D under the Securities Act of 1933. A Form D claiming such exemption is on file with the SEC. '
-              'AK1 Holdings L.P. is domiciled at 195 International Parkway, Suite 103, Lake Mary, Florida 32746 and '
-              'is under the purview of the State of Florida and United States laws. A copy of the subscription agreement, '
-              'risk factors and fees is available upon request. Thank you.',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            SizedBox(height: 40),
           ],
         )
       ],
