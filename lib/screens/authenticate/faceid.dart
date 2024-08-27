@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, empty_catches
+
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/main.dart';
@@ -17,7 +19,6 @@ class FaceIdPage extends StatefulWidget {
 class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   final LocalAuthentication auth = LocalAuthentication();
   bool _isAuthenticating = false;
-  final Completer<void> _navigationCompleter = Completer<void>();
   AppState? appState;
   MyAppState? myAppState;
   bool authenticated = false;
@@ -25,7 +26,6 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    print('FaceIdPage initialized');
     myAppState = MyAppState();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -40,24 +40,19 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     // Print a message to indicate that the FaceIdPage is being disposed
-    print('FaceIdPage disposed');
     
     // Check if myAppState is not null
     if (myAppState != null) {
       // Print the appState value from myAppState
-      print('From FaceIdPage dispose: myAppState value: ${myAppState?.appState}');
     } else {
       // Print a message to indicate that myAppState is null
-      print('myAppState is null in dispose');
     }
   
     // Reset the hasNavigatedToFaceIDPage value to false after disposing the page
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (authenticated) {
         appState?.setHasNavigatedToFaceIDPage(false);
-        print('hasNavigatedToFaceIDPage reset to false in dispose');
       } else {
-        print('User is not authenticated, hasNavigatedToFaceIDPage not reset');
       }
     });
   
@@ -68,13 +63,11 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('AppLifecycleState changed: $state');
     if (state == AppLifecycleState.resumed) {
       if (!_isAuthenticating) {
         _isAuthenticating = true; // Set the flag to true to prevent multiple calls
         WidgetsBinding.instance.addPostFrameCallback((_) {
           appState?.setHasNavigatedToFaceIDPage(true);
-          print('hasNavigatedToFaceIDPage reset to true in didChangeAppLifecycleState');
           if (mounted){
             _authenticate(context).then((_) {
               _isAuthenticating = false; // Reset the flag after authentication completes
@@ -92,7 +85,6 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
       _isAuthenticating = true;
     });
 
-    print('Authentication started');
     authenticated = false;
 
     try {
@@ -103,23 +95,18 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
           stickyAuth: true,
         ),
       );
-      print('Authentication result: $authenticated');
     } catch (e) {
-      print('Authentication error: $e');
     }
 
     if (authenticated) {
       if (mounted) {
         setState(() {
           _isAuthenticating = false;
-          print('User authenticated');
-          print('_isAuthenticating: $_isAuthenticating');
         });
       }
     
       if (mounted) {
-        print('Widget is mounted, navigating to DashboardPage');
-        Navigator.pushReplacement(
+        await Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(fromFaceIdPage: true),
@@ -129,17 +116,14 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             appState?.setHasNavigatedToFaceIDPage(false);
             appState?.setJustAuthenticated(true);
-            print('hasNavigatedToFaceIDPage reset to false in MyAppState');
           });
         });
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           appState?.setHasNavigatedToFaceIDPage(false);
-          print('Widget is not mounted');
         });
       }
     } else {
-      print('User failed to authenticate');
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           appState?.setHasNavigatedToFaceIDPage(false);
@@ -152,8 +136,7 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   }
   
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -210,21 +193,20 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
                     onPressed: _isAuthenticating
                         ? null
                         : () async {
-                            print('Face ID button pressed');
                             await _authenticate(context);
                           },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.defaultBlue500,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                    ),
                     child: const Text(
                       'Use Face ID',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.defaultBlue500,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
                   ),
@@ -235,5 +217,4 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
         ),
       ),
     );
-  }
 }

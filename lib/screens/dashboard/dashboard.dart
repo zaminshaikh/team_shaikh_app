@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api, deprecated_member_use, use_build_context_synchronously
 import 'dart:developer';
-import 'package:team_shaikh_app/screens/authenticate/faceid.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 
 
@@ -37,29 +35,20 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   void initState() {
-    print('dashboard.dart: has been initialized');
     super.initState();
 
     // Initialize appState if it's null
-    if (appState == null) {
-      appState = AppState();
-    }
+    appState ??= AppState();
 
     // Check if hasNavigatedToFaceIDPage is null and set it to false if it is
     if (appState?.hasNavigatedToFaceIDPage == null) {
       appState?.setHasNavigatedToFaceIDPage(false);
-      print('hasNavigatedToFaceIDPage was null, set to false');
     }
 
-    print('Current value of hasNavigatedToFaceIDPage: ${appState?.hasNavigatedToFaceIDPage}');
     if (widget.fromFaceIdPage) {
-      print('User navigated to dashboard from FaceIdPage: ${widget.fromFaceIdPage}');
       appState?.setHasNavigatedToFaceIDPage(false);
-      print('hasNavigatedToFaceIDPage set to false');
-      print('Updated value of hasNavigatedToFaceIDPage: ${appState?.hasNavigatedToFaceIDPage}');
       appState?.setJustAuthenticated(true);
     } else {
-      print('User navigated to dashboard from somewhere else');
     }
     _initData();
   }
