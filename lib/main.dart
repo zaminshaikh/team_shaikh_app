@@ -77,13 +77,13 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         state == AppLifecycleState.hidden) &&
         !appState.hasNavigatedToFaceIDPage &&
         isAuthenticated()) { // Check if the user is authenticated
-      appState.setHasNavigatedToFaceIDPage(true);
-      navigatorKey.currentState?.pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const FaceIdPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-        ),
-      );
+      // appState.setHasNavigatedToFaceIDPage(true);
+      // navigatorKey.currentState?.pushReplacement(
+      //   PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) => const FaceIdPage(),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+      //   ),
+      // );
     } else {
       if (appState.justAuthenticated) {
         appState.setHasNavigatedToFaceIDPage(false);
