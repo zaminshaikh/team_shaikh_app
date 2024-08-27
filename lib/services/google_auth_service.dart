@@ -176,11 +176,6 @@ class GoogleAuthService {
             debugPrint('Error adding new user to Firestore: $e');
             showAlert = true;
             await wrongCIDFailAlert(context);
-            // Redirect to the login page
-            await Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
             return null;
           }
 
