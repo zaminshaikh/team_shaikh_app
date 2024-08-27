@@ -188,10 +188,10 @@ class _DashboardPageState extends State<DashboardPage> {
     for (var asset in user.assets) {
       switch (asset['fund']) {
         case 'AGQ':
-          totalUserAGQ += asset['total'];
+          totalUserAGQ += asset['total'] ?? 0;
           break;
         case 'AK1':
-          totalUserAK1 += asset['total'];
+          totalUserAK1 += asset['total'] ?? 0;
           break;
         default:
             latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
@@ -267,10 +267,10 @@ class _DashboardPageState extends State<DashboardPage> {
     for (var asset in user.assets) {
       switch (asset['fund']) {
         case 'AGQ':
-          totalAGQ += asset['total'];
+          totalAGQ += asset['total'] ?? 0;
           break;
         case 'AK1':
-          totalAK1 += asset['total'];
+          totalAK1 += asset['total'] ?? 0;
           break;
         default:
           latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
