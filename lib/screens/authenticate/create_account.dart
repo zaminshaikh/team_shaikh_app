@@ -11,7 +11,7 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/services/google_auth_service.dart';
 import 'package:team_shaikh_app/utilities.dart';
-
+import 'package:flutter/services.dart';
 
 
 // Making a StatefulWidget representing the Create Account page
@@ -454,7 +454,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           
           // Adding some space here
                       const SizedBox(height: 10.0),                    
-          
+                      
                       // TextField widget for the user to Enter their client ID
                       TextField(
                         // TextStyle to define text appearance of the users input
@@ -490,6 +490,12 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           // Adding some padding so the input is spaced proportionally                         
                           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
                         ),
+                      
+                        // Use inputFormatters to allow only numbers
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                      
                         onChanged: (value) {
                           setState(() {
                             _clientIDController.text = value;
