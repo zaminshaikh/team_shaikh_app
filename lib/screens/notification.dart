@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, unused_element, use_build_context_synchronously
+
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,9 +19,10 @@ class NotificationPage extends StatefulWidget {
 String uid = '';
 
 class _NotificationPageState extends State<NotificationPage> {
+    final Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
-  late DatabaseService _databaseService;
+  DatabaseService? _databaseService;
   
 
   Future<void> _initData() async {
@@ -32,7 +35,7 @@ class _NotificationPageState extends State<NotificationPage> {
     uid = user!.uid;
 
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+    DatabaseService? service = await DatabaseService.fetchCID(context, uid, 3);
     // If there is no matching CID, redirect to login page
     if (service == null) {
       if (!mounted) { return; }
@@ -40,36 +43,102 @@ class _NotificationPageState extends State<NotificationPage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('notification.dart: Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('notification.dart: Database Service has been initialized with CID: ${_databaseService?.cid}');
 
       // Call the logNotificationIds method
-      await _databaseService.logNotificationIds();
+      await _databaseService?.logNotificationIds();
     }
   
     
   }
 
-
-
   @override
   Widget build(BuildContext context) => FutureBuilder(
-    future: _initData(), // Initialize the database service
+    future: _initializeWidgetFuture,
     builder: (context, snapshot) {
+      // Check if the Future is still loading
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(
-          child: CircularProgressIndicator(),
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.all(26.0),
+            margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+            decoration: BoxDecoration(
+              color: AppColors.defaultBlue500,
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            child: const Stack(
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 6.0,
+                ),
+              ],
+            ),
+          ),
         );
       }
+  
+      // StreamBuilder to listen to notifications stream
       return StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _databaseService.getNotifications,
+        stream: _databaseService?.getNotifications,
         builder: (context, notificationsSnapshot) {
-          // Wait for the user snapshot to have data
-          if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-            return const Center(
-              child: CircularProgressIndicator(),
+          // Handle error state
+          if (notificationsSnapshot.hasError) {
+            return Center(
+              child: Container(
+                padding: const EdgeInsets.all(26.0),
+                margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                decoration: BoxDecoration(
+                  color: AppColors.defaultBlue500,
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                child: const Text(
+                  'Error loading notifications.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
             );
           }
-          // If there are no notifications, display a message
+  
+          // Check if the snapshot has data
+          if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+            return Scaffold(
+              body: CustomScrollView(
+                slivers: <Widget>[
+                  _buildAppBar(context),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          SvgPicture.asset(
+                            'assets/icons/empty_notifications.svg',
+                          ),
+                          const Text(
+                            'No notifications.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+  
+          // Check if there are no notifications
           if (notificationsSnapshot.data!.isEmpty) {
             return Scaffold(
               body: CustomScrollView(
@@ -101,45 +170,48 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
             );
           }
-          
-          // Once we have the user snapshot, we can build the activity page
-          // use unreadNotificationsCount as needed
+  
+          // Build the notification page with the data
           return _buildNotificationPage(notificationsSnapshot);
         }
       );
     }
-  );  
-
-  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
-    body: Stack(
-      children: [
-        CustomScrollView(
-          slivers: <Widget>[
-            _buildAppBar(context),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  Map<String, dynamic> notification = notificationsSnapshot.data![index];
-                  DateTime previousNotificationDate = index > 0 ? (notificationsSnapshot.data![index - 1]['time'] as Timestamp).toDate() : DateTime(0);
-                  if (index == 0 || !_isSameDay(previousNotificationDate, (notification['time'] as Timestamp).toDate())) {
-                    return _buildNotificationWithDayHeader(notification, previousNotificationDate);
-                  }
-                  return _buildNotification(notification, true);
-                },
-                childCount: notificationsSnapshot.data!.length,
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 150),
-            ),
-          ],
-        ),
-      ],
-    ),
-    floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
-    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
   );
-
+  
+  // Function to build the notification page
+  Scaffold _buildNotificationPage(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) => Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(context),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    // Get the notification data
+                    Map<String, dynamic> notification = notificationsSnapshot.data![index];
+                    // Get the previous notification date
+                    DateTime previousNotificationDate = index > 0 ? (notificationsSnapshot.data![index - 1]['time'] as Timestamp).toDate() : DateTime(0);
+                    // Check if the current notification is on a different day than the previous one
+                    if (index == 0 || !_isSameDay(previousNotificationDate, (notification['time'] as Timestamp).toDate())) {
+                      return _buildNotificationWithDayHeader(notification, previousNotificationDate);
+                    }
+                    return _buildNotification(notification, true);
+                  },
+                  childCount: notificationsSnapshot.data!.length,
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 150),
+              ),
+            ],
+          ),
+        ],
+      ),
+      floatingActionButton: _buildMarkAllAsReadButton(notificationsSnapshot),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  
   Widget _buildMarkAllAsReadButton(AsyncSnapshot<List<Map<String, dynamic>>> notificationsSnapshot) {
     // Assuming notifications is your list of notifications
     bool hasUnreadNotifications = notificationsSnapshot.data!.any((notification) => !notification['isRead'] );
@@ -158,7 +230,7 @@ class _NotificationPageState extends State<NotificationPage> {
             child: ElevatedButton(
               onPressed: () async {
                 DatabaseService service = DatabaseService(uid);
-                await service.markAllAsRead();
+                await service.markAllAsRead(context);
                 setState(() {
                   // Refresh the page
                 });
@@ -212,7 +284,6 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
   
-
   bool _isSameDay(DateTime date1, DateTime date2) => 
     date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
     
@@ -289,7 +360,7 @@ class _NotificationPageState extends State<NotificationPage> {
                             try {
                               // Mark the notification as read
                               DatabaseService databaseService = DatabaseService(uid);
-                              await databaseService.markAsRead(notification['id']);
+                              await databaseService.markAsRead(context, uid, notification['id']);
                 
                               await Navigator.pushReplacement(context, PageRouteBuilder(
                                 pageBuilder: (context, animation1, animation2) => route,
@@ -297,9 +368,9 @@ class _NotificationPageState extends State<NotificationPage> {
                               ));
                             } catch (e) {
                               if (e is FirebaseException && e.code == 'not-found') {
-                                log('The document was not found');
-                                log('Notification ID: ${notification['id']}');
-                                log('UID: $uid');
+                                log('notification.dart: The document was not found');
+                                log('notification.dart: Notification ID: ${notification['id']}');
+                                log('notification.dart: UID: $uid');
                               } else {
                                 rethrow;
                               }
@@ -335,7 +406,6 @@ class _NotificationPageState extends State<NotificationPage> {
       ],
     );
   }
-
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
@@ -376,16 +446,6 @@ class _NotificationPageState extends State<NotificationPage> {
         ],
       ),
     ),
-    // TODO(@zaminshaikh): Implement the settings button (commented out below).
-      // actions: [
-      //   Padding(
-      //     padding: const EdgeInsets.only(right: 10.0),
-      //     child: IconButton(
-      //       icon: const Icon(Icons.settings, color: Colors.white, size: 30.0),
-      //       onPressed: () {},
-      //     )
-      //   ),
-      // ],
-    );
+  );
 
 }

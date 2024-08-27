@@ -1,25 +1,29 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
+import 'package:team_shaikh_app/screens/profile/components/documents.dart';
+import 'package:team_shaikh_app/screens/profile/components/help.dart';
+import 'package:team_shaikh_app/screens/profile/components/settings.dart';
+import 'package:team_shaikh_app/screens/profile/components/profiles.dart';
 import 'dart:developer';
-import 'package:url_launcher/url_launcher.dart';
-import 'PDFPreview.dart';
 import 'downloadmethod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -28,21 +32,28 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
+class PdfFileWithCid {
+  final Reference file;
+  final String cid;
+
+  PdfFileWithCid(this.file, this.cid);
+}
+
 class _ProfilePageState extends State<ProfilePage> {
+  final Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
-  late DatabaseService _databaseService;
-
+  DatabaseService? _databaseService;
 
   Future<void> _initData() async {
 
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      log('User is not logged in');
+      log('profile.dart: User is not logged in');
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
     // If there is no matching CID, redirect to login page
     // ignore: duplicate_ignore
     if (service == null) {
@@ -51,32 +62,75 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       // Otherwise set the database service instance
       _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService.cid}');
+      log('Database Service has been initialized with CID: ${_databaseService?.cid}');
     }
   }
   
+    String? cid;
+  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
 
+  Stream<List<String>> get getConnectedUsersWithCid => usersCollection.doc(_databaseService?.cid).snapshots().asyncMap((userSnapshot) async {
+    final data = userSnapshot.data();
+    if (data == null) {
+      return [];
+    }
+    List<String> connectedUsers = [];
+    // Safely add _databaseService.cid to the list of connected users if it's not null
+    if (_databaseService?.cid != null) {
+    }
+    return connectedUsers;
+  });
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initData(), // Initialize the database service
+      future: _initializeWidgetFuture, // Initialize the database service
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.all(26.0),
+              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: const Stack(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 6.0,
+                  ),
+                ],
+              ),
+            ),
           );
         }
         return StreamBuilder<UserWithAssets>(
-          stream: _databaseService.getUserWithAssets,
+          stream: _databaseService?.getUserWithAssets,
           builder: (context, userSnapshot) {
             if (!userSnapshot.hasData || userSnapshot.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return Center(
+                child: Container(
+                  padding: const EdgeInsets.all(26.0),
+                  margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.defaultBlue500,
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: const Stack(
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 6.0,
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
             // Fetch connected users before building the profile page
             return StreamBuilder<List<UserWithAssets>>(
-              stream: _databaseService.getConnectedUsersWithAssets, // Assuming this is the correct stream
+              stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
               builder: (context, connectedUsersSnapshot) {
 
                 if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
@@ -85,11 +139,26 @@ class _ProfilePageState extends State<ProfilePage> {
                 }
                 // Once we have the connected users, proceed to fetch notifications
                 return StreamBuilder<List<Map<String, dynamic>>>(
-                  stream: _databaseService.getNotifications,
+                  stream: _databaseService?.getNotifications,
                   builder: (context, notificationsSnapshot) {
                     if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
+                      return Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(26.0),
+                          margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                          decoration: BoxDecoration(
+                            color: AppColors.defaultBlue500,
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          child: const Stack(
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 6.0,
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     }
                     unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
@@ -109,8 +178,6 @@ class _ProfilePageState extends State<ProfilePage> {
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
 
-    emailController.clear();
-    passwordController.clear();
 
     
 
@@ -176,6 +243,12 @@ List<double> totalAK1List = [];
 List<String> totalAssetsList = [];
 List<double> latestIncomes = [];
 List<String> assetsFormatted = [];
+
+  bool hapticsSwitchValue = false;
+  bool activitySwitchValue = false;
+  bool statementsSwitchValue = false;
+  List<String> connectedUserNames = [];
+  List<String> connectedUserCids = [];
 
 
   void extractAndPrintUserInfo(AsyncSnapshot<UserWithAssets> userSnapshot, AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
@@ -255,7 +328,7 @@ List<String> assetsFormatted = [];
 
       double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
       double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
-      log('dashboard.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
+      log(' Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
       assets = NumberFormat('#,##0.00', 'en_US').format(totalAssets);
 
       if (connectedUsers.data != null) {
@@ -278,7 +351,7 @@ List<String> assetsFormatted = [];
     double userTotalAssets = 0.0; // Ensure this is a double for calculations
 
     for (var asset in user.assets) {
-      // Assuming asset['total'] ?? 0 is a double. If it's a string, parse it first.
+      // Assuming asset['total'] is a double. If it's a string, parse it first.
       userTotalAssets += asset['total'] ?? 0;
     }
 
@@ -290,362 +363,122 @@ List<String> assetsFormatted = [];
     
   }
   
-  bool hapticsSwitchValue = false;
-  bool activitySwitchValue = false;
-  bool statementsSwitchValue = false;
+  Future<void> shareFile(context, clientId, documentName) async {
+    try {
+      // Call downloadFile to get the filePath
+      String filePath = await downloadFile(context, clientId, documentName);
 
-    List<String> connectedUserNames = [];
+      // Debugging: Print the filePath
 
+      // Check if the filePath is not empty
+      if (filePath.isNotEmpty) {
+        // Check if the filePath is a file
+        File file = File(filePath);
+        if (await file.exists()) {
+          // Use Share.shareFiles to share the file
+          await Share.shareFiles([filePath]);
+        } else {
+        }
+      } else {
+      }
+    } catch (e) {
+    }
+  }
+
+
+  final FirebaseStorage storage = FirebaseStorage.instance;
+  List<Reference> pdfFiles = [];
 
 
   @override
   void initState() {
     super.initState();
-    _selectedButton = 'settings';
+    listPDFFiles();
+    fetchConnectedCids(_databaseService?.cid ?? '$cid');
+    listPDFFilesConnectedUsers();
         _initData().then((_) {
-      _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
-        setState(() {
-          connectedUserNames = connectedUsers.map<String>((user) {
-            String firstName = user.info['name']['first'] as String;
-            String lastName = user.info['name']['last'] as String;
-            Map<String, String> userName = {
-              'first': firstName,
-              'last': lastName,
-            };
-            return userName.values.join(' ');
-          }).toList();
-        });
+      _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
+        if (mounted) {
+          setState(() {
+            connectedUserNames = connectedUsers.map<String>((user) {
+              String firstName = user.info['name']['first'] as String;
+              String lastName = user.info['name']['last'] as String;
+              Map<String, String> userName = {
+                'first': firstName,
+                'last': lastName,
+              };
+              return userName.values.join(' ');
+            }).toList();
+          });
+        }
       });
     });
 
   }
 
-// This is the selected button, initially set to an empty string
-  String _selectedButton = '';
+    Future<List<String>> fetchConnectedCids(String cid) async {
+    DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
+    if (userSnapshot.exists) {
+      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
+      List<String> connectedUsers = info['connectedUsers'].cast<String>();
+      connectedUserCids = connectedUsers;
+      return connectedUsers;
+    } else {
+      return [];
+    }
+  }
 
-// This is the Profiles section
-  Container _profileForUser() => Container(
-    padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-    child: Column(
-      children: [
-        const Row(
-          children: [
-            Text(
-              'My Profile', 
-              style: TextStyle(
-                fontSize: 22,
-                color: Color.fromRGBO(255, 255, 255, 1),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-          ],
-        ),
 
-        const SizedBox(height: 20),
+  Future<void> listPDFFiles() async {
+      final String? userFolder = _databaseService?.cid;
+    
+      final ListResult result = await storage.ref('testUsersStatements/$userFolder').listAll();
+      final List<Reference> allFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+    
 
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(10), 
-            border: Border.all(color: Colors.white, width: 1), // Add this line
-          ),
-          
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // name and icon
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userName.toString(), 
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    Text(
-                      'DOB: $userDob', // Assuming dob is a DateTime or String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Beneficiary: $beneficiary', // Assuming beneficiary is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'First Deposit Date: $userFirstDepositDate', // Assuming firstDepositDate is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Initial Email: $initEmail', // Assuming initEmail is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Current Email: ${appEmail?.isEmpty ?? true ? initEmail : appEmail}', // Use initEmail if appEmail is null or empty
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Phone Number: $phoneNumber', // Assuming phoneNumber is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Address: $address', // Assuming address is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Assets:', 
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
+        if (mounted) {
+          setState(() {
+            pdfFiles = allFiles;
+          });
+        }
+  }
 
-                    const SizedBox(height: 10),
+  List<PdfFileWithCid> pdfFilesConnectedUsers = [];
 
-                    Text(
-                      '\$$assets', // Assuming totalAssets is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                  ],
-                ),
+  Future<void> listPDFFilesConnectedUsers() async {
+    final List<String> connectedUserFolders = connectedUserCids;
+    List<PdfFileWithCid> allConnectedFiles = [];
 
-                const Spacer(),
+    for (String folder in connectedUserFolders) {
+      final ListResult result = await storage.ref('testUsersStatements/$folder').listAll();
+      final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+      
+      // Convert List<Reference> to List<PdfFileWithCid>
+      final List<PdfFileWithCid> pdfFilesWithCid = pdfFilesInFolder.map((file) => PdfFileWithCid(file, folder)).toList();
+      allConnectedFiles.addAll(pdfFilesWithCid);
+    }
+
+    if (mounted) {
+      setState(() {
+        // Use a Set to keep track of already added files
+        final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
         
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent, // Change this to your desired color
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-
-      ],
-    ),
-  
-  );
-
-
-// This is the Profiles section
-  Container _profilesForConnectedUser() => Container(
-    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-    child: Column(
-      children: [
-
-
-        ListView.builder(
-          
-          itemCount: connectedUserNames.length,
-          itemBuilder: (context, index) => Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(10), 
-            border: Border.all(color: Colors.white, width: 1), // Add this line
-          ),
-          
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // name and icon
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      connectedUserNames[index], 
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    Text(
-                      'DOB: ${userDobs[index]}', 
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Beneficiary: ${beneficiaries[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'First Deposit Date: ${userFirstDepositDates[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Initial Email: ${initEmails[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Current Email: ${userEmails[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Phone Number: ${phoneNumbers[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Address: ${addresses[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Assets:', 
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Text(
-                      '\$${totalAssetsList[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),                  ],
-                ),
-
-                const Spacer(),
+        // Add only the new files that are not already in the list
+        final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
         
-              ],
-            ),
-          ),
-        ),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-        ),
+        pdfFilesConnectedUsers.addAll(newFiles);
+      });
+    }
+  }
 
-      ],
-    ),
-  
-  );
 
-Column _profileForAllUsers() => Column(
-    children: [
-      _profileForUser(),
-              const Row(
-          children: [
-            SizedBox(width: 20),
-
-            Text(
-              'Connected Users', 
-              style: TextStyle(
-                fontSize: 22,
-                color: Color.fromRGBO(255, 255, 255, 1),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-          ],
-        ),
-
-      _profilesForConnectedUser(),
-        const SizedBox(height: 80),
-    ],
-  );
-  // Assuming these fields are part of the `user.info` map
   Scaffold buildProfilePage(
     
     BuildContext context,
       AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     extractAndPrintUserInfo(userSnapshot, connectedUsers);
-        String? cid = _databaseService.cid;
+        String? cid = _databaseService?.cid;
 
     return Scaffold(
         body: Stack(
@@ -659,8 +492,7 @@ Column _profileForAllUsers() => Column(
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        _buildButtonRow(),
-                        _buildSelectedPage(),
+                        buildSampleCupertinoListSection(),
                       ],
                     ),
                   ),
@@ -683,7 +515,7 @@ Column _profileForAllUsers() => Column(
       AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
     extractAndPrintUserInfo(userSnapshot, connectedUsers);
-        String? cid = _databaseService.cid;
+        String? cid = _databaseService?.cid;
     return Scaffold(
         body: Stack(
           children: [
@@ -696,8 +528,7 @@ Column _profileForAllUsers() => Column(
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        _buildButtonRow(),
-                        _buildSelectedPageWithConnectedUsers(),
+                        buildSampleCupertinoListSection(),
                       ],
                     ),
                   ),
@@ -716,828 +547,150 @@ Column _profileForAllUsers() => Column(
   }
 
 
-// This is the row with buttons
-  Widget _buildButtonRow() => SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: <Widget>[
-          const SizedBox(width: 20), // Add initial width
-
-          // Settings button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'settings' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'settings' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Settings',
-                  style: TextStyle(
-                    color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'settings' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_settings_icon.svg',
-                  color: _selectedButton == 'settings' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                )
-              ],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'settings';
-              });
-            },
-          ),
-          
-          const SizedBox(width: 10), // Add width
-          
-          // Statements and Documents button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'statementsAndDocuments' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'statementsAndDocuments' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Statements and Documents',
-                  style: TextStyle(
-                    color: _selectedButton == 'statementsAndDocuments' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'statementsAndDocuments' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_statements_icon.svg',
-                  color: _selectedButton == 'statementsAndDocuments' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                )
-              ],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'statementsAndDocuments';
-              });
-            },
-          ),
-          
-          const SizedBox(width: 10), // Add width
-          
-          // Help Center button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'helpCenter' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Help Center',
-                  style: TextStyle(
-                    color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'helpCenter' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_help_center_icon.svg',
-                  color: _selectedButton == 'helpCenter' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                )
-              ],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'helpCenter';
-              });
-            },
-          ),
-
-          const SizedBox(width: 10), // Add width
-
-          // Profiles button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'profiles' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'profiles' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Profiles',
-                  style: TextStyle(
-                    color: _selectedButton == 'profiles' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'profiles' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_profiles_icon.svg',
-                  // ignore: deprecated_member_use
-                  color: _selectedButton == 'profiles' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                ),
-              ],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'profiles';
-              });
-            },
-          ),
-
-          const SizedBox(width: 10), // Add width          
-
-          // Legal and Policies button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              side: BorderSide(
-                color: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : AppColors.defaultBlueGray700,
-              ),
-              backgroundColor: _selectedButton == 'legalAndPolicies' ? AppColors.defaultBlue500 : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Legal & Policies',
-                  style: TextStyle(
-                    color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
-                    fontSize: 16,
-                    fontWeight: _selectedButton == 'legalAndPolicies' ? FontWeight.bold : FontWeight.w400,
-                    fontFamily: 'Titillium Web'
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SvgPicture.asset(
-                  'assets/icons/profile_legal_policies_icon.svg',
-                  // ignore: deprecated_member_use
-                  color: _selectedButton == 'legalAndPolicies' ? Colors.white : AppColors.defaultBlueGray500,
-                  height: 20,
-                ),],
-            ),
-            onPressed: () {
-              setState(() {
-                _selectedButton = 'legalAndPolicies';
-              });
-            },
-          ),
-          
-          const SizedBox(width: 20), // Add width
-        ],
+// This is the list of vertical buttons
+Widget buildSampleCupertinoListSection() {
+  return Padding(
+    padding: const EdgeInsets.all(20.0),
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.defaultBlueGray800, // Gray background
+        borderRadius: BorderRadius.circular(12.0), // Rounded borders
       ),
-    );
-
-
-// This is the settings section
-  Padding _settings() => Padding(
-      padding: const EdgeInsets.fromLTRB(20,0,20,20),
-
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-                  const SizedBox(height: 25),
-
-                  // Security Section with options to change email and password
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Security',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            FirebaseAuth.instance.currentUser?.email ?? '',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              TextEditingController emailController = TextEditingController();
-
-
-                              Widget buildCloseButton(BuildContext context) {
-                                return Align(
-                                  alignment: Alignment.topRight,
-                                  child: GestureDetector(
-                                    onTap: () => Navigator.pop(context),
-                                    child: const Icon(Icons.close, color: Colors.white),
-                                  ),
-                                );
-                              }
-
-                              Widget buildIconArt() {
-                                return SvgPicture.asset(
-                                  'assets/icons/change_email_and_password_icon_art.svg',
-                                  // Optional: You can specify width, height, color, etc. if needed
-                                );
-                              }
-
-                              Widget buildEmailInputSection(TextEditingController emailController) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Change Email',
-                                      style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web'),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'You are changing the email associated with your account.',
-                                      style: TextStyle(fontSize: 14, color: Colors.white70, fontFamily: 'Titillium Web'),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    const Text(
-                                      'Email',
-                                      style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    TextField(
-                                      controller: emailController,
-                                      readOnly: false, // Ensure this is false to allow typing
-                                      keyboardType: TextInputType.emailAddress, // Add this line to bring up email keyboard
-                                      style: const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                                      decoration: InputDecoration(
-                                        hintText: 'Enter your email',
-                                        hintStyle: TextStyle(color: Colors.grey[400], fontFamily: 'Titillium Web'),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(11)),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(11),
-                                          borderSide: const BorderSide(color: Colors.blue, width: 2),
-                                        ),
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }                              
-
-                              Widget buildContinueButton(BuildContext context, TextEditingController emailController) {
-                                return ElevatedButton(
-                                  onPressed: () async {
-                                    try {
-                                      // Get the new email from the controller
-                                      String newEmail = emailController.text.trim();
-
-                                      // Get the current user
-                                      var user = FirebaseAuth.instance.currentUser;
-
-                                      if (user != null) {
-                                        // Send email verification to the new email address
-                                        await user.updateEmail(newEmail);
-                                        await user.sendEmailVerification();
-
-                                        // Show a message to inform the user to check their email for verification.
-                                        await CustomAlertDialog.showAlertDialog(
-                                          context,
-                                          'Email Change Requested',
-                                          'Please check your email for a verification link. You need to verify the new email address before it takes effect.',
-                                        );
-                                      }
-
-                                    } catch (e) {
-                                      // log the error for debugging
-                                      log('Error updating email: $e');
-
-                                      // Handle error, display a message, etc.
-                                      await CustomAlertDialog.showAlertDialog(
-                                        context,
-                                        'Error',
-                                        'Error updating email: $e',
-                                      );
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color.fromARGB(255, 30, 75, 137), // Updated from primary
-                                    foregroundColor: Colors.white, // Text color
-                                    splashFactory: NoSplash.splashFactory,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                  ),
-                                  child: const Text(
-                                    'Continue',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web'),
-                                  ),
-                                );
-                              }
-
-                              AlertDialog buildProfileDialog(BuildContext context, TextEditingController emailController) {
-                                return AlertDialog(
-                                  backgroundColor: AppColors.defaultBlueGray800,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  content: SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        buildCloseButton(context),
-                                        const SizedBox(height: 20),
-                                        buildIconArt(),
-                                        const SizedBox(height: 30),
-                                        buildEmailInputSection(emailController),
-                                        const SizedBox(height: 20),
-                                        buildContinueButton(context, emailController),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }
-                              
-                              return buildProfileDialog(context, emailController);
-                              },
-                              
-                          );
-                        },
-                        child: Container(
-                          height: 55,
-                          decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: Colors.blue,
-                              width: 2,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Change Email',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 16),
-                                            
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              TextEditingController passwordController = TextEditingController();
-
-                              Widget buildCloseButton(BuildContext context) {
-                                return Align(
-                                  alignment: Alignment.topRight,
-                                  child: GestureDetector(
-                                    onTap: () => Navigator.pop(context),
-                                    child: const Icon(Icons.close, color: Colors.white),
-                                  ),
-                                );
-                              }
-
-                              Widget buildIconArt() {
-                                return SvgPicture.asset(
-                                  'assets/icons/change_email_and_password_icon_art.svg',
-                                  // Optional: You can specify width, height, color, etc. if needed
-                                );
-                              }
-
-                              Widget buildPasswordInputSection(TextEditingController passwordController) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Change Password',
-                                      style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web'),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'You are changing the password associated with your account.',
-                                      style: TextStyle(fontSize: 14, color: Colors.white70, fontFamily: 'Titillium Web'),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    const Text(
-                                      'New Password',
-                                      style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    TextField(
-                                      controller: passwordController,
-                                      obscureText: true, // Ensure this is true for password fields
-                                      style: const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                                      decoration: InputDecoration(
-                                        hintText: 'Enter your new password',
-                                        hintStyle: TextStyle(color: Colors.grey[400], fontFamily: 'Titillium Web'),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(11)),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(11),
-                                          borderSide: const BorderSide(color: Colors.blue, width: 2),
-                                        ),
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
-
-                              Widget buildContinueButton(BuildContext context, TextEditingController passwordController) {
-                                return ElevatedButton(
-                                  onPressed: () async {
-                                    try {
-                                      // Get the new password from the controller
-                                      String newPassword = passwordController.text.trim();
-
-                                      // Get the current user
-                                      var user = FirebaseAuth.instance.currentUser;
-
-                                      if (user != null) {
-                                        // Update the user's password
-                                        await user.updatePassword(newPassword);
-
-                                        // Show a message to inform the user that the password has been changed.
-                                        await CustomAlertDialog.showAlertDialog(
-                                          context,
-                                          'Password Change Successful',
-                                          'Your password has been updated successfully.',
-                                        );
-                                      }
-
-                                    } catch (e) {
-                                      // log the error for debugging
-                                      log('Error updating password: $e');
-
-                                      // Handle error, display a message, etc.
-                                      await CustomAlertDialog.showAlertDialog(
-                                        context,
-                                        'Error',
-                                        'Error updating password: $e',
-                                      );
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color.fromARGB(255, 30, 75, 137), // Updated from primary
-                                    foregroundColor: Colors.white, // Updated from onPrimary
-                                    splashFactory: NoSplash.splashFactory,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                  ),
-                                  child: const Text(
-                                    'Continue',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Titillium Web'),
-                                  ),
-                                );
-                              }
-
-                              AlertDialog buildProfileDialog(BuildContext context, TextEditingController passwordController) {
-                                return AlertDialog(
-                                  backgroundColor: AppColors.defaultBlueGray800,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  content: SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        buildCloseButton(context),
-                                        const SizedBox(height: 20),
-                                        buildIconArt(),
-                                        const SizedBox(height: 30),
-                                        buildPasswordInputSection(passwordController),
-                                        const SizedBox(height: 20),
-                                        buildContinueButton(context, passwordController),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              return buildProfileDialog(context, passwordController);
-                            },
-                          );
-                        },
-                        child: Container(
-                          height: 55,
-                          decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: Colors.blue,
-                              width: 2,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Change Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-
-                  // Haptics Section with options to change haptics
-                  const Text(
-                    'Haptics',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    'Enable haptics if you want to receive vibration feedback.',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CupertinoSwitch(
-                        // This bool value toggles the switch.
-                        value: hapticsSwitchValue,
-                        activeColor: CupertinoColors.activeBlue,
-                        onChanged: (bool? value) {
-                          // This is called when the user toggles the switch.
-                          setState(() {
-                            hapticsSwitchValue = value ?? false;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-
-
-                  const SizedBox(height: 15),
-
-                  const Divider( 
-                    color: Colors.white,
-                    thickness: 0.2,
-                    height: 20,
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start, 
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, 
-                        children: [
-                          const Text(
-                            'Notifications',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          const Text(
-                            'Activity',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Let me know about new activity within my portfolio.',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CupertinoSwitch(
-                                // This bool value toggles the switch.
-                                value: activitySwitchValue,
-                                activeColor: CupertinoColors.activeBlue,
-                                onChanged: (bool? value) {
-                                  // This is called when the user toggles the switch.
-                                  setState(() {
-                                    activitySwitchValue = value ?? false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          const Text(
-                            'Statement',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Let me know when I recieve a new statement.',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CupertinoSwitch(
-                                // This bool value toggles the switch.
-                                value: statementsSwitchValue,
-                                activeColor: CupertinoColors.activeBlue,
-                                onChanged: (bool? value) {
-                                  // This is called when the user toggles the switch.
-                                    statementsSwitchValue = value ?? false;
-                                    log('$statementsSwitchValue');
-                                },
-                              ),
-                            ],
-                          ),
-
-
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  const Divider( 
-                    color: Colors.white,
-                    thickness: 0.2,
-                    height: 20,
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  const Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Logout',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Log out of your account.',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-                  Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () => signUserOut(context),
-                        child: Container(
-                          height: 55,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 149, 28, 28),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Logout',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 150),
-
-
+        children: [
+          const SizedBox(height: 10),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_help_center_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: const Text(
+              'Help',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HelpPage()),
+              );
+            },
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/info.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: const Text(
+              'Disclaimer',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DisclaimerPage()),
+              );
+            },
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_statements_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: const Text(
+              'Documents',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DocumentsPage()),
+              );
+            },
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_settings_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: const Text(
+              'Settings',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/profile_profiles_icon.svg',
+              color: Colors.white,
+              height: 20,
+            ),
+            title: const Text(
+              'Profiles',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const CupertinoListTileChevron(),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilesPage()),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
         ],
-              
       ),
-      
-    );
-  
-// This is the function to display the selected page 
-  Widget _buildSelectedPage() {
-    switch (_selectedButton) {
-      case 'settings':
-        return _settings(); // replace with your actual Settings page widget
-      case 'statementsAndDocuments':
-        return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
-      case 'helpCenter':
-       return _helpCenter(); // replace with your actual Help Center page widget
-      case 'profiles':
-       return _profileForUser(); // replace with your actual Profiles page widget
-      case 'legalAndPolicies':
-       return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
-      default:
-        return Container(); // return an empty container by default
-    }
-  }
-
-// This is the function to display the selected page 
-  Widget _buildSelectedPageWithConnectedUsers() {
-    switch (_selectedButton) {
-      case 'settings':
-        return _settings(); // replace with your actual Settings page widget
-      case 'statementsAndDocuments':
-        return _statementsAndDocuments(); // replace with your actual Statements and Documents page widget
-      case 'helpCenter':
-       return _helpCenter(); // replace with your actual Help Center page widget
-      case 'profiles':
-       return _profileForAllUsers(); // replace with your actual Profiles page widget   
-      case 'legalAndPolicies':
-       return _legalAndPolicies(); // replace with your actual Legal and Policies page widget
-      default:
-        return Container(); // return an empty container by default
-    }
-  }
+    ),
+  );
+}
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
@@ -1768,10 +921,10 @@ Column _profileForAllUsers() => Column(
   );
 
 
-// Assuming _databaseService is initialized and accessible in this context
+// Assuming _databaseService? is initialized and accessible in this context
 Widget _buildClientNameAndID(String name, String clientId) {
   // Initialize cid here, before using it in the widget tree
-  String? cid = _databaseService.cid;
+  String? cid = _databaseService?.cid;
 
   return Padding(
     padding: const EdgeInsets.fromLTRB(20, 30, 0, 20),
@@ -1807,499 +960,5 @@ Widget _buildClientNameAndID(String name, String clientId) {
   );
 }
 
-// This is the Statements and Documents section
-  Container _statementsAndDocuments() => Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // statements
-        ListTile(
-          contentPadding: const EdgeInsets.all(8.0),
-          title: const Text(
-            'Statement Title',
-            style: TextStyle(
-              fontSize: 20.0,
-              fontFamily: 'Titillium Web',
-              color: Colors.white,
-            ),
-          ),
-          onTap: () async {
-            await downloadFile(context, _databaseService.cid, 'TestPdf${_databaseService.cid}.pdf');
-            String filePath = await downloadFile(context, {_databaseService.cid}, 'TestPdf${_databaseService.cid}.pdf');
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PDFScreen(filePath),
-              ),
-            );
-                    },
-          trailing: IconButton(
-            icon: const Icon(
-              Icons.download_rounded,
-              color: Colors.white, 
-            ),
-            onPressed: () {
-              downloadToFiles(documentName);
-            },
-          ),
-          ),
-      ],
-    ),
-  );
-
-// This is the Help Center section
-  Container _helpCenter() => Container(
-    padding: const EdgeInsets.all(20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        // Advisors Section
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Advisors',
-              style: TextStyle(
-                fontSize: 25,
-                color: Color.fromRGBO(255, 255, 255, 1),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-
-
-            const SizedBox(height: 20), 
-            
-            // Sonny Shaikh Info
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(20), 
-                border: Border.all(color: AppColors.defaultBlueGray600, width: 2), // Add this line
-              ),
-              
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // name and icon
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'assets/icons/sonny_headshot.png',
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Ahsan \'Sonny\' Shaikh', 
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Color.fromRGBO(255, 255, 255, 1),
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-
-                            Text(
-                              'Investment Advisor', 
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[400],
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  
-                    const SizedBox(height: 20),
-
-                  // contact info
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Contact Info:', 
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 15),
-
-                        GestureDetector(
-                          onTap: () async {
-                            final Uri emailLaunchUri = Uri(
-                              scheme: 'mailto',
-                              path: 'sonny@agqconsulting.com',
-                              query: 'subject=${Uri.encodeComponent("Your Subject Here")}',
-                            );
-                            if (await canLaunch(emailLaunchUri.toString())) {
-                              await launch(emailLaunchUri.toString());
-                            } else {
-                            }
-                          },
-
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                'assets/icons/email.svg',
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                'Email: sonny@agqconsulting.com', 
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontFamily: 'Titillium Web',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        GestureDetector(
-                          onTap: () async {
-                            const url = 'tel:+1 (631) 487-9818';
-                            try {
-                              bool launched = await launch(url);
-                              if (!launched) {
-                              }
-                            } on PlatformException catch (e) {
-                            } catch (e) {
-                            }
-                          },
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                'assets/icons/phone.svg',
-                                color: Colors.white,
-                                height: 16,
-                              ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                'Phone: +1 (631) 487-9818', 
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontFamily: 'Titillium Web',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20), 
-
-            // Kash Shaikh Info
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(20), 
-                border: Border.all(color: AppColors.defaultBlueGray600, width: 2), // Add this line
-              ),
-              
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // name and icon
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/icons/kash_headshot.png',
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Kashif Shaikh', 
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Color.fromRGBO(255, 255, 255, 1),
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-
-                            Text(
-                              'Investment Advisor', 
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[400],
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  
-                    const SizedBox(height: 20),
-
-                  // contact info
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Contact Info:', 
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 15),
-
-
-                        GestureDetector(
-                          onTap: () async {
-                            final Uri emailLaunchUri = Uri(
-                              scheme: 'mailto',
-                              path: 'kash@agqconsulting.com',
-                              query: 'subject=${Uri.encodeComponent("Your Subject Here")}',
-                            );
-                            if (await canLaunch(emailLaunchUri.toString())) {
-                              await launch(emailLaunchUri.toString());
-                            } else {
-                            }
-                          },
-                          child: Container(
-                            color: Colors.transparent,
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/email.svg',
-                                  color: Colors.white,
-                                  height: 16,
-                                ),
-                                const SizedBox(width: 10),
-                                const Text(
-                                  'Email: kash@agqconsulting.com', 
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontFamily: 'Titillium Web',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        GestureDetector(
-                          onTap: () async {
-                            const url = 'tel:+1 (973) 610 4916';
-                            try {
-                              bool launched = await launch(url);
-                              if (!launched) {
-                              }
-                            } on PlatformException catch (e) {
-                            } catch (e) {
-                            }
-                          },
-                          child: Container(
-                            color: Colors.transparent,
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/phone.svg',
-                                  color: Colors.white,
-                                  height: 16,
-                                ),
-                                const SizedBox(width: 10),
-                                const Text(
-                                  'Phone: +1 (973) 610 4916',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontFamily: 'Titillium Web',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          ],
-       ),
-
-
-        const SizedBox(height: 40), 
-
-
-        // FAQ Section
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'FAQ',
-              style: TextStyle(
-                fontSize: 25,
-                color: Color.fromRGBO(255, 255, 255, 1),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            
-            const SizedBox(height: 10), 
-
-            Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: const ExpansionTile(
-                title: Text(
-                  'How do I reset my password?',
-                  style: TextStyle(
-                    fontFamily: 'Titillium Web',
-                    color: Colors.white,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: <Widget>[
-                  ListTile(
-                    title: Text(
-                      'To reset your password, go to the settings page and click on "Change Password". Follow the instructions provided.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            
-            Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: const ExpansionTile(
-                title: Text(
-                  'Where can I find the user manual?',
-                  style: TextStyle(
-                    fontFamily: 'Titillium Web',
-                    color: Colors.white,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: <Widget>[
-                  ListTile(
-                    title: Text(
-                      'The user manual is available in the Help section of our app. You can also access it directly from our website.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-
-            Theme(
-              data: ThemeData(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-              ),
-              child: const ExpansionTile(
-                title: Text(
-                  'How to contact customer support?',
-                  style: TextStyle(
-                    fontFamily: 'Titillium Web',
-                    color: Colors.white,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                children: <Widget>[
-                  ListTile(
-                    title: Text(
-                      'Customer support can be reached via email at support@example.com, or you can call us at +123456789. Our team is available 24/7 to assist you.',
-                      style: TextStyle(
-                        fontFamily: 'Titillium Web',
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          
-          ],
-        ),        
-        
-        const SizedBox(height: 150), 
-
-      ],      
-    ),
-    
-  );
-
-
-// This is the Legal and Policies section
-  Container _legalAndPolicies() => Container(
-    padding: const EdgeInsets.all(20),
-    child: const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Legal & Policies',
-          style: TextStyle(
-            fontSize: 60,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    ),
-  );
   
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
@@ -7,6 +9,7 @@ void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -26,7 +29,7 @@ class AuthService {
           options: const AuthenticationOptions(biometricOnly: true),
         );
       } catch (e) {
-        log('$e');
+        log('auth_service.dart: $e');
         return false;
       }
     } else {
@@ -57,7 +60,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 	  _authService.authenticateWithBiometrics().then((isAuthenticated) {
 		if (!isAuthenticated) {
 		  // Handle authentication failure or redirect to a locked screen
-		  log('Authentication failed');
+		  log('auth_service.dart: Authentication failed');
 		}
 	  });
 	}

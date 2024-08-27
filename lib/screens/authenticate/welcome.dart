@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart'; // Adjust the import path as necessary
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';

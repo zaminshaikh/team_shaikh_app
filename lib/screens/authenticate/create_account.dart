@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -137,6 +139,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       await FirebaseAuth.instance.currentUser?.delete();
     }
   }
+
+  
 
   Dialog _emailVerificationDialog() => Dialog(
     backgroundColor: const Color.fromARGB(255, 37, 58, 86),
@@ -284,14 +288,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _updatePasswordSecurityIndicator();
   }
 
-  // TODO: Delete exceptions for Firebase and other errors and replace with boolean error handling
+  
   /// Handles [FirebaseAuthException] and displays an error dialog with the appropriate error message.
   ///
   /// The [context] parameter is the [BuildContext] of the current widget.
   /// The [e] parameter is the [FirebaseAuthException] that occurred.
   void handleFirebaseAuthException(BuildContext context, FirebaseAuthException e) {
     // Log the error message and stack trace
-    log('Error signing user in: $e', stackTrace: StackTrace.current);
+    log('create_account.dart:Error signing user in: $e', stackTrace: StackTrace.current);
 
     String errorMessage = 'Failed to sign up. Please try again.';
 
@@ -299,21 +303,21 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     switch (e.code) {
       case 'email-already-in-use':
         errorMessage = 'Email $_email is already in use. Please use a different email.';
-        log('$e: Email is already connected to a different _cid.');
+        log('create_account.dart:$e: Email is already connected to a different _cid.');
         break;
       case 'document-not-found':
         errorMessage = 'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.';
-        log('No document for _cid: $_cid');
+        log('create_account.dart:No document for _cid: $_cid');
         break;
       case 'user-already-exists':
         errorMessage = 'User already exists for given Client ID $_cid. Please log in instead.';
-        log('$e');
+        log('create_account.dart:$e');
         break;
       case 'invalid-email':
         errorMessage = '"$_email is not a valid email format. Please try again';
-        log('$e');
+        log('create_account.dart:$e');
       default:
-        log('FirebaseAuthException: $e');
+        log('create_account.dart:FirebaseAuthException: $e');
     }    
 
     // Show an error dialog with the error message
@@ -404,15 +408,48 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 children: [
       
       // Text widget to display "Client ID"                
-                  const Text(
-                    'Client ID',
-                    
-      // TextStyle to define text appearance
-                    style: TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
+                  Row(
+                    children: [
+                      const Text(
+                        'Client ID',
+                        
+                            // TextStyle to define text appearance
+                        style: TextStyle(
+                          fontSize: 16, 
+                          color: Colors.white, 
+                          fontFamily: 'Titillium Web'
+                          ),
                       ),
+                      const Spacer(),
+                      GestureDetector(
+                        child: Container(
+                          color: Colors.transparent,
+                          child: const Row(
+                            children: [
+                              Text(
+                                'What is my Client ID?',
+                                    // TextStyle to define text appearance
+                                style: TextStyle(
+                                  fontSize: 16, 
+                                  color: Color.fromARGB(255, 157, 157, 157), 
+                                  fontFamily: 'Titillium Web'
+                                  ),
+                              ),
+                              SizedBox(width: 5),
+                              Icon(
+                                Icons.help_outline_rounded, color: AppColors.defaultBlue300, size: 18,
+                              ),
+                            ],
+                          ),
+                        ),
+                        onTap: () => 
+                          CustomAlertDialog.showAlertDialog(context, 
+                          'Client ID', 
+                          'Your Client ID Number (CID) is an 8 digit numeric identification code. You will receive an email containing your CID that is specific to your account. Do not share it with anyone. If you have yet to receive your CID, please reach out to melinda@agqconsulting.com for assistance.',
+                          icon: const Icon(Icons.numbers_rounded, color: AppColors.defaultBlue300),
+                        ),
+                      ),
+                    ],
                   ),
       
       // Adding some space here

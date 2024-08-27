@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_expression_function_bodies, library_private_types_in_public_api, deprecated_member_use
+// ignore_for_file: deprecated_member_use, library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -15,12 +15,15 @@ import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 
 class ActivityPage extends StatefulWidget {
-  const ActivityPage({Key? key}) : super(key: key);
+  const ActivityPage({Key? key}    ) : super(key: key);
   @override
   _ActivityPageState createState() => _ActivityPageState();
 }
 
 class _ActivityPageState extends State<ActivityPage> {
+  final Future<void> _initializeWidgetFuture = Future.value();
+
+
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
   // ignore: prefer_final_fields
@@ -28,12 +31,13 @@ class _ActivityPageState extends State<ActivityPage> {
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1', 'AGQ'];
 
+  DatabaseService? _databaseService;
+  
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
     end: DateTime.now(),
   );
 
-  late DatabaseService _databaseService;
 
   Future<void> _initData() async {
     // If the user is signed in (which should always be the case on this screen)
@@ -43,7 +47,7 @@ class _ActivityPageState extends State<ActivityPage> {
       await Navigator.pushReplacementNamed(context, '/login');
     }
     // Fetch CID using async constructor
-    DatabaseService? service = await DatabaseService.fetchCID(user!.uid, 1);
+    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
     // If there is no matching CID, redirect to login page and alert the user
     if (service == null) {
       if (!mounted) {
@@ -67,25 +71,24 @@ class _ActivityPageState extends State<ActivityPage> {
 
   bool agqIsChecked = true;
   bool ak1IsChecked = true;
-
   bool isIncomeChecked = true;
   bool isWithdrawalChecked = true;
   bool isPendingWithdrawalChecked = true;
   bool isDepositChecked = true;
   List<String> allUserNames = [];
+  List<String> allRecipients = [];
   Map<String, dynamic> userName = {};
   Map<String, bool> userCheckStatus = {};
   List<String> selectedUsers = [];
   List<String> connectedUserNames = [];
   bool allFundsChecked = true;
   bool allUsersChecked = true;
-  
 
   @override
   void initState() {
     super.initState();
     _initData().then((_) {
-      _databaseService.getUserWithAssets.listen((user) {
+      _databaseService!.getUserWithAssets.listen((user) {
         setState(() {
           String firstName = user.info['name']['first'] as String;
           String lastName = user.info['name']['last'] as String;
@@ -93,16 +96,13 @@ class _ActivityPageState extends State<ActivityPage> {
   
           // Assuming allUserNames is a List<String> meant to store user names
           allUserNames.add(fullName);
+          allRecipients.add(fullName);
 
               // Update userCheckStatus for fullName
             userCheckStatus[fullName] = true;
-            log('bruh $userCheckStatus');
-
-  
-          log('User name: $fullName');
         });
       });
-      _databaseService.getConnectedUsersWithAssets.listen((connectedUsers) {
+      _databaseService!.getConnectedUsersWithAssets.listen((connectedUsers) {
         setState(() {
           connectedUserNames = connectedUsers.map<String>((user) {
             String firstName = user.info['name']['first'] as String;
@@ -110,15 +110,21 @@ class _ActivityPageState extends State<ActivityPage> {
             return '$firstName $lastName';
           }).toList();
   
-          // Update userCheckStatus for each connected user
-          for (var userName in connectedUserNames) {
-            userCheckStatus[userName] = true;
-          }
   
           // Add connectedUserNames to allUserNames
           allUserNames.addAll(connectedUserNames);
-          log('Connected users: $connectedUserNames');
-          log('All users: $allUserNames');
+          // Ensure allRecipients is a Set to avoid duplicates
+          Set<String> allRecipientsSet = allRecipients.toSet();
+
+          // Add connectedUserNames to the set
+          allRecipientsSet.addAll(connectedUserNames);
+
+          // Convert the set back to a list if needed
+          allRecipients = allRecipientsSet.toList();
+          // Update userCheckStatus for each connected user
+          for (var recipient in allRecipients) {
+            userCheckStatus[recipient] = true;
+          }
         });
       });
     });
@@ -126,39 +132,99 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initData(),
+      future: _initializeWidgetFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.all(26.0),
+              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: const Stack(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 6.0,
+                  ),
+                ],
+              ),
+            ),
           );
         }
         return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: _databaseService.getActivities,
+          stream: _databaseService?.getActivities,
           builder: (context, activitiesSnapshot) {
             if (!activitiesSnapshot.hasData || activitiesSnapshot.data == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return  Center(
+                child: Container(
+                  padding: const EdgeInsets.all(26.0),
+                  margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.defaultBlue500,
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: const Stack(
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 6.0,
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
             return StreamBuilder<UserWithAssets>(
-              stream: _databaseService.getUserWithAssets, // Assuming this is the stream for the user
+              stream: _databaseService!.getUserWithAssets, // Assuming this is the stream for the user
               builder: (context, userSnapshot) {
                 if (!userSnapshot.hasData || userSnapshot.data == null) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(26.0),
+                      margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.defaultBlue500,
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      child: const Stack(
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 6.0,
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
                 return StreamBuilder<List<UserWithAssets>>(
-                  stream: _databaseService.getConnectedUsersWithAssets, 
+                  stream: _databaseService!.getConnectedUsersWithAssets, 
                   builder: (context, connectedUsers) {
                     if (!connectedUsers.hasData || connectedUsers.data == null) {
                       return StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: _databaseService.getNotifications,
+                        stream: _databaseService!.getNotifications,
                         builder: (context, notificationsSnapshot) {
                           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
+                            return  Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(26.0),
+                                margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                                decoration: BoxDecoration(
+                                  color: AppColors.defaultBlue500,
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
+                                child: const Stack(
+                                  children: [
+                                    CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      strokeWidth: 6.0,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           }
                           unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
@@ -167,14 +233,29 @@ class _ActivityPageState extends State<ActivityPage> {
                         }
                       );
                     }
-                    log('Connected users: $connectedUserNames');
-                    log('All checked users: $userCheckStatus');
+                    log('activity.dart: Connected users: $connectedUserNames');
+                    log('activity.dart: All checked users: $userCheckStatus');
                     return StreamBuilder<List<Map<String, dynamic>>>(
-                      stream: _databaseService.getNotifications,
+                      stream: _databaseService!.getNotifications,
                       builder: (context, notificationsSnapshot) {
                         if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(26.0),
+                              margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                              decoration: BoxDecoration(
+                                color: AppColors.defaultBlue500,
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              child: const Stack(
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 6.0,
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         }
                         unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
@@ -189,8 +270,6 @@ class _ActivityPageState extends State<ActivityPage> {
           },
         );
     });
-    
-
     
   
   bool _isSameDay(DateTime date1, DateTime date2) =>
@@ -392,7 +471,6 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-
   Widget _buildFilterAndSort() => Padding(
       padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
       child: Row(
@@ -573,15 +651,13 @@ class _ActivityPageState extends State<ActivityPage> {
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 450),
                     pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) {
-                      return SlideTransition(
+                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
                         position: Tween<Offset>(
                           begin: const Offset(1.0, 0.0),
                           end: const Offset(0.0, 0.0),
                         ).animate(animation),
                         child: child,
-                      );
-                    },
+                      ),
                   ),
                 );
               },
@@ -665,42 +741,50 @@ class _ActivityPageState extends State<ActivityPage> {
         !_isSameDay(activityDate, previousActivityDate) ||
         userCheckStatus[activities[index - 1]['recipient']] != true;
 
-    if (userCheckStatus[activity['recipient']] == true) {
-      if (isFirstVisibleActivityOfTheDay) {
-        return Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 25.0, 20.0, 25.0), // Add padding to the top only if it's not the latest date
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  DateFormat('MMMM d, yyyy').format(activityDate),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
+    if (userCheckStatus.containsKey(activity['recipient'])) {
+      if (userCheckStatus[activity['recipient']] == true) {
+        if (isFirstVisibleActivityOfTheDay) {
+          return Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 25.0, 20.0, 25.0), // Add padding to the top only if it's not the latest date
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    DateFormat('MMMM d, yyyy').format(activityDate),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
                   ),
                 ),
-              ),
-            ), // Day header
-            _buildActivity(activity, !isLastActivityForTheDay), // Activity
-          ],
-        );
+              ), // Day header
+              _buildActivity(activity, !isLastActivityForTheDay), // Activity
+            ],
+          );
+        } else {
+          return _buildActivity(activity, !isLastActivityForTheDay);
+        }
       } else {
         return _buildActivity(activity, !isLastActivityForTheDay);
       }
     } else {
-      
-      return Container(); // Return an empty container if the recipient is not checked
+      if (!allRecipients.contains(activity['recipient'])) {
+        allRecipients.add(activity['recipient']);
+        userCheckStatus[activity['recipient']] = true;
+      }
+      return _buildActivity(activity, !isLastActivityForTheDay);
     }
-  }  
+  } 
+
   
   Widget _buildActivity(
     
     Map<String, dynamic> activity,
-    bool showDivider,
-  ) {
+      bool showDivider,
+    ) {
     if (userCheckStatus[activity['recipient']] == true) {
       // Assuming activity['time'] is a Timestamp object
       Timestamp timestamp = activity['time'];
@@ -805,431 +889,425 @@ class _ActivityPageState extends State<ActivityPage> {
           }
           
         return Column(
-          
           children: [
-            
-            GestureDetector(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10.0, 5.0, 15.0, 5.0),
-                child: Container(
-                  color: const Color.fromRGBO(1,1,1,0),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 5),
-                        child: Stack(
-                            alignment: Alignment.center,
-                            children: <Widget>[
-                              Icon(
-                                Icons.circle,
-                                color: getUnderlayColorBasedOnActivityType(activity['type']),
-                                size: 70,
-                              ),
-                              getIconBasedOnActivityType(activity['type']),
-                            ]
-                          ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            activity['fund'],
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Titillium Web',
+              GestureDetector(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10.0, 5.0, 15.0, 5.0),
+                  child: Container(
+                    color: const Color.fromRGBO(1,1,1,0),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 5),
+                          child: Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.circle,
+                                  color: getUnderlayColorBasedOnActivityType(activity['type']),
+                                  size: 70,
+                                ),
+                                getIconBasedOnActivityType(activity['type']),
+                              ]
                             ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            _getActivityType(activity),
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: getColorBasedOnActivityType(activity['type']),
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
-                              style: TextStyle(
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              activity['fund'],
+                              style: const TextStyle(
                                 fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              _getActivityType(activity),
+                              style: TextStyle(
+                                fontSize: 15,
                                 color: getColorBasedOnActivityType(activity['type']),
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Titillium Web',
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 5),
-                          Row(
-                            children: [
-                              Text(
-                                time,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white,
-                                  fontFamily: 'Titillium Web',
-                                ),
-                              ),
-                              const SizedBox(width: 7), // Add width
-                              const VerticalDivider(
-                                  color: Colors.white,
-                                  width: 1,
-                                  thickness: 1,
-                                ),
-                              const SizedBox(width: 7), // Add width
-                              Text(
-                                activity['recipient'] ,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white,
+                          ],
+                        ),
+                        const Spacer(),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: getColorBasedOnActivityType(activity['type']),
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Titillium Web',
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              
-              ),
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor:
-                      Colors.transparent, // Make the background transparent
-                  builder: (BuildContext context) => ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20.0),
-                          topRight: Radius.circular(20.0),
+                            ),
+                            const SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Text(
+                                  time,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web',
+                                  ),
+                                ),
+                                SvgPicture.asset(
+                                  'assets/icons/line.svg',
+                                  color: Colors.white,
+                                  height: 15,
+                                ),
+                                Text(
+                                  activity['recipient'] ,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Titillium Web',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        child: FractionallySizedBox(
-                          heightFactor: 0.67,
-                          child: Container(
-                            color: AppColors.defaultBlueGray800,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 15, left: 10),
-                                        child: IconButton(
-                                          icon: const Icon(
-                                            Icons.arrow_back_ios_new_rounded,
-                                            color: Color.fromARGB(171, 255, 255, 255),
+                      ],
+                    ),
+                  ),
+                
+                ),
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor:
+                        Colors.transparent, // Make the background transparent
+                    builder: (BuildContext context) => ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0),
+                          ),
+                          child: FractionallySizedBox(
+                            heightFactor: 0.67,
+                            child: Container(
+                              color: AppColors.defaultBlueGray800,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: <Widget>[
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 15, left: 10),
+                                          child: IconButton(
+                                            icon: const Icon(
+                                              Icons.arrow_back_ios_new_rounded,
+                                              color: Color.fromARGB(171, 255, 255, 255),
+                                            ),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
                                           ),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
                                         ),
+                                      ],
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
+                                      child: Text(
+                                        'Activity Details', // Your title here
+                                        style: TextStyle(
+                                            fontSize: 25.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontFamily: 'Titillium Web'),
                                       ),
-                                    ],
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
-                                    child: Text(
-                                      'Activity Details', // Your title here
+                                    ),
+                                    Text(
+                                      '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
                                       style: TextStyle(
-                                          fontSize: 25.0,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontFamily: 'Titillium Web'),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: getColorBasedOnActivityType(
-                                          activity['type']),
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Titillium Web',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  Center(
-                                    child: Text(
-                                      '${() {
-                                        switch (activity['type']) {
-                                          case 'deposit':
-                                            return 'Deposit to your investment at';
-                                          case 'withdrawal':
-                                            return 'Withdrawal from your investment at';
-                                          case 'pending':
-                                            return 'Pending withdrawal from your investment at';
-                                          case 'income':
-                                            return 'Profit to your investment at';
-                                          default:
-                                            return '';
-                                        }
-                                      }()} ${activity['fund']}',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
+                                        fontSize: 30,
+                                        color: getColorBasedOnActivityType(
+                                            activity['type']),
+                                        fontWeight: FontWeight.bold,
                                         fontFamily: 'Titillium Web',
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Center(
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        getIconBasedOnActivityType(activity['type'], size: 35),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          _getActivityType(activity),
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: getColorBasedOnActivityType(
-                                                activity['type']),
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'Titillium Web',
-                                          ),
+                                    const SizedBox(height: 15),
+                                    Center(
+                                      child: Text(
+                                        '${() {
+                                          switch (activity['type']) {
+                                            case 'deposit':
+                                              return 'Deposit to your investment at';
+                                            case 'withdrawal':
+                                              return 'Withdrawal from your investment at';
+                                            case 'pending':
+                                              return 'Pending withdrawal from your investment at';
+                                            case 'income':
+                                              return 'Profit to your investment at';
+                                            default:
+                                              return '';
+                                          }
+                                        }()} ${activity['fund']}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          fontFamily: 'Titillium Web',
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 25),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(18, 0, 18, 0),
-                                    child: Row(
-                                      children: [
-                                        Stack(
-                                          children: [
-                                            Icon(
-                                              Icons.circle,
-                                              color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
-                                              size: 50,
+                                    const SizedBox(height: 12),
+                                    Center(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          getIconBasedOnActivityType(activity['type'], size: 35),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            _getActivityType(activity),
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: getColorBasedOnActivityType(
+                                                  activity['type']),
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Titillium Web',
                                             ),
-                                            Positioned.fill(
-                                              child: Align(
-                                                alignment: Alignment.center,
-                                                child: SvgPicture.asset(
-                                                  'assets/icons/activity_description.svg',
-                                                  color: getColorBasedOnActivityType(activity['type']),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 25),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                                      child: Row(
+                                        children: [
+                                          Stack(
                                             children: [
-                                              const Text(
-                                                'Description',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontFamily: 'Titillium Web',
-                                                ),
+                                              Icon(
+                                                Icons.circle,
+                                                color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
+                                                size: 50,
                                               ),
-                                              const SizedBox(height: 5),
-                                              Wrap(
-                                                children: [
-                                                  Text(
-                                                    '${() {
-                                                      switch (activity['type']) {
-                                                        case 'deposit':
-                                                          return 'Deposit to your investment at';
-                                                        case 'withdrawal':
-                                                          return 'Withdrawal from your investment at';
-                                                        case 'pending':
-                                                          return 'Pending withdrawal from your investment at';
-                                                        case 'income':
-                                                          return 'Profit to your investment at';
-                                                        default:
-                                                          return '';
-                                                      }
-                                                    }()} ${activity['fund']}',
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontFamily: 'Titillium Web',
-                                                    ),
+                                              Positioned.fill(
+                                                child: Align(
+                                                  alignment: Alignment.center,
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/activity_description.svg',
+                                                    color: getColorBasedOnActivityType(activity['type']),
                                                   ),
-                                                ],
+                                                ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                    child: Divider(
-                                      color: Colors.white,
-                                      thickness: 0.2,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(18, 0, 18, 0),
-                                    child: Row(
-                                      children: [
-                                        Stack(
-                                          children: [
-                                            Icon(
-                                              Icons.circle,
-                                              color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
-                                              size: 50,
-                                            ),
-                                            Positioned.fill(
-                                              child: Align(
-                                                alignment: Alignment.center,
-                                                child: SvgPicture.asset(
-                                                  'assets/icons/activity_date.svg',
-                                                  color: getColorBasedOnActivityType(activity['type'])
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Date',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontFamily: 'Titillium Web',
-                                                ),
-                                              ),
-                                              const SizedBox(height: 5),
-                                              Wrap(
-                                                children: [
-                                                  Text(
-                                                    date,
-                                                    style: const TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                      fontFamily: 'Titillium Web',
-                                                    ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'Description',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontFamily: 'Titillium Web',
                                                   ),
-                                                ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                Wrap(
+                                                  children: [
+                                                    Text(
+                                                      '${() {
+                                                        switch (activity['type']) {
+                                                          case 'deposit':
+                                                            return 'Deposit to your investment at';
+                                                          case 'withdrawal':
+                                                            return 'Withdrawal from your investment at';
+                                                          case 'pending':
+                                                            return 'Pending withdrawal from your investment at';
+                                                          case 'income':
+                                                            return 'Profit to your investment at';
+                                                          default:
+                                                            return '';
+                                                        }
+                                                      }()} ${activity['fund']}',
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.white,
+                                                        fontFamily: 'Titillium Web',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                      child: Divider(
+                                        color: Colors.white,
+                                        thickness: 0.2,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                                      child: Row(
+                                        children: [
+                                          Stack(
+                                            children: [
+                                              Icon(
+                                                Icons.circle,
+                                                color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
+                                                size: 50,
+                                              ),
+                                              Positioned.fill(
+                                                child: Align(
+                                                  alignment: Alignment.center,
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/activity_date.svg',
+                                                    color: getColorBasedOnActivityType(activity['type'])
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                    child: Divider(
-                                      color: Colors.white,
-                                      thickness: 0.2,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(18, 0, 18, 0),
-                                    child: Row(
-                                      children: [
-                                        Stack(
-                                          children: [
-                                            Icon(
-                                              Icons.circle,
-                                              color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
-                                              size: 50,
-                                            ),
-                                            Positioned.fill(
-                                              child: Align(
-                                                alignment: Alignment.center,
-                                                child: SvgPicture.asset(
-                                                  'assets/icons/activity_user.svg',
-                                                  color: getColorBasedOnActivityType(activity['type'])
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Recipient',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontFamily: 'Titillium Web',
-                                                ),
-                                              ),
-                                              const SizedBox(height: 5),
-                                              Wrap(
-                                                children: [
-                                                  Text(
-                                                    activity['recipient'],
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.white,
-                                                      fontFamily: 'Titillium Web',
-                                                    ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'Date',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontFamily: 'Titillium Web',
                                                   ),
-                                                ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                Wrap(
+                                                  children: [
+                                                    Text(
+                                                      date,
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.white,
+                                                        fontFamily: 'Titillium Web',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                      child: Divider(
+                                        color: Colors.white,
+                                        thickness: 0.2,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                                      child: Row(
+                                        children: [
+                                          Stack(
+                                            children: [
+                                              Icon(
+                                                Icons.circle,
+                                                color: getActivityUnderlayColorBasedOnActivityType(activity['type']),
+                                                size: 50,
+                                              ),
+                                              Positioned.fill(
+                                                child: Align(
+                                                  alignment: Alignment.center,
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/activity_user.svg',
+                                                    color: getColorBasedOnActivityType(activity['type'])
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'Recipient',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontFamily: 'Titillium Web',
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 5),
+                                                Wrap(
+                                                  children: [
+                                                    Text(
+                                                      activity['recipient'],
+                                                      style: const TextStyle(
+                                                        fontSize: 15,
+                                                        color: Colors.white,
+                                                        fontFamily: 'Titillium Web',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ));
-            },
-          ),
-          if (showDivider)
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-              child: Divider(
-                color: Color.fromARGB(255, 132, 132, 132),
-                thickness: 0.2,
-              ),
-            )
-        ],
-      );
-  }
+                        ));
+              },
+            ),
+            if (showDivider)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                child: Divider(
+                  color: Color.fromARGB(255, 132, 132, 132),
+                  thickness: 0.2,
+                ),
+              )
+          ],
+        );
+    } else {
+      }
 
-  
-  return Container();
-  
-
+    return Container();  
 }
 
   void updateUserCheckStatus(String userName, bool isChecked) {
@@ -1241,7 +1319,7 @@ class _ActivityPageState extends State<ActivityPage> {
             .map((entry) => entry.key)
             .toList();
 
-        log('selectedUsers: $selectedUsers');
+        log('activity.dart: selectedUsers: $selectedUsers');
 
         // Re-evaluate allUsersChecked after updating userCheckStatus
         allUsersChecked = userCheckStatus.values.every((status) => status);
@@ -1419,22 +1497,23 @@ class _ActivityPageState extends State<ActivityPage> {
     }
 
   showModalBottomSheet(
+    
     context: context,
     isScrollControlled: true,
+    isDismissible: false,
+    enableDrag: false,
     backgroundColor: Colors.transparent,
-    builder: (context) {
-      return GestureDetector(
+    builder: (context) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: Container(
           color: const Color.fromRGBO(0, 0, 0, 0.001),
           child: GestureDetector(
             onTap: () {},
             child: DraggableScrollableSheet(
-              initialChildSize: 0.9,
+              initialChildSize: 0.8,
               minChildSize: 0.8,
-              maxChildSize: 0.9,
-              builder: (_, controller) {
-                return Container(
+              maxChildSize: 0.8,
+              builder: (_, controller) => Container(
                   decoration: const BoxDecoration(
                     color: AppColors.defaultBlueGray800,
                     borderRadius: BorderRadius.only(
@@ -1512,53 +1591,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                             ],
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                      child: ExpansionTile(
-                                        title: const Row(
-                                          children: [
-                                            Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                            SizedBox(width: 10), // Add some spacing between the title and the date
-                                          ],
-                                        ),
-                                        iconColor: Colors.white,
-                                        collapsedIconColor: Colors.white,
-                                        children: [
-                                          StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState) => Column(
-                                              children: <Widget>[
-                                                CheckboxListTile(
-                                                  title: const Text(
-                                                    'AGQ Consulting LLC',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: agqIsChecked,
-                                                  onChanged: (bool? value) {
-                                                    editFilter(1, value!, 'AGQ');
-                                                    setState(() {
-                                                      agqIsChecked = value;
-                                                    });
-                                                  },
-                                                ),
-                                                CheckboxListTile(
-                                                  title: const Text(
-                                                    'AK1 Holdings LP',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: ak1IsChecked,
-                                                  onChanged: (bool? value) {
-                                                    editFilter(1, value!, 'AK1');
-                                                    setState(() {
-                                                      ak1IsChecked = value;
-                                                    });
-                                                  },
-                                                ),
-                                              ], 
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ),
                                     Padding(
@@ -1654,8 +1686,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   Navigator.pop(context);
                                   // Implement your apply functionality here
                                   setState(() {
-                                    log('$_fundsFilter');
-                                    log('$_typeFilter');
+                                    log('activity.dart: $_fundsFilter');
+                                    log('activity.dart: $_typeFilter');
                                     filter(activities);
                                   });
                                 } // Close the bottom sheet,
@@ -1704,13 +1736,11 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ],
                   ),
-                );
-              },
+                ),
             ),
           ),
         ),
-      );
-    },
+      ),
   );
 
 }
@@ -1750,8 +1780,7 @@ class _ActivityPageState extends State<ActivityPage> {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) {
-      return GestureDetector(
+    builder: (context) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: Container(
           color: const Color.fromRGBO(0, 0, 0, 0.001),
@@ -1761,8 +1790,7 @@ class _ActivityPageState extends State<ActivityPage> {
               initialChildSize: 0.9,
               minChildSize: 0.8,
               maxChildSize: 0.9,
-              builder: (_, controller) {
-                return Container(
+              builder: (_, controller) => Container(
                   decoration: const BoxDecoration(
                     color: AppColors.defaultBlueGray800,
                     borderRadius: BorderRadius.only(
@@ -1847,75 +1875,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                       child: ExpansionTile(
                                         title: const Row(
                                           children: [
-                                            Text('By Fund', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                            SizedBox(width: 10), // Add some spacing between the title and the date
-                                          ],
-                                        ),
-                                        iconColor: Colors.white,
-                                        collapsedIconColor: Colors.white,
-                                        children: [
-                                          StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState) => Column(
-                                              children: <Widget>[
-                                                CheckboxListTile(
-                                                  title: const Text(
-                                                    'AGQ Consulting LLC',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: agqIsChecked,
-                                                  onChanged: (bool? value) {
-                                                    // If trying to uncheck, and the other checkbox is not checked, show the dialog instead of changing the state
-                                                    if (value == false && !ak1IsChecked) {
-                                                      CustomAlertDialog.showAlertDialog(
-                                                        context,
-                                                        'Action Required',
-                                                        'At least one fund must be selected at all times.',
-                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
-                                                      );
-                                                    } else {
-                                                      // Proceed with the state change if the new value is true or the other checkbox is checked
-                                                      editFilter(1, value!, 'AGQ');
-                                                      setState(() {
-                                                        agqIsChecked = value;
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                                CheckboxListTile(
-                                                  title: const Text(
-                                                    'AK1 Holdings LP',
-                                                    style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-                                                  ),
-                                                  value: ak1IsChecked,
-                                                  onChanged: (bool? value) {
-                                                    if (value == false && !agqIsChecked) {
-                                                      // Show dialog if trying to uncheck the last remaining checkbox
-                                                      CustomAlertDialog.showAlertDialog(
-                                                        context,
-                                                        'Action Required',
-                                                        'At least one fund must be selected at all times.',
-                                                        icon: const Icon(Icons.error_outline, color: Colors.red),
-                                                      );
-                                                    } else if (value != null) {
-                                                      // Proceed with updating the filter and checkbox state
-                                                      editFilter(1, value, 'AK1');
-                                                      setState(() {
-                                                        ak1IsChecked = value;
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                      child: ExpansionTile(
-                                        title: const Row(
-                                          children: [
                                             Text('By Type of Activity', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
                                             SizedBox(width: 10), // Add some spacing between the title and the date
                                           ],
@@ -1927,6 +1886,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                             builder: (BuildContext context, StateSetter setState) => Column(
                                               children: <Widget>[
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'Profit',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -1949,6 +1914,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   },
                                                 ),
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'Withdrawal',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -1971,6 +1942,12 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   },
                                                 ),
                                                 CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
                                                   title: const Text(
                                                     'Deposit',
                                                     style: TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
@@ -1997,46 +1974,51 @@ class _ActivityPageState extends State<ActivityPage> {
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    // ... existing code ...
-      
+                                    ),      
                                     Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                      child: ExpansionTile(
-                                        title: const Row(
-                                          children: [
-                                            Text('By Connected Users', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
-                                            SizedBox(width: 10), // Add some spacing between the title and the date
-                                          ],
-                                        ),
-                                        iconColor: Colors.white,
-                                        collapsedIconColor: Colors.white,
-                                        children: connectedUserNames.map((userName) {
-                                          return StatefulBuilder(
-                                            builder: (BuildContext context, StateSetter setState) {
-                                              return CheckboxListTile(
-                                                title: Text(
-                                                  userName,
-                                                  style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                        child: ExpansionTile(
+                                          title: const Row(
+                                            children: [
+                                              Text('By Recipients', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontFamily: 'Titillium Web')),
+                                              SizedBox(width: 10), // Add some spacing between the title and the date
+                                            ],
+                                          ),
+                                          iconColor: Colors.white,
+                                          collapsedIconColor: Colors.white,
+                                          children: allRecipients.map((recipient) {
+                                            // Ensure userCheckStatus[recipient] is initialized
+                                            if (userCheckStatus[recipient] == null) {
+                                              userCheckStatus[recipient] = false; // or true, depending on your default value
+                                            }
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context, StateSetter setState) => CheckboxListTile(
+                                                  fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                                                    if (states.contains(MaterialState.selected)) {
+                                                      return AppColors.defaultBlue500; // Color when selected
+                                                    }
+                                                    return Colors.transparent; // Color when unselected
+                                                  }),
+                                                  title: Text(
+                                                    recipient,
+                                                    style: const TextStyle(fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
+                                                  ),
+                                                  value: userCheckStatus[recipient],
+                                                  onChanged: (bool? value) {
+                                                    setState(() {
+                                                      userCheckStatus[recipient] = value!;
+                                                      updateUserCheckStatus(recipient, value);
+                                                    });
+                                                    // Handle the change event here
+                                                  },
                                                 ),
-                                                value: userCheckStatus[userName],
-                                                onChanged: (bool? value) {
-                                                  setState(() {
-                                                    userCheckStatus[userName] = value!;
-                                                    updateUserCheckStatus(userName, value);
-                                                  });
-                                                  log('Connected User Names: $connectedUserNames');
-                                                  // Handle the change event here
-                                                },
-                                              );
-                                            },
-                                          );
-                                        }).toList(),
+                                            );
+                                          }).toList(),
+                                        )
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                                    ],
+                                  ),
+                                );
                               } else if (index == 2) {
                               return Container(
                               );
@@ -2067,8 +2049,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   Navigator.pop(context);
                                   // Implement your apply functionality here
                                   setState(() {
-                                    log('$_fundsFilter');
-                                    log('$_typeFilter');
+                                    log('activity.dart: $_fundsFilter');
+                                    log('activity.dart: $_typeFilter');
                                     filter(activities);
                                   });
                                 } // Close the bottom sheet,
@@ -2122,17 +2104,14 @@ class _ActivityPageState extends State<ActivityPage> {
                       ),
                     ],
                   ),
-                );
-              },
+                ),
             ),
           ),
         ),
-      );
-    },
+      ),
   );
 
 }
-
 
   void _buildSortOptions(BuildContext context) {
     showModalBottomSheet(
@@ -2226,33 +2205,9 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
       );
       
-    // Helper method to build fund buttons
-    Widget _buildFundButton(String fundName) {
-      return ButtonTheme(
-        minWidth: 0, // Min width set to 0
-        padding: EdgeInsets.zero, // Remove padding
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.defaultBlueGray700,
-            borderRadius: BorderRadius.circular(15), // Adjust the radius as needed
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Adjust padding as needed
-          child: Text(
-            fundName, // Button text
-            style: const TextStyle(
-              color: AppColors.defaultBlueGray100,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ),
-      );
-    }
 
     // Helper method to build activity type buttons
-    Widget _buildActivityTypeButton(String activityType) {
-      return ButtonTheme(
+    Widget _buildActivityTypeButton(String activityType) => ButtonTheme(
         minWidth: 0, // Min width set to 0
         padding: EdgeInsets.zero, // Remove padding
         child: Container(
@@ -2272,10 +2227,8 @@ class _ActivityPageState extends State<ActivityPage> {
           ),
         ),
       );
-    }
 
-  Widget _buildNoActivityMessage() {
-    return const Padding(
+  Widget _buildNoActivityMessage() => const Padding(
       padding: EdgeInsets.all(30.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -2299,8 +2252,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ],
       ),
     );
-  }
-
 
   Widget _buildSelectedOptionsDisplay() {
     String getButtonText(DateTime startDate, DateTime endDate) {
@@ -2427,14 +2378,12 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                   Expanded(
                   child: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
+                      shaderCallback: (Rect bounds) => const LinearGradient(
                           colors: [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
                           stops: [0.0, 0.1, 0.9, 1.0],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
-                        ).createShader(bounds);
-                      },
+                        ).createShader(bounds),
                       blendMode: BlendMode.dstIn,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -2479,7 +2428,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                       ),
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                       child: const Text(
-                                        'All Connected Users',
+                                        'All Recipients',
                                         style: TextStyle(
                                           color: AppColors.defaultBlueGray100,
                                           fontSize: 16,
@@ -2512,22 +2461,6 @@ class _ActivityPageState extends State<ActivityPage> {
                                         ),
                                       )).toList(),
                                     ),
-                                  ),
-                                // For Funds Button(s) and Type of Activity Button(s), wrap each _buildFundButton and _buildActivityTypeButton call in a Padding widget
-                                if (_fundsFilter.contains('AGQ') && !_fundsFilter.contains('AK1'))
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: _buildFundButton('AGQ'),
-                                  ),
-                                if (_fundsFilter.contains('AK1') && !_fundsFilter.contains('AGQ'))
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: _buildFundButton('AK1'),
-                                  ),
-                                if (_fundsFilter.contains('AK1') && _fundsFilter.contains('AGQ'))
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: _buildFundButton('All Funds'),
                                   ),
                                 // Repeat the same pattern for Type of Activity Button(s)
                                 if (_typeFilter.contains('income') && _typeFilter.contains('deposit') && _typeFilter.contains('withdrawal'))

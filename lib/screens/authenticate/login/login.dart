@@ -1,16 +1,27 @@
+// Importing Flutter Library & Google button Library
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, deprecated_member_use, empty_catches
+
 import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:team_shaikh_app/services/google_auth_service.dart';
 
 
 // Creating a stateful widget for the Login page
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  final bool showAlert;
+
+  const LoginPage({Key? key, this.showAlert = false}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -20,48 +31,102 @@ class LoginPage extends StatefulWidget {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  String? email = '';
+
 
 // State class for the LoginPage
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   // Boolean variable to set password visibility to hidden
   bool hidePassword = true;
   // Boolean variable to set the remember me checkbox to unchecked, and initializing that the user does not want the app to remember them
   bool rememberMe = false;
-  
-  // Sign user in method
-  Future<bool> signUserIn(context) async {
-    log('Attempting to sign user in...'); // Debugging output
-    try {
-      log('Calling FirebaseAuth to sign in with email and password...'); // Debugging output
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
-      log('Sign in successful, proceeding to dashboard...'); // Debugging output
-      return true;
-    } on FirebaseAuthException catch (e) {
-      log('Caught FirebaseAuthException: $e'); // Debugging output
-      String errorMessage = '';
-      if (e.code == 'user-not-found') {
-        errorMessage = 'Email not found. Please check your email or sign up for a new account.';
-        log('Error: $errorMessage'); // Debugging output
-      } else {
-        errorMessage = 'Error signing in. Please check your email and password. $e';
-        log('Error: $errorMessage'); // Debugging output
-      }
-      log('Showing error dialog...'); // Debugging output
-      await CustomAlertDialog.showAlertDialog(context, 'Error logging in', errorMessage);
-      log('Error dialog shown, returning false...'); // Debugging output
-      return false;
-    } catch (e) {
-      log('An unexpected error occurred: $e'); // Debugging output for any other exceptions
-      return false;
-    }
-  }
+
+  final LocalAuthentication auth = LocalAuthentication();
   
 
+    @override
+    void initState() {
+      super.initState();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+
+        if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+          _authenticate(context);
+        }
+      });
+    }
+
+
+    @override
+    void dispose() {
+      WidgetsBinding.instance.removeObserver(this);
+      super.dispose();
+    }
+
+
+    // Sign user in method
+    Future<bool> signUserIn(context) async {
+      log('login.dart: Attempting to sign user in...'); // Debugging output
+      try {
+        log('login.dart: Calling FirebaseAuth to sign in with email and password...'); // Debugging output
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+        log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
+        log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
+        return true;
+      } on FirebaseAuthException catch (e) {
+        log('login.dart: Caught FirebaseAuthException: $e'); // Debugging output
+        String errorMessage = '';
+        if (e.code == 'user-not-found') {
+          errorMessage = 'Email not found. Please check your email or sign up for a new account.';
+          log('login.dart: Error: $errorMessage'); // Debugging output
+        } else {
+          errorMessage = 'Error signing in. Please check your email and password. $e';
+          log('login.dart: Error: $errorMessage'); // Debugging output
+        }
+        log('login.dart: Showing error dialog...'); // Debugging output
+        await CustomAlertDialog.showAlertDialog(context, 'Error logging in', errorMessage);
+        log('login.dart: Error dialog shown, returning false...'); // Debugging output
+        return false;
+      } catch (e) {
+        log('login.dart: An unexpected error occurred: $e'); // Debugging output for any other exceptions
+        return false;
+      }
+    }
+
+  
+  Future<void> _authenticate(BuildContext context) async {
+    bool authenticated = false;
+    
+    try {
+      authenticated = await auth.authenticate(
+        localizedReason: 'Please authenticate to login',
+        options: const AuthenticationOptions(
+          useErrorDialogs: true,
+          stickyAuth: true,
+        ),
+      );
+    } catch (e) {
+    }
+
+    if (authenticated) {
+
+      // ignore: unawaited_futures
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          ),
+        );
+      
+    } else {
+      // Handle failed authentication
+    }
+    
+  }
 
   // The build method for the login screen widget
   @override
@@ -73,6 +138,7 @@ class _LoginPageState extends State<LoginPage> {
         mainAxisAlignment: MainAxisAlignment.center,
 
         children: <Widget>[
+
 
 
           // Logo and branding
@@ -304,6 +370,32 @@ class _LoginPageState extends State<LoginPage> {
             onTap: () async {
               bool success = await signUserIn(context);
               if (success) {
+                String? token = await FirebaseMessaging.instance.getToken();
+                if (token != null) {
+                  User? user = FirebaseAuth.instance.currentUser;
+                  // If we do not have a user and the context is valid
+                  if (user == null && mounted) {
+                    log('login.dart: User is not logged in');
+                    await Navigator.pushReplacementNamed(context, '/login');
+                  }
+                  // Fetch CID using async constructor
+                  DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
+
+                  if (service != null) {
+                    try { 
+                      List<dynamic> tokens = (await service.getField('tokens') ?? []);
+
+                      
+                      if (!tokens.contains(token)){
+                        tokens = [...tokens, token];   
+                        await service.updateField('tokens', tokens);
+                      }
+
+                    } catch (e) {
+                      log('login.dart: Error fetching tokens: $e');
+                    }
+                  }
+                }
                 await Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
@@ -337,71 +429,82 @@ class _LoginPageState extends State<LoginPage> {
           // Spacing
           const SizedBox(height: 20.0),
           
-          // Google Sign-In Button
-          // Container(
-          //   height: 55,
-          //   decoration: BoxDecoration(
-          //     color: Colors.transparent, 
-          //     borderRadius: BorderRadius.circular(25),
-          //     border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
-          //   ),
-          //   child: const Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //       Icon(
-          //         FontAwesomeIcons.google,
-          //         color: Colors.blue,
-          //       ),
-          //       SizedBox(width: 15),
-          //       Text(
-          //         'Sign in with Google',
-          //         style: TextStyle(
-          //           fontSize: 18, 
-          //           color: Colors.blue, 
-          //           fontWeight: FontWeight.bold, 
-          //           fontFamily: 'Titillium Web'
-          //           ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // Spacing
-          // const SizedBox(height: 30.0),
+          GestureDetector(
+            onTap: () => GoogleAuthService().signInWithGoogle(context),
+            child: Container(
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.transparent, 
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    FontAwesomeIcons.google,
+                    color: Colors.blue,
+                  ),
+                  SizedBox(width: 15),
+                  Text(
+                    'Sign in with Google',
+                    style: TextStyle(
+                      fontSize: 18, 
+                      color: Colors.blue, 
+                      fontWeight: FontWeight.bold, 
+                      fontFamily: 'Titillium Web'
+                      ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30.0),
           
-          // Login with Face ID
-          // GestureDetector(
-          //   behavior: HitTestBehavior.translucent,
-          //   onTap: () {
-          //   },
-          //   child: const Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //       TextButton(
-          //         onPressed: null,
-          //         child: Row(
-          //           children: [
-          //             Text(
-          //               'Login with Face ID',
-          //               style: TextStyle(
-          //                 fontSize: 18, 
-          //                 fontWeight: FontWeight.bold, 
-          //                 color: Colors.blue, 
-          //                 fontFamily: 'Titillium Web'
-          //               ),
-          //             ),
-          //             SizedBox(width: 10),
-          //             Icon(
-          //               Icons.face,
-          //               color: Colors.blue,
-          //               size: 20,
-          //             ),
-          //           ],
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // Spacing
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+                _authenticate(context);
+              } else {
+                CustomAlertDialog.showAlertDialog(
+                  context,
+                  'Face ID Not Available',
+                  'Please enter your email and password. It seems this may be your first time signing in, and Face ID requires an initial login with your credentials.'
+                );
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: null,
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Login with Face ID',
+                        style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.blue, 
+                          fontFamily: 'Titillium Web'
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SvgPicture.asset(
+                        'assets/icons/face_id.svg',
+                        color: Colors.blue, 
+                        height: 30,
+                        width: 30,
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 40.0),
           
           // Sign-Up Section
@@ -452,4 +555,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
     ),
   );
+
+  
+
 }

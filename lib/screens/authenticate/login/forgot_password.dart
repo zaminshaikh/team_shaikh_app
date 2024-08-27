@@ -1,4 +1,6 @@
 // Import Flutter Library
+// ignore_for_file: library_private_types_in_public_api, non_constant_identifier_names, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,6 +24,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
 // Making a build method to contain the UI for the Forgot Password page
   @override
+  // ignore: prefer_expression_function_bodies
   Widget build(BuildContext context) {
 
 // Making a Scaffold Widget containing the components of the Forgot Password page

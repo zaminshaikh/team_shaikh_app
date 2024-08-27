@@ -1,0 +1,11 @@
+{
+    "FIRESTORE_ACTIVE_USERS_COLLECTION": "testUsers",
+    "ASSETS_SUBCOLLECTION": "assets",
+    "NOTIFICATIONS_SUBCOLLECTION": "notifications",
+    "ACTIVITIES_SUBCOLLECTION": "activities",
+    "GRAPHPOINTS_SUBCOLLECTION": "graphPoints",
+    "ASSETS_GENERAL_DOC_ID": "general",
+    "ASSETS_AGQ_DOC_ID": "agq",
+    "ASSETS_AK1_DOC_ID": "ak1",
+    "NUM_ASSETS_PER_FUND": 7
+}

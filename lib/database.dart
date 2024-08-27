@@ -1,18 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'utilities.dart';
 
 /// A class that provides database operations for managing users.
 ///
 /// This class is responsible for linking new users to the database and retrieving user data from the database.
 /// It interacts with the 'users' collection in the Firestore database.
+  List<String> connectedUsersCids = [];
+  bool allConnectedCidsExistInTestUsers = false;
 class DatabaseService {
   String? cid;
   final String uid;
-  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
+  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'));
   CollectionReference? assetsSubCollection;
   CollectionReference? activitiesSubCollection; 
   CollectionReference? notificationsSubCollection; 
+  CollectionReference? graphPointsSubCollection;
 
   /// A new instance of [DatabaseService] with the given [cid] and [uid].
   /// 
@@ -33,32 +38,37 @@ class DatabaseService {
 
 
   // Asynchronous factory constructor
-  static Future<DatabaseService?> fetchCID(String uid, int code) async {
+  static Future<DatabaseService?> fetchCID(BuildContext context, String uid, int code) async {
     DatabaseService service = DatabaseService(uid);
-
 
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
+
+    log('database.dart: UID $uid found in Firestore.');
 
     if (querySnapshot.size > 0) {
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
       switch (code) {
         case 1:
-          service.assetsSubCollection = usersCollection.doc(service.cid).collection('assets');
-          log('database.dart: Assets subcollection set to $usersCollection/${service.cid}/assets');
+          service.assetsSubCollection = usersCollection.doc(service.cid).collection(Config.get('ASSETS_SUBCOLLECTION'));
+          service.graphPointsSubCollection = service.assetsSubCollection?.doc(Config.get('ASSETS_GENERAL_DOC_ID')).collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
           break;
         case 2:
-          service.activitiesSubCollection = usersCollection.doc(service.cid).collection('activities');
+          service.activitiesSubCollection = usersCollection.doc(service.cid).collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
           break;
         case 3:
-          service.notificationsSubCollection = usersCollection.doc(service.cid).collection('notifications');
+          service.notificationsSubCollection = usersCollection.doc(service.cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
           break;
         default:
           log('database.dart: Invalid code');
       }
       // Now you can use 'cid' in your code
-      log('database.dart: CID: ${service.cid}');
+      // log('database.dart: CID: ${service.cid}');
+      // log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
+      connectedUsersCids = await service.fetchConnectedCids(service.cid!);
+
+
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
       return null;
@@ -67,9 +77,35 @@ class DatabaseService {
     return service;
   }
 
+  // Method to check if all connectedUsersCids exist in the testUsers collection
+  Future<bool> checkConnectedUsersExistInTestUsers() async {
+    CollectionReference testUsersCollection = FirebaseFirestore.instance.collection('testUsers');
+
+    // List to store CIDs that need to be removed
+    List<String> cidsToRemove = [];
+
+    for (String connectedCid in connectedUsersCids) {
+      DocumentSnapshot docSnapshot = await testUsersCollection.doc(connectedCid).get();
+      if (docSnapshot.exists) {
+        log('database.dart: Connected user CID $connectedCid exists in testUsers collection.');
+      } else {
+        log('database.dart: Connected user CID $connectedCid does NOT exist in testUsers collection.');
+        log('database.dart: Marking connected user CID $connectedCid for removal.');
+        cidsToRemove.add(connectedCid);
+      }
+    }
+
+    // Remove CIDs that do not exist in the testUsers collection
+    connectedUsersCids.removeWhere((cid) => cidsToRemove.contains(cid));
+
+    // Return true if all connected CIDs exist in the testUsers collection
+    return cidsToRemove.isEmpty;
+  }
+
+
   Future<void> logNotificationIds() async {
     if (notificationsSubCollection == null) {
-      log('database.dart: database.dart: Notifications subcollection is not set');
+      log('database.dart: Notifications subcollection is not set');
       return;
     }
 
@@ -78,7 +114,7 @@ class DatabaseService {
 
     // Log the document IDs
     for (var doc in querySnapshot.docs) {
-      log('database.dart: database.dart: Notification document ID: ${doc.id}');
+      log('database.dart: Notification document ID: ${doc.id}');
     }
   }
 
@@ -95,46 +131,39 @@ class DatabaseService {
   }
 
   // ignore: prefer_expression_function_bodies
-  Future<void> markAsRead(String notificationId) async {
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+Future<void> markAsRead(BuildContext context, String uid, String notificationId) async {
+  DatabaseService? service = await DatabaseService.fetchCID(context, uid, 3);
     if (service != null) {
       log('${service.cid}');  
-      log('cid: ${service.cid}, notificationId: $notificationId');
-      DocumentReference docRef = usersCollection.doc(service.cid).collection('notifications').doc(notificationId);
-      log('docref: $docRef');
+      log('database.dart: cid: ${service.cid}, notificationId: $notificationId');
+      DocumentReference docRef = usersCollection.doc(service.cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).doc(notificationId);
+      log('database.dart: docref: $docRef');
       DocumentSnapshot docSnap = await docRef.get();
       if (docSnap.exists) {
         return docRef.update({'isRead': true});
       } else {
-        log('Document does not exist under this cid');
         // Check if service.cid is null before calling fetchConnectedCids
         if (service.cid == null) {
-          log('service.cid is null');
           return;
         }
         // Fetch the connected users' cids
         List<String> connectedCids = await fetchConnectedCids(service.cid!);
+        
         for (String cid in connectedCids) {
-          log ('connectedCids: $connectedCids');
           docRef = usersCollection.doc(cid).collection('notifications').doc(notificationId);
-          log('docref: $docRef');
           docSnap = await docRef.get();
           if (docSnap.exists) {
-            log('Document found under cid: $cid');
             return docRef.update({'isRead': true});
           } else {
-            log('Document not found under cid: $cid');
           }
         }
-        log('Document does not exist under any connected cid');
       }
     }
   }
 
-  Future<void> markAllAsRead() async {
-    DatabaseService? service = await DatabaseService.fetchCID(uid, 3);
+  Future<void> markAllAsRead(BuildContext context) async {
+    DatabaseService? service = await DatabaseService.fetchCID(context, uid, 3);
     if (service != null && service.cid != null) {
-      log('cid: ${service.cid}');
       await _markNotificationsAsRead(service.cid!);
       List<String> connectedCids = await fetchConnectedCids(uid);
       for (String cid in connectedCids) {
@@ -144,8 +173,8 @@ class DatabaseService {
   }
 
   Future<void> _markNotificationsAsRead(String cid) async {
-    CollectionReference notificationsCollection = usersCollection.doc(cid).collection('notifications');
-    log('notificationsCollection: $notificationsCollection');
+    CollectionReference notificationsCollection = usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
+    log('database.dart: notificationsCollection: $notificationsCollection');
     QuerySnapshot querySnapshot = await notificationsCollection.get();
     for (QueryDocumentSnapshot doc in querySnapshot.docs) {
       DocumentReference docRef = doc.reference;
@@ -177,9 +206,9 @@ class DatabaseService {
   /// try {
   ///   DatabaseService db = new DatabaseService(cid, uid);
   ///   await db.linkUserToDatabase(email, cid);
-  ///   log('User linked to database successfully.');
+  ///   log('database.dart: User linked to database successfully.');
   /// } catch (e) {
-  ///   log('Error linking user to database: $e');
+  ///   log('database.dart: Error linking user to database: $e');
   /// }
   /// ```
   ///
@@ -208,6 +237,7 @@ class DatabaseService {
           ...existingData,
           'uid': uid,
           'email': email,
+          'appEmail': email,
         };
 
         // Set the document with the updated data
@@ -238,6 +268,48 @@ class DatabaseService {
       // Catch any other exceptions
       log('database.dart: Error creating/updating: $e', stackTrace: StackTrace.current);
       rethrow; // Rethrow to propagate the exception to the caller
+    }
+  }
+
+  /// Returns a field from the user document.
+  /// 
+  /// Parameters:
+  /// - [uid]: The ID of the user.
+  /// - [fieldName]: The name of the field to retrieve.
+  /// 
+  /// Returns:
+  /// - A Future that completes with the value of the specified field.
+  Future<dynamic> getField(String fieldName) async {
+    try {
+      DocumentSnapshot userDoc = await usersCollection.doc(cid).get();
+      if (userDoc.exists) {
+        if ((userDoc.data() as Map<String, dynamic>).containsKey(fieldName)) {
+          return userDoc.get(fieldName);
+        } else {
+          return null; // Field does not exist
+        }
+      } else {
+        throw Exception('User document does not exist');
+      }
+    } catch (e) {
+      log('database.dart: Error getting field: $e', stackTrace: StackTrace.current);
+      return null;
+    }
+  }
+
+  /// Updates a field in the user document.
+  /// 
+  /// Parameters:
+  /// - [fieldName]: The name of the field to update.
+  /// - [newValue]: The new value to set for the field.
+  /// 
+  /// Returns:
+  /// - A Future that completes when the field is updated.
+  Future<void> updateField(String fieldName, dynamic newValue) async {
+    try {
+      await usersCollection.doc(cid).update({fieldName: newValue});
+    } catch (e) {
+      throw Exception('Error updating field: $e');
     }
   }
 
@@ -292,9 +364,38 @@ class DatabaseService {
   Stream<UserWithAssets> get getUserWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
     Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
     QuerySnapshot assetsSnapshot = await assetsSubCollection!.get();
-    List<Map<String, dynamic>> assets = assetsSnapshot.docs.map((asset) => asset.data() as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> assets = assetsSnapshot.docs.map((asset) => {
+      ...asset.data() as Map<String, dynamic>,
+      'id': asset.id,
+    }).toList();
+    for (int i = 0; i < assets.length; i++) {
+      if (assets[i]['id'] == 'general') {
+        assets[i] = {
+          ...assets[i],
+          'graphPoints': await getGraphPoints,
+        };
+      }
+      // Log the asset after updating
+    }
+
     return UserWithAssets(info, assets);
   });
+  
+  Future<List<Map<String, dynamic>>> get getGraphPoints async {
+      if (graphPointsSubCollection == null) {
+        throw Exception('GraphPoints subcollection not set');
+      }
+
+      // Fetch the documents in the graphPoints subcollection
+      QuerySnapshot querySnapshot = await graphPointsSubCollection!.get();
+
+      // Convert the documents to a List<Map<String, dynamic>>
+      List<Map<String, dynamic>> graphPoints = querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+
+      return graphPoints;
+  }
 
   /// Retrieves a stream of connected users with their assets.
   ///
@@ -312,7 +413,6 @@ class DatabaseService {
   Stream<List<UserWithAssets>> get getConnectedUsersWithAssets => usersCollection.doc(cid).snapshots().asyncMap((userSnapshot) async {
     Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
     List<String> connectedUsers = info['connectedUsers'].cast<String>();
-    log('database.dart: Connected users: $connectedUsers');
     if ( connectedUsers.isEmpty ) {
       return [];
     }
@@ -320,7 +420,7 @@ class DatabaseService {
     for (String connectedUser in connectedUsers) {
       DocumentSnapshot connectedUserSnapshot = await usersCollection.doc(connectedUser).get();
       Map<String, dynamic> connectedUserData = connectedUserSnapshot.data() as Map<String, dynamic>;
-      QuerySnapshot connectedUserAssetsSnapshot = await usersCollection.doc(connectedUser).collection('assets').get();
+      QuerySnapshot connectedUserAssetsSnapshot = await usersCollection.doc(connectedUser).collection(Config.get('ASSETS_SUBCOLLECTION')).get();
       List<Map<String, dynamic>> connectedUserAssets = connectedUserAssetsSnapshot.docs.map((asset) => asset.data() as Map<String, dynamic>).toList();
       connectedUsersWithAssets.add(UserWithAssets(connectedUserData, connectedUserAssets));
     }
@@ -343,7 +443,7 @@ class DatabaseService {
       await newDoc.set(oldData);
 
       // List of subcollections to duplicate
-      List<String> subcollections = ['assets', 'notifications', 'activities'];
+      List<String> subcollections = [Config.get('ASSETS_SUBCOLLECTION'), Config.get('NOTIFICATIONS_SUBCOLLECTION'), Config.get('ACTIVITIES_SUBCOLLECTION')];
 
       // Duplicate each subcollection
       for (String subcollection in subcollections) {
@@ -371,7 +471,7 @@ class DatabaseService {
     DocumentReference targetDoc = usersCollection.doc(targetCid);
 
     // List of subcollections to replace
-    List<String> subcollections = ['assets', 'notifications', 'activities'];
+    List<String> subcollections = [Config.get('ASSETS_SUBCOLLECTION'), Config.get('NOTIFICATIONS_SUBCOLLECTION'), Config.get('ACTIVITIES_SUBCOLLECTION')];
 
     // Replace each subcollection
     for (String subcollection in subcollections) {
@@ -401,7 +501,7 @@ class DatabaseService {
     var connectedUsers = List<String>.from(info['connectedUsers'] ?? []);
     var allUsers = [cid, ...connectedUsers];
     var allActivities = await Future.wait(allUsers.map((userId) async {
-      var snapshots = await usersCollection.doc(userId).collection('activities').get();
+      var snapshots = await usersCollection.doc(userId).collection(Config.get('ACTIVITIES_SUBCOLLECTION')).get();
       return snapshots.docs.map((doc) {
         Map<String, dynamic> data = doc.data();
         data['amount'] = data['amount']?.toDouble();
@@ -412,7 +512,7 @@ class DatabaseService {
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection('notifications').orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
+    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
       Map<String, dynamic> data = doc.data();
       data['id'] = doc.id; 
       return data;
