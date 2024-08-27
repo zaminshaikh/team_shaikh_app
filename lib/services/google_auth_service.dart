@@ -100,6 +100,23 @@ class GoogleAuthService {
   return true;
 }
 
+  Future<bool> wrongCIDFailAlert(context) async {
+  if (showAlert) {
+    await CustomAlertDialog.showAlertDialog(
+      context,
+      'Google Sign-Up Failed',
+      'The CID you entered does not exist. Please try again with a valid CID.',
+      icon: const Icon(
+        FontAwesomeIcons.google,
+        color: Colors.blue,
+      )
+    );
+    return false;
+  }
+  return true;
+}
+
+
   Future<UserCredential?> signUpWithGoogle(BuildContext context, String cid) async {
     // Log the start of the Google sign-up process
     debugPrint('GoogleAuthService: Starting Google sign-up process.');
@@ -158,7 +175,7 @@ class GoogleAuthService {
             // If there is an error adding the new user to Firestore, log the error and show an alert
             debugPrint('Error adding new user to Firestore: $e');
             showAlert = true;
-            await showGoogleFailAlert(context);
+            await wrongCIDFailAlert(context);
             // Redirect to the login page
             await Navigator.pushReplacement(
               context,
