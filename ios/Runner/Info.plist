@@ -57,7 +57,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Why is my app authenticating using face id?</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PLACEHOLDER</string>
+	<string>This app requires access to your photo library to allow you to select photos to upload.</string>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>We need to send you notifications about important updates.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
