@@ -27,7 +27,8 @@ class CreateAccountPage extends StatefulWidget {
 class _CreateAccountPageState extends State<CreateAccountPage> {
   // Boolean to switch password visibility, init as true
   bool _hidePassword = true;
-  late DatabaseService _databaseService; 
+  late DatabaseService _databaseService;
+  bool _isButtonEnabled = false;
 
   // User inputs
   String _cid = '';
@@ -46,12 +47,23 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   @override
   void initState() {
     super.initState();
+    _clientIDController.addListener(_checkIfFilled);
+  }
+
+  void _checkIfFilled() {
+    setState(() {
+      _cid = _clientIDController.text;
+      _isButtonEnabled = _cid.isNotEmpty;
+    });
   }
 
   @override
   void dispose() {
+    _clientIDController.removeListener(_checkIfFilled);
+    _clientIDController.dispose();
     super.dispose();
   }
+
 
   /// Signs up the user and handles email verification.
   ///
@@ -459,43 +471,47 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       TextField(
                         // TextStyle to define text appearance of the users input
                         style: const TextStyle(
-                          fontSize: 16, 
-                          color: Colors.white, 
-                          fontFamily: 'Titillium Web'
-                        ), 
-                      
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontFamily: 'Titillium Web',
+                        ),
+
                         // InputDecoration for styling the input field
                         decoration: InputDecoration(
                           // Placeholder text to display 'Enter your client ID'
-                          hintText: 'Enter your client ID', 
-                      
+                          hintText: 'Enter your client ID',
+
                           // Styling the placeholder text
                           hintStyle: const TextStyle(
-                            color: Color.fromARGB(255, 122, 122, 122), 
-                            fontFamily: 'Titillium Web'
+                            color: Color.fromARGB(255, 122, 122, 122),
+                            fontFamily: 'Titillium Web',
                           ),
-                      
+
                           // Styling the border for the input field and giving it a rounded look
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(11),
                           ),
-                      
+
                           // Changing the color of the border when the user interacts with it
-                          focusedBorder: 
-                            OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(11),
-                              borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)), // Border color
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 27, 123, 201), // Border color
                             ),
-                      
-                          // Adding some padding so the input is spaced proportionally                         
-                          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
+                          ),
+
+                          // Adding some padding so the input is spaced proportionally
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 14,
+                          ), // Padding for input content
                         ),
-                      
+
                         // Use inputFormatters to allow only numbers
                         inputFormatters: <TextInputFormatter>[
                           FilteringTextInputFormatter.digitsOnly,
                         ],
-                      
+
                         onChanged: (value) {
                           setState(() {
                             _clientIDController.text = value;
@@ -512,9 +528,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
 
               GestureDetector(
-                onTap: () async {
-                  UserCredential? userCredential = await GoogleAuthService().signUpWithGoogle(context, _clientIDController.text);
-                },
+                onTap: _isButtonEnabled
+                  ? () async {
+                      UserCredential? userCredential =
+                          await GoogleAuthService().signUpWithGoogle(
+                        context,
+                        _clientIDController.text,
+                      );
+                    }
+                  : () {
+                    CustomAlertDialog.showAlertDialog(context, 'Please enter your CID', 'We need your CID to authenticate with Google. Please enter your CID to continue.');
+                  },
                 child: Container(
                   height: 55,
                   decoration: BoxDecoration(
