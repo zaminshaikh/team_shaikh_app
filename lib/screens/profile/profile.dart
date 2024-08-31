@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -135,7 +136,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
                   // If there is no connected users, we build the dashboard for a single user
-                  return buildProfilePage(context, userSnapshot, connectedUsersSnapshot);
+                  return _buildProfilePage(context, userSnapshot, connectedUsersSnapshot);
+
                 }
                 // Once we have the connected users, proceed to fetch notifications
                 return StreamBuilder<List<Map<String, dynamic>>>(
@@ -163,7 +165,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
                     unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
                     // Now that we have all necessary data, build the profile page
-                    return buildProfilePageWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
+                    return _buildProfilePageWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
                   }
                 );
               }
@@ -472,7 +474,7 @@ List<String> assetsFormatted = [];
   }
 
 
-  Scaffold buildProfilePage(
+  Scaffold _buildProfilePage(
     
     BuildContext context,
       AsyncSnapshot<UserWithAssets> userSnapshot,
@@ -492,7 +494,9 @@ List<String> assetsFormatted = [];
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        buildSampleCupertinoListSection(),
+                        _buildSampleCupertinoListSection(),
+                        _buildLogoutButton(),
+                        // _buildDisclaimer(),
                       ],
                     ),
                   ),
@@ -510,7 +514,7 @@ List<String> assetsFormatted = [];
       );   
   }
 
-  Scaffold buildProfilePageWithConnectedUsers(
+  Scaffold _buildProfilePageWithConnectedUsers(
     BuildContext context,
       AsyncSnapshot<UserWithAssets> userSnapshot,
       AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
@@ -528,7 +532,9 @@ List<String> assetsFormatted = [];
                     delegate: SliverChildListDelegate(
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
-                        buildSampleCupertinoListSection(),
+                        _buildSampleCupertinoListSection(),
+                        _buildLogoutButton(),
+                        // _buildDisclaimer(),
                       ],
                     ),
                   ),
@@ -548,7 +554,7 @@ List<String> assetsFormatted = [];
 
 
 // This is the list of vertical buttons
-Widget buildSampleCupertinoListSection() {
+Widget _buildSampleCupertinoListSection() {
   return Padding(
     padding: const EdgeInsets.all(20.0),
     child: Container(
@@ -692,7 +698,68 @@ Widget buildSampleCupertinoListSection() {
   );
 }
 
-// This is the app bar 
+  Widget _buildLogoutButton() => 
+    Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () async {
+              List<dynamic>? tokens = await _databaseService!.getField('tokens') as List<dynamic>? ?? [];
+              // Get the current token
+              String currentToken = await FirebaseMessaging.instance.getToken() ?? '';
+              tokens.remove(currentToken);
+              // Update the list of tokens in the database for the user
+              await _databaseService!.updateField('tokens', tokens);
+              signUserOut(context);
+            },
+            child: Container(
+              height: 45,
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 149, 28, 28),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: const Center(
+                child: Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+  Widget _buildDisclaimer() {
+    return const Padding(
+      padding: EdgeInsets.all(20.0),
+      child: Text(
+        'AGQ Consulting LLC is a Florida limited liability company exempt from the registration '
+        'requirements of the Investment Company Act of 1940 pursuant to Section 3(c)(1) thereof. '
+        'Our private offerings are available for up to one hundred (100) accredited investors of '
+        'which no more than thirty-five (35) may be non-accredited investors and rely on the '
+        'registration exemption under Rule 506 of Regulation D under the Securities Act of 1933. '
+        'A Form D claiming such exemption as a safe harbor is on file with the SEC and applicable '
+        'states. AGQ is domiciled at 195 International Parkway, Suite 103, Lake Mary, Florida 32746 '
+        'and is under the purview of the State of Florida and United States laws. '
+        'Please contact AGQ at management@agqconsulting.com. Thank you.',
+        style: TextStyle(
+                fontSize: 10,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+        textAlign: TextAlign.center, // Justify the text for better readability
+      ),
+    );
+  }
+
+  // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
