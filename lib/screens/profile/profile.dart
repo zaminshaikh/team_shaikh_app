@@ -496,6 +496,7 @@ List<String> assetsFormatted = [];
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
                         _buildLogoutButton(),
+                        // _buildDisclaimer(),
                       ],
                     ),
                   ),
@@ -533,6 +534,7 @@ List<String> assetsFormatted = [];
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
                         _buildLogoutButton(),
+                        // _buildDisclaimer(),
                       ],
                     ),
                   ),
@@ -733,6 +735,29 @@ Widget _buildSampleCupertinoListSection() {
         ],
       ),
     );
+
+  Widget _buildDisclaimer() {
+    return const Padding(
+      padding: EdgeInsets.all(20.0),
+      child: Text(
+        'AGQ Consulting LLC is a Florida limited liability company exempt from the registration '
+        'requirements of the Investment Company Act of 1940 pursuant to Section 3(c)(1) thereof. '
+        'Our private offerings are available for up to one hundred (100) accredited investors of '
+        'which no more than thirty-five (35) may be non-accredited investors and rely on the '
+        'registration exemption under Rule 506 of Regulation D under the Securities Act of 1933. '
+        'A Form D claiming such exemption as a safe harbor is on file with the SEC and applicable '
+        'states. AGQ is domiciled at 195 International Parkway, Suite 103, Lake Mary, Florida 32746 '
+        'and is under the purview of the State of Florida and United States laws. '
+        'Please contact AGQ at management@agqconsulting.com. Thank you.',
+        style: TextStyle(
+                fontSize: 10,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+        textAlign: TextAlign.center, // Justify the text for better readability
+      ),
+    );
+  }
 
   // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
