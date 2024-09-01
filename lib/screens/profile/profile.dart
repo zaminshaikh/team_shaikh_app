@@ -496,7 +496,6 @@ List<String> assetsFormatted = [];
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
                         _buildDisclaimer(),
-
                         _buildLogoutButton(),
                         SizedBox(height: 120),
                       ],
@@ -535,8 +534,9 @@ List<String> assetsFormatted = [];
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
+                        _buildDisclaimer(),
                         _buildLogoutButton(),
-                        // _buildDisclaimer(),
+                        SizedBox(height: 120),
                       ],
                     ),
                   ),
@@ -707,6 +707,8 @@ Widget _buildSampleCupertinoListSection() {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          Divider(color: const Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
+          SizedBox(height: 30),
           Text(
             'DISCLAIMER',
             style: TextStyle(
@@ -764,9 +766,36 @@ Widget _buildSampleCupertinoListSection() {
 
   Widget _buildLogoutButton() => 
     Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
       child: Column(
         children: [
+          Row(
+            children: [
+              Text(
+                'LOGOUT',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Text(
+                'You are currently logged in as $userName.',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
           GestureDetector(
             onTap: () async {
               List<dynamic>? tokens = await _databaseService!.getField('tokens') as List<dynamic>? ?? [];
@@ -783,15 +812,27 @@ Widget _buildSampleCupertinoListSection() {
                 color: const Color.fromARGB(255, 149, 28, 28),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
+              child:  Center(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/icons/logout.svg',
+                      color: Colors.white,
+                      height: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
