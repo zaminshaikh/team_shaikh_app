@@ -617,198 +617,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       fontFamily: 'Titillium Web'
                     ),
                   ),
-      
+
       // Adding some space here
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: 20.0),
       
-      // TextField widget for the user to create a password
-                  TextField(
       
-      // TextStyle to define text appearance of the user's input
-                    style: const TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ), 
-      
-      // InputDecoration for styling the input field
-                    decoration: InputDecoration(
-      
-      // Placeholder text to display 'Create a password'
-                      hintText: 'Create a password', 
-      
-      // Styling the placeholder text
-                      hintStyle: const TextStyle(
-                        color: Color.fromARGB(255, 122, 122, 122), 
-                        fontFamily: 'Titillium Web'
-                      ),
-      
-      // Styling the border for the input field and giving it a rounded look
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-      
-      // Changing the color of the border when the user interacts with it
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
-                        borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
-                      ),
-      
-      // Adding some padding so the input is spaced proportionally                         
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-      
-      // Adding an eye icon to toggle password visibility
-                      suffixIcon: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _hidePassword = !_hidePassword;
-                          });
-                        },
-      
-      // Adding some padding for the icon
-                        child: Padding(
-                          padding: const EdgeInsets.all(0.0),
-      
-      // Icon widget to toggle password visibility
-                          child: Icon(
-                            _hidePassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded,
-                            size: 25,
-                            color: const Color.fromARGB(255, 154, 154, 154),
-      
-      // Closing the eye Icon properties
-                          ),
-                        ),
-                      ),
-                    ),
-                    obscureText: _hidePassword,
-                    onChanged: _updateFields,
-                  ),
-                ],
-              ),
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 12.0),
-      
-      // Making a row of rounded rectangles for the password security indicator
-          Row(
-      
-      // Splitting the rectangles in different parts by assigning them as children
-            children: [
-      
-      // Making the first 3 rectangles in the row
-              Row(
-                  children:
-                  List.generate(
-                    3,
-      
-      // Styling the rectangles
-                    (index) => Container(
-      
-      // Setting the width and height for the rectangles
-                      width: 28, 
-                      height: 5.5,
-      
-      // Making a margin between rectangles
-                      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
-      
-      // Making conditional statements to change the color of the rectangles based on the security of the password
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 1
-                            ? const Color.fromARGB(255, 149, 28, 28)
-                            : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
-                                ? const Color.fromARGB(255, 219, 195, 60)
-                                : (_passwordSecurityIndicator == 4)
-                                    ? const Color.fromARGB(255, 47, 134, 47)
-                                    : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-      
-      // Closing properties for the first 3 rectangles in the row
-                      ),
-                    ),
-                  ),
-                ),
-      
-                // Next 2 rectangles in the row
-                Row(
-                  children: List.generate(
-                    2,
-                    (index) => Container(
-                      width: 28,
-                      height: 5.5,
-                      margin: const EdgeInsets.symmetric(horizontal: 4.4),
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 1
-                            ? const Color.fromARGB(255, 100, 116, 139)
-                            : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
-                                ? const Color.fromARGB(255, 219, 195, 60)
-                                : (_passwordSecurityIndicator == 4)
-                                    ? const Color.fromARGB(255, 47, 134, 47)
-                                    : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                ),
-      
-                // Next 2 rectangles in the row
-                Row(
-                  children: List.generate(
-                    2,
-                    (index) => Container(
-                      width: 28,
-                      height: 5.5,
-                      margin: const EdgeInsets.symmetric(horizontal: 4.4),
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 2
-                            ? const Color.fromARGB(255, 100, 116, 139)
-                            : (_passwordSecurityIndicator == 3)
-                                ? const Color.fromARGB(255, 219, 195, 60)
-                                : (_passwordSecurityIndicator == 4)
-                                    ? const Color.fromARGB(255, 47, 134, 47)
-                                    : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                ),
-      
-      // Making the last 3 rectangles in the row
-              Row(
-                  children:
-                  List.generate(
-                    3,
-      
-      // Styling the rectangles
-                    (index) => Container(
-      
-      // Setting the width and height for the rectangles
-                      width: 25, 
-                      height: 5.5,
-      
-      // Making a margin between rectangles
-                      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
-      
-      // Making conditional statements to change the color of the rectangles based on the security of the password
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 4
-                          ? const Color.fromARGB(255, 47, 134, 47)
-                          : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-      
-      // Closing properties for the first 3 rectangles in the row
-                      ),
-                    ),
-                  ),
-                ),
-      
-      // Closing the row of rounded rectangles for the password security indicator
-            ],
-          ),
-        
-      // Adding some space here
-            const SizedBox(height: 20.0),
-        
       // Making a container to display password 8 character validation status
             Container(
       
@@ -942,6 +755,200 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         
       // Adding some space here
             const SizedBox(height: 16.0),
+            
+      // Making a row of rounded rectangles for the password security indicator
+          Row(
+      
+      // Splitting the rectangles in different parts by assigning them as children
+            children: [
+      
+      // Making the first 3 rectangles in the row
+              Row(
+                  children:
+                  List.generate(
+                    3,
+      
+      // Styling the rectangles
+                    (index) => Container(
+      
+      // Setting the width and height for the rectangles
+                      width: 28, 
+                      height: 5.5,
+      
+      // Making a margin between rectangles
+                      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
+      
+      // Making conditional statements to change the color of the rectangles based on the security of the password
+                      decoration: BoxDecoration(
+                        color: _passwordSecurityIndicator == 1
+                            ? const Color.fromARGB(255, 149, 28, 28)
+                            : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
+                                ? const Color.fromARGB(255, 219, 195, 60)
+                                : (_passwordSecurityIndicator == 4)
+                                    ? const Color.fromARGB(255, 47, 134, 47)
+                                    : const Color.fromARGB(255, 100, 116, 139),
+                        borderRadius: BorderRadius.circular(10.0),
+      
+      // Closing properties for the first 3 rectangles in the row
+                      ),
+                    ),
+                  ),
+                ),
+      
+                // Next 2 rectangles in the row
+                Row(
+                  children: List.generate(
+                    2,
+                    (index) => Container(
+                      width: 28,
+                      height: 5.5,
+                      margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                      decoration: BoxDecoration(
+                        color: _passwordSecurityIndicator == 1
+                            ? const Color.fromARGB(255, 100, 116, 139)
+                            : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
+                                ? const Color.fromARGB(255, 219, 195, 60)
+                                : (_passwordSecurityIndicator == 4)
+                                    ? const Color.fromARGB(255, 47, 134, 47)
+                                    : const Color.fromARGB(255, 100, 116, 139),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                ),
+      
+                // Next 2 rectangles in the row
+                Row(
+                  children: List.generate(
+                    2,
+                    (index) => Container(
+                      width: 28,
+                      height: 5.5,
+                      margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                      decoration: BoxDecoration(
+                        color: _passwordSecurityIndicator == 2
+                            ? const Color.fromARGB(255, 100, 116, 139)
+                            : (_passwordSecurityIndicator == 3)
+                                ? const Color.fromARGB(255, 219, 195, 60)
+                                : (_passwordSecurityIndicator == 4)
+                                    ? const Color.fromARGB(255, 47, 134, 47)
+                                    : const Color.fromARGB(255, 100, 116, 139),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                ),
+      
+      // Making the last 3 rectangles in the row
+              Row(
+                  children:
+                  List.generate(
+                    3,
+      
+      // Styling the rectangles
+                    (index) => Container(
+      
+      // Setting the width and height for the rectangles
+                      width: 25, 
+                      height: 5.5,
+      
+      // Making a margin between rectangles
+                      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
+      
+      // Making conditional statements to change the color of the rectangles based on the security of the password
+                      decoration: BoxDecoration(
+                        color: _passwordSecurityIndicator == 4
+                          ? const Color.fromARGB(255, 47, 134, 47)
+                          : const Color.fromARGB(255, 100, 116, 139),
+                        borderRadius: BorderRadius.circular(10.0),
+      
+      // Closing properties for the first 3 rectangles in the row
+                      ),
+                    ),
+                  ),
+                ),
+      
+      // Closing the row of rounded rectangles for the password security indicator
+            ],
+          ),
+
+      // Adding some space here
+            const SizedBox(height: 20.0),
+      
+
+      // TextField widget for the user to create a password
+                  TextField(
+      
+      // TextStyle to define text appearance of the user's input
+                    style: const TextStyle(
+                      fontSize: 16, 
+                      color: Colors.white, 
+                      fontFamily: 'Titillium Web'
+                    ), 
+      
+      // InputDecoration for styling the input field
+                    decoration: InputDecoration(
+      
+      // Placeholder text to display 'Create a password'
+                      hintText: 'Create a password', 
+      
+      // Styling the placeholder text
+                      hintStyle: const TextStyle(
+                        color: Color.fromARGB(255, 122, 122, 122), 
+                        fontFamily: 'Titillium Web'
+                      ),
+      
+      // Styling the border for the input field and giving it a rounded look
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+      
+      // Changing the color of the border when the user interacts with it
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(11),
+                        borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
+                      ),
+      
+      // Adding some padding so the input is spaced proportionally                         
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      
+      // Adding an eye icon to toggle password visibility
+                      suffixIcon: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _hidePassword = !_hidePassword;
+                          });
+                        },
+      
+      // Adding some padding for the icon
+                        child: Padding(
+                          padding: const EdgeInsets.all(0.0),
+      
+      // Icon widget to toggle password visibility
+                          child: Icon(
+                            _hidePassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded,
+                            size: 25,
+                            color: const Color.fromARGB(255, 154, 154, 154),
+      
+      // Closing the eye Icon properties
+                          ),
+                        ),
+                      ),
+                    ),
+                    obscureText: _hidePassword,
+                    onChanged: _updateFields,
+                  ),
+                ],
+              ),
+            ),
+      
+      // Adding some space here
+            const SizedBox(height: 12.0),
+
+        
+      // Adding some space here
+            const SizedBox(height: 20.0),
+        
         
       // Container for the confirmation password section
             Container(
