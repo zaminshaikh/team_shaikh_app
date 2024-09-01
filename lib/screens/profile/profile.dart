@@ -717,7 +717,7 @@ Widget _buildSampleCupertinoListSection() {
               height: 45,
               decoration: BoxDecoration(
                 color: const Color.fromARGB(255, 149, 28, 28),
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Center(
                 child: Text(
