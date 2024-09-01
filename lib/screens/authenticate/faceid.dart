@@ -159,7 +159,7 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
                     const Align(
                       alignment: Alignment.center,
                       child: Text(
-                        'The Team Shaikh App Is Locked',
+                        'Team Shaikh App Locked',
                         style: TextStyle(
                           fontSize: 25,
                           fontWeight: FontWeight.bold,

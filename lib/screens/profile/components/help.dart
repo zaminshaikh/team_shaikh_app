@@ -204,7 +204,7 @@ class _HelpPageState extends State<HelpPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Advisors',
+              'Point of Contact',
               style: TextStyle(
                 fontSize: 25,
                 color: Color.fromRGBO(255, 255, 255, 1),
@@ -252,7 +252,7 @@ class _HelpPageState extends State<HelpPage> {
                             ),
 
                             Text(
-                              'Investment Advisor', 
+                              'Partner', 
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey[400],
@@ -394,7 +394,7 @@ class _HelpPageState extends State<HelpPage> {
                             ),
 
                             Text(
-                              'Investment Advisor', 
+                              'Partner', 
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey[400],
