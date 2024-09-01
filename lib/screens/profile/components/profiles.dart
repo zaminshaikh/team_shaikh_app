@@ -399,7 +399,6 @@ List<String> assetsFormatted = [];
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // name and icon
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -414,24 +413,6 @@ List<String> assetsFormatted = [];
                     ),
                     const SizedBox(height: 15),
                     Text(
-                      'DOB: $userDob', // Assuming dob is a DateTime or String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Beneficiary: $beneficiary', // Assuming beneficiary is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
                       'First Deposit Date: $userFirstDepositDate', // Assuming firstDepositDate is a String variable
                       style: const TextStyle(
                         fontSize: 14,
@@ -441,16 +422,7 @@ List<String> assetsFormatted = [];
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Initial Email: $initEmail', // Assuming initEmail is a String variable
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Current Email: ${appEmail?.isEmpty ?? true ? initEmail : appEmail}', // Use initEmail if appEmail is null or empty
+                      'Communication Email: $initEmail', // Assuming initEmail is a String variable
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color.fromRGBO(255, 255, 255, 1),
@@ -571,24 +543,6 @@ List<String> assetsFormatted = [];
                     ),
                     const SizedBox(height: 15),
                     Text(
-                      'DOB: ${userDobs[index]}', 
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Beneficiary: ${beneficiaries[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
                       'First Deposit Date: ${userFirstDepositDates[index]}', // Adjusted
                       style: const TextStyle(
                         fontSize: 14,
@@ -598,16 +552,7 @@ List<String> assetsFormatted = [];
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Initial Email: ${initEmails[index]}', // Adjusted
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(255, 255, 255, 1),
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Current Email: ${userEmails[index]}', // Adjusted
+                      'Communication Email: ${initEmails[index]}', // Adjusted
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color.fromRGBO(255, 255, 255, 1),
