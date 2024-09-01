@@ -1006,16 +1006,6 @@ Widget _buildSampleCupertinoListSection() {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const ProfilePage(),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) =>
-                        child,
-              ),
-            );
           },
           child: Container(
             color: const Color.fromRGBO(239, 232, 232, 0),

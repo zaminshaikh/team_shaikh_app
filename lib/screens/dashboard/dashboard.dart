@@ -1293,16 +1293,6 @@ class _DashboardPageState extends State<DashboardPage> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    DashboardPage(),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) =>
-                        child,
-              ),
-            );
           },
           child: Container(
             color: Color.fromRGBO(239, 232, 232, 0),
