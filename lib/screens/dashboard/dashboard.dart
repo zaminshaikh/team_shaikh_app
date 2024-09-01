@@ -493,14 +493,20 @@ class _DashboardPageState extends State<DashboardPage> {
           height: 160,
           padding: const EdgeInsets.only(left: 12, top: 10),
           decoration: BoxDecoration(
-            color: Colors.blue,
+            // Add gradient property
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF3199DD), // Lighter blue
+                Color.fromARGB(255, 13, 94, 175), // Darker blue
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(15),
             image: DecorationImage(
               image: AssetImage('assets/icons/total_assets_gradient.png'),
               fit: BoxFit.cover,
               alignment: Alignment.centerRight,
-              // colorFilter: ColorFilter.mode(
-              //     Color.fromARGB(255, 14, 54, 93).withOpacity(0.9), BlendMode.dstATop),
             ),
           ),
           child: Row(
