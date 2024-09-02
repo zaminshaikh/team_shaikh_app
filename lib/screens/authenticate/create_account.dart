@@ -300,7 +300,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _updatePasswordSecurityIndicator();
   }
 
-  
   /// Handles [FirebaseAuthException] and displays an error dialog with the appropriate error message.
   ///
   /// The [context] parameter is the [BuildContext] of the current widget.
