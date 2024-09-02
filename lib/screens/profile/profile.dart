@@ -495,8 +495,8 @@ List<String> assetsFormatted = [];
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
-                        _buildDisclaimer(),
                         _buildLogoutButton(),
+                        _buildDisclaimer(),
                         SizedBox(height: 120),
                       ],
                     ),
@@ -558,7 +558,7 @@ List<String> assetsFormatted = [];
 // This is the list of vertical buttons
 Widget _buildSampleCupertinoListSection() {
   return Padding(
-    padding: const EdgeInsets.all(20.0),
+    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
     child: Container(
       decoration: BoxDecoration(
         color: AppColors.defaultBlueGray800, // Gray background
@@ -702,13 +702,13 @@ Widget _buildSampleCupertinoListSection() {
 
   Widget _buildDisclaimer() {
     return  Padding(
-      padding: EdgeInsets.all(20.0),
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Divider(color: const Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
-          SizedBox(height: 30),
+          SizedBox(height: 15),
           Text(
             'DISCLAIMER',
             style: TextStyle(
@@ -766,36 +766,9 @@ Widget _buildSampleCupertinoListSection() {
 
   Widget _buildLogoutButton() => 
     Padding(
-      padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
       child: Column(
         children: [
-          Row(
-            children: [
-              Text(
-                'LOGOUT',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Text(
-                'You are currently logged in as $userName.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
           GestureDetector(
             onTap: () async {
               List<dynamic>? tokens = await _databaseService!.getField('tokens') as List<dynamic>? ?? [];
@@ -1068,7 +1041,7 @@ Widget _buildClientNameAndID(String name, String clientId) {
   String? cid = _databaseService?.cid;
 
   return Padding(
-    padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
     child: Row(
       children: [
         Column(
