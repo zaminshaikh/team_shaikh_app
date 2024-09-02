@@ -3,13 +3,15 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/services/google_auth_service.dart';
 import 'package:team_shaikh_app/utilities.dart';
-
+import 'package:flutter/services.dart';
 
 
 // Making a StatefulWidget representing the Create Account page
@@ -25,7 +27,8 @@ class CreateAccountPage extends StatefulWidget {
 class _CreateAccountPageState extends State<CreateAccountPage> {
   // Boolean to switch password visibility, init as true
   bool _hidePassword = true;
-  late DatabaseService _databaseService; 
+  late DatabaseService _databaseService;
+  bool _isButtonEnabled = false;
 
   // User inputs
   String _cid = '';
@@ -44,12 +47,23 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   @override
   void initState() {
     super.initState();
+    _clientIDController.addListener(_checkIfFilled);
+  }
+
+  void _checkIfFilled() {
+    setState(() {
+      _cid = _clientIDController.text;
+      _isButtonEnabled = _cid.isNotEmpty;
+    });
   }
 
   @override
   void dispose() {
+    _clientIDController.removeListener(_checkIfFilled);
+    _clientIDController.dispose();
     super.dispose();
   }
+
 
   /// Signs up the user and handles email verification.
   ///
@@ -139,8 +153,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       await FirebaseAuth.instance.currentUser?.delete();
     }
   }
-
-  
 
   Dialog _emailVerificationDialog() => Dialog(
     backgroundColor: const Color.fromARGB(255, 37, 58, 86),
@@ -288,7 +300,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _updatePasswordSecurityIndicator();
   }
 
-  
   /// Handles [FirebaseAuthException] and displays an error dialog with the appropriate error message.
   ///
   /// The [context] parameter is the [BuildContext] of the current widget.
@@ -373,764 +384,843 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             ),
 
                   
-  Padding(padding: const EdgeInsets.all(16.0),
-    child: Column(
-      children: [
-              // Text widget to display "Create An Account"                
-            const Text(
-              'Create An Account',
-      
-      // TextStyle to define text appearance
-              style: TextStyle(
-                fontSize: 26, 
-                color: Colors.white, 
-                fontWeight: FontWeight.bold, 
-                fontFamily: 'Titillium Web'
-              ),
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 25.0),
-      
-      // Container to hold the client ID text box with its own title
-            Container(
-              
-      // Adding some padding for this text box
-              padding: const EdgeInsets.all(4.0),
-      
-      // Making a column to arrange the client ID text box with its title vertically
-              child: Column(
-      
-      // Stretching the client ID text box with its title to fill the column to give the text box width
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-      
-      // Defining the children (client ID text box with its title) 
-                children: [
-      
-      // Text widget to display "Client ID"                
-                  Row(
+      Padding(padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+                  // Text widget to display "Create An Account"                
+                const Text(
+                  'Create An Account',
+          
+          // TextStyle to define text appearance
+                  style: TextStyle(
+                    fontSize: 26, 
+                    color: Colors.white, 
+                    fontWeight: FontWeight.bold, 
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+          
+          // Adding some space here
+                const SizedBox(height: 25.0),
+          
+          // Container to hold the client ID text box with its own title
+                Container(
+                  
+          // Adding some padding for this text box
+                  padding: const EdgeInsets.all(4.0),
+          
+          // Making a column to arrange the client ID text box with its title vertically
+                  child: Column(
+          
+          // Stretching the client ID text box with its title to fill the column to give the text box width
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+          
+          // Defining the children (client ID text box with its title) 
                     children: [
+          
+          // Text widget to display "Client ID"                
+                      Row(
+                        children: [
+                          const Text(
+                            'Client ID',
+                            
+                                // TextStyle to define text appearance
+                            style: TextStyle(
+                              fontSize: 16, 
+                              color: Colors.white, 
+                              fontFamily: 'Titillium Web'
+                              ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            child: Container(
+                              color: Colors.transparent,
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'What is my Client ID?',
+                                        // TextStyle to define text appearance
+                                    style: TextStyle(
+                                      fontSize: 16, 
+                                      color: Color.fromARGB(255, 157, 157, 157), 
+                                      fontFamily: 'Titillium Web'
+                                      ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Icon(
+                                    Icons.help_outline_rounded, color: AppColors.defaultBlue300, size: 18,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onTap: () => 
+                              CustomAlertDialog.showAlertDialog(context, 
+                              'Client ID', 
+                              'Your Client ID Number (CID) is an 8 digit numeric identification code. You will receive an email containing your CID that is specific to your account. Do not share it with anyone. If you have yet to receive your CID, please reach out to melinda@agqconsulting.com for assistance.',
+                              icon: const Icon(Icons.numbers_rounded, color: AppColors.defaultBlue300),
+                            ),
+                          ),
+                        ],
+                      ),
+          
+          // Adding some space here
+                      const SizedBox(height: 10.0),                    
+                      
+                      // TextField widget for the user to Enter their client ID
+                      TextField(
+                        // TextStyle to define text appearance of the users input
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontFamily: 'Titillium Web',
+                        ),
+
+                        // InputDecoration for styling the input field
+                        decoration: InputDecoration(
+                          // Placeholder text to display 'Enter your client ID'
+                          hintText: 'Enter your client ID',
+
+                          // Styling the placeholder text
+                          hintStyle: const TextStyle(
+                            color: Color.fromARGB(255, 122, 122, 122),
+                            fontFamily: 'Titillium Web',
+                          ),
+
+                          // Styling the border for the input field and giving it a rounded look
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+
+                          // Changing the color of the border when the user interacts with it
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 27, 123, 201), // Border color
+                            ),
+                          ),
+
+                          // Adding some padding so the input is spaced proportionally
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 14,
+                          ), // Padding for input content
+                        ),
+
+                        // Use inputFormatters to allow only numbers
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+
+                        onChanged: (value) {
+                          setState(() {
+                            _clientIDController.text = value;
+                            _cid = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                              
+          // Adding some space here
+                const SizedBox(height: 40.0),
+
+
+              GestureDetector(
+                onTap: _isButtonEnabled
+                  ? () async {
+                      UserCredential? userCredential =
+                          await GoogleAuthService().signUpWithGoogle(
+                        context,
+                        _clientIDController.text,
+                      );
+                    }
+                  : () {
+                    CustomAlertDialog.showAlertDialog(context, 'Please enter your CID', 'We need your CID to authenticate with Google. Please enter your CID to continue.');
+                  },
+                child: Container(
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent, 
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color.fromARGB(255, 30, 75, 137), width: 4), 
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.google,
+                        color: Colors.blue,
+                      ),
+                      SizedBox(width: 15),
+                      Text(
+                        'Sign up with Google',
+                        style: TextStyle(
+                          fontSize: 18, 
+                          color: Colors.blue, 
+                          fontWeight: FontWeight.bold, 
+                          fontFamily: 'Titillium Web'
+                          ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+          // Adding some space here
+                const SizedBox(height: 30.0),
+
+          // Row containing the horizontal line and 'or' text
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 3,
+                  color: const Color.fromARGB(255, 122, 122, 122),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text('OR',
+                    style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20, 
+                    color: Colors.white, 
+                    fontFamily: 'Titillium Web'
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 3,
+                  color: const Color.fromARGB(255, 122, 122, 122),
+                ),
+              ),
+            ],
+          ),
+
+          // Adding some space here
+                const SizedBox(height: 30.0),
+
+
+          // Container to hold the Email text box with its own title
+                Container(
+          
+          // Adding some padding for this text box
+                  padding: const EdgeInsets.all(4.0),
+          
+          // Making a column to arrange the email text box with its title vertically
+                  child: Column(
+          
+          // Stretching the email text box with its title to fill the column to give the text box width
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+          
+          // Defining the children (email text box with its title) 
+                    children: [
+          
+          // Text widget to display "Email"                
                       const Text(
-                        'Client ID',
+                        'Email',
                         
-                            // TextStyle to define text appearance
+          // TextStyle to define text appearance
                         style: TextStyle(
                           fontSize: 16, 
                           color: Colors.white, 
                           fontFamily: 'Titillium Web'
-                          ),
+                        ),
                       ),
-                      const Spacer(),
-                      GestureDetector(
-                        child: Container(
-                          color: Colors.transparent,
-                          child: const Row(
-                            children: [
-                              Text(
-                                'What is my Client ID?',
-                                    // TextStyle to define text appearance
-                                style: TextStyle(
-                                  fontSize: 16, 
-                                  color: Color.fromARGB(255, 157, 157, 157), 
-                                  fontFamily: 'Titillium Web'
-                                  ),
-                              ),
-                              SizedBox(width: 5),
-                              Icon(
-                                Icons.help_outline_rounded, color: AppColors.defaultBlue300, size: 18,
-                              ),
-                            ],
+          
+          // Adding some space here
+                      const SizedBox(height: 10.0),                    
+          
+          // TextField widget for the user to Enter their email
+                      TextField(
+          
+          // TextStyle to define text appearance of the user's input
+                        style: const TextStyle(
+                          fontSize: 16, 
+                          color: Colors.white, 
+                          fontFamily: 'Titillium Web'
+                        ), 
+          
+          // InputDecoration for styling the input field
+                        decoration: InputDecoration(
+          
+          // Placeholder text to display 'Enter your email'
+                          hintText: 'Enter your email', 
+          
+          // Styling the placeholder text
+                            hintStyle: const TextStyle(
+                              color: Color.fromARGB(255, 122, 122, 122), 
+                              fontFamily: 'Titillium Web'
+                            ),
+          
+          // Styling the border for the input field and giving it a rounded look
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
                           ),
+          
+          // Changing the color of the border when the user interacts with it
+                          focusedBorder: 
+                            OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(11),
+                              borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
+                            ),
+          
+          // Adding some padding so the input is spaced proportionally                         
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
                         ),
-                        onTap: () => 
-                          CustomAlertDialog.showAlertDialog(context, 
-                          'Client ID', 
-                          'Your Client ID Number (CID) is an 8 digit numeric identification code. You will receive an email containing your CID that is specific to your account. Do not share it with anyone. If you have yet to receive your CID, please reach out to melinda@agqconsulting.com for assistance.',
-                          icon: const Icon(Icons.numbers_rounded, color: AppColors.defaultBlue300),
-                        ),
+          
+          // Update the emailString when the value inputted from the user
+                        onChanged: (value){
+                          setState(() {
+                            _email = value;
+                            _createAccountEmailController.text = value;
+                          });
+                        },
+          
+          // Closing the properties for the textfield
                       ),
                     ],
                   ),
-      
-      // Adding some space here
-                  const SizedBox(height: 10.0),                    
-      
-      // TextField widget for the user to Enter their client ID
-                  TextField(
-      
-      // TextStyle to define text appearance of the users input
-                    style: const TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ), 
-      
-      // InputDecoration for styling the input field
-                    decoration: InputDecoration(
-                              
-      // Placeholder text to display 'Enter your client ID'
-                      hintText: 'Enter your client ID', 
-      
-      // Styling the placeholder text
-                      hintStyle: const TextStyle(
-                        color: Color.fromARGB(255, 122, 122, 122), 
-                        fontFamily: 'Titillium Web'
-                      ),
-      
-      // Styling the border for the input field and giving it a rounded look
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-      
-      // Changing the color of the border when the user interacts with it
-                      focusedBorder: 
-                        OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(11),
-                          borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)), // Border color
-                        ),
-      
-      // Adding some padding so the input is spaced proportionally                         
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _clientIDController.text = value;
-                        _cid = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
+                ),
                           
-      // Adding some space here
-            const SizedBox(height: 16.0),
-        
-      // Container to hold the Email text box with its own title
-            Container(
-      
-      // Adding some padding for this text box
-              padding: const EdgeInsets.all(4.0),
-      
-      // Making a column to arrange the email text box with its title vertically
-              child: Column(
-      
-      // Stretching the email text box with its title to fill the column to give the text box width
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-      
-      // Defining the children (email text box with its title) 
-                children: [
-      
-      // Text widget to display "Email"                
-                  const Text(
-                    'Email',
-                    
-      // TextStyle to define text appearance
-                    style: TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ),
-                  ),
-      
-      // Adding some space here
-                  const SizedBox(height: 10.0),                    
-      
-      // TextField widget for the user to Enter their email
-                  TextField(
-      
-      // TextStyle to define text appearance of the user's input
-                    style: const TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ), 
-      
-      // InputDecoration for styling the input field
-                    decoration: InputDecoration(
-      
-      // Placeholder text to display 'Enter your email'
-                      hintText: 'Enter your email', 
-      
-      // Styling the placeholder text
-                        hintStyle: const TextStyle(
-                          color: Color.fromARGB(255, 122, 122, 122), 
+          // Adding some space here
+                const SizedBox(height: 16.0),
+          
+          // Container to hold the Password text box with its own title
+                Container(
+          
+          // Adding some padding for this text box
+                  padding: const EdgeInsets.all(4.0),
+          
+          // Making a column to arrange the password text box with its title vertically
+                  child: Column(
+          
+          // Stretching the password text box with its title to fill the column to give the text box width
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+          
+          // Defining the children (password text box with its title)
+                    children: [
+          
+          // Text widget to display "Password"
+                      const Text(
+                        'Password',
+                        
+          // TextStyle to define text appearance
+                        style: TextStyle(
+                          fontSize: 16, 
+                          color: Colors.white, 
                           fontFamily: 'Titillium Web'
                         ),
-      
-      // Styling the border for the input field and giving it a rounded look
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
                       ),
-      
-      // Changing the color of the border when the user interacts with it
-                      focusedBorder: 
-                        OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(11),
-                          borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
+          
+          // Adding some space here
+                      const SizedBox(height: 10.0),
+          
+          // TextField widget for the user to create a password
+                      TextField(
+          
+          // TextStyle to define text appearance of the user's input
+                        style: const TextStyle(
+                          fontSize: 16, 
+                          color: Colors.white, 
+                          fontFamily: 'Titillium Web'
+                        ), 
+          
+          // InputDecoration for styling the input field
+                        decoration: InputDecoration(
+          
+          // Placeholder text to display 'Create a password'
+                          hintText: 'Create a password', 
+          
+          // Styling the placeholder text
+                          hintStyle: const TextStyle(
+                            color: Color.fromARGB(255, 122, 122, 122), 
+                            fontFamily: 'Titillium Web'
+                          ),
+          
+          // Styling the border for the input field and giving it a rounded look
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+          
+          // Changing the color of the border when the user interacts with it
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                            borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
+                          ),
+          
+          // Adding some padding so the input is spaced proportionally                         
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+          
+          // Adding an eye icon to toggle password visibility
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _hidePassword = !_hidePassword;
+                              });
+                            },
+          
+          // Adding some padding for the icon
+                            child: Padding(
+                              padding: const EdgeInsets.all(0.0),
+          
+          // Icon widget to toggle password visibility
+                              child: Icon(
+                                _hidePassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded,
+                                size: 25,
+                                color: const Color.fromARGB(255, 154, 154, 154),
+          
+          // Closing the eye Icon properties
+                              ),
+                            ),
+                          ),
                         ),
-      
-      // Adding some padding so the input is spaced proportionally                         
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14), // Padding for input content
-                    ),
-      
-      // Update the emailString when the value inputted from the user
-                    onChanged: (value){
-                      setState(() {
-                        _email = value;
-                        _createAccountEmailController.text = value;
-                      });
-                    },
-      
-      // Closing the properties for the textfield
+                        obscureText: _hidePassword,
+                        onChanged: _updateFields,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-                      
-      // Adding some space here
-            const SizedBox(height: 16.0),
-      
-      // Container to hold the Password text box with its own title
-            Container(
-      
-      // Adding some padding for this text box
-              padding: const EdgeInsets.all(4.0),
-      
-      // Making a column to arrange the password text box with its title vertically
-              child: Column(
-      
-      // Stretching the password text box with its title to fill the column to give the text box width
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-      
-      // Defining the children (password text box with its title)
-                children: [
-      
-      // Text widget to display "Password"
-                  const Text(
-                    'Password',
-                    
-      // TextStyle to define text appearance
-                    style: TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ),
-                  ),
-
-      // Adding some space here
-                  const SizedBox(height: 20.0),
-      
-      
-      // Making a container to display password 8 character validation status
-            Container(
-      
-      // Adding some padding to the icon and text
-              padding: const EdgeInsets.all(4.0), 
-      
-      // Making a row holding the icon and text indicating password length validation
-              child: Row(
-                children: [
-                  // Conditional statement that changes the icon to a green checkmark when the password is at least 8 characters
-                  _createAccountPasswordString.length > 7
-                      ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) 
-                      : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), 
-      
-      // Adding some space here
-                  const SizedBox(width: 10.0),
-      
-      // Text widget to display 'At least 8 characters'
-                  const Text(
-                    'At least 8 characters',
-      
-      // TextStyle to define text appearance
-                    style: TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ),
-      // Closing properties for the password length validation status
-                  ),
-                ],
-              ),
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 16.0),
-      
-      // Container for displaying whether the password contains at least one digit
-            Container(
-      
-      // Adding padding to the icon and text
-              padding: const EdgeInsets.all(4.0),
-      
-      // Row holding the icon and text indicating the presence of at least one digit in the password
-              child: Row(
-                children: [
-                  // Conditional statement to change the icon to a green checkmark when the password contains at least one digit
-                  _createAccountPasswordString.contains(RegExp(r'\d'))
-                    ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
-                    : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
-      
-      // Adding some space here
-                  const SizedBox(width: 10.0),
-      
-      // Text widget to display '1 digit'
-                  const Text(
-                    '1 digit',
-      
-      // TextStyle to define text appearance
-                    style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                  ),
-      
-      // Closing properties for the 1 digit condition display
-                ],
-              ),
-            ),
-              
-      // Adding some space here
-            const SizedBox(height: 16.0),
-      
-      // Container for displaying whether the password contains at least one uppercase character
-            Container(
-      
-      // Adding padding to the icon and text
-              padding: const EdgeInsets.all(4.0),
-      
-      // Row holding the icon and text indicating the presence of at least one uppercase character in the password
-              child: Row(
-                children: [
-                  // Conditional statement to change the icon to a green checkmark when the password contains at least one uppercase character
-                  _createAccountPasswordString.contains(RegExp(r'[A-Z]'))
-                    ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
-                    : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
-      
-      // Adding some space here
-                  const SizedBox(width: 10.0),
-      
-      // Text widget to display '1 uppercase character'
-                  const Text(
-                    '1 uppercase character',
-      
-      // TextStyle to define text appearance
-                    style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                  ),
-                  
-      // Closing properties for the uppercase character condition display
-                ],
-              ),
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 16.0),
-        
-      // Container for displaying whether the password contains at least one lowercase character
-            Container(
-      
-      // Adding padding to the icon and text
-              padding: const EdgeInsets.all(4.0),
-      
-      // Row holding the icon and text indicating the presence of at least one lowercase character in the password
-              child: Row(
-                children: [
-                  // Conditional statement to change the icon to a green checkmark when the password contains at least one lowercase character
-                  _createAccountPasswordString.contains(RegExp(r'[a-z]'))
-                    ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
-                    : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
-      
-      // Adding some space here
-                  const SizedBox(width: 10.0),
-      
-      // Text widget to display '1 lowercase character'
-                  const Text(
-                    '1 lowercase character',
-      
-      // TextStyle to define text appearance
-                    style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-                  ),
-      // Closing properties for the lowercase character condition display
-                ],
-              ),
-            ),
-        
-      // Adding some space here
-            const SizedBox(height: 16.0),
-            
-      // Making a row of rounded rectangles for the password security indicator
-          Row(
-      
-      // Splitting the rectangles in different parts by assigning them as children
-            children: [
-      
-      // Making the first 3 rectangles in the row
+                ),
+          
+          // Adding some space here
+                const SizedBox(height: 12.0),
+          
+          // Making a row of rounded rectangles for the password security indicator
               Row(
-                  children:
-                  List.generate(
-                    3,
-      
-      // Styling the rectangles
-                    (index) => Container(
-      
-      // Setting the width and height for the rectangles
-                      width: 28, 
-                      height: 5.5,
-      
-      // Making a margin between rectangles
-                      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
-      
-      // Making conditional statements to change the color of the rectangles based on the security of the password
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 1
-                            ? const Color.fromARGB(255, 149, 28, 28)
-                            : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
-                                ? const Color.fromARGB(255, 219, 195, 60)
-                                : (_passwordSecurityIndicator == 4)
-                                    ? const Color.fromARGB(255, 47, 134, 47)
-                                    : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-      
-      // Closing properties for the first 3 rectangles in the row
-                      ),
-                    ),
-                  ),
-                ),
-      
-                // Next 2 rectangles in the row
-                Row(
-                  children: List.generate(
-                    2,
-                    (index) => Container(
-                      width: 28,
-                      height: 5.5,
-                      margin: const EdgeInsets.symmetric(horizontal: 4.4),
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 1
-                            ? const Color.fromARGB(255, 100, 116, 139)
-                            : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
-                                ? const Color.fromARGB(255, 219, 195, 60)
-                                : (_passwordSecurityIndicator == 4)
-                                    ? const Color.fromARGB(255, 47, 134, 47)
-                                    : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                ),
-      
-                // Next 2 rectangles in the row
-                Row(
-                  children: List.generate(
-                    2,
-                    (index) => Container(
-                      width: 28,
-                      height: 5.5,
-                      margin: const EdgeInsets.symmetric(horizontal: 4.4),
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 2
-                            ? const Color.fromARGB(255, 100, 116, 139)
-                            : (_passwordSecurityIndicator == 3)
-                                ? const Color.fromARGB(255, 219, 195, 60)
-                                : (_passwordSecurityIndicator == 4)
-                                    ? const Color.fromARGB(255, 47, 134, 47)
-                                    : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                ),
-      
-      // Making the last 3 rectangles in the row
-              Row(
-                  children:
-                  List.generate(
-                    3,
-      
-      // Styling the rectangles
-                    (index) => Container(
-      
-      // Setting the width and height for the rectangles
-                      width: 25, 
-                      height: 5.5,
-      
-      // Making a margin between rectangles
-                      margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
-      
-      // Making conditional statements to change the color of the rectangles based on the security of the password
-                      decoration: BoxDecoration(
-                        color: _passwordSecurityIndicator == 4
-                          ? const Color.fromARGB(255, 47, 134, 47)
-                          : const Color.fromARGB(255, 100, 116, 139),
-                        borderRadius: BorderRadius.circular(10.0),
-      
-      // Closing properties for the first 3 rectangles in the row
-                      ),
-                    ),
-                  ),
-                ),
-      
-      // Closing the row of rounded rectangles for the password security indicator
-            ],
-          ),
-
-      // Adding some space here
-            const SizedBox(height: 20.0),
-      
-
-      // TextField widget for the user to create a password
-                  TextField(
-      
-      // TextStyle to define text appearance of the user's input
-                    style: const TextStyle(
-                      fontSize: 16, 
-                      color: Colors.white, 
-                      fontFamily: 'Titillium Web'
-                    ), 
-      
-      // InputDecoration for styling the input field
-                    decoration: InputDecoration(
-      
-      // Placeholder text to display 'Create a password'
-                      hintText: 'Create a password', 
-      
-      // Styling the placeholder text
-                      hintStyle: const TextStyle(
-                        color: Color.fromARGB(255, 122, 122, 122), 
-                        fontFamily: 'Titillium Web'
-                      ),
-      
-      // Styling the border for the input field and giving it a rounded look
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-      
-      // Changing the color of the border when the user interacts with it
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
-                        borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
-                      ),
-      
-      // Adding some padding so the input is spaced proportionally                         
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-      
-      // Adding an eye icon to toggle password visibility
-                      suffixIcon: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _hidePassword = !_hidePassword;
-                          });
-                        },
-      
-      // Adding some padding for the icon
-                        child: Padding(
-                          padding: const EdgeInsets.all(0.0),
-      
-      // Icon widget to toggle password visibility
-                          child: Icon(
-                            _hidePassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye_rounded,
-                            size: 25,
-                            color: const Color.fromARGB(255, 154, 154, 154),
-      
-      // Closing the eye Icon properties
+          
+          // Splitting the rectangles in different parts by assigning them as children
+                children: [
+          
+          // Making the first 3 rectangles in the row
+                  Row(
+                      children:
+                      List.generate(
+                        3,
+          
+          // Styling the rectangles
+                        (index) => Container(
+          
+          // Setting the width and height for the rectangles
+                          width: 28, 
+                          height: 5.5,
+          
+          // Making a margin between rectangles
+                          margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
+          
+          // Making conditional statements to change the color of the rectangles based on the security of the password
+                          decoration: BoxDecoration(
+                            color: _passwordSecurityIndicator == 1
+                                ? const Color.fromARGB(255, 149, 28, 28)
+                                : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
+                                    ? const Color.fromARGB(255, 219, 195, 60)
+                                    : (_passwordSecurityIndicator == 4)
+                                        ? const Color.fromARGB(255, 47, 134, 47)
+                                        : const Color.fromARGB(255, 100, 116, 139),
+                            borderRadius: BorderRadius.circular(10.0),
+          
+          // Closing properties for the first 3 rectangles in the row
                           ),
                         ),
                       ),
                     ),
-                    obscureText: _hidePassword,
-                    onChanged: _updateFields,
-                  ),
-                ],
-              ),
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 12.0),
-
-        
-      // Adding some space here
-            const SizedBox(height: 20.0),
-        
-        
-      // Container for the confirmation password section
-            Container(
-              padding: const EdgeInsets.all(4.0), // Adjust padding as needed
-      
-      // Column to arrange child widgets vertically
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-      
-      // Text widget for displaying "Confirm Password"
-                  Text(
-                    'Confirm Password',
-                    // TextStyle conditionally set based on password security indicator
-                    style: _passwordSecurityIndicator == 4
-                        ? const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web') // Style for valid condition
-                        : const TextStyle(color: Color.fromARGB(255, 122, 122, 122), fontFamily: 'Titillium Web'), // Style for invalid condition
-                  ),
-                  
-      // Adding some space here
-                  const SizedBox(height: 10.0),
-      
-      // TextField widget for entering and confirming the password
-                  TextField(
-                    style: const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
-      
-      // InputDecoration for customizing the appearance of the text field
-                    decoration: InputDecoration(
-      
-      // Hint text to guide the user for entering the password
-                      hintText: 'Enter your password',
-      
-      // TextStyle for the hint text
-                      hintStyle: const TextStyle(color: Color.fromARGB(255, 122, 122, 122), fontFamily: 'Titillium Web'),
-      
-      // Border styling for the text field
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
+          
+                    // Next 2 rectangles in the row
+                    Row(
+                      children: List.generate(
+                        2,
+                        (index) => Container(
+                          width: 28,
+                          height: 5.5,
+                          margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                          decoration: BoxDecoration(
+                            color: _passwordSecurityIndicator == 1
+                                ? const Color.fromARGB(255, 100, 116, 139)
+                                : (_passwordSecurityIndicator == 2 || _passwordSecurityIndicator == 3)
+                                    ? const Color.fromARGB(255, 219, 195, 60)
+                                    : (_passwordSecurityIndicator == 4)
+                                        ? const Color.fromARGB(255, 47, 134, 47)
+                                        : const Color.fromARGB(255, 100, 116, 139),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
-      
-      // Styling for the border when the text field is focused
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(11),
-                        borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
-                      ),
-      
-      // Padding inside the text field content area
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
                     ),
-      
-      // Hide entered text 
-                    obscureText: true, 
-      
-      // onChanged callback to update the confirmation password string
-                    onChanged: (value) {
-                      setState(() {
-                        _confirmCreateAccountPasswordString = value;
-                        _confirmCreateAccountPasswordController.text = value;
-                      });
-                    },
-      
-                    // Enable the text field based on the password security indicator
-                    enabled: _passwordSecurityIndicator == 4,
-      
-      // Closing properties for the Confirm Password textfield
-                  ),
+          
+                    // Next 2 rectangles in the row
+                    Row(
+                      children: List.generate(
+                        2,
+                        (index) => Container(
+                          width: 28,
+                          height: 5.5,
+                          margin: const EdgeInsets.symmetric(horizontal: 4.4),
+                          decoration: BoxDecoration(
+                            color: _passwordSecurityIndicator == 2
+                                ? const Color.fromARGB(255, 100, 116, 139)
+                                : (_passwordSecurityIndicator == 3)
+                                    ? const Color.fromARGB(255, 219, 195, 60)
+                                    : (_passwordSecurityIndicator == 4)
+                                        ? const Color.fromARGB(255, 47, 134, 47)
+                                        : const Color.fromARGB(255, 100, 116, 139),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                      ),
+                    ),
+          
+          // Making the last 3 rectangles in the row
+                  Row(
+                      children:
+                      List.generate(
+                        3,
+          
+          // Styling the rectangles
+                        (index) => Container(
+          
+          // Setting the width and height for the rectangles
+                          width: 25, 
+                          height: 5.5,
+          
+          // Making a margin between rectangles
+                          margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.01),
+          
+          // Making conditional statements to change the color of the rectangles based on the security of the password
+                          decoration: BoxDecoration(
+                            color: _passwordSecurityIndicator == 4
+                              ? const Color.fromARGB(255, 47, 134, 47)
+                              : const Color.fromARGB(255, 100, 116, 139),
+                            borderRadius: BorderRadius.circular(10.0),
+          
+          // Closing properties for the first 3 rectangles in the row
+                          ),
+                        ),
+                      ),
+                    ),
+          
+          // Closing the row of rounded rectangles for the password security indicator
                 ],
               ),
-            ),
-                      
-      // Adding some space here
-            const SizedBox(height: 16.0),
-      
-            // Making a "Next" button
-            GestureDetector(
-      
-              // Execute onTap
-              onTap: () => _signUserUp(context),
-      
-              // Container holding the "Next" button
-              child: Container(
-                height: 50,
-      
-                // Decoration based on password match status
-                decoration: BoxDecoration(
-                  color: _createAccountPasswordString == _confirmCreateAccountPasswordString
-                      ? const Color.fromARGB(255, 30, 75, 137) // Color when passwords match
-                      : const Color.fromARGB(255, 85, 86, 87),  // Color when passwords don't match
-                  borderRadius: BorderRadius.circular(25),
+            
+          // Adding some space here
+                const SizedBox(height: 20.0),
+            
+          // Making a container to display password 8 character validation status
+                Container(
+          
+          // Adding some padding to the icon and text
+                  padding: const EdgeInsets.all(4.0), 
+          
+          // Making a row holding the icon and text indicating password length validation
+                  child: Row(
+                    children: [
+                      // Conditional statement that changes the icon to a green checkmark when the password is at least 8 characters
+                      _createAccountPasswordString.length > 7
+                          ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) 
+                          : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), 
+          
+          // Adding some space here
+                      const SizedBox(width: 10.0),
+          
+          // Text widget to display 'At least 8 characters'
+                      const Text(
+                        'At least 8 characters',
+          
+          // TextStyle to define text appearance
+                        style: TextStyle(
+                          fontSize: 16, 
+                          color: Colors.white, 
+                          fontFamily: 'Titillium Web'
+                        ),
+          // Closing properties for the password length validation status
+                      ),
+                    ],
+                  ),
                 ),
-      
-                // Row to contain "Next" text and arrow icon
-                child: const Row(
+          
+          // Adding some space here
+                const SizedBox(height: 16.0),
+          
+          // Container for displaying whether the password contains at least one digit
+                Container(
+          
+          // Adding padding to the icon and text
+                  padding: const EdgeInsets.all(4.0),
+          
+          // Row holding the icon and text indicating the presence of at least one digit in the password
+                  child: Row(
+                    children: [
+                      // Conditional statement to change the icon to a green checkmark when the password contains at least one digit
+                      _createAccountPasswordString.contains(RegExp(r'\d'))
+                        ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
+                        : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
+          
+          // Adding some space here
+                      const SizedBox(width: 10.0),
+          
+          // Text widget to display '1 digit'
+                      const Text(
+                        '1 digit',
+          
+          // TextStyle to define text appearance
+                        style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
+                      ),
+          
+          // Closing properties for the 1 digit condition display
+                    ],
+                  ),
+                ),
+                  
+          // Adding some space here
+                const SizedBox(height: 16.0),
+          
+          // Container for displaying whether the password contains at least one uppercase character
+                Container(
+          
+          // Adding padding to the icon and text
+                  padding: const EdgeInsets.all(4.0),
+          
+          // Row holding the icon and text indicating the presence of at least one uppercase character in the password
+                  child: Row(
+                    children: [
+                      // Conditional statement to change the icon to a green checkmark when the password contains at least one uppercase character
+                      _createAccountPasswordString.contains(RegExp(r'[A-Z]'))
+                        ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
+                        : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
+          
+          // Adding some space here
+                      const SizedBox(width: 10.0),
+          
+          // Text widget to display '1 uppercase character'
+                      const Text(
+                        '1 uppercase character',
+          
+          // TextStyle to define text appearance
+                        style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
+                      ),
+                      
+          // Closing properties for the uppercase character condition display
+                    ],
+                  ),
+                ),
+          
+          // Adding some space here
+                const SizedBox(height: 16.0),
+            
+          // Container for displaying whether the password contains at least one lowercase character
+                Container(
+          
+          // Adding padding to the icon and text
+                  padding: const EdgeInsets.all(4.0),
+          
+          // Row holding the icon and text indicating the presence of at least one lowercase character in the password
+                  child: Row(
+                    children: [
+                      // Conditional statement to change the icon to a green checkmark when the password contains at least one lowercase character
+                      _createAccountPasswordString.contains(RegExp(r'[a-z]'))
+                        ? const Icon(Icons.check_rounded, size: 30, color: Color.fromARGB(255, 61, 130, 63)) // Green checkmark for valid condition
+                        : const Icon(Icons.circle_outlined, size: 30, color: Color.fromARGB(255, 100, 116, 139)), // Outlined circle for invalid condition
+          
+          // Adding some space here
+                      const SizedBox(width: 10.0),
+          
+          // Text widget to display '1 lowercase character'
+                      const Text(
+                        '1 lowercase character',
+          
+          // TextStyle to define text appearance
+                        style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
+                      ),
+          // Closing properties for the lowercase character condition display
+                    ],
+                  ),
+                ),
+            
+          // Adding some space here
+                const SizedBox(height: 16.0),
+            
+          // Container for the confirmation password section
+                Container(
+                  padding: const EdgeInsets.all(4.0), // Adjust padding as needed
+          
+          // Column to arrange child widgets vertically
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+          
+          // Text widget for displaying "Confirm Password"
+                      Text(
+                        'Confirm Password',
+                        // TextStyle conditionally set based on password security indicator
+                        style: _passwordSecurityIndicator == 4
+                            ? const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web') // Style for valid condition
+                            : const TextStyle(color: Color.fromARGB(255, 122, 122, 122), fontFamily: 'Titillium Web'), // Style for invalid condition
+                      ),
+                      
+          // Adding some space here
+                      const SizedBox(height: 10.0),
+          
+          // TextField widget for entering and confirming the password
+                      TextField(
+                        style: const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
+          
+          // InputDecoration for customizing the appearance of the text field
+                        decoration: InputDecoration(
+          
+          // Hint text to guide the user for entering the password
+                          hintText: 'Enter your password',
+          
+          // TextStyle for the hint text
+                          hintStyle: const TextStyle(color: Color.fromARGB(255, 122, 122, 122), fontFamily: 'Titillium Web'),
+          
+          // Border styling for the text field
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+          
+          // Styling for the border when the text field is focused
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(11),
+                            borderSide: const BorderSide(color: Color.fromARGB(255, 27, 123, 201)),
+                          ),
+          
+          // Padding inside the text field content area
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                        ),
+          
+          // Hide entered text 
+                        obscureText: true, 
+          
+          // onChanged callback to update the confirmation password string
+                        onChanged: (value) {
+                          setState(() {
+                            _confirmCreateAccountPasswordString = value;
+                            _confirmCreateAccountPasswordController.text = value;
+                          });
+                        },
+          
+                        // Enable the text field based on the password security indicator
+                        enabled: _passwordSecurityIndicator == 4,
+          
+          // Closing properties for the Confirm Password textfield
+                      ),
+                    ],
+                  ),
+                ),
+                          
+          // Adding some space here
+                const SizedBox(height: 16.0),
+          
+                // Making a "Next" button
+                GestureDetector(
+          
+                  // Execute onTap
+                  onTap: () => _signUserUp(context),
+          
+                  // Container holding the "Next" button
+                  child: Container(
+                    height: 50,
+          
+                    // Decoration based on password match status
+                    decoration: BoxDecoration(
+                      color: _createAccountPasswordString == _confirmCreateAccountPasswordString
+                          ? const Color.fromARGB(255, 30, 75, 137) // Color when passwords match
+                          : const Color.fromARGB(255, 85, 86, 87),  // Color when passwords don't match
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+          
+                    // Row to contain "Next" text and arrow icon
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Next',
+          
+                          // TextStyle to define text appearance
+                          style: TextStyle(
+                            fontSize: 18, 
+                            color: Colors.white, 
+                            fontWeight: FontWeight.bold, 
+                            fontFamily: 'Titillium Web'
+                          ),
+                        ),
+          
+                        // Adding some space here
+                        SizedBox(width: 10),
+          
+                        // Adding a white arrow
+                        Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 15),
+          
+                        // Closing properties for the Next button
+                      ],
+                    ),
+                  ),
+                ),
+          
+          // Adding some space here
+                const SizedBox(height: 30.0),
+          
+          // Row widget containing text and a GestureDetector for navigation to the login screen
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+          
+          // Children widgets within the row
                   children: [
-                    Text(
-                      'Next',
-      
-                      // TextStyle to define text appearance
-                      style: TextStyle(
-                        fontSize: 18, 
-                        color: Colors.white, 
-                        fontWeight: FontWeight.bold, 
-                        fontFamily: 'Titillium Web'
+          
+          // Text widget indicating the presence of an existing account
+                    const Text(
+                      'Already have an account?',
+          
+          // TextStyle to define text appearance
+                      style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Titillium Web'),
+                    ),
+          
+          // GestureDetector for handling taps on the "Login" text
+                    GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+          
+          // onTap navigation to the login screen
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                          ),
+                        );
+                      },
+          
+          // TextButton widget styled as a link for navigating to the login screen
+                      child: const TextButton(
+                        onPressed: null, // Set onPressed to null or add your logic inside the GestureDetector
+                        child: Text(
+                          'Login',
+          
+          // TextStyle to define text appearance
+                          style: TextStyle(
+                            fontSize: 18, 
+                            color: Colors.blue, 
+                            fontWeight: FontWeight.bold, 
+                            fontFamily: 'Titillium Web'
+                          ),
+          
+          // Closing the Message properties
+                        ),
                       ),
                     ),
-      
-                    // Adding some space here
-                    SizedBox(width: 10),
-      
-                    // Adding a white arrow
-                    Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 15),
-      
-                    // Closing properties for the Next button
                   ],
                 ),
-              ),
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 30.0),
-      
-      // Row widget containing text and a GestureDetector for navigation to the login screen
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-      
-      // Children widgets within the row
-              children: [
-      
-      // Text widget indicating the presence of an existing account
-                const Text(
-                  'Already have an account?',
-      
-      // TextStyle to define text appearance
-                  style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Titillium Web'),
-                ),
-      
-      // GestureDetector for handling taps on the "Login" text
-                GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-      
-      // onTap navigation to the login screen
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-                      ),
-                    );
-                  },
-      
-      // TextButton widget styled as a link for navigating to the login screen
-                  child: const TextButton(
-                    onPressed: null, // Set onPressed to null or add your logic inside the GestureDetector
-                    child: Text(
-                      'Login',
-      
-      // TextStyle to define text appearance
-                      style: TextStyle(
-                        fontSize: 18, 
-                        color: Colors.blue, 
-                        fontWeight: FontWeight.bold, 
-                        fontFamily: 'Titillium Web'
-                      ),
-      
-      // Closing the Message properties
-                    ),
-                  ),
-                ),
-              ],
-            ),
-      
-      // Adding some space here
-            const SizedBox(height: 20.0),
+          
+          // Adding some space here
+                const SizedBox(height: 20.0),
 
-      ],
-    ),
-  ),
-      
-      // Close all properties
+          ],
+        ),
+      ),
+          
+
           ],
         ),
       ),
