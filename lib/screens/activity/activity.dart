@@ -27,7 +27,7 @@ class _ActivityPageState extends State<ActivityPage> {
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
   // ignore: prefer_final_fields
-  List<String> _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+  List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1', 'AGQ'];
 
@@ -280,9 +280,8 @@ class _ActivityPageState extends State<ActivityPage> {
   dynamic _getActivityType(Map<String, dynamic> activity) {
     switch (activity['type']) {
       case 'income':
-        if (activity['fund'] == 'AGQ') {
-          return 'Profit';
-        }
+        return 'Profit';
+      case 'profit':
         return 'Profit';
       case 'deposit':
         return 'Deposit';
@@ -333,7 +332,7 @@ class _ActivityPageState extends State<ActivityPage> {
         element['time'].toDate().isAfter(selectedDates.end));
 
     if (_typeFilter.isEmpty) {
-      _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+      _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
     }
 
     if (_fundsFilter.isEmpty) {
@@ -345,7 +344,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   List<String> getSelectedFilters() {
     // Ensure default filters are not considered as "selected" filters
-    List<String> defaultTypeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+    List<String> defaultTypeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
     List<String> defaultFundsFilter = ['AK1', 'AGQ'];
 
     List<String> selectedFilters = [];
@@ -814,6 +813,8 @@ class _ActivityPageState extends State<ActivityPage> {
             return AppColors.defaultYellow400;
           case 'income':
             return AppColors.defaultBlue300;
+          case 'profit':
+            return AppColors.defaultBlue300;
           default:
             return AppColors.defaultWhite;
         }
@@ -829,6 +830,8 @@ class _ActivityPageState extends State<ActivityPage> {
             return const Color.fromARGB(255, 24, 46, 68);
           case 'income':
             return const Color.fromARGB(255, 24, 46, 68);
+          case 'profit':
+            return const Color.fromARGB(255, 24, 46, 68);
           default:
             return AppColors.defaultWhite;
         }
@@ -843,6 +846,8 @@ class _ActivityPageState extends State<ActivityPage> {
           case 'pending':
             return const Color.fromARGB(255, 32, 58, 83);
           case 'income':
+            return const Color.fromARGB(255, 32, 58, 83);
+          case 'profit':
             return const Color.fromARGB(255, 32, 58, 83);
           default:
             return AppColors.defaultWhite;
@@ -873,6 +878,13 @@ class _ActivityPageState extends State<ActivityPage> {
                   width: size,
                 );
               case 'income':
+                return SvgPicture.asset(
+                  'assets/icons/variable_income.svg',
+                  color: getColorBasedOnActivityType(activityType),
+                  height: size,
+                  width: size,
+                );
+              case 'profit':
                 return SvgPicture.asset(
                   'assets/icons/variable_income.svg',
                   color: getColorBasedOnActivityType(activityType),
@@ -1054,6 +1066,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                               return 'Pending withdrawal from your investment at';
                                             case 'income':
                                               return 'Profit to your investment at';
+                                            case 'profit':
+                                              return 'Profit to your investment at';
                                             default:
                                               return '';
                                           }
@@ -1139,6 +1153,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                                           case 'pending':
                                                             return 'Pending withdrawal from your investment at';
                                                           case 'income':
+                                                            return 'Profit to your investment at';
+                                                          case 'profit':
                                                             return 'Profit to your investment at';
                                                           default:
                                                             return '';
@@ -1305,10 +1321,12 @@ class _ActivityPageState extends State<ActivityPage> {
           ],
         );
     } else {
-      }
-
+    
+    }
     return Container();  
 }
+
+
 
   void updateUserCheckStatus(String userName, bool isChecked) {
       setState(() {
@@ -1606,6 +1624,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   value: isIncomeChecked,
                                                   onChanged: (bool? value) {
                                                     editFilter(2, value!, 'income');
+                                                    editFilter(2, value!, 'profit');
                                                     setState(() {
                                                       isIncomeChecked = value;
                                                     });
@@ -1700,7 +1719,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             ),
                             onTap: () {
                               setState(() {
-                                _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+                                _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
       
                                 _fundsFilter = ['AK1', 'AGQ'];
       
@@ -1897,6 +1916,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                       );
                                                     } else {
                                                       editFilter(2, value!, 'income');
+                                                      editFilter(2, value!, 'profit');
                                                       setState(() {
                                                         isIncomeChecked = value;
                                                       });
@@ -2063,7 +2083,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             ),
                             onTap: () {
                               setState(() {
-                                _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+                                _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
       
                                 _fundsFilter = ['AK1', 'AGQ'];
       
@@ -2453,7 +2473,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                     ),
                                   ),
                                 // Repeat the same pattern for Type of Activity Button(s)
-                                if (_typeFilter.contains('income') && _typeFilter.contains('deposit') && _typeFilter.contains('withdrawal'))
+                                if (_typeFilter.contains('income') &&_typeFilter.contains('profit') && _typeFilter.contains('deposit') && _typeFilter.contains('withdrawal'))
                                   Padding(
                                     padding: const EdgeInsets.all(4.0),
                                     child: _buildActivityTypeButton('All Activity Types'),
