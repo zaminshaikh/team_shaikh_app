@@ -534,8 +534,8 @@ List<String> assetsFormatted = [];
                       [
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
-                        _buildDisclaimer(),
                         _buildLogoutButton(),
+                        _buildDisclaimer(),
                         const SizedBox(height: 120),
                       ],
                     ),
