@@ -10,7 +10,7 @@ import 'package:team_shaikh_app/push_notification.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
-import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
+import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import '/firebase_options.dart';
