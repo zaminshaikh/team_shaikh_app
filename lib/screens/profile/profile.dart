@@ -497,7 +497,7 @@ List<String> assetsFormatted = [];
                         _buildSampleCupertinoListSection(),
                         _buildLogoutButton(),
                         _buildDisclaimer(),
-                        SizedBox(height: 120),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),
@@ -536,7 +536,7 @@ List<String> assetsFormatted = [];
                         _buildSampleCupertinoListSection(),
                         _buildDisclaimer(),
                         _buildLogoutButton(),
-                        SizedBox(height: 120),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),
@@ -702,14 +702,14 @@ Widget _buildSampleCupertinoListSection() {
 
   Widget _buildDisclaimer() {
     return  Padding(
-      padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Divider(color: const Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
-          SizedBox(height: 15),
-          Text(
+          const Divider(color: Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
+          const SizedBox(height: 15),
+          const Text(
             'DISCLAIMER',
             style: TextStyle(
               fontSize: 20,
@@ -718,7 +718,7 @@ Widget _buildSampleCupertinoListSection() {
               fontFamily: 'Titillium Web',
             ),
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -738,7 +738,7 @@ Widget _buildSampleCupertinoListSection() {
                       fontFamily: 'Titillium Web',
                     ),
                   ),
-                  const SizedBox(width: 5),
+                  SizedBox(width: 5),
                   Icon(
                     Icons.arrow_forward_ios,
                     color: Colors.blue,
@@ -748,8 +748,8 @@ Widget _buildSampleCupertinoListSection() {
               ),
             ),
           ),
-          SizedBox(height: 15),
-          Text(
+          const SizedBox(height: 15),
+          const Text(
             'Investment products and services are offered through AGQ Consulting LLC, a Florida limited liability company.',
             style: TextStyle(
               fontSize: 16,
@@ -796,7 +796,7 @@ Widget _buildSampleCupertinoListSection() {
                       height: 20,
                     ),
                     const SizedBox(width: 10),
-                    Text(
+                    const Text(
                       'Logout',
                       style: TextStyle(
                         fontSize: 16,

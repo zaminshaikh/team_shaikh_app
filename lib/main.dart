@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:team_shaikh_app/push_notification.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
 import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
@@ -69,14 +70,16 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-// Update the lifecycle state
+    // Update the lifecycle state
     final appState = Provider.of<AppState>(context, listen: false);
   
     if ((state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) &&
         !appState.hasNavigatedToFaceIDPage &&
-        isAuthenticated()) { // Check if the user is authenticated
+        isAuthenticated() &&
+        appState.initiallyAuthenticated) { // Check if the user was initially authenticated
+      print('Navigating to FaceIdPage because the app is in a paused, inactive, or hidden state, and the user is authenticated.');
       appState.setHasNavigatedToFaceIDPage(true);
       navigatorKey.currentState?.pushReplacement(
         PageRouteBuilder(
@@ -86,14 +89,18 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
     } else {
       if (appState.justAuthenticated) {
+        print('Resetting navigation flags because the user just authenticated.');
         appState.setHasNavigatedToFaceIDPage(false);
         appState.setJustAuthenticated(false);
       }
       if (appState.hasNavigatedToFaceIDPage) {
+        print('User has already navigated to FaceIdPage.');
       } else {
+        print('No navigation to FaceIdPage required.');
       }
     }
   }
+  
 
   bool isAuthenticated() {
     final user = FirebaseAuth.instance.currentUser;
@@ -190,7 +197,7 @@ class AuthChecker extends StatelessWidget {
         } else if (snapshot.hasData) {
           final user = snapshot.data!; // Get the authenticated user from the snapshot
           log('wrapper.dart: User is logged in as ${user.email}'); // Log the user's email
-          return const DashboardPage(); // If the user is authenticated, show the FaceIdPage
+          return const InitialFaceIdPage(); // If the user is authenticated, show the FaceIdPage
         } else {
           log('wrapper.dart: User is not logged in yet.'); // Log that the user is not logged in
           return const OnboardingPage(); // If the user is not authenticated, show the OnboardingPage

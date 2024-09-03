@@ -2,140 +2,60 @@
 
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:team_shaikh_app/main.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'dart:async';
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/resources.dart';
 
-class FaceIdPage extends StatefulWidget {
-  const FaceIdPage({super.key});
+class InitialFaceIdPage extends StatefulWidget {
+  const InitialFaceIdPage({super.key});
 
   @override
-  _FaceIdPageState createState() => _FaceIdPageState();
+  _InitialFaceIdPageState createState() => _InitialFaceIdPageState();
 }
 
-class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
+class _InitialFaceIdPageState extends State<InitialFaceIdPage> with WidgetsBindingObserver {
   final LocalAuthentication auth = LocalAuthentication();
-  bool _isAuthenticating = false;
-  AppState? appState;
-  MyAppState? myAppState;
-  bool authenticated = false;
 
   @override
   void initState() {
     super.initState();
-    print('FaceIdPage: FaceIdPage is being initialized');
-    myAppState = MyAppState();
-    WidgetsBinding.instance.addObserver(this);
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    appState = Provider.of<AppState>(context, listen: false);
-    myAppState = context.findAncestorStateOfType<MyAppState>();
-  }
-  
   @override
   void dispose() {
-    // Print a message to indicate that the FaceIdPage is being disposed
-    
-    // Check if myAppState is not null
-    if (myAppState != null) {
-      // Print the appState value from myAppState
-    } else {
-      // Print a message to indicate that myAppState is null
-    }
-  
-    // Reset the hasNavigatedToFaceIDPage value to false after disposing the page
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (authenticated) {
-        appState?.setHasNavigatedToFaceIDPage(false);
-      } else {
-      }
-    });
-  
-    // Remove the observer for this widget's lifecycle events
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
-  
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (!_isAuthenticating) {
-        _isAuthenticating = true; // Set the flag to true to prevent multiple calls
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          appState?.setHasNavigatedToFaceIDPage(true);
-          if (mounted){
-            _authenticate(context).then((_) {
-              _isAuthenticating = false; // Reset the flag after authentication completes
-            });
-          }
-        });
-      }
-    }
-  }
-  
-  Future<void> _authenticate(BuildContext context) async {
+
+
+  Future<void> _initialAuthenticate(BuildContext context) async {
     if (!mounted) return;
-
-    setState(() {
-      _isAuthenticating = true;
-    });
-
-    authenticated = false;
-
+  
     try {
-      authenticated = await auth.authenticate(
+      bool authenticated = await auth.authenticate(
         localizedReason: 'Please authenticate to login',
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
         ),
       );
-    } catch (e) {
-    }
-
-    if (authenticated) {
-      if (mounted) {
-        setState(() {
-          _isAuthenticating = false;
-        });
-      }
-    
-      if (mounted) {
+  
+      if (authenticated && mounted) {
+        final appState = Provider.of<AppState>(context, listen: false);
+        appState.setInitiallyAuthenticated(true); // Set the flag
         await Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(fromFaceIdPage: true),
             transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
           ),
-        ).then((_) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            appState?.setHasNavigatedToFaceIDPage(false);
-            appState?.setJustAuthenticated(true);
-          });
-        });
-      } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          appState?.setHasNavigatedToFaceIDPage(false);
-        });
+        );
       }
-    } else {
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          appState?.setHasNavigatedToFaceIDPage(false);
-        });
-        setState(() {
-          _isAuthenticating = false;
-        });
-      }
-    }    
+    } catch (e) {
+      // Handle authentication error if needed
+    }
   }
-  
+
   @override
   Widget build(BuildContext context) => Scaffold(
       body: Padding(
@@ -191,11 +111,9 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
                   width: double.infinity,
                   height: 45,
                   child: ElevatedButton(
-                    onPressed: _isAuthenticating
-                        ? null
-                        : () async {
-                            await _authenticate(context);
-                          },
+                    onPressed: () async {
+                      await _initialAuthenticate(context);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.defaultBlue500,
                       shape: RoundedRectangleBorder(
