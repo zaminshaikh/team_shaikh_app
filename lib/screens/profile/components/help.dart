@@ -537,11 +537,11 @@ class _HelpPageState extends State<HelpPage> {
             ),
             CustomExpansionTile(
               title: 'How do I contact customer support?',
-              content: 'If you have any questions or issues, please feel free to reach out to melindafromflorida@gmail.com. If it is urgent or of high priority, please contact Kashif or Sonny Shaikh. Their numbers are listed higher on the page.',
+              content: 'If you have any questions or issues, please feel free to reach out to melinda@agqconsulting.com. If it is urgent or of high priority, please contact Kashif or Sonny Shaikh. Their numbers are listed higher on the page.',
             ),
             CustomExpansionTile(
               title: 'How do I update my personal information?',
-              content: 'To update your personal information, including changing your email and password, go to the settings page, under the "Security" section. If there is anything that seems incorrect about your personal information, please reach out to melindafromflorida@gmail.com.',
+              content: 'To update your personal information, including changing your email and password, go to the settings page, under the "Security" section. If there is anything that seems incorrect about your personal information, please reach out to melinda@agqconsulting.com.',
             ),
             CustomExpansionTile(
               title: 'What happens if my phone is lost or stolen?',
