@@ -44,9 +44,9 @@ class DatabaseService {
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
 
-    log('database.dart: UID $uid found in Firestore.');
 
     if (querySnapshot.size > 0) {
+    log('database.dart: UID $uid found in Firestore.');
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
       switch (code) {

@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_expression_function_bodies
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
@@ -184,6 +185,14 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 class AuthChecker extends StatelessWidget {
   const AuthChecker({Key? key}) : super(key: key);
 
+  Future<bool> _checkUidExists(String uid) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('uid', isEqualTo: uid)
+        .get();
+    return querySnapshot.size > 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -192,14 +201,30 @@ class AuthChecker extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator(); // Show a loading indicator while waiting for the authentication state
         } else if (snapshot.hasError) {
-          log('wrapper.dart: StreamBuilder error: ${snapshot.error}'); // Log any errors that occur during the stream
+          log('main.dart: StreamBuilder error: ${snapshot.error}'); // Log any errors that occur during the stream
           return Text('Error: ${snapshot.error}'); // Show an error message if there is an error in the stream
         } else if (snapshot.hasData) {
           final user = snapshot.data!; // Get the authenticated user from the snapshot
-          log('wrapper.dart: User is logged in as ${user.email}'); // Log the user's email
-          return const InitialFaceIdPage(); // If the user is authenticated, show the FaceIdPage
+          log('main.dart: User is logged in as ${user.email}'); // Log the user's email
+          return FutureBuilder<bool>(
+            future: _checkUidExists(user.uid),
+            builder: (context, uidSnapshot) {
+              if (uidSnapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator(); // Show a loading indicator while waiting for the Firestore query
+              } else if (uidSnapshot.hasError) {
+                log('main.dart: Firestore query error: ${uidSnapshot.error}'); // Log any errors that occur during the Firestore query
+                return Text('Error: ${uidSnapshot.error}'); // Show an error message if there is an error in the Firestore query
+              } else if (uidSnapshot.hasData && uidSnapshot.data == true) {
+                log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
+                return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
+              } else {
+                log('main.dart: UID not found in Firestore.'); // Log that the UID was not found in Firestore
+                return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
+              }
+            },
+          );
         } else {
-          log('wrapper.dart: User is not logged in yet.'); // Log that the user is not logged in
+          log('main.dart: User is not logged in yet.'); // Log that the user is not logged in
           return const OnboardingPage(); // If the user is not authenticated, show the OnboardingPage
         }
       },
