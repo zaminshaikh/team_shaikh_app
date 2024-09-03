@@ -231,7 +231,6 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
             message: 'User already exists for cid: $cid'
           );
         }
-        print(uid);
         // Update new fields and keep old ones from snapshot
         Map<String, dynamic> updatedData = {
           ...existingData,
@@ -375,8 +374,6 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
           'graphPoints': await getGraphPoints,
         };
       }
-      // Log the asset after updating
-      print('Asset after update: ${assets[i]}');
     }
 
     return UserWithAssets(info, assets);

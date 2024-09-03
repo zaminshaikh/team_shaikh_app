@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_expression_function_bodies
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
@@ -74,9 +73,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Update the lifecycle state
     final appState = Provider.of<AppState>(context, listen: false);
-    bool isAuth = isAuthenticated();
-    bool hasNavigatedToFaceIDPage = appState.hasNavigatedToFaceIDPage;
-    bool initiallyAuthenticated = appState.initiallyAuthenticated;
  
   
     if ((state == AppLifecycleState.paused ||
@@ -85,7 +81,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         !appState.hasNavigatedToFaceIDPage &&
         isAuthenticated() &&
         appState.initiallyAuthenticated) { // Check if the user was initially authenticated
-      print('Navigating to FaceIdPage because the app is in a paused, inactive, or hidden state, and the user is authenticated.');
       appState.setHasNavigatedToFaceIDPage(true);
       navigatorKey.currentState?.pushReplacement(
         PageRouteBuilder(
@@ -95,14 +90,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
     } else {
       if (appState.justAuthenticated) {
-        print('Resetting navigation flags because the user just authenticated.');
         appState.setHasNavigatedToFaceIDPage(false);
         appState.setJustAuthenticated(false);
       }
       if (appState.hasNavigatedToFaceIDPage) {
-        print('User has already navigated to FaceIdPage.');
       } else {
-        print('No navigation to FaceIdPage required.');
       }
     }
   }

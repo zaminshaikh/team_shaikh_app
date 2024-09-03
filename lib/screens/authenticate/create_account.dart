@@ -535,6 +535,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               GestureDetector(
                 onTap: _isButtonEnabled
                   ? () async {
+                      // ignore: unused_local_variable
                       UserCredential? userCredential =
                           await GoogleAuthService().signUpWithGoogle(
                         context,

@@ -26,7 +26,6 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    print('FaceIdPage: FaceIdPage is being initialized');
     myAppState = MyAppState();
     WidgetsBinding.instance.addObserver(this);
   }

@@ -163,7 +163,7 @@ class GoogleAuthService {
           try {
             // Add the new user to Firestore with the provided CID
             debugPrint('cid: $cid');
-            await service?.linkNewUser(user.email!);
+            await service.linkNewUser(user.email!);
 
             // Retrieve the newly created user document
             DocumentSnapshot newUserDoc = await FirebaseFirestore.instance.collection('testUsers').doc(cid).get();
@@ -191,7 +191,7 @@ class GoogleAuthService {
       }
   
       // Navigate to the Dashboard page
-      Navigator.push(
+      await Navigator.push(
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
