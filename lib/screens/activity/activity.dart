@@ -904,20 +904,20 @@ class _ActivityPageState extends State<ActivityPage> {
           children: [
               GestureDetector(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10.0, 5.0, 15.0, 5.0),
+                  padding: const EdgeInsets.fromLTRB(30.0, 5.0, 15.0, 5.0),
                   child: Container(
                     color: const Color.fromRGBO(1,1,1,0),
                     child: Row(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(right: 5),
+                          padding: const EdgeInsets.only(right: 20),
                           child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
                                 Icon(
                                   Icons.circle,
                                   color: getUnderlayColorBasedOnActivityType(activity['type']),
-                                  size: 70,
+                                  size: 50,
                                 ),
                                 getIconBasedOnActivityType(activity['type']),
                               ]
