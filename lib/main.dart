@@ -74,6 +74,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Update the lifecycle state
     final appState = Provider.of<AppState>(context, listen: false);
+    bool isAuth = isAuthenticated();
+    bool hasNavigatedToFaceIDPage = appState.hasNavigatedToFaceIDPage;
+    bool initiallyAuthenticated = appState.initiallyAuthenticated;
+ 
   
     if ((state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||

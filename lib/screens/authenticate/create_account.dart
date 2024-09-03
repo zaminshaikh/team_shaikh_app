@@ -4,7 +4,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database.dart';
@@ -28,6 +30,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   // Boolean to switch password visibility, init as true
   bool _hidePassword = true;
   late DatabaseService _databaseService;
+  late AppState appState;
   bool _isButtonEnabled = false;
 
   // User inputs
@@ -213,6 +216,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 if (!mounted) {return;} // async gap widget mounting check
                 await CustomAlertDialog.showAlertDialog(context, 'Success', 'Email verified successfully.', icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green));
                 if (!mounted) {return;} 
+                appState = Provider.of<AppState>(context, listen: false); // Set the app state
+                // Enable Face ID if the user navigates away from the app from now onwards
+                appState.setInitiallyAuthenticated(true);
                 await Navigator.pushReplacement(context, PageRouteBuilder(
                   pageBuilder: (context, animation1, animation2) => const DashboardPage(),
                   transitionDuration: const Duration(seconds: 0),

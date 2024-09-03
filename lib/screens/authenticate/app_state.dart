@@ -14,6 +14,7 @@ class AppState extends ChangeNotifier {
   // Getter for _initiallyAuthenticated
   bool get initiallyAuthenticated => _initiallyAuthenticated;
 
+
   // Setter for _hasNavigatedToFaceIDPage
   void setHasNavigatedToFaceIDPage(bool value) {
     _hasNavigatedToFaceIDPage = value;
@@ -33,6 +34,5 @@ class AppState extends ChangeNotifier {
     _initiallyAuthenticated = value;
     notifyListeners();
   }
-
 
 }
