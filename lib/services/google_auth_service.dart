@@ -191,9 +191,12 @@ class GoogleAuthService {
       }
   
       // Navigate to the Dashboard page
-      await Navigator.pushReplacement(
+      Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+        ),
       );
   
       // Return the user credential
