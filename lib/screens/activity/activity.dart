@@ -1624,7 +1624,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   value: isIncomeChecked,
                                                   onChanged: (bool? value) {
                                                     editFilter(2, value!, 'income');
-                                                    editFilter(2, value!, 'profit');
+                                                    editFilter(2, value, 'profit');
                                                     setState(() {
                                                       isIncomeChecked = value;
                                                     });
@@ -1916,7 +1916,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                       );
                                                     } else {
                                                       editFilter(2, value!, 'income');
-                                                      editFilter(2, value!, 'profit');
+                                                      editFilter(2, value, 'profit');
                                                       setState(() {
                                                         isIncomeChecked = value;
                                                       });
@@ -2120,7 +2120,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
       ),
   );
-
 }
 
   void _buildSortOptions(BuildContext context) {
@@ -2230,7 +2229,7 @@ class _ActivityPageState extends State<ActivityPage> {
             activityType, // Button text
             style: const TextStyle(
               color: AppColors.defaultBlueGray100,
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
               fontFamily: 'Titillium Web',
             ),
@@ -2293,7 +2292,7 @@ class _ActivityPageState extends State<ActivityPage> {
       
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.only(right: 25, left: 25, top: 10, bottom: 10),
           decoration: const BoxDecoration(
             color: Colors.transparent,
           ),
@@ -2318,7 +2317,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 'Sort: ',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   fontFamily: 'Titillium Web',
                                 ),
@@ -2345,7 +2344,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                       : 'Amount: High to Low',
                                           style: const TextStyle(
                                             color: AppColors.defaultBlue300,
-                                            fontSize: 18,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'Titillium Web',
                                           ),
@@ -2354,8 +2353,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                         SvgPicture.asset(
                                           'assets/icons/sort.svg',
                                           colorFilter: const ColorFilter.mode(AppColors.defaultBlue300, BlendMode.srcIn),
-                                          height: 20,
-                                          width: 20,
+                                          height: 18,
+                                          width: 18,
                                         ),
                                       ],
                                     ),
@@ -2381,7 +2380,7 @@ class _ActivityPageState extends State<ActivityPage> {
                     'Filters: ',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Titillium Web',
                     ),
@@ -2421,7 +2420,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                       buttonText,
                                       style: const TextStyle(
                                         color: AppColors.defaultBlueGray100,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                         fontFamily: 'Titillium Web',
                                       ),
@@ -2441,7 +2440,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'All Recipients',
                                         style: TextStyle(
                                           color: AppColors.defaultBlueGray100,
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w700,
                                           fontFamily: 'Titillium Web',
                                         ),
@@ -2464,7 +2463,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                           userName,
                                           style: const TextStyle(
                                             color: AppColors.defaultBlueGray100,
-                                            fontSize: 16,
+                                          fontSize: 14,
                                             fontWeight: FontWeight.w700,
                                             fontFamily: 'Titillium Web',
                                           ),
