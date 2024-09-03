@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/push_notification.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -185,12 +186,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 class AuthChecker extends StatelessWidget {
   const AuthChecker({Key? key}) : super(key: key);
 
-  Future<bool> _checkUidExists(String uid) async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('uid', isEqualTo: uid)
-        .get();
-    return querySnapshot.size > 0;
+  Future<DatabaseService?> _fetchDatabaseService(BuildContext context, String uid) async {
+    return await DatabaseService.fetchCID(context, uid, 1);
   }
 
   @override
@@ -206,19 +203,19 @@ class AuthChecker extends StatelessWidget {
         } else if (snapshot.hasData) {
           final user = snapshot.data!; // Get the authenticated user from the snapshot
           log('main.dart: User is logged in as ${user.email}'); // Log the user's email
-          return FutureBuilder<bool>(
-            future: _checkUidExists(user.uid),
-            builder: (context, uidSnapshot) {
-              if (uidSnapshot.connectionState == ConnectionState.waiting) {
+          return FutureBuilder<DatabaseService?>(
+            future: _fetchDatabaseService(context, user.uid),
+            builder: (context, serviceSnapshot) {
+              if (serviceSnapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator(); // Show a loading indicator while waiting for the Firestore query
-              } else if (uidSnapshot.hasError) {
-                log('main.dart: Firestore query error: ${uidSnapshot.error}'); // Log any errors that occur during the Firestore query
-                return Text('Error: ${uidSnapshot.error}'); // Show an error message if there is an error in the Firestore query
-              } else if (uidSnapshot.hasData && uidSnapshot.data == true) {
+              } else if (serviceSnapshot.hasError) {
+                log('main.dart: Firestore query error: ${serviceSnapshot.error}'); // Log any errors that occur during the Firestore query
+                return Text('Error: ${serviceSnapshot.error}'); // Show an error message if there is an error in the Firestore query
+              } else if (serviceSnapshot.hasData && serviceSnapshot.data != null) {
                 log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
                 return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
               } else {
-                log('main.dart: UID not found in Firestore.'); // Log that the UID was not found in Firestore
+                log('main.dart: UID: ${user.uid} not found in Firestore.'); // Log that the UID was not found in Firestore
                 return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
               }
             },
