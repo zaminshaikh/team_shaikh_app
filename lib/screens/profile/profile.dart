@@ -857,16 +857,8 @@ Widget _buildSampleCupertinoListSection() {
               onTap: () {
                 Navigator.push(
                   context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: const Offset(0.0, 0.0),
-                        ).animate(animation),
-                        child: child,
-                      ),
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPage(),
                   ),
                 );
               },

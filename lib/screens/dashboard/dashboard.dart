@@ -333,8 +333,6 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
   }
 
 
-
-
   @override
   Widget build(BuildContext context) => FutureBuilder(
       future: _initData(), // Initialize the database service
@@ -483,16 +481,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               onTap: () {
                 Navigator.push(
                   context,
-                  PageRouteBuilder(
-                    transitionDuration: Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-                        position: Tween<Offset>(
-                          begin: Offset(1.0, 0.0),
-                          end: Offset(0.0, 0.0),
-                        ).animate(animation),
-                        child: child,
-                      ),
+                  MaterialPageRoute(
+                    builder: (context) => NotificationPage(),
                   ),
                 );
               },
