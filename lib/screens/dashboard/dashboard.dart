@@ -13,7 +13,7 @@ import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 /// Represents the dashboard page of the application.
@@ -28,14 +28,20 @@ class DashboardPage extends StatefulWidget {
 
 int unreadNotificationsCount = 0;
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageState extends State<DashboardPage> with SingleTickerProviderStateMixin {
   // database service instance
   DatabaseService? _databaseService;
   AppState? appState;
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  bool _hasTransitioned = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize the transition state
+    _initializeTransitionState();
 
     // Initialize appState if it's null
     appState ??= AppState();
@@ -51,6 +57,42 @@ class _DashboardPageState extends State<DashboardPage> {
     } else {
     }
     _initData();
+  }
+
+  Future<void> _initializeTransitionState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _hasTransitioned = prefs.getBool('hasTransitioned') ?? false;
+  
+    if (!_hasTransitioned) {
+      _controller = AnimationController(
+        duration: const Duration(seconds: 3),
+        vsync: this,
+      )..forward();
+      _offsetAnimation = Tween<Offset>(
+        begin: const Offset(0.0, 0.5),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ));
+  
+      // Set the flag to true after the animation completes
+      _controller.addStatusListener((status) async {
+        if (status == AnimationStatus.completed) {
+          _hasTransitioned = true;
+          await prefs.setBool('hasTransitioned', true);
+        }
+      });
+    } else {
+      _controller = AnimationController(
+        duration: Duration.zero,
+        vsync: this,
+      );
+      _offsetAnimation = Tween<Offset>(
+        begin: Offset.zero,
+        end: Offset.zero,
+      ).animate(_controller);
+    }
   }
 
   Future<void> _initData() async {
@@ -69,6 +111,229 @@ class _DashboardPageState extends State<DashboardPage> {
       _databaseService = service!;
     }
   }
+
+  Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
+    UserWithAssets user = userSnapshot.data!;
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {
+      'first': firstName,
+      'last': lastName,
+      'company': companyName
+    };
+    String? cid = _databaseService?.cid;
+    // Total assets of one user
+    double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
+    double latestIncome = 0.00;
+
+    // We don't know the order of the funds, and perhaps the
+    // length could change in the future, so we'll loop through
+    for (var asset in user.assets) {
+      switch (asset['fund']) {
+        case 'AGQ':
+          totalUserAGQ += asset['total'] ?? 0;
+          break;
+        case 'AK1':
+          totalUserAK1 += asset['total'] ?? 0;
+          break;
+        default:
+            latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
+            totalUserAssets += asset['total'] ?? 0;
+      }
+    }
+    double percentageAGQ =
+        totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
+    double percentageAK1 =
+        totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(userName, cid),
+              SliverPadding(
+                padding: const EdgeInsets.all(16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      // Total assets section
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildTotalAssetsSection(totalUserAssets, latestIncome),
+                      ),
+                      const SizedBox(height: 32),
+                      // User breakdown section
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildUserBreakdownSection(
+                            userName, totalUserAssets, latestIncome, user.assets),
+                      ),
+                      const SizedBox(height: 32),
+                      // Assets structure section
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildAssetsStructureSection(
+                            totalUserAssets, percentageAGQ, percentageAK1),
+                      ),
+                      const SizedBox(height: 132),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildBottomNavigationBar(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Scaffold dashboardWithConnectedUsers(
+      BuildContext context,
+      AsyncSnapshot<UserWithAssets> userSnapshot,
+      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
+    int numConnectedUsers = connectedUsers.data!.length;
+    UserWithAssets user = userSnapshot.data!;
+    String firstName = user.info['name']['first'] as String;
+    String lastName = user.info['name']['last'] as String;
+    String companyName = user.info['name']['company'] as String;
+    Map<String, String> userName = {
+      'first': firstName,
+      'last': lastName,
+      'company': companyName
+    };
+    String? cid = _databaseService?.cid;
+    double totalUserAssets = 0.00,
+        totalAGQ = 0.00,
+        totalAK1 = 0.00,
+        totalAssets = 0.00;
+    double latestIncome = 0.00;
+
+    // This is a calculation of the total assets of the user only
+    for (var asset in user.assets) {
+      switch (asset['fund']) {
+        case 'AGQ':
+          totalAGQ += asset['total'] ?? 0;
+          break;
+        case 'AK1':
+          totalAK1 += asset['total'] ?? 0;
+          break;
+        default:
+          latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
+          totalAssets += asset['total'] ?? 0;
+          totalUserAssets += asset['total'] ?? 0;
+      }
+    }
+
+    // This calculation is for the total assets of all connected users combined
+    for (var user in connectedUsers.data!) {
+      for (var asset in user.assets) {
+        switch (asset['fund']) {
+          case 'AGQ':
+            totalAGQ += asset['total'] ?? 0;
+            break;
+          case 'AK1':
+            totalAK1 += asset['total'] ?? 0;
+            break;
+          default:
+            totalAssets += asset['total'] ?? 0;
+        }
+      }
+    }
+
+    double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
+    double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
+    log('dashboard.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(userName, cid),
+              SliverPadding(
+                padding: const EdgeInsets.all(16.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildTotalAssetsSection(totalAssets, latestIncome),
+                      ),
+                      const SizedBox(height: 32),
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildUserBreakdownSection(
+                            userName, totalUserAssets, latestIncome, user.assets),
+                      ),
+                      const SizedBox(height: 40),
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: Row(
+                          children: [
+                            Text(
+                              'Connected Users',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                            Spacer(),
+                            Text(
+                              '($numConnectedUsers)',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Titillium Web',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildConnectedUsersSection(connectedUsers.data!),
+                      ),
+                      const SizedBox(height: 30),
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: _buildAssetsStructureSection(
+                          totalAssets, percentageAGQ, percentageAK1),
+                      ),
+                      const SizedBox(height: 130),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SlideTransition(
+              position: _offsetAnimation,
+              child: _buildBottomNavigationBar(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -161,205 +426,13 @@ class _DashboardPageState extends State<DashboardPage> {
             });
       });
 
+
   /// Formats the given amount as a currency string.
   String _currencyFormat(double amount) => NumberFormat.currency(
         symbol: '\$',
         decimalDigits: 2,
         locale: 'en_US',
       ).format(amount);
-
-  Scaffold _dashboardSingleUser(AsyncSnapshot<UserWithAssets> userSnapshot) {
-    UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {
-      'first': firstName,
-      'last': lastName,
-      'company': companyName
-    };
-    String? cid = _databaseService?.cid;
-    // Total assets of one user
-    double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
-    double latestIncome = 0.00;
-
-    // We don't know the order of the funds, and perhaps the
-    // length could change in the future, so we'll loop through
-    for (var asset in user.assets) {
-      switch (asset['fund']) {
-        case 'AGQ':
-          totalUserAGQ += asset['total'] ?? 0;
-          break;
-        case 'AK1':
-          totalUserAK1 += asset['total'] ?? 0;
-          break;
-        default:
-            latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
-            totalUserAssets += asset['total'] ?? 0;
-      }
-    }
-    double percentageAGQ =
-        totalUserAGQ / totalUserAssets * 100; // Percentage of AGQ
-    double percentageAK1 =
-        totalUserAK1 / totalUserAssets * 100; // Percentage of AK1
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(userName, cid),
-              SliverPadding(
-                padding: const EdgeInsets.all(16.0),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      // Total assets section
-                      _buildTotalAssetsSection(totalUserAssets, latestIncome),
-                      const SizedBox(height: 32),
-                      // User breakdown section
-                      _buildUserBreakdownSection(
-                          userName, totalUserAssets, latestIncome, user.assets),
-                      const SizedBox(height: 32),
-                      // Assets structure section
-                      _buildAssetsStructureSection(
-                          totalUserAssets, percentageAGQ, percentageAK1),
-                      const SizedBox(height: 132),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavigationBar(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Scaffold dashboardWithConnectedUsers(
-      BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
-    int numConnectedUsers = connectedUsers.data!.length;
-    UserWithAssets user = userSnapshot.data!;
-    String firstName = user.info['name']['first'] as String;
-    String lastName = user.info['name']['last'] as String;
-    String companyName = user.info['name']['company'] as String;
-    Map<String, String> userName = {
-      'first': firstName,
-      'last': lastName,
-      'company': companyName
-    };
-    String? cid = _databaseService?.cid;
-    double totalUserAssets = 0.00,
-        totalAGQ = 0.00,
-        totalAK1 = 0.00,
-        totalAssets = 0.00;
-    double latestIncome = 0.00;
-
-    // This is a calculation of the total assets of the user only
-    for (var asset in user.assets) {
-      switch (asset['fund']) {
-        case 'AGQ':
-          totalAGQ += asset['total'] ?? 0;
-          break;
-        case 'AK1':
-          totalAK1 += asset['total'] ?? 0;
-          break;
-        default:
-          latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
-          totalAssets += asset['total'] ?? 0;
-          totalUserAssets += asset['total'] ?? 0;
-      }
-    }
-
-    // This calculation is for the total assets of all connected users combined
-    for (var user in connectedUsers.data!) {
-      for (var asset in user.assets) {
-        switch (asset['fund']) {
-          case 'AGQ':
-            totalAGQ += asset['total'] ?? 0;
-            break;
-          case 'AK1':
-            totalAK1 += asset['total'] ?? 0;
-            break;
-          default:
-            totalAssets += asset['total'] ?? 0;
-        }
-      }
-    }
-
-    double percentageAGQ = totalAGQ / totalAssets * 100; // Percentage of AGQ
-    double percentageAK1 = totalAK1 / totalAssets * 100; // Percentage of AK1
-    log('dashboard.dart: Total AGQ: $totalAGQ, Total AK1: $totalAK1, Total Assets: $totalAssets, Total User Assets: $totalUserAssets, AGQ: $percentageAGQ, Percentage AK1: $percentageAK1');
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(userName, cid),
-              SliverPadding(
-                padding: const EdgeInsets.all(16.0),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      _buildTotalAssetsSection(totalAssets, latestIncome),
-                      const SizedBox(height: 32),
-                      _buildUserBreakdownSection(
-                          userName, totalUserAssets, latestIncome, user.assets),
-                      const SizedBox(height: 40),
-                      Row(
-                        children: [
-                          Text(
-                            'Connected Users',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            '($numConnectedUsers)',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      _buildConnectedUsersSection(connectedUsers.data!),
-                      const SizedBox(height: 30),
-                      _buildAssetsStructureSection(
-                        totalAssets, percentageAGQ, percentageAK1),
-                      const SizedBox(height: 130),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavigationBar(context),
-          ),
-        ],
-      ),
-    );
-  }
 
   SliverAppBar _buildAppBar(Map<String, String> userName, String? cid) =>
       SliverAppBar(
