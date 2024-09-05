@@ -76,29 +76,37 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
  
   
     if ((state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.hidden) &&
-        !appState.hasNavigatedToFaceIDPage &&
-        isAuthenticated() &&
-        appState.initiallyAuthenticated) { // Check if the user was initially authenticated
-      appState.setHasNavigatedToFaceIDPage(true);
-      navigatorKey.currentState?.pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const FaceIdPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-        ),
-      );
-    } else {
-      if (appState.justAuthenticated) {
-        appState.setHasNavigatedToFaceIDPage(false);
-        appState.setJustAuthenticated(false);
-      }
-      if (appState.hasNavigatedToFaceIDPage) {
-      } else {
-      }
-    }
-  }
-  
+            state == AppLifecycleState.inactive ||
+            state == AppLifecycleState.hidden) &&
+            !appState.hasNavigatedToFaceIDPage &&
+            isAuthenticated() &&
+            (appState.initiallyAuthenticated)) { // Check if the user was initially authenticated
+          
+          appState.setHasNavigatedToFaceIDPage(true);
+          navigatorKey.currentState?.pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const FaceIdPage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+            ),
+          );
+        } else {
+          if (appState.hasNavigatedToFaceIDPage) {
+          }
+          if (!isAuthenticated()) {
+          }
+          if (!appState.initiallyAuthenticated) {
+          }
+    
+          if (appState.justAuthenticated) {
+            appState.setHasNavigatedToFaceIDPage(false);
+            appState.setJustAuthenticated(false);
+          }
+          if (appState.hasNavigatedToFaceIDPage) {
+          } else {
+          }
+        }
+      }  
+
 
   bool isAuthenticated() {
     final user = FirebaseAuth.instance.currentUser;

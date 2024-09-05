@@ -510,12 +510,12 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
-      Map<String, dynamic> data = doc.data();
-      data['id'] = doc.id; 
-      return data;
-      }).toList());
-}
+  Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
+    Map<String, dynamic> data = doc.data();
+    data['id'] = doc.id; 
+    return data;
+    }).toList());
+  }
 
 
 

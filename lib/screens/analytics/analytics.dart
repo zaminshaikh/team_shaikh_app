@@ -718,24 +718,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
             DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
           
-            print('Current Date: $now');
-            print('Start of Last Month: $startOfLastMonth');
-            print('End of Last Month: $endOfLastMonth');
           
             // Normalize dateTime to only include the date part
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-            print('Normalized DateTime: $normalizedDateTime');
           
             // Check if normalizedDateTime is within the last month
             if (normalizedDateTime.isAfter(startOfLastMonth.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfLastMonth.add(const Duration(days: 1)))) {
               int totalDays = endOfLastMonth.difference(startOfLastMonth).inDays + 1; // Calculate total days in the last month
               int day = normalizedDateTime.difference(startOfLastMonth).inDays + 1; // Calculate the day of the month
           
-              print('Total Days in Last Month: $totalDays');
-              print('Day of the Month: $day');
           
               xValue = 2 * (day - 1) / (totalDays - 1); // Scale day to the range 0-2
-              print('Calculated xValue: $xValue');
           
               // Use sets to ensure unique values
               Set<DateTime> uniqueDates = lastMonthDates.toSet();
@@ -752,43 +745,33 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               lastMonthDates = uniqueDates.toList();
               lastMonthxValues = uniqueXValues.toList();
           
-              print('Unique Dates: $uniqueDates');
-              print('Unique xValues: $uniqueXValues');
           
               lastMonthDates.sort((a, b) => a.compareTo(b));
               lastMonthxValues.sort((a, b) => a.compareTo(b));
           
-              print('Sorted lastMonthDates: $lastMonthDates');
-              print('Sorted lastMonthxValues: $lastMonthxValues');
           
               if (day == 1) {
                 spotAssignedZero = true;
-                print('Spot assigned to zero');
               }
             } else {
               unfoundLastMonthDates.add(normalizedDateTime);
               unfoundLastMonthPoints.add(point); // Add the point to the list of unfound points
-              print('Added to unfoundLastMonthDates and unfoundLastMonthPoints');
             }
           
             // Sort the dates in order
             unfoundLastMonthDates.sort((a, b) => a.compareTo(b));
-            print('Sorted unfoundLastMonthDates: $unfoundLastMonthDates');
           
             // Print the last date in the list
             if (unfoundLastMonthDates.isNotEmpty) {
               DateTime lastUnfoundDate = unfoundLastMonthDates.last;
-              print('Last unfound date: $lastUnfoundDate');
           
               // Find the corresponding point for the last unfound date
               var lastUnfoundPoint = unfoundLastMonthPoints[unfoundLastMonthDates.indexOf(lastUnfoundDate)];
-              print('Last unfound point: $lastUnfoundPoint');
           
               // Ensure the amount is correctly accessed and parsed
               if (lastUnfoundPoint.containsKey('amount')) {
                 double amount = lastUnfoundPoint['amount'].toDouble();
                 unfoundLastMonthAmount = amount; // Ensure unfoundLastYearAmount is set correctly
-                print('Unfound last month amount: $unfoundLastMonthAmount');
               }
             }
           
@@ -799,19 +782,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               for (int i = 0; i < lastMonthDates.length; i++) {
                 combinedList.add(MapEntry(lastMonthDates[i], lastMonthxValues[i]));
               }
-              print('Combined list before adding startOfLastMonth and today: $combinedList');
           
               // Add startOfLastMonth and today's date if not already present
               if (!combinedList.any((entry) => entry.key == startOfLastMonth)) {
                 combinedList.add(MapEntry(startOfLastMonth, 0));
-                print('Added startOfLastMonth to combined list');
               }
               if (!combinedList.any((entry) => entry.key == endOfLastMonth)) {
                 combinedList.add(MapEntry(endOfLastMonth, 2));
-                print('Added endOfLastMonth to combined list');
               }
           
-              print('Combined list after adding startOfLastMonth and today: $combinedList');
           
               // Sort the combined list by date and then by xValue
               combinedList.sort((a, b) {
@@ -822,21 +801,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   return a.value.compareTo(b.value);
                 }
               });
-              print('Sorted combined list: $combinedList');
           
               // Extract sorted dates and xValues back into their respective lists
               lastMonthDates = combinedList.map((entry) => entry.key).toList();
               lastMonthxValues = combinedList.map((entry) => entry.value).toList();
           
-              print('Extracted lastMonthDates: $lastMonthDates');
-              print('Extracted lastMonthxValues: $lastMonthxValues');
           
               // Print the index values of lastMonthDates and lastMonthxValues
               for (int i = 0; i < lastMonthDates.length; i++) {
-                print('Index $i: Date ${lastMonthDates[i]}, xValue ${lastMonthxValues[i]}');
               }
             } else {
-              print('Mismatch in lengths of lastMonthDates and lastMonthxValues');
             }
           }
 
@@ -1917,14 +1891,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             
             Padding(
-              padding: const EdgeInsets.only(left: 15.0),
+              padding: const EdgeInsets.only(left: 10.0, right: 30.0),
               child: Row(
                 children: [
                   Container(
                     width: 40,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: AppColors.defaultBlue500,
+                      color: AppColors.defaultBlue300,
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
@@ -1936,6 +1910,38 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      CustomAlertDialog.showAlertDialog(
+                        context, 
+                        'Important Note',
+                        icon: Icon(
+                          Icons.warning_rounded,
+                          color: AppColors.defaultYellow400,
+                          size: 25,
+                        ),
+                        '\nWe are still in the development stage, '
+                        'so the graph does not currently reflect your entire historical values. ' 
+                        'It only shows your current balance.\n\n'
+
+                        'The points on the graph represent the balance of your assets in the selected time frame. '
+                        'There will always be markers at both the beginning and the end of the graph, indicating the asset balance at those specific points in time. '
+                        ''
+                        ,
+
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/warning.svg',
+                          color: AppColors.defaultYellow400,
+                          height: 25,
+                        ),
+                      ],
                     ),
                   ),
                 ],
