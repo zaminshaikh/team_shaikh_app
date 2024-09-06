@@ -176,29 +176,25 @@ class _ProfilePageState extends State<ProfilePage> {
     );  
     
     void signUserOut(BuildContext context) async {
-    ('profile.dart: Signing out...');
-    await FirebaseAuth.instance.signOut();
-    assert(FirebaseAuth.instance.currentUser == null);
+      log('profile.dart: Signing out...');
 
+      // Navigate to the login page first
+      await Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) =>
+              const OnboardingPage(),
+          transitionDuration: Duration.zero,
+        ),
+        (route) => false, // Remove all previous routes
+      );
 
-    
+      // After navigating, sign the user out
+      await FirebaseAuth.instance.signOut();
 
-    // Async gap mounted widget check
-    if (!mounted){
-      log('profile.dart: No longer mounted!');
-      return;
+      log('profile.dart: User signed out successfully.');
     }
-
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
-    );  }
-  
+    
   
   DateTime? dob;
   String? userDob;
