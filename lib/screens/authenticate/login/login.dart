@@ -5,9 +5,10 @@ import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
@@ -65,7 +66,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
 
     // Sign user in method
-    Future<bool> signUserIn(context) async {
+    Future<bool> signUserIn(BuildContext context) async {
       log('login.dart: Attempting to sign user in...'); // Debugging output
       try {
         log('login.dart: Calling FirebaseAuth to sign in with email and password...'); // Debugging output
@@ -75,6 +76,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         );
         log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
         log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
+
+        // Set initiallyAuthenticated to true
+        Provider.of<AppState>(context, listen: false).setInitiallyAuthenticated(true);
+    
         return true;
       } on FirebaseAuthException catch (e) {
         log('login.dart: Caught FirebaseAuthException: $e'); // Debugging output
@@ -94,9 +99,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         log('login.dart: An unexpected error occurred: $e'); // Debugging output for any other exceptions
         return false;
       }
-    }
+    }  
 
-  
+
   Future<void> _authenticate(BuildContext context) async {
     bool authenticated = false;
     
@@ -363,7 +368,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                 ],
           ),
           // Spacing
-          const SizedBox(height: 40.0),
+          const SizedBox(height: 20.0),
           
           // Login Button
           GestureDetector(
@@ -457,51 +462,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                   ),
                 ],
               ),
-            ),
-          ),
-
-          const SizedBox(height: 30.0),
-          
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-                _authenticate(context);
-              } else {
-                CustomAlertDialog.showAlertDialog(
-                  context,
-                  'Face ID Not Available',
-                  'Please enter your email and password. It seems this may be your first time signing in, and Face ID requires an initial login with your credentials.'
-                );
-              }
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: null,
-                  child: Row(
-                    children: [
-                      const Text(
-                        'Login with Face ID',
-                        style: TextStyle(
-                          fontSize: 18, 
-                          fontWeight: FontWeight.bold, 
-                          color: Colors.blue, 
-                          fontFamily: 'Titillium Web'
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      SvgPicture.asset(
-                        'assets/icons/face_id.svg',
-                        color: Colors.blue, 
-                        height: 30,
-                        width: 30,
-                      )
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
 

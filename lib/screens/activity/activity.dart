@@ -27,7 +27,7 @@ class _ActivityPageState extends State<ActivityPage> {
   List<Map<String, dynamic>> activities = [];
   String _sorting = 'new-to-old';
   // ignore: prefer_final_fields
-  List<String> _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+  List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
   // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1', 'AGQ'];
 
@@ -280,9 +280,8 @@ class _ActivityPageState extends State<ActivityPage> {
   dynamic _getActivityType(Map<String, dynamic> activity) {
     switch (activity['type']) {
       case 'income':
-        if (activity['fund'] == 'AGQ') {
-          return 'Profit';
-        }
+        return 'Profit';
+      case 'profit':
         return 'Profit';
       case 'deposit':
         return 'Deposit';
@@ -333,7 +332,7 @@ class _ActivityPageState extends State<ActivityPage> {
         element['time'].toDate().isAfter(selectedDates.end));
 
     if (_typeFilter.isEmpty) {
-      _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+      _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
     }
 
     if (_fundsFilter.isEmpty) {
@@ -345,7 +344,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   List<String> getSelectedFilters() {
     // Ensure default filters are not considered as "selected" filters
-    List<String> defaultTypeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+    List<String> defaultTypeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
     List<String> defaultFundsFilter = ['AK1', 'AGQ'];
 
     List<String> selectedFilters = [];
@@ -648,16 +647,8 @@ class _ActivityPageState extends State<ActivityPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: const Offset(0.0, 0.0),
-                        ).animate(animation),
-                        child: child,
-                      ),
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPage(),
                   ),
                 );
               },
@@ -814,6 +805,8 @@ class _ActivityPageState extends State<ActivityPage> {
             return AppColors.defaultYellow400;
           case 'income':
             return AppColors.defaultBlue300;
+          case 'profit':
+            return AppColors.defaultBlue300;
           default:
             return AppColors.defaultWhite;
         }
@@ -829,6 +822,8 @@ class _ActivityPageState extends State<ActivityPage> {
             return const Color.fromARGB(255, 24, 46, 68);
           case 'income':
             return const Color.fromARGB(255, 24, 46, 68);
+          case 'profit':
+            return const Color.fromARGB(255, 24, 46, 68);
           default:
             return AppColors.defaultWhite;
         }
@@ -843,6 +838,8 @@ class _ActivityPageState extends State<ActivityPage> {
           case 'pending':
             return const Color.fromARGB(255, 32, 58, 83);
           case 'income':
+            return const Color.fromARGB(255, 32, 58, 83);
+          case 'profit':
             return const Color.fromARGB(255, 32, 58, 83);
           default:
             return AppColors.defaultWhite;
@@ -879,6 +876,13 @@ class _ActivityPageState extends State<ActivityPage> {
                   height: size,
                   width: size,
                 );
+              case 'profit':
+                return SvgPicture.asset(
+                  'assets/icons/variable_income.svg',
+                  color: getColorBasedOnActivityType(activityType),
+                  height: size,
+                  width: size,
+                );
               default:
                 return Icon(
                   Icons.circle,
@@ -892,20 +896,20 @@ class _ActivityPageState extends State<ActivityPage> {
           children: [
               GestureDetector(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10.0, 5.0, 15.0, 5.0),
+                  padding: const EdgeInsets.fromLTRB(30.0, 5.0, 15.0, 5.0),
                   child: Container(
                     color: const Color.fromRGBO(1,1,1,0),
                     child: Row(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(right: 5),
+                          padding: const EdgeInsets.only(right: 20),
                           child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
                                 Icon(
                                   Icons.circle,
                                   color: getUnderlayColorBasedOnActivityType(activity['type']),
-                                  size: 70,
+                                  size: 50,
                                 ),
                                 getIconBasedOnActivityType(activity['type']),
                               ]
@@ -1054,6 +1058,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                               return 'Pending withdrawal from your investment at';
                                             case 'income':
                                               return 'Profit to your investment at';
+                                            case 'profit':
+                                              return 'Profit to your investment at';
                                             default:
                                               return '';
                                           }
@@ -1139,6 +1145,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                                           case 'pending':
                                                             return 'Pending withdrawal from your investment at';
                                                           case 'income':
+                                                            return 'Profit to your investment at';
+                                                          case 'profit':
                                                             return 'Profit to your investment at';
                                                           default:
                                                             return '';
@@ -1305,10 +1313,12 @@ class _ActivityPageState extends State<ActivityPage> {
           ],
         );
     } else {
-      }
-
+    
+    }
     return Container();  
 }
+
+
 
   void updateUserCheckStatus(String userName, bool isChecked) {
       setState(() {
@@ -1417,16 +1427,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const ActivityPage(),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) =>
-                        child,
-              ),
-            );
           },
           child: Container(
             color: const Color.fromRGBO(239, 232, 232, 0),
@@ -1616,6 +1616,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   value: isIncomeChecked,
                                                   onChanged: (bool? value) {
                                                     editFilter(2, value!, 'income');
+                                                    editFilter(2, value, 'profit');
                                                     setState(() {
                                                       isIncomeChecked = value;
                                                     });
@@ -1710,7 +1711,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             ),
                             onTap: () {
                               setState(() {
-                                _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+                                _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
       
                                 _fundsFilter = ['AK1', 'AGQ'];
       
@@ -1907,6 +1908,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                       );
                                                     } else {
                                                       editFilter(2, value!, 'income');
+                                                      editFilter(2, value, 'profit');
                                                       setState(() {
                                                         isIncomeChecked = value;
                                                       });
@@ -2073,7 +2075,7 @@ class _ActivityPageState extends State<ActivityPage> {
                             ),
                             onTap: () {
                               setState(() {
-                                _typeFilter = ['income', 'deposit', 'withdrawal', 'pending'];
+                                _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
       
                                 _fundsFilter = ['AK1', 'AGQ'];
       
@@ -2110,7 +2112,6 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
       ),
   );
-
 }
 
   void _buildSortOptions(BuildContext context) {
@@ -2220,7 +2221,7 @@ class _ActivityPageState extends State<ActivityPage> {
             activityType, // Button text
             style: const TextStyle(
               color: AppColors.defaultBlueGray100,
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
               fontFamily: 'Titillium Web',
             ),
@@ -2283,7 +2284,7 @@ class _ActivityPageState extends State<ActivityPage> {
       
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.only(right: 25, left: 25, top: 10, bottom: 10),
           decoration: const BoxDecoration(
             color: Colors.transparent,
           ),
@@ -2308,7 +2309,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 'Sort: ',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   fontFamily: 'Titillium Web',
                                 ),
@@ -2335,7 +2336,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                       : 'Amount: High to Low',
                                           style: const TextStyle(
                                             color: AppColors.defaultBlue300,
-                                            fontSize: 18,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'Titillium Web',
                                           ),
@@ -2344,8 +2345,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                         SvgPicture.asset(
                                           'assets/icons/sort.svg',
                                           colorFilter: const ColorFilter.mode(AppColors.defaultBlue300, BlendMode.srcIn),
-                                          height: 20,
-                                          width: 20,
+                                          height: 18,
+                                          width: 18,
                                         ),
                                       ],
                                     ),
@@ -2371,7 +2372,7 @@ class _ActivityPageState extends State<ActivityPage> {
                     'Filters: ',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Titillium Web',
                     ),
@@ -2411,7 +2412,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                       buttonText,
                                       style: const TextStyle(
                                         color: AppColors.defaultBlueGray100,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                         fontFamily: 'Titillium Web',
                                       ),
@@ -2431,7 +2432,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                         'All Recipients',
                                         style: TextStyle(
                                           color: AppColors.defaultBlueGray100,
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w700,
                                           fontFamily: 'Titillium Web',
                                         ),
@@ -2454,7 +2455,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                           userName,
                                           style: const TextStyle(
                                             color: AppColors.defaultBlueGray100,
-                                            fontSize: 16,
+                                          fontSize: 14,
                                             fontWeight: FontWeight.w700,
                                             fontFamily: 'Titillium Web',
                                           ),
@@ -2463,7 +2464,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                     ),
                                   ),
                                 // Repeat the same pattern for Type of Activity Button(s)
-                                if (_typeFilter.contains('income') && _typeFilter.contains('deposit') && _typeFilter.contains('withdrawal'))
+                                if (_typeFilter.contains('income') &&_typeFilter.contains('profit') && _typeFilter.contains('deposit') && _typeFilter.contains('withdrawal'))
                                   Padding(
                                     padding: const EdgeInsets.all(4.0),
                                     child: _buildActivityTypeButton('All Activity Types'),

@@ -596,6 +596,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             DateTime startOfLastYear = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
             DateTime endOfLastWeek = DateTime(now.year, now.month, now.day);
           
+          
             // Normalize dateTime to only include the date part
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
           
@@ -604,6 +605,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               found = true;
               int dayDifference = normalizedDateTime.difference(startOfLastYear).inDays;
               xValue = (dayDifference / 365) * 12; // Scale day to the range 0-12
+          
               if (!lastYearxValues.contains(0)) {
                 lastYearxValues.add(0);
               }
@@ -612,6 +614,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               }
               if (!lastYearDates.contains(startOfLastYear)) {
                 lastYearDates.add(startOfLastYear);
+                lastYearxValues.add(0); // Add corresponding xValue for startOfLastYear
               }
           
               // Add xValue and date to the lists if the date is not already present
@@ -633,39 +636,56 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (!found) {
               unfoundLastYearDates.add(normalizedDateTime);
               unfoundLastYearPoints.add(point); // Add the point to the list of unfound points
-              // return null; // Return null if the point is not from the last year
             }
           
-            if (pointAssignedLastCase) { // Step 3: Print the message
+            if (pointAssignedLastCase) {
             } else {
             }
           
             // Sort the dates in order
             unfoundLastYearDates.sort((a, b) => a.compareTo(b));
           
-            // Print the list of dates
-          
             // Print the last date in the list
             if (unfoundLastYearDates.isNotEmpty) {
               DateTime lastUnfoundDate = unfoundLastYearDates.last;
           
               // Find the corresponding point for the last unfound date
-              var lastUnfoundPoint = unfoundLastYearPoints[unfoundLastYearDates.indexOf(lastUnfoundDate)];
+              int lastIndex = unfoundLastYearDates.indexOf(lastUnfoundDate);
+              if (lastIndex >= 0 && lastIndex < unfoundLastYearPoints.length) {
+                var lastUnfoundPoint = unfoundLastYearPoints[lastIndex];
           
-              // Debugging: Check the structure of the point
-          
-              // Ensure the amount is correctly accessed and parsed
-              if (lastUnfoundPoint.containsKey('amount')) {
-                double amount = lastUnfoundPoint['amount'].toDouble();
-                unfoundLastYearAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+                // Ensure the amount is correctly accessed and parsed
+                if (lastUnfoundPoint.containsKey('amount')) {
+                  double amount = lastUnfoundPoint['amount'].toDouble();
+                  unfoundLastYearAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+                } else {
+                }
               } else {
               }
+            } else {
             }
           
             // Add today's date at the end of lastYearDates if not already present
             DateTime today = DateTime(now.year, now.month, now.day);
             if (!lastYearDates.contains(today)) {
               lastYearDates.add(today);
+              lastYearxValues.add(0); // Add corresponding xValue for today
+            }
+
+            if (!lastYearDates.contains(startOfLastYear)) {
+              lastYearDates.add(startOfLastYear);
+              lastYearxValues.add(12); // Add corresponding xValue for today
+            }
+
+            // Ensure lastYearDates and lastYearxValues have the same length
+            if (lastYearDates.length != lastYearxValues.length) {
+              // Handle the discrepancy, e.g., by adding default values or skipping the combination
+              while (lastYearDates.length > lastYearxValues.length) {
+                lastYearxValues.add(0); // Add default xValue
+              }
+              while (lastYearxValues.length > lastYearDates.length) {
+                lastYearDates.add(today); // Add default date
+              }
             }
           
             // Combine dates and xValues into a list of tuples
@@ -736,8 +756,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             } else {
               unfoundLastMonthDates.add(normalizedDateTime);
               unfoundLastMonthPoints.add(point); // Add the point to the list of unfound points
-          
-          
             }
           
             // Sort the dates in order
@@ -764,6 +782,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               for (int i = 0; i < lastMonthDates.length; i++) {
                 combinedList.add(MapEntry(lastMonthDates[i], lastMonthxValues[i]));
               }
+          
+              // Add startOfLastMonth and today's date if not already present
+              if (!combinedList.any((entry) => entry.key == startOfLastMonth)) {
+                combinedList.add(MapEntry(startOfLastMonth, 0));
+              }
+              if (!combinedList.any((entry) => entry.key == endOfLastMonth)) {
+                combinedList.add(MapEntry(endOfLastMonth, 2));
+              }
+          
           
               // Sort the combined list by date and then by xValue
               combinedList.sort((a, b) {
@@ -920,7 +947,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             // Extract filtered dates and xValues back into their respective lists
             lastWeekDates = filteredList.map((entry) => entry.key).toList();
             lastWeekxValues = filteredList.map((entry) => entry.value).toList();
-          
           }
           
           return FlSpot(xValue, point['amount'].toDouble());
@@ -1083,16 +1109,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: const Offset(0.0, 0.0),
-                        ).animate(animation),
-                        child: child,
-                      ),
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPage(),
                   ),
                 );
               },
@@ -1873,14 +1891,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             
             Padding(
-              padding: const EdgeInsets.only(left: 15.0),
+              padding: const EdgeInsets.only(left: 10.0, right: 30.0),
               child: Row(
                 children: [
                   Container(
                     width: 40,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: AppColors.defaultBlue500,
+                      color: AppColors.defaultBlue300,
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
@@ -1892,6 +1910,38 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      CustomAlertDialog.showAlertDialog(
+                        context, 
+                        'Important Note',
+                        icon: Icon(
+                          Icons.warning_rounded,
+                          color: AppColors.defaultYellow400,
+                          size: 25,
+                        ),
+                        '\nWe are still in the development stage, '
+                        'so the graph does not currently reflect your entire historical values. ' 
+                        'It only shows your current balance.\n\n'
+
+                        'The points on the graph represent the balance of your assets in the selected time frame. '
+                        'There will always be markers at both the beginning and the end of the graph, indicating the asset balance at those specific points in time. '
+                        ''
+                        ,
+
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/warning.svg',
+                          color: AppColors.defaultYellow400,
+                          height: 25,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -2277,16 +2327,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const AnalyticsPage(),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) =>
-                        child,
-              ),
-            );
           },
           child: Container(
             color: const Color.fromRGBO(239, 232, 232, 0),

@@ -51,9 +51,6 @@ app.*.map.json
 /android/app/release
 chat_prompts.txt
 android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
-pubspec.lock
-pubspec.lock
->>>>>>> 2df21ad (Edited wrapper.dart to properly merge and added a file to the gitignore file)
 android/.gradle/7.5/fileHashes/fileHashes.lock
 android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
 android/.gradle/7.5/fileHashes/fileHashes.lock

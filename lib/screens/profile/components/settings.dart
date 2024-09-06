@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
+import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
@@ -868,17 +868,29 @@ List<String> assetsFormatted = [];
                           height: 45,
                           decoration: BoxDecoration(
                             color: const Color.fromARGB(255, 149, 28, 28),
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Center(
-                            child: Text(
-                              'Logout',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                              ),
+                          child: Center(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/icons/logout.svg',
+                                  color: Colors.white,
+                                  height: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Logout',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Titillium Web',
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -886,8 +898,6 @@ List<String> assetsFormatted = [];
                     ],
                   ),
                   const SizedBox(height: 50),
-
-
         ],
               
       ),

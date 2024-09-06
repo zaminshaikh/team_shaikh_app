@@ -10,7 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/welcome.dart';
+import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -496,7 +496,8 @@ List<String> assetsFormatted = [];
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
                         _buildLogoutButton(),
-                        // _buildDisclaimer(),
+                        _buildDisclaimer(),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),
@@ -534,7 +535,8 @@ List<String> assetsFormatted = [];
                         _buildClientNameAndID('$firstName $lastName', cid ?? ''),
                         _buildSampleCupertinoListSection(),
                         _buildLogoutButton(),
-                        // _buildDisclaimer(),
+                        _buildDisclaimer(),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),
@@ -556,7 +558,7 @@ List<String> assetsFormatted = [];
 // This is the list of vertical buttons
 Widget _buildSampleCupertinoListSection() {
   return Padding(
-    padding: const EdgeInsets.all(20.0),
+    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
     child: Container(
       decoration: BoxDecoration(
         color: AppColors.defaultBlueGray800, // Gray background
@@ -584,32 +586,6 @@ Widget _buildSampleCupertinoListSection() {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const HelpPage()),
-              );
-            },
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.0),
-            child: Divider(color: CupertinoColors.separator, thickness: 1.5),
-          ),
-          CupertinoListTile(
-            leading: SvgPicture.asset(
-              'assets/icons/info.svg',
-              color: Colors.white,
-              height: 20,
-            ),
-            title: const Text(
-              'Disclaimer',
-              style: TextStyle(
-                fontFamily: 'Titillium Web',
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            trailing: const CupertinoListTileChevron(),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DisclaimerPage()),
               );
             },
           ),
@@ -691,12 +667,102 @@ Widget _buildSampleCupertinoListSection() {
               );
             },
           ),
+          // const Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: 24.0),
+          //   child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
+          // ),
+          // CupertinoListTile(
+          //   leading: SvgPicture.asset(
+          //     'assets/icons/face_id.svg',
+          //     color: Colors.white,
+          //     height: 40,
+          //   ),
+          //   title: const Text(
+          //     'Authentication',
+          //     style: TextStyle(
+          //       fontFamily: 'Titillium Web',
+          //       color: Colors.white,
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          //   trailing: const CupertinoListTileChevron(),
+          //   onTap: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => const ProfilesPage()),
+          //     );
+          //   },
+          // ),
           const SizedBox(height: 10),
         ],
       ),
     ),
   );
 }
+
+  Widget _buildDisclaimer() {
+    return  Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Divider(color: Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
+          const SizedBox(height: 15),
+          const Text(
+            'DISCLAIMER',
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          const SizedBox(height: 15),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DisclaimerPage()),
+              );
+            },
+            child: const Center(
+              child: Row(
+                children: [
+                  Text(
+                    'Read Full Disclaimer',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  SizedBox(width: 5),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.blue,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            'Investment products and services are offered through AGQ Consulting LLC, a Florida limited liability company.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          )
+        ],
+        
+      )
+    );
+  }
+
 
   Widget _buildLogoutButton() => 
     Padding(
@@ -719,15 +785,27 @@ Widget _buildSampleCupertinoListSection() {
                 color: const Color.fromARGB(255, 149, 28, 28),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
+              child:  Center(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/icons/logout.svg',
+                      color: Colors.white,
+                      height: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -736,28 +814,7 @@ Widget _buildSampleCupertinoListSection() {
       ),
     );
 
-  Widget _buildDisclaimer() {
-    return const Padding(
-      padding: EdgeInsets.all(20.0),
-      child: Text(
-        'AGQ Consulting LLC is a Florida limited liability company exempt from the registration '
-        'requirements of the Investment Company Act of 1940 pursuant to Section 3(c)(1) thereof. '
-        'Our private offerings are available for up to one hundred (100) accredited investors of '
-        'which no more than thirty-five (35) may be non-accredited investors and rely on the '
-        'registration exemption under Rule 506 of Regulation D under the Securities Act of 1933. '
-        'A Form D claiming such exemption as a safe harbor is on file with the SEC and applicable '
-        'states. AGQ is domiciled at 195 International Parkway, Suite 103, Lake Mary, Florida 32746 '
-        'and is under the purview of the State of Florida and United States laws. '
-        'Please contact AGQ at management@agqconsulting.com. Thank you.',
-        style: TextStyle(
-                fontSize: 10,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-        textAlign: TextAlign.center, // Justify the text for better readability
-      ),
-    );
-  }
+
 
   // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
@@ -800,16 +857,8 @@ Widget _buildSampleCupertinoListSection() {
               onTap: () {
                 Navigator.push(
                   context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 450),
-                    pageBuilder: (_, __, ___) => const NotificationPage(),
-                    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: const Offset(0.0, 0.0),
-                        ).animate(animation),
-                        child: child,
-                      ),
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPage(),
                   ),
                 );
               },
@@ -963,16 +1012,6 @@ Widget _buildSampleCupertinoListSection() {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const ProfilePage(),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) =>
-                        child,
-              ),
-            );
           },
           child: Container(
             color: const Color.fromRGBO(239, 232, 232, 0),
@@ -994,31 +1033,34 @@ Widget _buildClientNameAndID(String name, String clientId) {
   String? cid = _databaseService?.cid;
 
   return Padding(
-    padding: const EdgeInsets.fromLTRB(20, 30, 0, 20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+    child: Row(
       children: [
-        // Row containing Client ID and Name
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 22,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              'Client ID: $cid',
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Client ID: $cid',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+              ],
             ),
           ],
         ),

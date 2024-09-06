@@ -44,9 +44,9 @@ class DatabaseService {
     // Access Firestore and get the document
     QuerySnapshot querySnapshot = await usersCollection.where('uid', isEqualTo: uid).get();
 
-    log('database.dart: UID $uid found in Firestore.');
 
     if (querySnapshot.size > 0) {
+    log('database.dart: UID $uid found in Firestore.');
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
       switch (code) {
@@ -231,7 +231,6 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
             message: 'User already exists for cid: $cid'
           );
         }
-        
         // Update new fields and keep old ones from snapshot
         Map<String, dynamic> updatedData = {
           ...existingData,
@@ -375,7 +374,6 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
           'graphPoints': await getGraphPoints,
         };
       }
-      // Log the asset after updating
     }
 
     return UserWithAssets(info, assets);
@@ -512,12 +510,12 @@ Future<void> markAsRead(BuildContext context, String uid, String notificationId)
     return allActivities.expand((x) => x).toList();
   });
   
-    Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
-      Map<String, dynamic> data = doc.data();
-      data['id'] = doc.id; 
-      return data;
-      }).toList());
-}
+  Stream<List<Map<String, dynamic>>> get getNotifications => usersCollection.doc(cid).collection(Config.get('NOTIFICATIONS_SUBCOLLECTION')).orderBy('time', descending: true).snapshots().asyncMap((snapshot) async => snapshot.docs.map((doc) {
+    Map<String, dynamic> data = doc.data();
+    data['id'] = doc.id; 
+    return data;
+    }).toList());
+  }
 
 
 
