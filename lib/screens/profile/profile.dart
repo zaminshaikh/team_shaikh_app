@@ -16,6 +16,7 @@ import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
+// import 'package:team_shaikh_app/screens/profile/components/authentication.dart';
 import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/components/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/help.dart';
@@ -667,32 +668,32 @@ Widget _buildSampleCupertinoListSection() {
               );
             },
           ),
-          // const Padding(
-          //   padding: EdgeInsets.symmetric(horizontal: 24.0),
-          //   child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
-          // ),
-          // CupertinoListTile(
-          //   leading: SvgPicture.asset(
-          //     'assets/icons/face_id.svg',
-          //     color: Colors.white,
-          //     height: 40,
-          //   ),
-          //   title: const Text(
-          //     'Authentication',
-          //     style: TextStyle(
-          //       fontFamily: 'Titillium Web',
-          //       color: Colors.white,
-          //       fontWeight: FontWeight.w600,
-          //     ),
-          //   ),
-          //   trailing: const CupertinoListTileChevron(),
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(builder: (context) => const ProfilesPage()),
-          //     );
-          //   },
-          // ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
+          ),
+          CupertinoListTile(
+            leading: SvgPicture.asset(
+              'assets/icons/face_id.svg',
+              color: Colors.white,
+              height: 40,
+            ),
+            title: const Text(
+              'Authentication',
+              style: TextStyle(
+                fontFamily: 'Titillium Web',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const CupertinoListTileChevron(),
+            // onTap: () {
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => AuthenticationPage()),
+            //   );
+            // },
+          ),
           const SizedBox(height: 10),
         ],
       ),
