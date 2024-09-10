@@ -1916,22 +1916,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   GestureDetector(
                     onTap: () {
                       CustomAlertDialog.showAlertDialog(
-                        context, 
+                        context,
                         'Important Note',
-                        icon: Icon(
-                          Icons.warning_rounded,
-                          color: AppColors.defaultYellow400,
-                          size: 25,
-                        ),
-                        '\nWe are still in the development stage, '
-                        'so the graph does not currently reflect your entire historical values. ' 
-                        'It only shows your current balance.\n\n'
-
-                        'The points on the graph represent the balance of your assets in the selected time frame. '
-                        'There will always be markers at both the beginning and the end of the graph, indicating the asset balance at those specific points in time. '
-                        ''
-                        ,
-
+                        '\nThe graph is still being developed and currently only shows your current balance. '
+                        'It displays the asset balance for the selected time frame with markers indicating the balance at the start and end of the period.',
+                        svgIconPath: 'assets/icons/warning.svg', // Use this for SVG icon
+                        svgIconColor: Colors.yellow, // Specify the color of the SVG icon
                       );
                     },
                     child: Row(
