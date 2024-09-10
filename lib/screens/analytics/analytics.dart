@@ -117,10 +117,10 @@ class Timeline {
 
   String _calculateLastYearRange() {
     DateTime now = DateTime.now();
-    DateTime startOfLastYear = DateTime(now.year - 1, now.month, now.day);
-    DateTime endOfLastYear = now;
-    String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfLastYear);
-    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastYear);
+    DateTime startOfCurrentYear = DateTime(now.year, 1, 1);
+    DateTime endOfCurrentYear = now;
+    String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfCurrentYear);
+    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfCurrentYear);
     return '$formattedStart - $formattedEnd';
   }
 
@@ -164,8 +164,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
   
   /// Formats the given amount as a currency string.
-
   String dropdownValue = 'last-year';
+@override
+  void setState(VoidCallback fn) {
+    dropdownValue = 'last-year';
+    super.setState(fn);
+  }
 
   double maxAmount = 0.0;
   
@@ -591,63 +595,82 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           else if (dropdownValue == 'last-year') {
             bool found = false;
             DateTime now = DateTime.now();
-            bool isLeapYear = (now.year % 4 == 0 && now.year % 100 != 0) || (now.year % 400 == 0);
-            int daysToSubtract = isLeapYear ? 366 : 365;
-            DateTime startOfLastYear = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
-            DateTime endOfLastWeek = DateTime(now.year, now.month, now.day);
+            DateTime startOfCurrentYear = DateTime(now.year, 1, 1);
+            DateTime today = DateTime(now.year, now.month, now.day);
           
+            print('Current date: $now');
+            print('Start of current year: $startOfCurrentYear');
+            print('Today\'s date: $today');
           
             // Normalize dateTime to only include the date part
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
+            print('Normalized dateTime: $normalizedDateTime');
           
-            // Check if normalizedDateTime is within the last year
-            if (normalizedDateTime.isAfter(startOfLastYear.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(endOfLastWeek.add(const Duration(days: 1)))) {
+            // Check if normalizedDateTime is within the current year
+            if (normalizedDateTime.isAfter(startOfCurrentYear.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(today.add(const Duration(days: 1)))) {
               found = true;
-              int dayDifference = normalizedDateTime.difference(startOfLastYear).inDays;
+              int dayDifference = normalizedDateTime.difference(startOfCurrentYear).inDays;
               xValue = (dayDifference / 365) * 12; // Scale day to the range 0-12
+          
+              print('Day difference: $dayDifference');
+              print('Calculated xValue: $xValue');
           
               if (!lastYearxValues.contains(0)) {
                 lastYearxValues.add(0);
+                print('Added 0 to lastYearxValues');
               }
               if (!lastYearxValues.contains(maxX(dropdownValue))) {
                 lastYearxValues.add(maxX(dropdownValue));
+                print('Added maxX to lastYearxValues');
               }
-              if (!lastYearDates.contains(startOfLastYear)) {
-                lastYearDates.add(startOfLastYear);
-                lastYearxValues.add(0); // Add corresponding xValue for startOfLastYear
+              if (!lastYearDates.contains(startOfCurrentYear)) {
+                lastYearDates.add(startOfCurrentYear);
+                lastYearxValues.add(0); // Add corresponding xValue for startOfCurrentYear
+                print('Added startOfCurrentYear to lastYearDates and 0 to lastYearxValues');
               }
           
               // Add xValue and date to the lists if the date is not already present
               if (!lastYearDates.contains(normalizedDateTime)) {
                 lastYearxValues.add(xValue);
                 lastYearDates.add(normalizedDateTime);
+                print('Added normalizedDateTime to lastYearDates and xValue to lastYearxValues');
               }
               lastYearxValues.sort((a, b) => a.compareTo(b));
               lastYearDates.sort((a, b) => a.compareTo(b));
           
+              print('Sorted lastYearxValues: $lastYearxValues');
+              print('Sorted lastYearDates: $lastYearDates');
+          
               if (dayDifference == 0) {
                 spotAssignedZero = true;
+                print('Spot assigned zero');
               }
               if (dayDifference == 365) {
                 pointAssignedLastCase = true;
+                print('Point assigned last case');
               }
             }
           
             if (!found) {
               unfoundLastYearDates.add(normalizedDateTime);
               unfoundLastYearPoints.add(point); // Add the point to the list of unfound points
+              print('Added to unfoundLastYearDates and unfoundLastYearPoints');
             }
           
             if (pointAssignedLastCase) {
+              print('Point assigned last case is true');
             } else {
+              print('Point assigned last case is false');
             }
           
             // Sort the dates in order
             unfoundLastYearDates.sort((a, b) => a.compareTo(b));
+            print('Sorted unfoundLastYearDates: $unfoundLastYearDates');
           
             // Print the last date in the list
             if (unfoundLastYearDates.isNotEmpty) {
               DateTime lastUnfoundDate = unfoundLastYearDates.last;
+              print('Last unfound date: $lastUnfoundDate');
           
               // Find the corresponding point for the last unfound date
               int lastIndex = unfoundLastYearDates.indexOf(lastUnfoundDate);
@@ -657,34 +680,35 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 // Ensure the amount is correctly accessed and parsed
                 if (lastUnfoundPoint.containsKey('amount')) {
                   double amount = lastUnfoundPoint['amount'].toDouble();
-                  unfoundLastYearAmount = amount; // Ensure unfoundLastYearAmount is set correctly
+                  unfoundLastYearAmount = amount; // Ensure unfoundCurrentYearAmount is set correctly
+                  print('Last unfound point amount: $amount');
                 } else {
+                  print('Last unfound point does not contain amount');
                 }
               } else {
+                print('Last index out of bounds');
               }
             } else {
+              print('No unfound last year dates');
             }
           
             // Add today's date at the end of lastYearDates if not already present
-            DateTime today = DateTime(now.year, now.month, now.day);
             if (!lastYearDates.contains(today)) {
               lastYearDates.add(today);
-              lastYearxValues.add(0); // Add corresponding xValue for today
+              lastYearxValues.add(2); // Add corresponding xValue for today
+              print('Added today to lastYearDates and 12 to lastYearxValues');
             }
-
-            if (!lastYearDates.contains(startOfLastYear)) {
-              lastYearDates.add(startOfLastYear);
-              lastYearxValues.add(12); // Add corresponding xValue for today
-            }
-
+          
             // Ensure lastYearDates and lastYearxValues have the same length
             if (lastYearDates.length != lastYearxValues.length) {
               // Handle the discrepancy, e.g., by adding default values or skipping the combination
               while (lastYearDates.length > lastYearxValues.length) {
                 lastYearxValues.add(0); // Add default xValue
+                print('Added default xValue to lastYearxValues');
               }
               while (lastYearxValues.length > lastYearDates.length) {
                 lastYearDates.add(today); // Add default date
+                print('Added default date to lastYearDates');
               }
             }
           
@@ -704,14 +728,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               }
             });
           
+            print('Combined list: $combinedList');
+          
             // Extract sorted dates and xValues back into their respective lists
             lastYearDates = combinedList.map((entry) => entry.key).toList();
             lastYearxValues = combinedList.map((entry) => entry.value).toList();
           
+            print('Final sorted lastYearDates: $lastYearDates');
+            print('Final sorted lastYearxValues: $lastYearxValues');
+          
             // Print the index values of lastYearDates and lastYearxValues
             for (int i = 0; i < lastYearDates.length; i++) {
+              print('Index $i: Date ${lastYearDates[i]}, xValue ${lastYearxValues[i]}');
             }
           }
+
 
           else if (dropdownValue == 'last-month') {
             DateTime now = DateTime.now();
@@ -1287,8 +1318,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   
     if (dropdownValue == 'custom-time-period') {
       final int numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 1;
-                final DateTime firstDate = lastCustomRange.start;
-
+      final DateTime firstDate = lastCustomRange.start;
+    
       if (numberOfDays == 0) {
         text = DateFormat('MMM dd yy').format(firstDate); // Format the first date
       } else if (numberOfDays <= 12) {
@@ -1309,26 +1340,24 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         final DateTime firstDate = lastCustomRange.start;
         final DateTime middleDate = lastCustomRange.start.add(Duration(days: numberOfDays ~/ 2));
         final DateTime lastDate = lastCustomRange.end;
-  
-        
-          switch (value.toInt()) {
-            case 0:
-              text = DateFormat('MMM dd, yy').format(firstDate); // Format the first date
-              break;
-            case 1:
-              text = DateFormat('MMM dd').format(middleDate); // Format the middle date
-              break;
-            case 2:
-              text = DateFormat('MMM dd, yy').format(lastDate); // Format the last date
-              break;
-            default:
-              text = '';
-          }
-        
-            }
-    } else {
     
-    switch (value.toInt()) {
+        switch (value.toInt()) {
+          case 0:
+            text = DateFormat('MMM dd, yy').format(firstDate); // Format the first date
+            break;
+          case 1:
+            text = DateFormat('MMM dd').format(middleDate); // Format the middle date
+            break;
+          case 2:
+            text = DateFormat('MMM dd, yy').format(lastDate); // Format the last date
+            break;
+          default:
+            text = '';
+        }
+      }
+    } else {
+
+      switch (value.toInt()) {
         case 0:
           if (dropdownValue == 'last-week') {
             text = timeline.lastWeekDays[0];
@@ -1340,7 +1369,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             text = timeline.lastSixMonths[0];
           }
           if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[0];
+            final DateTime now = DateTime.now();
+            final DateTime startOfCurrentYear = DateTime(now.year, 1, 1);
+            text = DateFormat('MMM dd').format(startOfCurrentYear); // Start date of the current year
           }
           break;
         case 1:
@@ -1354,7 +1385,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             text = timeline.lastSixMonths[1];
           }
           if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[1];
+            final DateTime now = DateTime.now();
+            final DateTime startOfCurrentYear = DateTime(now.year, 1, 1);
+            final DateTime middleOfCurrentYear = startOfCurrentYear.add(Duration(days: (now.difference(startOfCurrentYear).inDays ~/ 2)));
+            text = DateFormat('MMM dd').format(middleOfCurrentYear); // Middle date of the current year
           }
           break;
         case 2:
@@ -1368,7 +1402,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             text = timeline.lastSixMonths[2];
           }
           if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[2];
+            final DateTime now = DateTime.now();
+            text = DateFormat('MMM dd').format(now); // Current date
           }
           break;
         case 3:
@@ -1378,9 +1413,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           if (dropdownValue == 'last-6-months') {
             text = timeline.lastSixMonths[3];
           }
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[3];
-          }
           break;
         case 4:
           if (dropdownValue == 'last-week') {
@@ -1388,9 +1420,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           }
           if (dropdownValue == 'last-6-months') {
             text = timeline.lastSixMonths[4];
-          }
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[4];
           }
           break;
         case 5:
@@ -1400,53 +1429,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           if (dropdownValue == 'last-6-months') {
             text = timeline.lastSixMonths[5];
           }
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[5];
-          }
           break;
         case 6:
           if (dropdownValue == 'last-week') {
             text = timeline.lastWeekDays[6];
-          }
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[6];
-          }
-          break;
-        case 7:
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[7];
-          }
-          break;
-        case 8:
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[8];
-          }
-          break;
-        case 9:
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[9];
-          }
-          break;
-        case 10:
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[10];
-          }
-          break;
-        case 11:
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[11];
-          }
-          break;
-        case 12:
-          if (dropdownValue == 'last-year') {
-            text = timeline.lastYearMonths[12];
           }
           break;
         default:
           return const Text('');
       }
     }
-  
+    
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 3,
@@ -1519,7 +1512,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       case 'last-6-months':
         return 5;
       case 'last-year':
-        return 12;
+        return 2;
       case 'custom-time-period':
         double numberOfDays = lastCustomRange.end.difference(lastCustomRange.start).inDays + 0;
         if (numberOfDays == 0) {
@@ -1633,82 +1626,83 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
                   GestureDetector(
                     onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: AppColors.defaultBlueGray800,
-                      builder: (BuildContext context) => SingleChildScrollView(
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
-                          ),
-                          child: Container(
-                            color: AppColors.defaultBlueGray800,
-                            child: Wrap(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(
-                                          height: 20.0), // Add some space at the top
-                                      const Padding(
-                                        padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            'Choose Time Period',
-                                            style: TextStyle(
-                                                fontSize: 22.0,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                fontFamily: 'Titillium Web'),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20.0), // Add some space between the title and the options
-                                      _buildOption(context, 'Last Week', 'last-week'),
-                                      _buildOption(context, 'Last Month', 'last-month'),
-                                      _buildOption(context, 'Last 6 Months', 'last-6-months'),
-                                      _buildOption(context, 'Last Year', 'last-year'),
-                                      _buildOption(context, 'Customize Time Period', 'custom-time-period'),
-                                      const SizedBox(
-                                          height: 20.0), // Add some space at the bottom
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      );
+                      // showModalBottomSheet(
+                      //   context: context,
+                      //   backgroundColor: AppColors.defaultBlueGray800,
+                      // builder: (BuildContext context) => SingleChildScrollView(
+                      //   child: ClipRRect(
+                      //     borderRadius: const BorderRadius.only(
+                      //       topLeft: Radius.circular(20.0),
+                      //       topRight: Radius.circular(20.0),
+                      //     ),
+                      //     child: Container(
+                      //       color: AppColors.defaultBlueGray800,
+                      //       child: Wrap(
+                      //         children: <Widget>[
+                      //           Padding(
+                      //             padding: const EdgeInsets.all(5.0),
+                      //             child: Column(
+                      //               children: [
+                      //                 const SizedBox(
+                      //                     height: 20.0), // Add some space at the top
+                      //                 const Padding(
+                      //                   padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                      //                   child: Align(
+                      //                     alignment: Alignment.centerLeft,
+                      //                     child: Text(
+                      //                       'Choose Time Period',
+                      //                       style: TextStyle(
+                      //                           fontSize: 22.0,
+                      //                           fontWeight: FontWeight.bold,
+                      //                           color: Colors.white,
+                      //                           fontFamily: 'Titillium Web'),
+                      //                     ),
+                      //                   ),
+                      //                 ),
+                      //                 const SizedBox(height: 20.0), // Add some space between the title and the options
+                      //                 _buildOption(context, 'Last Week', 'last-week'),
+                      //                 _buildOption(context, 'Last Month', 'last-month'),
+                      //                 _buildOption(context, 'Last 6 Months', 'last-6-months'),
+                      //                 _buildOption(context, 'Last Year', 'last-year'),
+                      //                 _buildOption(context, 'Customize Time Period', 'custom-time-period'),
+                      //                 const SizedBox(
+                      //                     height: 20.0), // Add some space at the bottom
+                      //               ],
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      // );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color.fromARGB(121, 255, 255, 255),
-                          width: 2,
-                        ),
-                      ),
+                      // decoration: BoxDecoration(
+                      //   color: Colors.transparent,
+                      //   borderRadius: BorderRadius.circular(10),
+                      //   border: Border.all(
+                      //     color: const Color.fromARGB(121, 255, 255, 255),
+                      //     width: 2,
+                      //   ),
+                      // ),
                       child: Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: Row(
                           children: [
                             Text(
-                              getDropdownValueName(dropdownValue),
+                              'Year-to-Date',
+                              // getDropdownValueName(dropdownValue),
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Titillium Web',
                               ),
                             ),
-                            const SizedBox(width: 5),
-                            const Icon(Icons.keyboard_arrow_down_rounded, size: 25, color: Color.fromARGB(212, 255, 255, 255)),
+                            // const SizedBox(width: 5),
+                            // const Icon(Icons.keyboard_arrow_down_rounded, size: 25, color: Color.fromARGB(212, 255, 255, 255)),
                           ],
                         ),
                       ),
@@ -1837,7 +1831,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                 if (!lastYearxValues.contains(xValue)) {
                                   lastYearxValues.add(xValue);
                                   DateTime now = DateTime.now();
-                                  DateTime startOfLastYear = DateTime(now.year - 1, now.month, now.day);
+                                  DateTime startOfLastYear = DateTime(now.year, 1, 1);
                                   lastYearDates.add(startOfLastYear.add(Duration(days: xValue.toInt())));
                                 }
                               }
