@@ -719,6 +719,15 @@ Widget _buildSampleCupertinoListSection() {
             ),
           ),
           const SizedBox(height: 15),
+          const Text(
+            'Investment products and services are offered through AGQ Consulting LLC, a Florida limited liability company.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          const SizedBox(height: 15),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -748,15 +757,6 @@ Widget _buildSampleCupertinoListSection() {
               ),
             ),
           ),
-          const SizedBox(height: 15),
-          const Text(
-            'Investment products and services are offered through AGQ Consulting LLC, a Florida limited liability company.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
-            ),
-          )
         ],
         
       )
