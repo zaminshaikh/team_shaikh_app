@@ -8,7 +8,7 @@ import 'package:flutter/material.dart'; // For Navigator
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/components/alert_dialog.dart';
 
 bool showAlert = false;
 

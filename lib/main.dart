@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/push_notification.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
@@ -167,7 +168,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
         ),
       ),
-      home: const AuthChecker(),
+      home: const AuthCheck(),
       routes: {
         '/create_account': (context) => const CreateAccountPage(),
         '/login': (context) => const LoginPage(),
@@ -183,8 +184,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 }
 
-class AuthChecker extends StatelessWidget {
-  const AuthChecker({Key? key}) : super(key: key);
+class AuthCheck extends StatelessWidget {
+  const AuthCheck({Key? key}) : super(key: key);
 
   Future<DatabaseService?> _fetchDatabaseService(
       BuildContext context, String uid) async {
@@ -198,10 +199,7 @@ class AuthChecker extends StatelessWidget {
           .userChanges(), // Stream that listens for changes in the user's authentication state
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
-            strokeWidth: 6.0,
-          ); // Show a loading indicator while waiting for the authentication state
+          return const CustomProgressIndicator(); // Show a loading indicator while waiting for the authentication state
         } else if (snapshot.hasError) {
           log('main.dart: StreamBuilder error: ${snapshot.error}'); // Log any errors that occur during the stream
           return Text(

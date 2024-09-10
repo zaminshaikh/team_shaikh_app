@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
@@ -68,10 +69,7 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
             child: const Stack(
               children: [
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  strokeWidth: 6.0,
-                ),
+                CustomProgressIndicator(),
               ],
             ),
           ),

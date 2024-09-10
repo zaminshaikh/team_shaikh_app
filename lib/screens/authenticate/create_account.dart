@@ -14,6 +14,8 @@ import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/services/google_auth_service.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:flutter/services.dart';
+import 'package:team_shaikh_app/components/alert_dialog.dart';
+
 
 
 // Making a StatefulWidget representing the Create Account page

@@ -14,6 +14,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:intl/intl.dart';
+import 'package:team_shaikh_app/components/alert_dialog.dart';
+
 
 
 class AnalyticsPage extends StatefulWidget {
