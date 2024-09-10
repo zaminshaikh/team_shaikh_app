@@ -59,6 +59,12 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     _initData();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose(); // Dispose of the animation controller
+    super.dispose();
+  }
+
   Future<void> _initializeTransitionState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _hasTransitioned = prefs.getBool('hasTransitioned') ?? false;

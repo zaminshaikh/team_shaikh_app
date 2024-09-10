@@ -870,7 +870,7 @@ List<String> assetsFormatted = [];
                             color: const Color.fromARGB(255, 149, 28, 28),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child:  Center(
+                          child: Center(
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -898,8 +898,6 @@ List<String> assetsFormatted = [];
                     ],
                   ),
                   const SizedBox(height: 50),
-
-
         ],
               
       ),
