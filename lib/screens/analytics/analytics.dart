@@ -1701,6 +1701,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                 fontFamily: 'Titillium Web',
                               ),
                             ),
+                            SizedBox(width: 10),
+                            SvgPicture.asset(
+                              'assets/icons/YTD.svg',
+                              color: Colors.green,
+                              height: 20,
+                            ),
                             // const SizedBox(width: 5),
                             // const Icon(Icons.keyboard_arrow_down_rounded, size: 25, color: Color.fromARGB(212, 255, 255, 255)),
                           ],
@@ -1912,10 +1918,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       CustomAlertDialog.showAlertDialog(
                         context,
                         'Important Note',
-                        '\nThe graph is still being developed and currently only shows your current balance. '
+                        'The graph is still being developed and currently only shows your current balance. '
                         'It displays the asset balance for the selected time frame with markers indicating the balance at the start and end of the period.',
                         svgIconPath: 'assets/icons/warning.svg', // Use this for SVG icon
-                        svgIconColor: Colors.yellow, // Specify the color of the SVG icon
+                        svgIconColor: AppColors.defaultYellow400, // Specify the color of the SVG icon
                       );
                     },
                     child: Row(
