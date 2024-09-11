@@ -1960,105 +1960,51 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   default:
                     displayText = 'Select a range';
                 }
-                return GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: AppColors.defaultBlueGray800,
-                      builder: (BuildContext context) => SingleChildScrollView(
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
+                return Container(
+                  color: Colors.transparent,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            displayText,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                              fontStyle: FontStyle.italic
+                            ),
                           ),
-                          child: Container(
-                            color: AppColors.defaultBlueGray800,
-                            child: Wrap(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(
-                                          height: 20.0), // Add some space at the top
-                                      const Padding(
-                                        padding: EdgeInsets.fromLTRB(20.0, 0, 0, 0),
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            'Choose Time Period',
-                                            style: TextStyle(
-                                                fontSize: 22.0,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                fontFamily: 'Titillium Web'),
-                                          ),
-                                        ),
+                          if (spots.isEmpty) // Check if spots is empty
+                            const Column(
+                              children: [
+                                SizedBox(height: 25),
+                                Row(
+                                  children: [
+                                    SizedBox(width: 10),
+                                    Icon(
+                                      Icons.circle,
+                                      size: 20,
+                                      color: AppColors.defaultBlue500,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'No data available for this time period',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Titillium Web',
                                       ),
-                                      const SizedBox(height: 20.0), // Add some space between the title and the options
-                                      _buildOption(context, 'Last Week', 'last-week'),
-                                      _buildOption(context, 'Last Month', 'last-month'),
-                                      _buildOption(context, 'Last 6 Months', 'last-6-months'),
-                                      _buildOption(context, 'Last Year', 'last-year'),
-                                      _buildOption(context, 'Customize Time Period', 'custom-time-period'),
-                                      const SizedBox(
-                                          height: 20.0), // Add some space at the bottom
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                      ),
-                      );
-                    },
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 20.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              displayText,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
-                                fontStyle: FontStyle.italic
-                              ),
-                            ),
-                            if (spots.isEmpty) // Check if spots is empty
-                              const Column(
-                                children: [
-                                  SizedBox(height: 25),
-                                  Row(
-                                    children: [
-                                      SizedBox(width: 10),
-                                      Icon(
-                                        Icons.circle,
-                                        size: 20,
-                                        color: AppColors.defaultBlue500,
-                                      ),
-                                      SizedBox(width: 10),
-                                      Text(
-                                        'No data available for this time period',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontFamily: 'Titillium Web',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
