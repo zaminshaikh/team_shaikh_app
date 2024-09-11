@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, unnecessary_null_comparison
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, unnecessary_null_comparison, unused_element, deprecated_member_use
 
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -598,13 +598,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             DateTime startOfCurrentYear = DateTime(now.year, 1, 1);
             DateTime today = DateTime(now.year, now.month, now.day);
           
-            print('Current date: $now');
-            print('Start of current year: $startOfCurrentYear');
-            print('Today\'s date: $today');
           
             // Normalize dateTime to only include the date part
             DateTime normalizedDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
-            print('Normalized dateTime: $normalizedDateTime');
           
             // Check if normalizedDateTime is within the current year
             if (normalizedDateTime.isAfter(startOfCurrentYear.subtract(const Duration(days: 1))) && normalizedDateTime.isBefore(today.add(const Duration(days: 1)))) {
@@ -612,65 +608,50 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               int dayDifference = normalizedDateTime.difference(startOfCurrentYear).inDays;
               xValue = (dayDifference / 365) * 12; // Scale day to the range 0-12
           
-              print('Day difference: $dayDifference');
-              print('Calculated xValue: $xValue');
           
               if (!lastYearxValues.contains(0)) {
                 lastYearxValues.add(0);
-                print('Added 0 to lastYearxValues');
               }
               if (!lastYearxValues.contains(maxX(dropdownValue))) {
                 lastYearxValues.add(maxX(dropdownValue));
-                print('Added maxX to lastYearxValues');
               }
               if (!lastYearDates.contains(startOfCurrentYear)) {
                 lastYearDates.add(startOfCurrentYear);
                 lastYearxValues.add(0); // Add corresponding xValue for startOfCurrentYear
-                print('Added startOfCurrentYear to lastYearDates and 0 to lastYearxValues');
               }
           
               // Add xValue and date to the lists if the date is not already present
               if (!lastYearDates.contains(normalizedDateTime)) {
                 lastYearxValues.add(xValue);
                 lastYearDates.add(normalizedDateTime);
-                print('Added normalizedDateTime to lastYearDates and xValue to lastYearxValues');
               }
               lastYearxValues.sort((a, b) => a.compareTo(b));
               lastYearDates.sort((a, b) => a.compareTo(b));
           
-              print('Sorted lastYearxValues: $lastYearxValues');
-              print('Sorted lastYearDates: $lastYearDates');
           
               if (dayDifference == 0) {
                 spotAssignedZero = true;
-                print('Spot assigned zero');
               }
               if (dayDifference == 365) {
                 pointAssignedLastCase = true;
-                print('Point assigned last case');
               }
             }
           
             if (!found) {
               unfoundLastYearDates.add(normalizedDateTime);
               unfoundLastYearPoints.add(point); // Add the point to the list of unfound points
-              print('Added to unfoundLastYearDates and unfoundLastYearPoints');
             }
           
             if (pointAssignedLastCase) {
-              print('Point assigned last case is true');
             } else {
-              print('Point assigned last case is false');
             }
           
             // Sort the dates in order
             unfoundLastYearDates.sort((a, b) => a.compareTo(b));
-            print('Sorted unfoundLastYearDates: $unfoundLastYearDates');
           
             // Print the last date in the list
             if (unfoundLastYearDates.isNotEmpty) {
               DateTime lastUnfoundDate = unfoundLastYearDates.last;
-              print('Last unfound date: $lastUnfoundDate');
           
               // Find the corresponding point for the last unfound date
               int lastIndex = unfoundLastYearDates.indexOf(lastUnfoundDate);
@@ -681,22 +662,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 if (lastUnfoundPoint.containsKey('amount')) {
                   double amount = lastUnfoundPoint['amount'].toDouble();
                   unfoundLastYearAmount = amount; // Ensure unfoundCurrentYearAmount is set correctly
-                  print('Last unfound point amount: $amount');
                 } else {
-                  print('Last unfound point does not contain amount');
                 }
               } else {
-                print('Last index out of bounds');
               }
             } else {
-              print('No unfound last year dates');
             }
           
             // Add today's date at the end of lastYearDates if not already present
             if (!lastYearDates.contains(today)) {
               lastYearDates.add(today);
               lastYearxValues.add(2); // Add corresponding xValue for today
-              print('Added today to lastYearDates and 12 to lastYearxValues');
             }
           
             // Ensure lastYearDates and lastYearxValues have the same length
@@ -704,11 +680,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               // Handle the discrepancy, e.g., by adding default values or skipping the combination
               while (lastYearDates.length > lastYearxValues.length) {
                 lastYearxValues.add(0); // Add default xValue
-                print('Added default xValue to lastYearxValues');
               }
               while (lastYearxValues.length > lastYearDates.length) {
                 lastYearDates.add(today); // Add default date
-                print('Added default date to lastYearDates');
               }
             }
           
@@ -728,18 +702,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               }
             });
           
-            print('Combined list: $combinedList');
           
             // Extract sorted dates and xValues back into their respective lists
             lastYearDates = combinedList.map((entry) => entry.key).toList();
             lastYearxValues = combinedList.map((entry) => entry.value).toList();
           
-            print('Final sorted lastYearDates: $lastYearDates');
-            print('Final sorted lastYearxValues: $lastYearxValues');
           
             // Print the index values of lastYearDates and lastYearxValues
             for (int i = 0; i < lastYearDates.length; i++) {
-              print('Index $i: Date ${lastYearDates[i]}, xValue ${lastYearxValues[i]}');
             }
           }
 
@@ -1593,7 +1563,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return maxY;
   }
 
-    // ignore: unused_element
     Widget _buildLineChartSection() => Padding(
       padding: const EdgeInsets.only(bottom: 25),
       child: Container(
@@ -1691,17 +1660,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         padding: const EdgeInsets.all(5.0),
                         child: Row(
                           children: [
-                            Text(
+                            const Text(
                               'Year-to-Date',
                               // getDropdownValueName(dropdownValue),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Titillium Web',
                               ),
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             SvgPicture.asset(
                               'assets/icons/YTD.svg',
                               color: Colors.green,
@@ -1912,7 +1881,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       fontFamily: 'Titillium Web',
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   GestureDetector(
                     onTap: () {
                       CustomAlertDialog.showAlertDialog(

@@ -19,7 +19,6 @@ class NotificationPage extends StatefulWidget {
 String uid = '';
 
 class _NotificationPageState extends State<NotificationPage> {
-    final Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
   late DatabaseService? _databaseService;
@@ -114,7 +113,6 @@ class _NotificationPageState extends State<NotificationPage> {
   
           // Check if the snapshot has data
           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-            print('notification.dart: No notifications found');
             return Scaffold(
               body: CustomScrollView(
                 slivers: <Widget>[

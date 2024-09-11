@@ -245,7 +245,6 @@ List<String> assetsFormatted = [];
       email = (((user.info['appEmail'] ?? user.info['initEmail']) ?? user.info['email']) ?? 'N/A') as String;
       userEmail = email;
       connectedUserCids = user.info['connectedUsers'] != null ? List<String>.from(user.info['connectedUsers']) : [];
-      print('Connected User CIDs: $connectedUserCids');
 
 
       if (user.info['firstDepositDate'] != null) {
@@ -509,7 +508,7 @@ List<String> assetsFormatted = [];
 
         ListView.builder(
 
-          padding: EdgeInsets.only(top: 20),
+          padding: const EdgeInsets.only(top: 20),
           
           itemCount: connectedUserNames.length,
           itemBuilder: (context, index) => Container(
