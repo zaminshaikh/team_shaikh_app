@@ -164,10 +164,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
   
   /// Formats the given amount as a currency string.
-  String dropdownValue = 'last-year';
+  String dropdownValue = 'last-week';
 @override
   void setState(VoidCallback fn) {
-    dropdownValue = 'last-year';
+    dropdownValue = 'last-week';
     super.setState(fn);
   }
 
