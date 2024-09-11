@@ -131,7 +131,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
     String? cid = _databaseService?.cid;
     // Total assets of one user
     double totalUserAssets = 0.00, totalUserAGQ = 0.00, totalUserAK1 = 0.00;
-    double latestIncome = 0.00;
+    double ytd = 0.00;
 
     // We don't know the order of the funds, and perhaps the
     // length could change in the future, so we'll loop through
@@ -144,7 +144,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
           totalUserAK1 += asset['total'] ?? 0;
           break;
         default:
-            latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
+            ytd = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
             totalUserAssets += asset['total'] ?? 0;
       }
     }
@@ -167,14 +167,14 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                       // Total assets section
                       SlideTransition(
                         position: _offsetAnimation,
-                        child: _buildTotalAssetsSection(totalUserAssets, latestIncome),
+                        child: _buildTotalAssetsSection(totalUserAssets, ytd),
                       ),
                       const SizedBox(height: 32),
                       // User breakdown section
                       SlideTransition(
                         position: _offsetAnimation,
                         child: _buildUserBreakdownSection(
-                            userName, totalUserAssets, latestIncome, user.assets),
+                            userName, totalUserAssets, ytd, user.assets),
                       ),
                       const SizedBox(height: 32),
                       // Assets structure section
@@ -220,7 +220,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
         totalAGQ = 0.00,
         totalAK1 = 0.00,
         totalAssets = 0.00;
-    double latestIncome = 0.00;
+    double ytd = 0.00;
+    double totalYTD = 0.00;
 
     // This is a calculation of the total assets of the user only
     for (var asset in user.assets) {
@@ -232,7 +233,8 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
           totalAK1 += asset['total'] ?? 0;
           break;
         default:
-          latestIncome = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
+          totalYTD = asset['totalYTD'] != null ? double.parse(asset['totalYTD'].toString()) : 0;
+          ytd = asset['ytd'] != null ? double.parse(asset['ytd'].toString()) : 0;
           totalAssets += asset['total'] ?? 0;
           totalUserAssets += asset['total'] ?? 0;
       }
@@ -271,13 +273,13 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                     [
                       SlideTransition(
                         position: _offsetAnimation,
-                        child: _buildTotalAssetsSection(totalAssets, latestIncome),
+                        child: _buildTotalAssetsSection(totalAssets, totalYTD),
                       ),
                       const SizedBox(height: 32),
                       SlideTransition(
                         position: _offsetAnimation,
                         child: _buildUserBreakdownSection(
-                            userName, totalUserAssets, latestIncome, user.assets),
+                            userName, totalUserAssets, ytd, user.assets),
                       ),
                       const SizedBox(height: 40),
                       SlideTransition(
@@ -554,7 +556,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
         ],
       );
 
-  Widget _buildTotalAssetsSection(double totalAssets, double latestIncome) =>
+  Widget _buildTotalAssetsSection(double totalAssets, double ytd) =>
     Stack(
       children: [
         Container(
@@ -612,7 +614,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                       ),
                       SizedBox(width: 5),
                       Text(
-                        _currencyFormat(latestIncome),
+                        _currencyFormat(ytd),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -811,7 +813,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
   Widget _buildUserBreakdownSection(
       Map<String, String> userName,
       double totalUserAssets,
-      double latestIncome,
+      double ytd,
       List<Map<String, dynamic>> assets,
       {bool isConnectedUser = false}) {
         
@@ -836,7 +838,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                     companyName: userName['company']));
               }
             });
-            // for each entry in the document that is not total, latestIncome, or fund
+            // for each entry in the document that is not total, ytd, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num && 
@@ -865,7 +867,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                     companyName: userName['company']));
               }
             });
-            // for each entry in the document that is not total, latestIncome, or fund
+            // for each entry in the document that is not total, ytd, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
@@ -913,7 +915,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               ),
               SizedBox(width: 5),
               Text(
-                _currencyFormat(latestIncome),
+                _currencyFormat(ytd),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -974,7 +976,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
             'last': lastName,
             'company': companyName
           };
-          double totalUserAssets = 0.00, latestIncome = 0.00;
+          double totalUserAssets = 0.00, ytd = 0.00;
           for (var asset in user.assets) {
             switch (asset['fund']) {
               case 'AGQ':
@@ -982,7 +984,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               case 'AK1':
                 break;
               default:
-                latestIncome = (asset['ytd'] is int) 
+                ytd = (asset['ytd'] is int) 
                     ? (asset['ytd'] as int).toDouble() 
                     : (asset['ytd'] as double?) ?? 0.0;
                 totalUserAssets += (asset['total'] is int) 
@@ -996,7 +998,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               _buildUserBreakdownSection(
                 userName,
                 totalUserAssets,
-                latestIncome,
+                ytd,
                 user.assets,
                 isConnectedUser: true,
               ),
@@ -1010,7 +1012,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
   Widget _buildConnectedUserBreakdownSection(
       Map<String, String> userName,
       double totalUserAssets,
-      double latestIncome,
+      double ytd,
       List<Map<String, dynamic>> assets) {
     // Initialize empty lists for the tiles
     List<ListTile> assetTilesAGQ = [];
@@ -1032,7 +1034,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                     companyName: userName['company']));
               }
             });
-            // for each entry in the document that is not total, latestIncome, or fund
+            // for each entry in the document that is not total, ytd, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
@@ -1061,7 +1063,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
                   companyName: userName['company']));
               }
             });
-            // for each entry in the document that is not total, latestIncome, or fund
+            // for each entry in the document that is not total, ytd, or fund
             // create a ListTile and add it to the list
             for (var entry in asset.entries) {
               if (entry.value is num &&
@@ -1105,7 +1107,7 @@ class _DashboardPageState extends State<DashboardPage> with SingleTickerProvider
               ),
               SizedBox(width: 5),
               Text(
-                _currencyFormat(latestIncome),
+                _currencyFormat(ytd),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
