@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
+import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import '../utilities.dart';
 import 'package:rxdart/rxdart.dart';
@@ -89,21 +90,26 @@ class NewDB {
               .map((doc) => Activity.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-      // // Transform the DocumentSnapshot stream to a Client stream
-      // return clientDocumentStream.map((snapshot) {
-      //   // Check if the document exists
-      //   if (!snapshot.exists) {
-      //     return Client
-      //         .empty(); // Return an empty Client if the document doesn't exist
-      //   }
+      // Stream for the assets subcollection (assuming a single document in assets)
+      Stream<Assets> assetsStream = assetsSubCollection!.snapshots().map((snapshot) {
 
-      //   // Convert the snapshot data to a Client object
-      //   return Client.fromMap(snapshot.data() as Map<String, dynamic>, cid: cid);
-      // });
+        Map<String, Fund> funds = {};
+        Map<String, dynamic> general = {};
 
-      return Rx.combineLatest2(clientDocumentStream, activitiesStream, 
-      (DocumentSnapshot clientDoc, List<Activity> activities) => 
-        Client.fromMap(clientDoc.data() as Map<String, dynamic>, cid: cid, activities: activities)
+        for (var doc in snapshot.docs) {
+          if (doc.id == 'general') {
+            general = doc.data() as Map<String, dynamic>;
+          } else {
+            funds[doc.id] = Fund.fromMap(doc.data() as Map<String, dynamic>);
+          }
+        }
+
+        return Assets.fromMap(funds, general);
+      });
+
+      return Rx.combineLatest3(clientDocumentStream, activitiesStream, assetsStream,
+      (DocumentSnapshot clientDoc, List<Activity> activities, Assets assets) => 
+        Client.fromMap(clientDoc.data() as Map<String, dynamic>, cid: cid, activities: activities, assets: assets)
       );
 
       // // Stream for the notifications subcollection
@@ -121,13 +127,6 @@ class NewDB {
       //         .map(
       //             (doc) => GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
       //         .toList());
-
-      // // Stream for the assets subcollection (assuming a single document in assets)
-      // Stream<Assets> assetsStream = assetsSubCollection!
-      //     .doc(Config.get('ASSETS_GENERAL_DOC_ID'))
-      //     .snapshots()
-      //     .map((doc) => Assets.fromMap(doc.data() as Map<String, dynamic>));
-
 
       // Combine all streams to emit a new Client object whenever any part changes
       // return Rx.combineLatest5(

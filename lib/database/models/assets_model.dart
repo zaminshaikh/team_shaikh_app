@@ -1,29 +1,39 @@
 class Assets {
-  final AssetDetails agq;
-  final AssetDetails ak1;
+  final Map<String, Fund> funds;
+  final double? totalYTD;
+  final double? ytd;
+  final double? totalAssets;
 
   Assets({
-    required this.agq,
-    required this.ak1,
+    required this.funds,
+    required this.ytd,
+    required this.totalAssets,
+    this.totalYTD,
   });
 
-  factory Assets.fromMap(Map<String, dynamic> data) => Assets(
-        agq: AssetDetails.fromMap(data['agq']),
-        ak1: AssetDetails.fromMap(data['ak1']),
+  factory Assets.fromMap(Map<String, Fund> funds, Map<String, dynamic> general) => Assets(
+        totalYTD: (general['totalYTD'] as num?)?.toDouble(),
+        ytd: (general['ytd'] as num?)?.toDouble(),
+        totalAssets: (general['totalAssets'] ?? general['total'] as num?)?.toDouble(),
+        funds: funds,
       );
 
   // Empty constructor for Assets
   Assets.empty()
-      : agq = AssetDetails.empty(),
-        ak1 = AssetDetails.empty();
+      : funds = {},
+        totalYTD = 0.0,
+        ytd = 0.0,
+        totalAssets = 0.0;
 
   Map<String, dynamic> toMap() => {
-        'agq': agq.toMap(),
-        'ak1': ak1.toMap(),
+        'funds': funds.map((key, value) => MapEntry(key, value.toMap())),
+        'totalYTD': totalYTD,
+        'ytd': ytd,
+        'totalAssets': totalAssets,
       };
 }
 
-class AssetDetails {
+class Fund {
   final double personal;
   final double company;
   final double trad;
@@ -32,7 +42,7 @@ class AssetDetails {
   final double nuviewTrad;
   final double nuviewRoth;
 
-  AssetDetails({
+  Fund({
     required this.personal,
     required this.company,
     required this.trad,
@@ -42,18 +52,18 @@ class AssetDetails {
     required this.nuviewRoth,
   });
 
-  factory AssetDetails.fromMap(Map<String, dynamic> data) => AssetDetails(
-        personal: data['personal'],
-        company: data['company'],
-        trad: data['trad'],
-        roth: data['roth'],
-        sep: data['sep'],
-        nuviewTrad: data['nuviewTrad'],
-        nuviewRoth: data['nuviewRoth'],
+  factory Fund.fromMap(Map<String, dynamic> data) => Fund(
+        personal: (data['personal'] as num).toDouble(),
+        company: (data['company'] as num).toDouble(),
+        trad: (data['trad'] as num).toDouble(),
+        roth: (data['roth'] as num).toDouble(),
+        sep: (data['sep'] as num).toDouble(),
+        nuviewTrad: (data['nuviewTrad'] as num).toDouble(),
+        nuviewRoth: (data['nuviewRoth'] as num).toDouble(),
       );
 
-  // Empty constructor for AssetDetails
-  AssetDetails.empty()
+  // Empty constructor for Fund
+  Fund.empty()
       : personal = 0.0,
         company = 0.0,
         trad = 0.0,

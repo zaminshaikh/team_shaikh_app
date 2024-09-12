@@ -116,7 +116,7 @@ class _DashboardPageState extends State<DashboardPage>
     // Access the Client data from the StreamProvider
     Client? client = Provider.of<Client?>(context) ;
 
-    print(client?.toMap());
+    print(client?.assets?.toMap());
 
     // If the client is null, show a loading indicator
     if (client == null) {

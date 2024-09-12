@@ -50,7 +50,9 @@ class Client {
     this.assets,
   });
 
-  factory Client.fromMap(Map<String, dynamic> data, {String? cid, List<Activity>? activities}) => Client(
+  factory Client.fromMap(Map<String, dynamic> data,
+          {String? cid, List<Activity>? activities, Assets? assets}) =>
+      Client(
         cid: data['cid'] ?? cid ?? '',
         uid: data['uid'],
         firstName: data['name']['first'] ?? '',
@@ -68,11 +70,11 @@ class Client {
         // totalAssets: (data['totalAssets'] ?? 0 as num).toDouble(),
         // ytd: (data['ytd'] ?? 0 as num).toDouble(),
         // totalYTD: (data['totalYTD'] ?? 0 as num).toDouble(),
-        activities: activities ?? [],
+        activities: activities,
         // graphPoints: (data['graphPoints'] as List<dynamic>?)
         //     ?.map((e) => GraphPoint.fromMap(e))
         //     .toList(),
-        // assets: data['assets'] ? Assets.fromMap(data['assets']) : null,
+        assets: assets,
       );
 
   // Empty constructor
@@ -141,23 +143,6 @@ Client getClient(cid) => Client(
       graphPoints: [],
       notifications: [],
       assets: Assets(
-        agq: AssetDetails(
-          personal: 0,
-          company: 0,
-          trad: 0,
-          roth: 0,
-          sep: 0,
-          nuviewTrad: 0,
-          nuviewRoth: 0,
-        ),
-        ak1: AssetDetails(
-          personal: 0,
-          company: 0,
-          trad: 0,
-          roth: 0,
-          sep: 0,
-          nuviewTrad: 0,
-          nuviewRoth: 0,
-        ),
+       funds: {}, ytd: null, totalAssets: null,
       ),
     );
