@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import '../utilities.dart';
 import 'package:rxdart/rxdart.dart';
@@ -81,24 +82,29 @@ class NewDB {
       Stream<DocumentSnapshot> clientDocumentStream =
           usersCollection.doc(cid).snapshots();
 
-      // Transform the DocumentSnapshot stream to a Client stream
-      return clientDocumentStream.map((snapshot) {
-        // Check if the document exists
-        if (!snapshot.exists) {
-          return Client
-              .empty(); // Return an empty Client if the document doesn't exist
-        }
+      // Stream for the activities subcollection
+      Stream<List<Activity>> activitiesStream = activitiesSubCollection!
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => Activity.fromMap(doc.data() as Map<String, dynamic>))
+              .toList());
 
-        // Convert the snapshot data to a Client object
-        return Client.fromMap(snapshot.data() as Map<String, dynamic>, cid: cid);
-      });
+      // // Transform the DocumentSnapshot stream to a Client stream
+      // return clientDocumentStream.map((snapshot) {
+      //   // Check if the document exists
+      //   if (!snapshot.exists) {
+      //     return Client
+      //         .empty(); // Return an empty Client if the document doesn't exist
+      //   }
 
-      // // Stream for the activities subcollection
-      // Stream<List<Activity>> activitiesStream = activitiesSubCollection!
-      //     .snapshots()
-      //     .map((snapshot) => snapshot.docs
-      //         .map((doc) => Activity.fromMap(doc.data() as Map<String, dynamic>))
-      //         .toList());
+      //   // Convert the snapshot data to a Client object
+      //   return Client.fromMap(snapshot.data() as Map<String, dynamic>, cid: cid);
+      // });
+
+      return Rx.combineLatest2(clientDocumentStream, activitiesStream, 
+      (DocumentSnapshot clientDoc, List<Activity> activities) => 
+        Client.fromMap(clientDoc.data() as Map<String, dynamic>, cid: cid, activities: activities)
+      );
 
       // // Stream for the notifications subcollection
       // Stream<List<Notification>> notificationsStream = notificationsSubCollection!

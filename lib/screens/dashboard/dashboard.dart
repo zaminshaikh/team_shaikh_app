@@ -142,7 +142,7 @@ class _DashboardPageState extends State<DashboardPage>
           children: [
             Text('Welcome, ${client.firstName} ${client.lastName}'),
             Text('Company: ${client.companyName}'),
-            Text('Total Assets: \$${client.totalAssets.toStringAsFixed(2)}'),
+            Text('Total Assets: \$${client.totalAssets}'),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _handleButtonPress, // Example action handler

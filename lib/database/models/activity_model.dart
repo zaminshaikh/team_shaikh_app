@@ -26,7 +26,7 @@ class Activity {
   factory Activity.fromMap(Map<String, dynamic> data) => Activity(
         id: data['id'],
         parentDocId: data['parentDocId'],
-        amount: data['amount'],
+        amount: data['amount'].toDouble(),
         fund: data['fund'],
         recipient: data['recipient'],
         time: (data['time'] as Timestamp).toDate(),

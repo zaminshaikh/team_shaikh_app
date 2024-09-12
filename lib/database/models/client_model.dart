@@ -18,9 +18,9 @@ class Client {
   final DateTime? firstDepositDate;
   final List<String>? beneficiaries;
   final List<Client>? connectedUsers;
-  final double totalAssets;
-  final double ytd;
-  final double totalYTD;
+  final double? totalAssets;
+  final double? ytd;
+  final double? totalYTD;
 
   List<Notification>? notifications;
   List<Activity>? activities;
@@ -33,9 +33,9 @@ class Client {
     required this.firstName,
     required this.lastName,
     required this.appEmail,
-    required this.totalAssets,
-    required this.ytd,
-    required this.totalYTD,
+    this.totalAssets,
+    this.ytd,
+    this.totalYTD,
     this.companyName,
     this.address,
     this.dob,
@@ -50,7 +50,7 @@ class Client {
     this.assets,
   });
 
-  factory Client.fromMap(Map<String, dynamic> data, {String? cid}) => Client(
+  factory Client.fromMap(Map<String, dynamic> data, {String? cid, List<Activity>? activities}) => Client(
         cid: data['cid'] ?? cid ?? '',
         uid: data['uid'],
         firstName: data['name']['first'] ?? '',
@@ -65,12 +65,10 @@ class Client {
         beneficiaries: List<String>.from(data['beneficiaries']),
         connectedUsers: List<Client>.from(
             data['connectedUsers'].map((cid) => getClient(cid))),
-        totalAssets: (data['totalAssets'] ?? 0 as num).toDouble(),
-        ytd: (data['ytd'] ?? 0 as num).toDouble(),
-        totalYTD: (data['totalYTD'] ?? 0 as num).toDouble(),
-        // activities: (data['activities'] as List<dynamic>?)
-        //     ?.map((e) => Activity.fromMap(e))
-        //     .toList(),
+        // totalAssets: (data['totalAssets'] ?? 0 as num).toDouble(),
+        // ytd: (data['ytd'] ?? 0 as num).toDouble(),
+        // totalYTD: (data['totalYTD'] ?? 0 as num).toDouble(),
+        activities: activities ?? [],
         // graphPoints: (data['graphPoints'] as List<dynamic>?)
         //     ?.map((e) => GraphPoint.fromMap(e))
         //     .toList(),
