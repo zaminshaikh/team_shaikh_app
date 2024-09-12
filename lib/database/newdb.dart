@@ -90,7 +90,7 @@ class NewDB {
         }
 
         // Convert the snapshot data to a Client object
-        return Client.fromMap(snapshot.data() as Map<String, dynamic>);
+        return Client.fromMap(snapshot.data() as Map<String, dynamic>, cid: cid);
       });
 
       // // Stream for the activities subcollection

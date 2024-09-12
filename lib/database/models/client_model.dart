@@ -50,8 +50,8 @@ class Client {
     this.assets,
   });
 
-  factory Client.fromMap(Map<String, dynamic> data) => Client(
-        cid: data['cid'] ?? '',
+  factory Client.fromMap(Map<String, dynamic> data, {String? cid}) => Client(
+        cid: data['cid'] ?? cid ?? '',
         uid: data['uid'],
         firstName: data['name']['first'] ?? '',
         lastName: data['name']['last'] ?? '',
