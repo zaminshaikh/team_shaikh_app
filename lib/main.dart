@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/push_notification.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -13,6 +14,7 @@ import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'package:team_shaikh_app/database/newdb.dart';
 import '/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/authenticate/create_account.dart';
@@ -187,9 +189,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
-  Future<DatabaseService?> _fetchDatabaseService(
+  Future<NewDB?> _fetchDatabaseService(
       BuildContext context, String uid) async {
-    return await DatabaseService.fetchCID(context, uid, 1);
+    return await NewDB.fetchCID(context, uid, 1);
   }
 
   @override
@@ -208,22 +210,33 @@ class AuthCheck extends StatelessWidget {
           final user =
               snapshot.data!; // Get the authenticated user from the snapshot
           log('main.dart: User is logged in as ${user.email}'); // Log the user's email
-          return FutureBuilder<DatabaseService?>(
+          return FutureBuilder<NewDB?>(
             future: _fetchDatabaseService(context, user.uid),
             builder: (context, serviceSnapshot) {
               if (serviceSnapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
-                  strokeWidth: 6.0,
-                ); // Show a loading indicator while waiting for the Firestore query
+                return const CustomProgressIndicator(); // Show a loading indicator while waiting for the Firestore query
               } else if (serviceSnapshot.hasError) {
                 log('main.dart: Firestore query error: ${serviceSnapshot.error}'); // Log any errors that occur during the Firestore query
                 return Text(
                     'Error: ${serviceSnapshot.error}'); // Show an error message if there is an error in the Firestore query
-              } else if (serviceSnapshot.hasData &&
-                  serviceSnapshot.data != null) {
-                log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
-                return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
+              } else if (serviceSnapshot.hasData) {
+                NewDB? db = serviceSnapshot.data;
+                
+                // Debug print to check if db is null or valid
+                if (db == null) {
+                  log('main.dart: NewDB is null for UID ${user.uid}');
+                  return const OnboardingPage();
+                } else {
+                  log('main.dart: NewDB is successfully retrieved for UID ${user.uid}');
+                  return StreamProvider<Client?>(
+                    create: (_) {
+                      print('Starting client stream');
+                      return db.getClientStream();
+                    },
+                    initialData: null,
+                    child: const InitialFaceIdPage(),
+                  );
+                }
               } else {
                 log('main.dart: UID: ${user.uid} not found in Firestore.'); // Log that the UID was not found in Firestore
                 return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
