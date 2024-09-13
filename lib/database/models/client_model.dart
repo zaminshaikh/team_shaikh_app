@@ -51,7 +51,11 @@ class Client {
   });
 
   factory Client.fromMap(Map<String, dynamic> data,
-          {String? cid, List<Activity>? activities, Assets? assets, List<CNotification>? notifications}) =>
+          {String? cid, 
+          List<Activity>? activities, 
+          Assets? assets, 
+          List<CNotification>? notifications,
+          List<GraphPoint>? graphPoints}) =>
       Client(
         cid: data['cid'] ?? cid ?? '',
         uid: data['uid'],
@@ -71,9 +75,7 @@ class Client {
         // ytd: (data['ytd'] ?? 0 as num).toDouble(),
         // totalYTD: (data['totalYTD'] ?? 0 as num).toDouble(),
         activities: activities,
-        // graphPoints: (data['graphPoints'] as List<dynamic>?)
-        //     ?.map((e) => GraphPoint.fromMap(e))
-        //     .toList(),
+        graphPoints: graphPoints,
         assets: assets,
         notifications: notifications,
       );

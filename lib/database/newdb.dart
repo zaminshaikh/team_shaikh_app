@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
+import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
@@ -115,18 +116,29 @@ class NewDB {
                   CNotification.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-      return Rx. combineLatest4(clientDocumentStream, activitiesStream, assetsStream, notificationsStream,
-      (DocumentSnapshot clientDoc, List<Activity> activities, Assets assets, List<CNotification> notifications) => 
-        Client.fromMap(clientDoc.data() as Map<String, dynamic>, cid: cid, activities: activities, assets: assets, notifications: notifications)
+      
+      // // Stream for the graphPoints subcollection
+      Stream<List<GraphPoint>> graphPointsStream = graphPointsSubCollection!
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map(
+                  (doc) => GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
+              .toList());
+
+      return Rx. combineLatest5(clientDocumentStream, activitiesStream, assetsStream, notificationsStream, graphPointsStream,
+      (DocumentSnapshot clientDoc, 
+      List<Activity> activities, 
+      Assets assets, 
+      List<CNotification> notifications, 
+      List<GraphPoint> graphPoints) => 
+        Client.fromMap(clientDoc.data() as Map<String, dynamic>, 
+        cid: cid, 
+        activities: activities, 
+        assets: assets, 
+        notifications: notifications, 
+        graphPoints: graphPoints)
       );
 
-      // // Stream for the graphPoints subcollection
-      // Stream<List<GraphPoint>> graphPointsStream = graphPointsSubCollection!
-      //     .snapshots()
-      //     .map((snapshot) => snapshot.docs
-      //         .map(
-      //             (doc) => GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
-      //         .toList());
 
       // Combine all streams to emit a new Client object whenever any part changes
       // return Rx.combineLatest5(

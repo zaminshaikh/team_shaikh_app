@@ -29,7 +29,7 @@ class CNotification {
         message: data['message'] ?? '',
         isRead: data['isRead'] ?? false,
         type: data['type'] ?? '',
-        time: data['time'] != null ? (data['time'] as Timestamp).toDate() : null,
+        time: (data['time'] as Timestamp?)?.toDate(),
       );
 
   Map<String, dynamic> toMap() => {
