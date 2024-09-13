@@ -51,18 +51,21 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       super.initState();
       WidgetsBinding.instance.addPostFrameCallback((_) {
 
-        if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-          _authenticate(context);
-        }
       });
     }
 
 
     @override
     void dispose() {
+      print('Disposing LoginPage...');
+      emailController.clear();
+      passwordController.clear();
+      emailController.dispose();
+      passwordController.dispose();
       WidgetsBinding.instance.removeObserver(this);
       super.dispose();
     }
+
 
 
     // Sign user in method
