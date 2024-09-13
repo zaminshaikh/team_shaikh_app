@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
+import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import '../utilities.dart';
@@ -107,18 +107,18 @@ class NewDB {
         return Assets.fromMap(funds, general);
       });
 
-      return Rx.combineLatest3(clientDocumentStream, activitiesStream, assetsStream,
-      (DocumentSnapshot clientDoc, List<Activity> activities, Assets assets) => 
-        Client.fromMap(clientDoc.data() as Map<String, dynamic>, cid: cid, activities: activities, assets: assets)
-      );
+      // Stream for the notifications subcollection
+      Stream<List<CNotification>> notificationsStream =
+          notificationsSubCollection!.snapshots().map((snapshot) => snapshot
+              .docs
+              .map((doc) =>
+                  CNotification.fromMap(doc.data() as Map<String, dynamic>))
+              .toList());
 
-      // // Stream for the notifications subcollection
-      // Stream<List<Notification>> notificationsStream = notificationsSubCollection!
-      //     .snapshots()
-      //     .map((snapshot) => snapshot.docs
-      //         .map((doc) =>
-      //             Notification.fromMap(doc.data() as Map<String, dynamic>))
-      //         .toList());
+      return Rx. combineLatest4(clientDocumentStream, activitiesStream, assetsStream, notificationsStream,
+      (DocumentSnapshot clientDoc, List<Activity> activities, Assets assets, List<CNotification> notifications) => 
+        Client.fromMap(clientDoc.data() as Map<String, dynamic>, cid: cid, activities: activities, assets: assets, notifications: notifications)
+      );
 
       // // Stream for the graphPoints subcollection
       // Stream<List<GraphPoint>> graphPointsStream = graphPointsSubCollection!
