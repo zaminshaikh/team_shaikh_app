@@ -191,7 +191,7 @@ class AuthCheck extends StatelessWidget {
 
   Future<NewDB?> _fetchDatabaseService(
       BuildContext context, String uid) async {
-    return await NewDB.fetchCID(context, uid, 1);
+    return await NewDB.fetchCID(context, uid);
   }
 
   @override

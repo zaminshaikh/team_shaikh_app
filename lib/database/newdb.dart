@@ -35,12 +35,14 @@ class NewDB {
   ///
   /// For more information on the methods, see the individual method documentation.
   NewDB(this.uid);
-  NewDB.connectedUser(this.cid);
+  NewDB.connectedUser(this.cid) {
+    setSubCollections(this);
+  }
   NewDB.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
   static Future<NewDB?> fetchCID(
-      BuildContext context, String uid, int code) async {
+      BuildContext context, String uid) async {
     NewDB service = NewDB(uid);
 
     // Access Firestore and get the document
@@ -51,29 +53,30 @@ class NewDB {
       log('database.dart: UID $uid found in Firestore.');
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
-      service.assetsSubCollection = usersCollection
-          .doc(service.cid)
-          .collection(Config.get('ASSETS_SUBCOLLECTION'));
-      service.graphPointsSubCollection = service.assetsSubCollection
-          ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
-          .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
-      service.activitiesSubCollection = usersCollection
-          .doc(service.cid)
-          .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
-      service.notificationsSubCollection = usersCollection
-          .doc(service.cid)
-          .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
       service.connectedUsersCIDs = querySnapshot.docs.first['connectedUsers'];
+      setSubCollections(service);
 
-      // Now you can use 'cid' in your code
-      // log('database.dart: CID: ${service.cid}');
-      // log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
       return null;
     }
 
     return service;
+  }
+
+  static void setSubCollections(NewDB service) {
+    service.assetsSubCollection = usersCollection
+      .doc(service.cid)
+      .collection(Config.get('ASSETS_SUBCOLLECTION'));
+    service.graphPointsSubCollection = service.assetsSubCollection
+      ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
+      .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
+    service.activitiesSubCollection = usersCollection
+      .doc(service.cid)
+      .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
+    service.notificationsSubCollection = usersCollection
+      .doc(service.cid)
+      .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
   }
   
 
@@ -95,12 +98,12 @@ class NewDB {
       if (!isConnectedUser && connectedUsersCIDs != null && connectedUsersCIDs != []) {
          connectedUsersStream = Rx.combineLatestList(
             connectedUsersCIDs!
-                .map((cid) =>
-                {
+                .map((cid) {
                   NewDB db = NewDB.connectedUser(cid);
-                  return getClientStream(cid: cid, isConnectedUser: true);
+                  return db.getClientStream(cid: db.cid, isConnectedUser: true)
+                    .asBroadcastStream();
                 })
-                .toList());
+                .toList()).asBroadcastStream();
       } else {
         connectedUsersStream = const Stream.empty();
       }

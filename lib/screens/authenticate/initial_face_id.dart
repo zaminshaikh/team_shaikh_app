@@ -51,7 +51,7 @@ Future<void> _initialAuthenticate(BuildContext context) async {
         String? uid = FirebaseAuth.instance.currentUser?.uid;
 
         // Get the NewDB instance from context or wherever it is instantiated
-        final NewDB? db = await NewDB.fetchCID(context, uid!, 1);
+        final NewDB? db = await NewDB.fetchCID(context, uid!);
 
         // Set hasTransitioned to false
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -76,10 +76,7 @@ Future<void> _initialAuthenticate(BuildContext context) async {
   }
 
   @override
-  Widget build(BuildContext context) {
-
-    
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -158,6 +155,5 @@ Future<void> _initialAuthenticate(BuildContext context) async {
             ),
           ),
         );
-  }
   }
   
