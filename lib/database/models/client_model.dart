@@ -55,7 +55,8 @@ class Client {
           List<Activity>? activities, 
           Assets? assets, 
           List<CNotification>? notifications,
-          List<GraphPoint>? graphPoints}) =>
+          List<GraphPoint>? graphPoints,
+          List<Client>? connectedUsers}) =>
       Client(
         cid: data['cid'] ?? cid ?? '',
         uid: data['uid'],
@@ -69,11 +70,7 @@ class Client {
         initEmail: data['initEmail'],
         firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
         beneficiaries: List<String>.from(data['beneficiaries']),
-        connectedUsers: List<Client>.from(
-            data['connectedUsers'].map((cid) => getClient(cid))),
-        // totalAssets: (data['totalAssets'] ?? 0 as num).toDouble(),
-        // ytd: (data['ytd'] ?? 0 as num).toDouble(),
-        // totalYTD: (data['totalYTD'] ?? 0 as num).toDouble(),
+        connectedUsers: connectedUsers,
         activities: activities,
         graphPoints: graphPoints,
         assets: assets,

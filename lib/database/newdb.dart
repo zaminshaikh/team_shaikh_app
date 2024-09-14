@@ -11,13 +11,14 @@ import 'package:rxdart/rxdart.dart';
 
 class NewDB {
   String? cid;
-  final String uid;
+  String? uid;
   static final CollectionReference usersCollection = FirebaseFirestore.instance
       .collection(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'));
   CollectionReference? assetsSubCollection;
   CollectionReference? activitiesSubCollection;
   CollectionReference? notificationsSubCollection;
   CollectionReference? graphPointsSubCollection;
+  List<dynamic>? connectedUsersCIDs;
 
   /// A new instance of [NewDB] with the given [cid] and [uid].
   ///
@@ -34,6 +35,7 @@ class NewDB {
   ///
   /// For more information on the methods, see the individual method documentation.
   NewDB(this.uid);
+  NewDB.connectedUser(this.cid);
   NewDB.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
@@ -49,18 +51,20 @@ class NewDB {
       log('database.dart: UID $uid found in Firestore.');
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
-          service.assetsSubCollection = usersCollection
-              .doc(service.cid)
-              .collection(Config.get('ASSETS_SUBCOLLECTION'));
-          service.graphPointsSubCollection = service.assetsSubCollection
-              ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
-              .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
-          service.activitiesSubCollection = usersCollection
-              .doc(service.cid)
-              .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
-          service.notificationsSubCollection = usersCollection
-              .doc(service.cid)
-              .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
+      service.assetsSubCollection = usersCollection
+          .doc(service.cid)
+          .collection(Config.get('ASSETS_SUBCOLLECTION'));
+      service.graphPointsSubCollection = service.assetsSubCollection
+          ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
+          .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
+      service.activitiesSubCollection = usersCollection
+          .doc(service.cid)
+          .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
+      service.notificationsSubCollection = usersCollection
+          .doc(service.cid)
+          .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
+      service.connectedUsersCIDs = querySnapshot.docs.first['connectedUsers'];
+
       // Now you can use 'cid' in your code
       // log('database.dart: CID: ${service.cid}');
       // log('database.dart: Connected users: ${await service.fetchConnectedCids(service.cid!)}');
@@ -71,11 +75,14 @@ class NewDB {
 
     return service;
   }
+  
+
+
 
   // Stream that listens to changes in the user's client data and subcollections
-  Stream<Client?> getClientStream() {
+  Stream<Client?> getClientStream({String? cid, bool isConnectedUser = false}) {
     print('CLIENT STREAM CALLED');
-    if (cid == null) {
+    if (this.cid == null && cid == null) {
       throw Exception('CID is not initialized.');
     }
     try {
@@ -83,6 +90,20 @@ class NewDB {
       // Stream for the main client document
       Stream<DocumentSnapshot> clientDocumentStream =
           usersCollection.doc(cid).snapshots();
+
+      Stream<List<Client?>> connectedUsersStream;
+      if (!isConnectedUser && connectedUsersCIDs != null && connectedUsersCIDs != []) {
+         connectedUsersStream = Rx.combineLatestList(
+            connectedUsersCIDs!
+                .map((cid) =>
+                {
+                  NewDB db = NewDB.connectedUser(cid);
+                  return getClientStream(cid: cid, isConnectedUser: true);
+                })
+                .toList());
+      } else {
+        connectedUsersStream = const Stream.empty();
+      }
 
       // Stream for the activities subcollection
       Stream<List<Activity>> activitiesStream = activitiesSubCollection!
@@ -125,18 +146,29 @@ class NewDB {
                   (doc) => GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-      return Rx. combineLatest5(clientDocumentStream, activitiesStream, assetsStream, notificationsStream, graphPointsStream,
-      (DocumentSnapshot clientDoc, 
-      List<Activity> activities, 
-      Assets assets, 
-      List<CNotification> notifications, 
-      List<GraphPoint> graphPoints) => 
-        Client.fromMap(clientDoc.data() as Map<String, dynamic>, 
-        cid: cid, 
-        activities: activities, 
-        assets: assets, 
-        notifications: notifications, 
-        graphPoints: graphPoints)
+
+        return Rx.combineLatest6(
+          clientDocumentStream, 
+          activitiesStream, 
+          assetsStream, 
+          notificationsStream, 
+          graphPointsStream,
+          connectedUsersStream,
+          (DocumentSnapshot clientDoc, 
+          List<Activity> activities, 
+          Assets assets, 
+          List<CNotification> notifications, 
+          List<GraphPoint> graphPoints, 
+          List<Client?> connectedUsers) => 
+            Client.fromMap(
+              clientDoc.data() as Map<String, dynamic>, 
+              cid: cid, 
+              activities: activities, 
+              assets: assets, 
+              notifications: notifications, 
+              graphPoints: graphPoints,
+              connectedUsers: connectedUsers.whereType<Client>().toList() // Filter out null values
+            )
       );
 
 
