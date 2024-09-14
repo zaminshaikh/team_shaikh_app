@@ -53,7 +53,7 @@ class NewDB {
       log('database.dart: UID $uid found in Firestore.');
       // Document found, access the 'cid' field
       service.cid = querySnapshot.docs.first.id;
-      service.connectedUsersCIDs = querySnapshot.docs.first['connectedUsers'];
+      service.connectedUsersCIDs = querySnapshot.docs.first['connectedUsers'] ?? [];
       setSubCollections(service);
 
     } else {
@@ -83,11 +83,12 @@ class NewDB {
 
 
   // Stream that listens to changes in the user's client data and subcollections
-  Stream<Client?> getClientStream({String? cid, bool isConnectedUser = false}) {
+  Stream<Client?> getClientStream({bool isConnectedUser = false}) {
     print('CLIENT STREAM CALLED');
-    if (this.cid == null && cid == null) {
+    if (this.cid == null) {
       throw Exception('CID is not initialized.');
     }
+
     try {
       
       // Stream for the main client document
@@ -95,17 +96,17 @@ class NewDB {
           usersCollection.doc(cid).snapshots();
 
       Stream<List<Client?>> connectedUsersStream;
-      if (!isConnectedUser && connectedUsersCIDs != null && connectedUsersCIDs != []) {
+      if (!isConnectedUser && connectedUsersCIDs != null && connectedUsersCIDs!.isNotEmpty) {
          connectedUsersStream = Rx.combineLatestList(
             connectedUsersCIDs!
                 .map((cid) {
                   NewDB db = NewDB.connectedUser(cid);
-                  return db.getClientStream(cid: db.cid, isConnectedUser: true)
+                  return db.getClientStream(isConnectedUser: true)
                     .asBroadcastStream();
                 })
                 .toList()).asBroadcastStream();
       } else {
-        connectedUsersStream = const Stream.empty();
+        connectedUsersStream = Stream.value([Client.empty()]);
       }
 
       // Stream for the activities subcollection
@@ -162,7 +163,8 @@ class NewDB {
           Assets assets, 
           List<CNotification> notifications, 
           List<GraphPoint> graphPoints, 
-          List<Client?> connectedUsers) => 
+          List<Client?> connectedUsers
+          ) => 
             Client.fromMap(
               clientDoc.data() as Map<String, dynamic>, 
               cid: cid, 
@@ -170,175 +172,13 @@ class NewDB {
               assets: assets, 
               notifications: notifications, 
               graphPoints: graphPoints,
-              connectedUsers: connectedUsers.whereType<Client>().toList() // Filter out null values
+              connectedUsers: connectedUsers.whereType<Client>().toList(),
+              // connectedUsers.whereType<Client>().toList() // Filter out null values
             )
       );
-
-
-      // Combine all streams to emit a new Client object whenever any part changes
-      // return Rx.combineLatest5(
-      //   clientDocumentStream,
-      //   activitiesStream,
-      //   notificationsStream,
-      //   graphPointsStream,
-      //   assetsStream,
-      //   (DocumentSnapshot clientDoc,
-      //       List<Activity> activities,
-      //       List<Notification> notifications,
-      //       List<GraphPoint> graphPoints,
-      //       Assets assets) {
-      //     if (clientDoc.exists) {
-      //       Map<String, dynamic> clientData =
-      //           clientDoc.data() as Map<String, dynamic>;
-
-      //       return Client(
-      //         cid: cid ?? clientDoc.id,
-      //         uid: clientData['uid'],
-      //         firstName: clientData['name']['first'],
-      //         lastName: clientData['name']['last'],
-      //         companyName: clientData['name']['company'],
-      //         address: clientData['address'],
-      //         dob: (clientData['dob'] as Timestamp?)?.toDate(),
-      //         phoneNumber: clientData['phoneNumber'],
-      //         appEmail: clientData['appEmail'] ?? '',
-      //         initEmail: clientData['initEmail'] ?? '',
-      //         firstDepositDate:
-      //             (clientData['firstDepositDate'] as Timestamp?)?.toDate(),
-      //         beneficiaries: List<String>.from(clientData['beneficiaries'] ?? ''),
-      //         connectedUsers: clientData['connectedUsers'] != null
-      //             ? List<Client>.from(
-      //                 clientData['connectedUsers'].map((cid) => getClient(cid)))
-      //             : null,
-      //         totalAssets: 0.0, // TODO: Implement total assets fetch
-      //         ytd: 0.0, // TODO: Implement YTD fetch
-      //         totalYTD: 0.0, // TODO: Implement YTD fetch
-      //         activities: activities,
-      //         notifications: notifications,
-      //         graphPoints: graphPoints,
-      //         assets: assets,
-      //       );
-      //     } else {
-      //       return null;
-      //     }
-      //   },
-      // );
     } catch (e) {
       log('database.dart: Error in getClientStream: $e');
       return Stream.value(null);
     }
   }
 }
-
-  // Stream<Client?> getClientStream() {
-  //   if (cid == null) {
-  //     throw Exception('CID is not initialized.');
-  //   }
-
-  //   // Stream for the main client document
-  //   Stream<DocumentSnapshot> clientDocumentStream =
-  //       usersCollection.doc(cid).snapshots();
-
-  //   // Map the DocumentSnapshot to a Client object
-  //   return clientDocumentStream.map((snapshot) {
-  //     if (snapshot.exists && snapshot.data() != null) {
-  //       return Client.empty();
-  //     } else {
-  //       return Client.empty();
-  //     }
-  //   });
-  // }
-
-//   Stream<Client?> getFakeClientStream() async* {
-//     print('Fake client stream started');
-
-//     // Simulate a delay as if fetching from a database
-//     await Future.delayed(Duration(seconds: 5));
-
-//     // Yield a fake Client object
-//     yield Client(
-//       cid: 'fakeCID',
-//       uid: 'fakeUID',
-//       firstName: 'John',
-//       lastName: 'Doe',
-//       companyName: 'Fake Company',
-//       address: '123 Fake St.',
-//       dob: DateTime(1990, 1, 1),
-//       phoneNumber: '123-456-7890',
-//       appEmail: 'johndoe@example.com',
-//       initEmail: 'john.init@example.com',
-//       firstDepositDate: DateTime(2020, 5, 15),
-//       beneficiaries: ['Beneficiary 1', 'Beneficiary 2'],
-//       connectedUsers: [],
-//       totalAssets: 100000.0,
-//       ytd: 5000.0,
-//       totalYTD: 20000.0,
-//       notifications: [],
-//       activities: [],
-//       graphPoints: [],
-//       assets: Assets(
-//         agq: AssetDetails(
-//           personal: 1000.0,
-//           company: 2000.0,
-//           trad: 500.0,
-//           roth: 300.0,
-//           sep: 400.0,
-//           nuviewTrad: 0.0,
-//           nuviewRoth: 0.0,
-//         ),
-//         ak1: AssetDetails(
-//           personal: 2000.0,
-//           company: 3000.0,
-//           trad: 700.0,
-//           roth: 500.0,
-//           sep: 600.0,
-//           nuviewTrad: 0.0,
-//           nuviewRoth: 0.0,
-//         ),
-//       ),
-//     );
-
-//     // Simulate another update after some time
-//     await Future.delayed(Duration(seconds: 5));
-//     yield Client(
-//       cid: 'fakeCID',
-//       uid: 'fakeUID',
-//       firstName: 'Jane',
-//       lastName: 'Doe',
-//       companyName: 'Fake Company 2',
-//       address: '456 Fake St.',
-//       dob: DateTime(1992, 6, 21),
-//       phoneNumber: '321-654-9870',
-//       appEmail: 'janedoe@example.com',
-//       initEmail: 'jane.init@example.com',
-//       firstDepositDate: DateTime(2021, 2, 10),
-//       beneficiaries: ['Beneficiary A', 'Beneficiary B'],
-//       connectedUsers: [],
-//       totalAssets: 150000.0,
-//       ytd: 10000.0,
-//       totalYTD: 30000.0,
-//       notifications: [],
-//       activities: [],
-//       graphPoints: [],
-//       assets: Assets(
-//         agq: AssetDetails(
-//           personal: 1500.0,
-//           company: 2500.0,
-//           trad: 800.0,
-//           roth: 600.0,
-//           sep: 500.0,
-//           nuviewTrad: 0.0,
-//           nuviewRoth: 0.0,
-//         ),
-//         ak1: AssetDetails(
-//           personal: 3000.0,
-//           company: 4000.0,
-//           trad: 900.0,
-//           roth: 700.0,
-//           sep: 800.0,
-//           nuviewTrad: 0.0,
-//           nuviewRoth: 0.0,
-//         ),
-//       ),
-//     );
-//   }
-// }
