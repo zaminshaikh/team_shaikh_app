@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
@@ -51,9 +52,22 @@ class NewDB {
 
     if (querySnapshot.size > 0) {
       log('database.dart: UID $uid found in Firestore.');
+
       // Document found, access the 'cid' field
-      service.cid = querySnapshot.docs.first.id;
-      service.connectedUsersCIDs = querySnapshot.docs.first['connectedUsers'] ?? [];
+      QueryDocumentSnapshot snapshot = querySnapshot.docs.first;
+      service.cid = snapshot.id;
+
+      // Cast snapshot.data() to Map<String, dynamic>
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+      // Check if 'connectedUsers' field exists before trying to access it
+      if (data.containsKey('connectedUsers')) {
+        service.connectedUsersCIDs = data['connectedUsers'] ?? [];
+      } else {
+        log('database.dart: Field "connectedUsers" does not exist in document.');
+        service.connectedUsersCIDs = []; // Or handle this case as needed
+      }
+
       setSubCollections(service);
 
     } else {
@@ -106,7 +120,7 @@ class NewDB {
                 })
                 .toList()).asBroadcastStream();
       } else {
-        connectedUsersStream = Stream.value([Client.empty()]);
+        connectedUsersStream = Stream.value([null]);
       }
 
       // Stream for the activities subcollection
@@ -164,17 +178,24 @@ class NewDB {
           List<CNotification> notifications, 
           List<GraphPoint> graphPoints, 
           List<Client?> connectedUsers
-          ) => 
-            Client.fromMap(
-              clientDoc.data() as Map<String, dynamic>, 
+          ) {
+            final clientData = clientDoc.data() as Map<String, dynamic>?;
+
+            if (clientData == null) {
+              log('clientDoc.data() is null for cid: $cid');
+              return Client.empty();
+            }
+            return Client.fromMap(
               cid: cid, 
+              clientDoc.data() as Map<String, dynamic>, 
               activities: activities, 
               assets: assets, 
               notifications: notifications, 
               graphPoints: graphPoints,
-              connectedUsers: connectedUsers.whereType<Client>().toList(),
+              connectedUsers: connectedUsers,
               // connectedUsers.whereType<Client>().toList() // Filter out null values
-            )
+            );
+          }
       );
     } catch (e) {
       log('database.dart: Error in getClientStream: $e');

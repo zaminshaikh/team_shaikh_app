@@ -100,12 +100,6 @@ class _DashboardPageState extends State<DashboardPage>
       await Navigator.pushReplacementNamed(context, '/login');
     }
 
-    DatabaseService? service = await DatabaseService.fetchCID(context, user!.uid, 1);
-    if (service == null && mounted) {
-      await Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      _databaseService = service!;
-    }
   }
 
 
@@ -116,7 +110,9 @@ class _DashboardPageState extends State<DashboardPage>
     // Access the Client data from the StreamProvider
     Client? client = Provider.of<Client?>(context) ;
 
-    client?.connectedUsers?.forEach((element) {print(element.toMap());});
+    print(client?.toMap());
+
+    client?.connectedUsers?.forEach((element) {print(element?.toMap());});
 
     // If the client is null, show a loading indicator
     if (client == null) {

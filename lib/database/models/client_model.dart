@@ -17,7 +17,7 @@ class Client {
   final String? initEmail;
   final DateTime? firstDepositDate;
   final List<String>? beneficiaries;
-  final List<Client>? connectedUsers;
+  final List<Client?>? connectedUsers;
   final double? totalAssets;
   final double? ytd;
   final double? totalYTD;
@@ -50,32 +50,37 @@ class Client {
     this.assets,
   });
 
-  factory Client.fromMap(Map<String, dynamic> data,
-          {String? cid, 
-          List<Activity>? activities, 
-          Assets? assets, 
-          List<CNotification>? notifications,
-          List<GraphPoint>? graphPoints,
-          List<Client>? connectedUsers}) =>
-      Client(
-        cid: data['cid'] ?? cid ?? '',
-        uid: data['uid'],
-        firstName: data['name']['first'] ?? '',
-        lastName: data['name']['last'] ?? '',
-        companyName: data['name']['company'] ?? '',
-        address: data['address'],
-        dob: (data['dob'] as Timestamp?)?.toDate(),
-        phoneNumber: data['phoneNumber'],
-        appEmail: data['appEmail'],
-        initEmail: data['initEmail'],
-        firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
-        beneficiaries: List<String>.from(data['beneficiaries']),
-        connectedUsers: connectedUsers,
-        activities: activities,
-        graphPoints: graphPoints,
-        assets: assets,
-        notifications: notifications,
-      );
+factory Client.fromMap(Map<String, dynamic>? data,
+      {String? cid,
+      List<Activity>? activities,
+      Assets? assets,
+      List<CNotification>? notifications,
+      List<GraphPoint>? graphPoints,
+      List<Client?>? connectedUsers}) {
+    if (data == null) {
+      return Client.empty();
+    }
+
+    return Client(
+      cid: data['cid'] ?? cid ?? '',
+      uid: data['uid'] ?? '',
+      firstName: data['name']?['first'] ?? '',
+      lastName: data['name']?['last'] ?? '',
+      companyName: data['name']?['company'] ?? '',
+      address: data['address'] ?? '',
+      dob: (data['dob'] as Timestamp?)?.toDate(),
+      phoneNumber: data['phoneNumber'] ?? '',
+      appEmail: data['appEmail'] ?? '',
+      initEmail: data['initEmail'] ?? '',
+      firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
+      beneficiaries: List<String>.from(data['beneficiaries'] ?? []),
+      connectedUsers: connectedUsers ?? [],
+      activities: activities ?? [],
+      graphPoints: graphPoints ?? [],
+      assets: assets,
+      notifications: notifications ?? [],
+    );
+  }
 
   // Empty constructor
   Client.empty()
