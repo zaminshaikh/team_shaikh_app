@@ -1,15 +1,13 @@
-
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
-import 'package:team_shaikh_app/database/newdb.dart'; 
-
-int unreadNotificationsCount = 0;
+import 'package:team_shaikh_app/database/newdb.dart';
 
 class DashboardPage extends StatefulWidget {
   final bool fromFaceIdPage;
@@ -23,8 +21,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with SingleTickerProviderStateMixin {
   // database service instance
-  DatabaseService? _databaseService;
-  AppState? appState;
+  AuthState? authState;
+  Client? client;
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
   bool _hasTransitioned = false;
@@ -32,33 +30,46 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   void initState() {
     super.initState();
-
     // Initialize the transition state
     _initializeTransitionState();
-
-    // Initialize appState if it's null
-    appState ??= AppState();
-
-    // Check if hasNavigatedToFaceIDPage is null and set it to false if it is
-    if (appState?.hasNavigatedToFaceIDPage == null) {
-      appState?.setHasNavigatedToFaceIDPage(false);
-    }
-
-    if (widget.fromFaceIdPage) {
-      appState?.setHasNavigatedToFaceIDPage(false);
-      appState?.setJustAuthenticated(true);
-    } else {}
-    _initData();
+    // Initialize the auth state and update the state
+    _updateAuthState();
+    // Validate whether the user is authenticated
+    _validateAuth();
   }
+
+
+  @override
   void dispose() {
     _controller.dispose(); // Dispose of the animation controller
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client?>(context);
+  }
+
+  void _updateAuthState() {
+    // Initialize our  if it's null
+    authState ??= AuthState();
+
+    // Check if hasNavigatedToFaceIDPage is null and set it to false if it is
+    if (authState?.hasNavigatedToFaceIDPage == null) {
+      authState?.setHasNavigatedToFaceIDPage(false);
+    }
+
+    if (widget.fromFaceIdPage) {
+      authState?.setHasNavigatedToFaceIDPage(false);
+      authState?.setJustAuthenticated(true);
+    } else {}
+  }
+
   Future<void> _initializeTransitionState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _hasTransitioned = prefs.getBool('hasTransitioned') ?? false;
-  
+
     if (!_hasTransitioned) {
       _controller = AnimationController(
         duration: const Duration(seconds: 3),
@@ -71,7 +82,7 @@ class _DashboardPageState extends State<DashboardPage>
         parent: _controller,
         curve: Curves.easeInOut,
       ));
-  
+
       // Set the flag to true after the animation completes
       _controller.addStatusListener((status) async {
         if (status == AnimationStatus.completed) {
@@ -91,39 +102,19 @@ class _DashboardPageState extends State<DashboardPage>
     }
   }
 
-  Future<void> _initData() async {
-    await Future.delayed(const Duration(seconds: 1));
-
+  Future<void> _validateAuth() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null && mounted) {
       log('dashboard.dart: User is not logged in');
       await Navigator.pushReplacementNamed(context, '/login');
     }
-
   }
-
-
 
   @override
   Widget build(BuildContext context) {
-    print('DASHBOARD');
-    // Access the Client data from the StreamProvider
-    Client? client = Provider.of<Client?>(context) ;
-
-    print(client?.toMap());
-
-    client?.connectedUsers?.forEach((element) {print(element?.toMap());});
-
     // If the client is null, show a loading indicator
     if (client == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Dashboard'),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const CustomProgressIndicator();
     }
 
     // If the client is not null, display the data
@@ -136,9 +127,9 @@ class _DashboardPageState extends State<DashboardPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${client.firstName} ${client.lastName}'),
-            Text('Company: ${client.companyName}'),
-            Text('Total Assets: \$${client.totalAssets}'),
+            Text('Welcome, ${client!.firstName} ${client!.lastName}'),
+            Text('Company: ${client!.companyName}'),
+            Text('Total Assets: \$${client!.totalAssets}'),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _handleButtonPress, // Example action handler

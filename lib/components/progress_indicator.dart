@@ -5,7 +5,7 @@ class CustomProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const CircularProgressIndicator(
-      valueColor: const AlwaysStoppedAnimation<Color>(Colors.transparent),
+      valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
       strokeWidth: 6.0,
     );
 }

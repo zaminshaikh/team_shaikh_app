@@ -22,6 +22,8 @@ class ActivityPage extends StatefulWidget {
   _ActivityPageState createState() => _ActivityPageState();
 }
 
+int unreadNotificationsCount = 0;
+
 class _ActivityPageState extends State<ActivityPage> {
   final Future<void> _initializeWidgetFuture = Future.value();
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class AppState extends ChangeNotifier {
+class AuthState extends ChangeNotifier {
   bool _hasNavigatedToFaceIDPage = false;
   bool _justAuthenticated = false;
   bool _initiallyAuthenticated = false;
@@ -14,19 +14,16 @@ class AppState extends ChangeNotifier {
   // Getter for _initiallyAuthenticated
   bool get initiallyAuthenticated => _initiallyAuthenticated;
 
-
   // Setter for _hasNavigatedToFaceIDPage
   void setHasNavigatedToFaceIDPage(bool value) {
     _hasNavigatedToFaceIDPage = value;
     notifyListeners();
-
   }
 
   // Setter for _justAuthenticated
   void setJustAuthenticated(bool value) {
     _justAuthenticated = value;
     notifyListeners();
-
   }
 
   // Setter for _initiallyAuthenticated
@@ -34,5 +31,4 @@ class AppState extends ChangeNotifier {
     _initiallyAuthenticated = value;
     notifyListeners();
   }
-
 }

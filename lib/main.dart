@@ -39,7 +39,7 @@ void main() async {
   ]).then((_) {
     runApp(
       ChangeNotifierProvider(
-        create: (context) => AppState(),
+        create: (context) => AuthState(),
         child: const MyApp(),
       ),
     );
@@ -55,7 +55,7 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  AppState? appState;
+  AuthState? appState;
 
   @override
   void initState() {
@@ -73,7 +73,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Update the lifecycle state
-    final appState = Provider.of<AppState>(context, listen: false);
+    final appState = Provider.of<AuthState>(context, listen: false);
 
     if ((state == AppLifecycleState.paused ||
             state == AppLifecycleState.inactive ||
@@ -189,8 +189,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
-  Future<NewDB?> _fetchDatabaseService(
-      BuildContext context, String uid) async {
+  Future<NewDB?> _fetchDatabaseService(BuildContext context, String uid) async {
     return await NewDB.fetchCID(context, uid);
   }
 
@@ -221,7 +220,7 @@ class AuthCheck extends StatelessWidget {
                     'Error: ${serviceSnapshot.error}'); // Show an error message if there is an error in the Firestore query
               } else if (serviceSnapshot.hasData) {
                 NewDB? db = serviceSnapshot.data;
-                
+
                 // Debug print to check if db is null or valid
                 if (db == null) {
                   log('main.dart: NewDB is null for UID ${user.uid}');

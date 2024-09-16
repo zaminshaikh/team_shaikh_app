@@ -19,7 +19,8 @@ class InitialFaceIdPage extends StatefulWidget {
   _InitialFaceIdPageState createState() => _InitialFaceIdPageState();
 }
 
-class _InitialFaceIdPageState extends State<InitialFaceIdPage> with WidgetsBindingObserver {
+class _InitialFaceIdPageState extends State<InitialFaceIdPage>
+    with WidgetsBindingObserver {
   final LocalAuthentication auth = LocalAuthentication();
 
   @override
@@ -32,7 +33,7 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage> with WidgetsBindi
     super.dispose();
   }
 
-Future<void> _initialAuthenticate(BuildContext context) async {
+  Future<void> _initialAuthenticate(BuildContext context) async {
     if (!mounted) return;
 
     try {
@@ -45,7 +46,7 @@ Future<void> _initialAuthenticate(BuildContext context) async {
       );
 
       if (authenticated && mounted) {
-        final appState = Provider.of<AppState>(context, listen: false);
+        final appState = Provider.of<AuthState>(context, listen: false);
         appState.setInitiallyAuthenticated(true); // Set the flag
 
         String? uid = FirebaseAuth.instance.currentUser?.uid;
@@ -60,11 +61,13 @@ Future<void> _initialAuthenticate(BuildContext context) async {
         await Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => StreamProvider<Client?>(
-                create: (_) => db!.getClientStream(), // Provide the stream to DashboardPage
-                initialData: null,
-                child: const DashboardPage(fromFaceIdPage: true),
-              ),
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                StreamProvider<Client?>(
+              create: (_) =>
+                  db!.getClientStream(), // Provide the stream to DashboardPage
+              initialData: null,
+              child: const DashboardPage(fromFaceIdPage: true),
+            ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) => child,
           ),
@@ -77,83 +80,82 @@ Future<void> _initialAuthenticate(BuildContext context) async {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 80.0),
-                        Image.asset(
-                          'assets/icons/team_shaikh_transparent.png',
-                          height: 120,
-                          width: 120,
-                        ),
-                        const SizedBox(height: 8.0),
-                        const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Team Shaikh App Locked',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Unlock with Face ID to continue',
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 45,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await _initialAuthenticate(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.defaultBlue500,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'Use Face ID',
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 80.0),
+                      Image.asset(
+                        'assets/icons/team_shaikh_transparent.png',
+                        height: 120,
+                        width: 120,
+                      ),
+                      const SizedBox(height: 8.0),
+                      const Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Team Shaikh App Locked',
                           style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
+                            fontSize: 25,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      const Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Unlock with Face ID to continue',
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 45,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await _initialAuthenticate(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.defaultBlue500,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Use Face ID',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-  }
-  
+        ),
+      );
+}
