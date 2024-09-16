@@ -803,10 +803,10 @@ class _DashboardPageState extends State<DashboardPage>
 
   Widget _buildAssetsStructureSection() {
     // double totalAGQ = client!.totalAGQ;
-    double totalAGQ = 0;
+    double totalAGQ = client!.assets?.funds['agq']?.total ?? 0;
 
     // double totalAK1 = client!.totalAK1;
-    double totalAK1 = 0;
+    double totalAK1 = client!.assets?.funds['ak1']?.total ?? 0;
     
     
     // double totalAssets = client!.assets?.totalAssets;

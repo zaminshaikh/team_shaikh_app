@@ -41,6 +41,7 @@ class Fund {
   final double sep;
   final double nuviewTrad;
   final double nuviewRoth;
+  final double total;
 
   Fund({
     required this.personal,
@@ -50,6 +51,7 @@ class Fund {
     required this.sep,
     required this.nuviewTrad,
     required this.nuviewRoth,
+    required this.total
   });
 
   factory Fund.fromMap(Map<String, dynamic> data) => Fund(
@@ -60,6 +62,7 @@ class Fund {
         sep: (data['sep'] as num).toDouble(),
         nuviewTrad: (data['nuviewTrad'] as num).toDouble(),
         nuviewRoth: (data['nuviewRoth'] as num).toDouble(),
+        total: (data['total'] as num).toDouble(),
       );
 
   // Empty constructor for Fund
@@ -70,7 +73,8 @@ class Fund {
         roth = 0.0,
         sep = 0.0,
         nuviewTrad = 0.0,
-        nuviewRoth = 0.0;
+        nuviewRoth = 0.0,
+        total = 0.0;
 
   Map<String, dynamic> toMap() => {
         'personal': personal,
@@ -80,5 +84,6 @@ class Fund {
         'sep': sep,
         'nuviewTrad': nuviewTrad,
         'nuviewRoth': nuviewRoth,
+        'total': total,
       };
 }

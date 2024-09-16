@@ -19,10 +19,7 @@ class Client {
   final List<String>? beneficiaries;
   final List<Client?>? connectedUsers;
   final double? totalAssets;
-  final double? ytd;
-  final double? totalYTD;
   final int? numNotifsUnread;
-
   List<Notif>? notifications;
   List<Activity>? activities;
   List<GraphPoint>? graphPoints;
@@ -35,8 +32,6 @@ class Client {
     required this.lastName,
     required this.appEmail,
     this.totalAssets,
-    this.ytd,
-    this.totalYTD,
     this.companyName,
     this.address,
     this.dob,
@@ -55,7 +50,6 @@ class Client {
   factory Client.fromMap(Map<String, dynamic>? data,
       {String? cid,
       List<Activity>? activities,
-      int? numNotifsUnread,
       Assets? assets,
       List<Notif>? notifications,
       List<GraphPoint>? graphPoints,
@@ -102,13 +96,12 @@ class Client {
         beneficiaries = [],
         connectedUsers = [],
         totalAssets = 0.0,
-        ytd = 0.0,
-        totalYTD = 0.0,
         numNotifsUnread = 0,
         notifications = [],
         activities = [],
         graphPoints = [],
         assets = Assets.empty();
+
   Map<String, dynamic> toMap() => {
         'cid': cid,
         'uid': uid,
@@ -124,8 +117,6 @@ class Client {
         'beneficiaries': beneficiaries,
         'connectedUsers': connectedUsers,
         'totalAssets': totalAssets,
-        'ytd': ytd,
-        'totalYTD': totalYTD,
         'activities': activities?.map((e) => e.toMap()).toList(),
         'graphPoints': graphPoints?.map((e) => e.toMap()).toList(),
         'assets': assets?.toMap(),
@@ -147,8 +138,6 @@ Client getClient(cid) => Client(
       beneficiaries: [],
       connectedUsers: [],
       totalAssets: 0,
-      ytd: 0,
-      totalYTD: 0,
       activities: [],
       graphPoints: [],
       notifications: [],
