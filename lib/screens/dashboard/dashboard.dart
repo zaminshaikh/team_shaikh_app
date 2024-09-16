@@ -15,6 +15,7 @@ import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:intl/intl.dart';
+import 'package:team_shaikh_app/utilities.dart';
 
 class DashboardPage extends StatefulWidget {
   final bool fromFaceIdPage;
@@ -205,11 +206,6 @@ class _DashboardPageState extends State<DashboardPage>
     );
   }
 
-  String _currencyFormat(double amount) => NumberFormat.currency(
-        symbol: '\$',
-        decimalDigits: 2,
-        locale: 'en_US',
-      ).format(amount);
 
   SliverAppBar _buildAppBar() => SliverAppBar(
         backgroundColor: const Color.fromARGB(255, 30, 41, 59),
@@ -293,8 +289,7 @@ class _DashboardPageState extends State<DashboardPage>
                           Positioned(
                             right: 0,
                             top: 5,
-                            // child: client!.unreadNotificationsCount > 0
-                            child: 0 > 0
+                            child: (client!.numNotifsUnread ?? 0) > 0
                                 ? Container(
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF267DB5),
@@ -306,7 +301,7 @@ class _DashboardPageState extends State<DashboardPage>
                                     ),
                                     // ignore: prefer_const_constructors
                                     child: Text(
-                                      '${0}',
+                                      '${client!.numNotifsUnread}',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800,
@@ -367,7 +362,7 @@ class _DashboardPageState extends State<DashboardPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _currencyFormat(client!.assets?.totalAssets ?? 0),
+                      currencyFormat(client!.assets?.totalAssets ?? 0),
                       style: const TextStyle(
                         fontSize: 35,
                         fontWeight: FontWeight.w600,
@@ -385,7 +380,7 @@ class _DashboardPageState extends State<DashboardPage>
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          _currencyFormat(client!.assets?.totalYTD ?? 0),
+                          currencyFormat(client!.assets?.totalYTD ?? 0),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -545,7 +540,7 @@ class _DashboardPageState extends State<DashboardPage>
               ),
               const SizedBox(width: 5),
               Text(
-                _currencyFormat(client!.assets?.ytd ?? 0),
+                currencyFormat(client!.assets?.ytd ?? 0),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -556,7 +551,7 @@ class _DashboardPageState extends State<DashboardPage>
             ],
           ),
           subtitle: Text(
-            _currencyFormat(client!.assets?.totalAssets ?? 0),
+            currencyFormat(client!.assets?.totalAssets ?? 0),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.normal,
@@ -662,7 +657,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
               ),
               const SizedBox(width: 5),
               Text(
-                _currencyFormat(connectedUser.assets?.ytd ?? 0),
+                currencyFormat(connectedUser.assets?.ytd ?? 0),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -673,7 +668,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
             ],
           ),
           subtitle: Text(
-            _currencyFormat(connectedUser.assets?.totalAssets ?? 0),
+            currencyFormat(connectedUser.assets?.totalAssets ?? 0),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.normal,
@@ -770,7 +765,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
         ),
       ),
       trailing: Text(
-        _currencyFormat(amount),
+        currencyFormat(amount),
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
@@ -890,7 +885,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
                         ),
                       ),
                       Text(
-                        _currencyFormat(client!.assets?.totalAssets ?? 0),
+                        currencyFormat(client!.assets?.totalAssets ?? 0),
                         style: const TextStyle(
                           fontSize: 22,
                           color: Colors.white,

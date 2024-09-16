@@ -42,8 +42,7 @@ class NewDB {
   NewDB.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
-  static Future<NewDB?> fetchCID(
-      BuildContext context, String uid) async {
+  static Future<NewDB?> fetchCID(BuildContext context, String uid) async {
     NewDB service = NewDB(uid);
 
     // Access Firestore and get the document
@@ -69,7 +68,6 @@ class NewDB {
       }
 
       setSubCollections(service);
-
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
       return null;
@@ -80,21 +78,18 @@ class NewDB {
 
   static void setSubCollections(NewDB service) {
     service.assetsSubCollection = usersCollection
-      .doc(service.cid)
-      .collection(Config.get('ASSETS_SUBCOLLECTION'));
+        .doc(service.cid)
+        .collection(Config.get('ASSETS_SUBCOLLECTION'));
     service.graphPointsSubCollection = service.assetsSubCollection
-      ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
-      .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
+        ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
+        .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
     service.activitiesSubCollection = usersCollection
-      .doc(service.cid)
-      .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
+        .doc(service.cid)
+        .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
     service.notificationsSubCollection = usersCollection
-      .doc(service.cid)
-      .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
+        .doc(service.cid)
+        .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
   }
-  
-
-
 
   // Stream that listens to changes in the user's client data and subcollections
   Stream<Client?> getClientStream({bool isConnectedUser = false}) {
@@ -104,21 +99,20 @@ class NewDB {
     }
 
     try {
-      
       // Stream for the main client document
       Stream<DocumentSnapshot> clientDocumentStream =
           usersCollection.doc(cid).snapshots();
 
       Stream<List<Client?>> connectedUsersStream;
-      if (!isConnectedUser && connectedUsersCIDs != null && connectedUsersCIDs!.isNotEmpty) {
-         connectedUsersStream = Rx.combineLatestList(
-            connectedUsersCIDs!
-                .map((cid) {
-                  NewDB db = NewDB.connectedUser(cid);
-                  return db.getClientStream(isConnectedUser: true)
-                    .asBroadcastStream();
-                })
-                .toList()).asBroadcastStream();
+      if (!isConnectedUser &&
+          connectedUsersCIDs != null &&
+          connectedUsersCIDs!.isNotEmpty) {
+        connectedUsersStream =
+            Rx.combineLatestList(connectedUsersCIDs!.map((cid) {
+          NewDB db = NewDB.connectedUser(cid);
+          return db.getClientStream(isConnectedUser: true).asBroadcastStream();
+        }).toList())
+                .asBroadcastStream();
       } else {
         connectedUsersStream = Stream.value([null]);
       }
@@ -127,12 +121,13 @@ class NewDB {
       Stream<List<Activity>> activitiesStream = activitiesSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) => Activity.fromMap(doc.data() as Map<String, dynamic>))
+              .map(
+                  (doc) => Activity.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
       // Stream for the assets subcollection (assuming a single document in assets)
-      Stream<Assets> assetsStream = assetsSubCollection!.snapshots().map((snapshot) {
-
+      Stream<Assets> assetsStream =
+          assetsSubCollection!.snapshots().map((snapshot) {
         Map<String, Fund> funds = {};
         Map<String, dynamic> general = {};
 
@@ -148,55 +143,53 @@ class NewDB {
       });
 
       // Stream for the notifications subcollection
-      Stream<List<CNotification>> notificationsStream =
-          notificationsSubCollection!.snapshots().map((snapshot) => snapshot
-              .docs
-              .map((doc) =>
-                  CNotification.fromMap(doc.data() as Map<String, dynamic>))
+      Stream<List<Notif>> notificationsStream = notificationsSubCollection!
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => Notif.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-      
       // // Stream for the graphPoints subcollection
       Stream<List<GraphPoint>> graphPointsStream = graphPointsSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map(
-                  (doc) => GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
+              .map((doc) =>
+                  GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-
-        return Rx.combineLatest6(
-          clientDocumentStream, 
-          activitiesStream, 
-          assetsStream, 
-          notificationsStream, 
+      return Rx.combineLatest6(
+          clientDocumentStream,
+          activitiesStream,
+          assetsStream,
+          notificationsStream,
           graphPointsStream,
-          connectedUsersStream,
-          (DocumentSnapshot clientDoc, 
-          List<Activity> activities, 
-          Assets assets, 
-          List<CNotification> notifications, 
-          List<GraphPoint> graphPoints, 
-          List<Client?> connectedUsers
-          ) {
-            final clientData = clientDoc.data() as Map<String, dynamic>?;
+          connectedUsersStream, (DocumentSnapshot clientDoc,
+              List<Activity> activities,
+              Assets assets,
+              List<Notif> notifications,
+              List<GraphPoint> graphPoints,
+              List<Client?> connectedUsers) {
+        final clientData = clientDoc.data() as Map<String, dynamic>?;
 
-            if (clientData == null) {
-              log('clientDoc.data() is null for cid: $cid');
-              return Client.empty();
-            }
-            return Client.fromMap(
-              cid: cid, 
-              clientDoc.data() as Map<String, dynamic>, 
-              activities: activities, 
-              assets: assets, 
-              notifications: notifications, 
-              graphPoints: graphPoints,
-              connectedUsers: connectedUsers,
-              // connectedUsers.whereType<Client>().toList() // Filter out null values
-            );
-          }
-      );
+        if (clientData == null) {
+          log('clientDoc.data() is null for cid: $cid');
+          return Client.empty();
+        }
+        
+        int numNotifsUnread = notifications.where((notif) => notif.isRead != null && !notif.isRead!).length;
+
+        return Client.fromMap(
+          cid: cid,
+          clientDoc.data() as Map<String, dynamic>,
+          activities: activities,
+          assets: assets,
+          numNotifsUnread: numNotifsUnread,
+          notifications: notifications,
+          graphPoints: graphPoints,
+          connectedUsers: connectedUsers,
+          // connectedUsers.whereType<Client>().toList() // Filter out null values
+        );
+      });
     } catch (e) {
       log('database.dart: Error in getClientStream: $e');
       return Stream.value(null);

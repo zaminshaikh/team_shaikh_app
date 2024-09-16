@@ -21,8 +21,9 @@ class Client {
   final double? totalAssets;
   final double? ytd;
   final double? totalYTD;
+  final int? numNotifsUnread;
 
-  List<CNotification>? notifications;
+  List<Notif>? notifications;
   List<Activity>? activities;
   List<GraphPoint>? graphPoints;
   final Assets? assets;
@@ -43,6 +44,7 @@ class Client {
     this.initEmail,
     this.firstDepositDate,
     this.beneficiaries,
+    this.numNotifsUnread,
     this.connectedUsers,
     this.notifications,
     this.activities,
@@ -50,11 +52,12 @@ class Client {
     this.assets,
   });
 
-factory Client.fromMap(Map<String, dynamic>? data,
+  factory Client.fromMap(Map<String, dynamic>? data,
       {String? cid,
       List<Activity>? activities,
+      int? numNotifsUnread,
       Assets? assets,
-      List<CNotification>? notifications,
+      List<Notif>? notifications,
       List<GraphPoint>? graphPoints,
       List<Client?>? connectedUsers}) {
     if (data == null) {
@@ -74,6 +77,7 @@ factory Client.fromMap(Map<String, dynamic>? data,
       initEmail: data['initEmail'] ?? '',
       firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
       beneficiaries: List<String>.from(data['beneficiaries'] ?? []),
+      numNotifsUnread: numNotifsUnread,
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],
       graphPoints: graphPoints ?? [],
@@ -100,6 +104,7 @@ factory Client.fromMap(Map<String, dynamic>? data,
         totalAssets = 0.0,
         ytd = 0.0,
         totalYTD = 0.0,
+        numNotifsUnread = 0,
         notifications = [],
         activities = [],
         graphPoints = [],

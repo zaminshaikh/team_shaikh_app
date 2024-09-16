@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class CNotification {
+class Notif {
   final String? activityId;
   final String? recipient;
   final String title;
@@ -10,7 +10,7 @@ class CNotification {
   final String? type;
   final DateTime? time;
 
-  CNotification({
+  Notif({
     required this.activityId,
     this.recipient,
     required this.title,
@@ -21,7 +21,7 @@ class CNotification {
     required this.time,
   });
 
-  factory CNotification.fromMap(Map<String, dynamic> data) => CNotification(
+  factory Notif.fromMap(Map<String, dynamic> data) => Notif(
         activityId: data['activityId'] ?? '',
         recipient: data['recipient'] ?? '',
         title: data['title'] ?? '',
