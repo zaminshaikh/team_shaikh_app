@@ -144,6 +144,8 @@ class _DashboardPageState extends State<DashboardPage>
                         position: _offsetAnimation,
                         child: _buildUserBreakdownSection(),
                       ),
+                      if (client!.connectedUsers != null &&
+                          client!.connectedUsers!.isNotEmpty)
                       const SizedBox(height: 40),
                       if (client!.connectedUsers != null &&
                           client!.connectedUsers!.isNotEmpty)
@@ -591,45 +593,44 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Widget _buildConnectedUsersSection() => Column(
-        children: client!.connectedUsers!.map((connectedUser) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildConnectedUserBreakdownSection(connectedUser!),
-              const SizedBox(height: 20),
-            ],
-          );
-        }).toList(),
-      );
+          children: client!.connectedUsers!.map((connectedUser) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildConnectedUserBreakdownSection(connectedUser!),
+                const SizedBox(height: 20),
+              ],
+            )).toList(),
+        );
+  
 
   Widget _buildConnectedUserBreakdownSection(Client connectedUser) {
     // Initialize empty lists for the tiles
     List<ListTile> assetTilesAGQ = [];
     List<ListTile> assetTilesAK1 = [];
 
-for (var fundEntry in connectedUser.assets!.funds.entries) {
-      String fundName = fundEntry.key;
-      Fund fund = fundEntry.value;
+    for (var fundEntry in connectedUser.assets!.funds.entries) {
+          String fundName = fundEntry.key;
+          Fund fund = fundEntry.value;
 
-      // Iterate through each field in the fund
-      fund.toMap().forEach((fieldName, amount) {
-        if (amount != 0) {
-          switch (fundName.toUpperCase()) {
-            case 'AGQ':
-              assetTilesAGQ.add(_buildAssetTile(
-                  fieldName, amount.toDouble(), 'AGQ',
-                  companyName: connectedUser.companyName));
-              break;
-            case 'AK1':
-              assetTilesAK1.add(_buildAssetTile(
-                  fieldName, amount.toDouble(), 'AK1',
-                  companyName: connectedUser.companyName));
-              break;
-            default:
-              break;
-          }
-        }
-      });
+          // Iterate through each field in the fund
+          fund.toMap().forEach((fieldName, amount) {
+            if (amount != 0) {
+              switch (fundName.toUpperCase()) {
+                case 'AGQ':
+                  assetTilesAGQ.add(_buildAssetTile(
+                      fieldName, amount.toDouble(), 'AGQ',
+                      companyName: connectedUser.companyName));
+                  break;
+                case 'AK1':
+                  assetTilesAK1.add(_buildAssetTile(
+                      fieldName, amount.toDouble(), 'AK1',
+                      companyName: connectedUser.companyName));
+                  break;
+                default:
+                  break;
+              }
+            }
+          });
     }
 
     return Theme(

@@ -186,8 +186,7 @@ class NewDB {
           numNotifsUnread: numNotifsUnread,
           notifications: notifications,
           graphPoints: graphPoints,
-          connectedUsers: connectedUsers,
-          // connectedUsers.whereType<Client>().toList() // Filter out null values
+          connectedUsers: connectedUsers.whereType<Client>().toList(),
         );
       });
     } catch (e) {
