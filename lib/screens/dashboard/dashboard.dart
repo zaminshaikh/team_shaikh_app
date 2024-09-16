@@ -79,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage>
 
     if (!_hasTransitioned) {
       _controller = AnimationController(
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         vsync: this,
       )..forward();
       _offsetAnimation = Tween<Offset>(
@@ -120,7 +120,7 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   Widget build(BuildContext context) {
     if (client == null) {
-      return const CustomProgressIndicator();
+      return const CustomProgressIndicatorPage();
     }
 
     return Scaffold(
