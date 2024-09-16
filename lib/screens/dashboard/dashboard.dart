@@ -492,7 +492,7 @@ class _DashboardPageState extends State<DashboardPage>
       // Iterate through each field in the fund
       fund.toMap().forEach((fieldName, amount) {
         if (amount != 0) {
-          switch (fundName) {
+          switch (fundName.toUpperCase()) {
             case 'AGQ':
               assetTilesAGQ.add(_buildAssetTile(
                   fieldName, amount.toDouble(), 'AGQ',
@@ -556,7 +556,7 @@ class _DashboardPageState extends State<DashboardPage>
             ],
           ),
           subtitle: Text(
-            _currencyFormat(client!.totalAssets ?? 0),
+            _currencyFormat(client!.assets?.totalAssets ?? 0),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.normal,
@@ -619,7 +619,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
       // Iterate through each field in the fund
       fund.toMap().forEach((fieldName, amount) {
         if (amount != 0) {
-          switch (fundName) {
+          switch (fundName.toUpperCase()) {
             case 'AGQ':
               assetTilesAGQ.add(_buildAssetTile(
                   fieldName, amount.toDouble(), 'AGQ',
@@ -673,7 +673,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
             ],
           ),
           subtitle: Text(
-            _currencyFormat(connectedUser.totalAssets ?? 0),
+            _currencyFormat(connectedUser.assets?.totalAssets ?? 0),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.normal,
@@ -813,7 +813,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
     double totalAK1 = 0;
     
     
-    // double totalAssets = client!.totalAssets;
+    // double totalAssets = client!.assets?.totalAssets;
     double totalAssets = client!.assets?.totalAssets ?? 0;
     
     double percentageAGQ = totalAGQ / totalAssets * 100;
@@ -890,7 +890,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
                         ),
                       ),
                       Text(
-                        _currencyFormat(client!.totalAssets ?? 0),
+                        _currencyFormat(client!.assets?.totalAssets ?? 0),
                         style: const TextStyle(
                           fontSize: 22,
                           color: Colors.white,
