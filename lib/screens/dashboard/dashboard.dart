@@ -489,6 +489,9 @@ class _DashboardPageState extends State<DashboardPage>
 
       // Iterate through each field in the fund
       fund.toMap().forEach((fieldName, amount) {
+        if (fieldName == 'total' ) {
+          return;
+        }
         if (amount != 0) {
           switch (fundName.toUpperCase()) {
             case 'AGQ':
@@ -615,6 +618,9 @@ class _DashboardPageState extends State<DashboardPage>
 
           // Iterate through each field in the fund
           fund.toMap().forEach((fieldName, amount) {
+            if (fieldName == 'total') {
+              return;
+            }
             if (amount != 0) {
               switch (fundName.toUpperCase()) {
                 case 'AGQ':
