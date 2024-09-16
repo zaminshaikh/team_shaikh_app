@@ -176,14 +176,11 @@ class NewDB {
           return Client.empty();
         }
         
-        int numNotifsUnread = notifications.where((notif) => notif.isRead != null && !notif.isRead!).length;
-
         return Client.fromMap(
           cid: cid,
           clientDoc.data() as Map<String, dynamic>,
           activities: activities,
           assets: assets,
-          numNotifsUnread: numNotifsUnread,
           notifications: notifications,
           graphPoints: graphPoints,
           connectedUsers: connectedUsers.whereType<Client>().toList(),
