@@ -385,7 +385,7 @@ class _DashboardPageState extends State<DashboardPage>
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          _currencyFormat(client!.ytd ?? 0),
+                          _currencyFormat(client!.assets?.totalYTD ?? 0),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -545,7 +545,7 @@ class _DashboardPageState extends State<DashboardPage>
               ),
               const SizedBox(width: 5),
               Text(
-                _currencyFormat(client!.ytd ?? 0),
+                _currencyFormat(client!.assets?.ytd ?? 0),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -662,7 +662,7 @@ for (var fundEntry in connectedUser.assets!.funds.entries) {
               ),
               const SizedBox(width: 5),
               Text(
-                _currencyFormat(connectedUser.ytd ?? 0),
+                _currencyFormat(connectedUser.assets?.ytd ?? 0),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
