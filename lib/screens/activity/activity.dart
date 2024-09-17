@@ -6,7 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
+import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/utilities.dart';
@@ -92,6 +94,8 @@ class _ActivityPageState extends State<ActivityPage> {
   List<String> connectedUserNames = [];
   bool allFundsChecked = true;
   bool allUsersChecked = true;
+  Client? client;
+
 
   @override
   void initState() {
@@ -139,7 +143,15 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder(
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client?>(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print(client?.toMap());
+    return FutureBuilder(
       future: _initializeWidgetFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -292,6 +304,7 @@ class _ActivityPageState extends State<ActivityPage> {
           },
         );
       });
+  }
 
   bool _isSameDay(DateTime date1, DateTime date2) =>
       date1.year == date2.year &&

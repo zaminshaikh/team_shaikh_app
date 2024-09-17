@@ -49,11 +49,6 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage>
         final appState = Provider.of<AuthState>(context, listen: false);
         appState.setInitiallyAuthenticated(true); // Set the flag
 
-        String? uid = FirebaseAuth.instance.currentUser?.uid;
-
-        // Get the NewDB instance from context or wherever it is instantiated
-        final NewDB? db = await NewDB.fetchCID(context, uid!);
-
         // Set hasTransitioned to false
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('hasTransitioned', false);
@@ -62,12 +57,7 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage>
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                StreamProvider<Client?>(
-              create: (_) =>
-                  db!.getClientStream(), // Provide the stream to DashboardPage
-              initialData: null,
-              child: const DashboardPage(fromFaceIdPage: true),
-            ),
+                 const DashboardPage(fromFaceIdPage: true),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) => child,
           ),

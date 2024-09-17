@@ -160,16 +160,16 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
 
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) =>
-            const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
-    );
+    // // Pop the current page and go to login
+    // await Navigator.pushAndRemoveUntil(
+    //   context,
+    //   PageRouteBuilder(
+    //     pageBuilder: (context, animation1, animation2) =>
+    //         const OnboardingPage(),
+    //     transitionDuration: Duration.zero,
+    //   ),
+    //   (route) => false,
+    // );
   }
 
   DateTime? dob;

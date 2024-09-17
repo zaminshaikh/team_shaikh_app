@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
@@ -21,20 +20,6 @@ class NewDB {
   CollectionReference? graphPointsSubCollection;
   List<dynamic>? connectedUsersCIDs;
 
-  /// A new instance of [NewDB] with the given [cid] and [uid].
-  ///
-  /// The [cid] (Client ID) is a unique identifier for the user, and the [uid] (User ID) is the unique identifier for the user's auth account.
-  /// The instance is used to link a new user to the database, update user information, and retrieve user data from the database.
-  ///
-  /// `DBNew.linkNewUser(email)` links a new user to the database using the [cid] and updates the [email]
-  ///
-  /// `DBNew.users` returns a stream of the 'users' collection in the database
-  ///
-  /// `DBNew.docExists(cid)` returns a [Future] that completes with a boolean value indicating whether a document exists for the given [cid]`
-  ///
-  /// `DBNew.docLinked(cid)` returns a [Future] that completes with a boolean value indicating whether a user is linked to the database for the given [cid]
-  ///
-  /// For more information on the methods, see the individual method documentation.
   NewDB(this.uid);
   NewDB.connectedUser(this.cid) {
     setSubCollections(this);
@@ -42,7 +27,7 @@ class NewDB {
   NewDB.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
-  static Future<NewDB?> fetchCID(BuildContext context, String uid) async {
+  static Future<NewDB?> fetchCID(String uid) async {
     NewDB service = NewDB(uid);
 
     // Access Firestore and get the document
@@ -93,9 +78,8 @@ class NewDB {
 
   // Stream that listens to changes in the user's client data and subcollections
   Stream<Client?> getClientStream({bool isConnectedUser = false}) {
-    print('CLIENT STREAM CALLED');
-    if (this.cid == null) {
-      throw Exception('CID is not initialized.');
+    if (cid == null) {
+      return Stream.value(null);
     }
 
     try {
@@ -149,7 +133,7 @@ class NewDB {
               .map((doc) => Notif.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-      // // Stream for the graphPoints subcollection
+      // Stream for the graphPoints subcollection
       Stream<List<GraphPoint>> graphPointsStream = graphPointsSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs
@@ -172,13 +156,13 @@ class NewDB {
         final clientData = clientDoc.data() as Map<String, dynamic>?;
 
         if (clientData == null) {
-          log('clientDoc.data() is null for cid: $cid');
+          log('clientDoc.data() is null for cid: ${cid ?? 'unknown'}');
           return Client.empty();
         }
-        
+
         return Client.fromMap(
           cid: cid,
-          clientDoc.data() as Map<String, dynamic>,
+          clientData,
           activities: activities,
           assets: assets,
           notifications: notifications,

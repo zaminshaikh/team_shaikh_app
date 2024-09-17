@@ -32,6 +32,20 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   void initState() {
     super.initState();
+    // Initialize the animation controller and offset animation synchronously
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
     // Initialize the transition state
     _initializeTransitionState();
     // Initialize the auth state and update the state
@@ -72,17 +86,8 @@ class _DashboardPageState extends State<DashboardPage>
     _hasTransitioned = prefs.getBool('hasTransitioned') ?? false;
 
     if (!_hasTransitioned) {
-      _controller = AnimationController(
-        duration: const Duration(seconds: 2),
-        vsync: this,
-      )..forward();
-      _offsetAnimation = Tween<Offset>(
-        begin: const Offset(0.0, 0.5),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ));
+      // Start the animation
+      _controller.forward();
 
       // Set the flag to true after the animation completes
       _controller.addStatusListener((status) async {
@@ -92,14 +97,8 @@ class _DashboardPageState extends State<DashboardPage>
         }
       });
     } else {
-      _controller = AnimationController(
-        duration: Duration.zero,
-        vsync: this,
-      );
-      _offsetAnimation = Tween<Offset>(
-        begin: Offset.zero,
-        end: Offset.zero,
-      ).animate(_controller);
+      // If already transitioned, jump to the end of the animation
+      _controller.value = 1.0;
     }
   }
 
@@ -141,10 +140,10 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                       if (client!.connectedUsers != null &&
                           client!.connectedUsers!.isNotEmpty)
-                      SlideTransition(
-                        position: _offsetAnimation,
-                        child: _buildConnectedUsersSection(),
-                      ),
+                        SlideTransition(
+                          position: _offsetAnimation,
+                          child: _buildConnectedUsersSection(),
+                        ),
                       const SizedBox(height: 32),
                       // Assets structure section
                       SlideTransition(
@@ -162,7 +161,8 @@ class _DashboardPageState extends State<DashboardPage>
             left: 0,
             right: 0,
             bottom: 0,
-            child: CustomBottomNavigationBar(currentItem: NavigationItem.dashboard),
+            child: CustomBottomNavigationBar(
+                currentItem: NavigationItem.dashboard),
           ),
         ],
       ),
@@ -170,43 +170,48 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Widget _buildConnectedUsersSection() => Column(
-    children: [
-      const SizedBox(height: 40),
-      Row(
         children: [
-          const Text(
-            'Connected Users',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
-            ),
+          const SizedBox(height: 40),
+          Row(
+            children: [
+              const Text(
+                'Connected Users',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '(${client!.connectedUsers?.length})',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
           ),
-          const Spacer(),
-          Text(
-            '(${client!.connectedUsers?.length})',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
-            ),
+          const SizedBox(height: 20),
+          Column(
+            children: client!.connectedUsers!
+                .map(
+                  (connectedUser) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      UserBreakdownSection(
+                        client: connectedUser!,
+                        isConnectedUser: true,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                )
+                .toList(),
           ),
         ],
-      ),
-      const SizedBox(height: 20),
-      Column(
-        children: client!.connectedUsers!.map((connectedUser) => 
-        Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              UserBreakdownSection(client: connectedUser!, isConnectedUser: true,),
-              const SizedBox(height: 20),
-            ],
-        )).toList(),
-      ),
-    ],
-  );
-  
+      );
 }
