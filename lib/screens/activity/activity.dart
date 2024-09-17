@@ -11,6 +11,7 @@ import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/components/activity_app_bar.dart';
 import 'package:team_shaikh_app/screens/activity/components/no_activities_body.dart';
+import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
 import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
 import 'package:team_shaikh_app/utilities.dart';
@@ -986,99 +987,4 @@ class _ActivityPageState extends State<ActivityPage> {
     }
   }
 
-  String getActivityDescription(Activity activity) {
-    String action;
-    switch (activity.type) {
-      case 'deposit':
-        action = 'Deposit to your investment at';
-        break;
-      case 'withdrawal':
-        action = 'Withdrawal from your investment at';
-        break;
-      case 'pending':
-        action = 'Pending withdrawal from your investment at';
-        break;
-      case 'income':
-      case 'profit':
-        action = 'Profit to your investment at';
-        break;
-      default:
-        action = '';
-    }
-    return '$action ${activity.fund}';
-  }
-
-  String getActivityType(Activity activity) {
-    switch (activity.type) {
-      case 'deposit':
-        return 'Deposit';
-      case 'withdrawal':
-        return 'Withdrawal';
-      case 'pending':
-        return 'Pending Withdrawal';
-      case 'income':
-      case 'profit':
-        return 'Profit';
-      default:
-        return '';
-    }
-  }
-
-  Color getActivityColor(String activityType) {
-    switch (activityType) {
-      case 'deposit':
-        return AppColors.defaultGreen400;
-      case 'withdrawal':
-        return AppColors.defaultRed400;
-      case 'pending':
-        return AppColors.defaultYellow400;
-      case 'income':
-      case 'profit':
-        return AppColors.defaultBlue300;
-      default:
-        return AppColors.defaultWhite;
-    }
-  }
-
-  Color getUnderlayColor(String activityType) {
-    switch (activityType) {
-      case 'deposit':
-        return const Color.fromARGB(255, 21, 52, 57);
-      case 'withdrawal':
-        return const Color.fromARGB(255, 41, 25, 28);
-      case 'pending':
-      case 'income':
-      case 'profit':
-        return const Color.fromARGB(255, 24, 46, 68);
-      default:
-        return AppColors.defaultWhite;
-    }
-  }
-
-  Widget getActivityIcon(String activityType, {double size = 50.0}) {
-    String assetName;
-    switch (activityType) {
-      case 'deposit':
-        assetName = 'assets/icons/deposit.svg';
-        break;
-      case 'withdrawal':
-        assetName = 'assets/icons/withdrawal.svg';
-        break;
-      case 'pending':
-        assetName = 'assets/icons/pending_withdrawal.svg';
-        break;
-      case 'income':
-      case 'profit':
-        assetName = 'assets/icons/variable_income.svg';
-        break;
-      default:
-        return Icon(Icons.circle, color: Colors.transparent, size: size);
-    }
-    return SvgPicture.asset(
-      assetName,
-      color: getActivityColor(activityType),
-      height: size,
-      width: size,
-    );
-  }
 }
