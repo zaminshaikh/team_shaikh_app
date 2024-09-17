@@ -1,5 +1,4 @@
 // ignore_for_file: deprecated_member_use, library_private_types_in_public_api, use_build_context_synchronously
-
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -7,9 +6,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
+import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/screens/activity/components/activity_app_bar.dart';
+import 'package:team_shaikh_app/screens/activity/components/filter_and_sort.dart';
+import 'package:team_shaikh_app/screens/activity/components/no_activities_body.dart';
+import 'package:team_shaikh_app/screens/activity/utils/activity_styles';
+import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
+import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
@@ -24,14 +31,10 @@ class ActivityPage extends StatefulWidget {
   _ActivityPageState createState() => _ActivityPageState();
 }
 
-int unreadNotificationsCount = 0;
-
 class _ActivityPageState extends State<ActivityPage> {
   final Future<void> _initializeWidgetFuture = Future.value();
-
-  List<Map<String, dynamic>> activities = [];
-  String _sorting = 'new-to-old';
-  // ignore: prefer_final_fields
+  List<Activity> activities = [];
+  SortOrder _order = SortOrder.newToOld;
   List<String> _typeFilter = [
     'income',
     'profit',
@@ -39,46 +42,12 @@ class _ActivityPageState extends State<ActivityPage> {
     'withdrawal',
     'pending'
   ];
-  // ignore: prefer_final_fields
   List<String> _fundsFilter = ['AK1', 'AGQ'];
-
-  DatabaseService? _databaseService;
 
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
     end: DateTime.now(),
   );
-
-  Future<void> _initData() async {
-    // If the user is signed in (which should always be the case on this screen)
-    User? user = FirebaseAuth.instance.currentUser;
-    // If not, we return to login page
-    if (user == null) {
-      await Navigator.pushReplacementNamed(context, '/login');
-    }
-    // Fetch CID using async constructor
-    DatabaseService? service =
-        await DatabaseService.fetchCID(context, user!.uid, 1);
-    // If there is no matching CID, redirect to login page and alert the user
-    if (service == null) {
-      if (!mounted) {
-        return;
-      }
-      await CustomAlertDialog.showAlertDialog(
-          context,
-          'User does not exist error!',
-          'The current user is not associated with any account... We will redirect you to the login page to sign in with a valid user.');
-
-      await FirebaseAuth.instance.signOut(); // Sign that user out
-      if (!mounted) {
-        return;
-      }
-      await Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      // Otherwise set the database service instance
-      _databaseService = service;
-    }
-  }
 
   bool agqIsChecked = true;
   bool ak1IsChecked = true;
@@ -94,52 +63,63 @@ class _ActivityPageState extends State<ActivityPage> {
   List<String> connectedUserNames = [];
   bool allFundsChecked = true;
   bool allUsersChecked = true;
+  bool isFilterSelected = false;
+
   Client? client;
 
+  Future<void> _validateAuth() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null && mounted) {
+      log('dashboard.dart: User is not logged in');
+      await Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _initData().then((_) {
-      _databaseService!.getUserWithAssets.listen((user) {
-        setState(() {
-          String firstName = user.info['name']['first'] as String;
-          String lastName = user.info['name']['last'] as String;
-          String fullName = '$firstName $lastName';
+    _validateAuth().then((_) {});
 
-          // Assuming allUserNames is a List<String> meant to store user names
-          allUserNames.add(fullName);
-          allRecipients.add(fullName);
+    // _initData().then((_) {
+    //   _databaseService!.getUserWithAssets.listen((user) {
+    //     setState(() {
+    //       String firstName = user.info['name']['first'] as String;
+    //       String lastName = user.info['name']['last'] as String;
+    //       String fullName = '$firstName $lastName';
 
-          // Update userCheckStatus for fullName
-          userCheckStatus[fullName] = true;
-        });
-      });
-      _databaseService!.getConnectedUsersWithAssets.listen((connectedUsers) {
-        setState(() {
-          connectedUserNames = connectedUsers.map<String>((user) {
-            String firstName = user.info['name']['first'] as String;
-            String lastName = user.info['name']['last'] as String;
-            return '$firstName $lastName';
-          }).toList();
+    //       // Assuming allUserNames is a List<String> meant to store user names
+    //       allUserNames.add(fullName);
+    //       allRecipients.add(fullName);
 
-          // Add connectedUserNames to allUserNames
-          allUserNames.addAll(connectedUserNames);
-          // Ensure allRecipients is a Set to avoid duplicates
-          Set<String> allRecipientsSet = allRecipients.toSet();
+    //       // Update userCheckStatus for fullName
+    //       userCheckStatus[fullName] = true;
+    //     });
+    //   });
+    //   _databaseService!.getConnectedUsersWithAssets.listen((connectedUsers) {
+    //     setState(() {
+    //       connectedUserNames = connectedUsers.map<String>((user) {
+    //         String firstName = user.info['name']['first'] as String;
+    //         String lastName = user.info['name']['last'] as String;
+    //         return '$firstName $lastName';
+    //       }).toList();
 
-          // Add connectedUserNames to the set
-          allRecipientsSet.addAll(connectedUserNames);
+    //       // Add connectedUserNames to allUserNames
+    //       allUserNames.addAll(connectedUserNames);
+    //       // Ensure allRecipients is a Set to avoid duplicates
+    //       Set<String> allRecipientsSet = allRecipients.toSet();
 
-          // Convert the set back to a list if needed
-          allRecipients = allRecipientsSet.toList();
-          // Update userCheckStatus for each connected user
-          for (var recipient in allRecipients) {
-            userCheckStatus[recipient] = true;
-          }
-        });
-      });
-    });
+    //       // Add connectedUserNames to the set
+    //       allRecipientsSet.addAll(connectedUserNames);
+
+    //       // Convert the set back to a list if needed
+    //       allRecipients = allRecipientsSet.toList();
+    //       // Update userCheckStatus for each connected user
+    //       for (var recipient in allRecipients) {
+    //         userCheckStatus[recipient] = true;
+    //       }
+    //     });
+    //   });
+    // });
   }
 
   @override
@@ -151,276 +131,26 @@ class _ActivityPageState extends State<ActivityPage> {
   @override
   Widget build(BuildContext context) {
     print(client?.toMap());
-    return FutureBuilder(
-      future: _initializeWidgetFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: Container(
-              padding: const EdgeInsets.all(26.0),
-              margin:
-                  const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue500,
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              child: const Stack(
-                children: [
-                  CustomProgressIndicator(),
-                ],
-              ),
-            ),
-          );
-        }
-        return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: _databaseService?.getActivities,
-          builder: (context, activitiesSnapshot) {
-            if (!activitiesSnapshot.hasData ||
-                activitiesSnapshot.data == null) {
-              return Center(
-                child: Container(
-                  padding: const EdgeInsets.all(26.0),
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 50.0, horizontal: 50.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.defaultBlue500,
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: const Stack(
-                    children: [
-                      CustomProgressIndicator(),
-                    ],
-                  ),
-                ),
-              );
-            }
-            return StreamBuilder<UserWithAssets>(
-              stream: _databaseService!
-                  .getUserWithAssets, // Assuming this is the stream for the user
-              builder: (context, userSnapshot) {
-                if (!userSnapshot.hasData || userSnapshot.data == null) {
-                  return Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(26.0),
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 50.0, horizontal: 50.0),
-                      decoration: BoxDecoration(
-                        color: AppColors.defaultBlue500,
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      child: const Stack(
-                        children: [
-                          CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                            strokeWidth: 6.0,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                return StreamBuilder<List<UserWithAssets>>(
-                  stream: _databaseService!.getConnectedUsersWithAssets,
-                  builder: (context, connectedUsers) {
-                    if (!connectedUsers.hasData ||
-                        connectedUsers.data == null) {
-                      return StreamBuilder<List<Map<String, dynamic>>>(
-                          stream: _databaseService!.getNotifications,
-                          builder: (context, notificationsSnapshot) {
-                            if (!notificationsSnapshot.hasData ||
-                                notificationsSnapshot.data == null) {
-                              return Center(
-                                child: Container(
-                                  padding: const EdgeInsets.all(26.0),
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 50.0, horizontal: 50.0),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.defaultBlue500,
-                                    borderRadius: BorderRadius.circular(15.0),
-                                  ),
-                                  child: const Stack(
-                                    children: [
-                                      CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                        strokeWidth: 6.0,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                            unreadNotificationsCount = notificationsSnapshot
-                                .data!
-                                .where(
-                                    (notification) => !notification['isRead'])
-                                .length;
-                            // use unreadNotificationsCount as needed
-                            return _buildActivitySingleUser(
-                                userSnapshot, activitiesSnapshot);
-                          });
-                    }
-                    log('activity.dart: Connected users: $connectedUserNames');
-                    log('activity.dart: All checked users: $userCheckStatus');
-                    return StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: _databaseService!.getNotifications,
-                        builder: (context, notificationsSnapshot) {
-                          if (!notificationsSnapshot.hasData ||
-                              notificationsSnapshot.data == null) {
-                            return Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(26.0),
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 50.0, horizontal: 50.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.defaultBlue500,
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                child: const Stack(
-                                  children: [
-                                    CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                      strokeWidth: 6.0,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          unreadNotificationsCount = notificationsSnapshot.data!
-                              .where((notification) => !notification['isRead'])
-                              .length;
-                          // use unreadNotificationsCount as needed
-                          return _buildActivityWithConnectedUsers(
-                              userSnapshot, connectedUsers, activitiesSnapshot);
-                        });
-                  },
-                );
-              },
-            );
-          },
-        );
-      });
-  }
 
-  bool _isSameDay(DateTime date1, DateTime date2) =>
-      date1.year == date2.year &&
-      date1.month == date2.month &&
-      date1.day == date2.day;
+    activities = client!.activities ?? [];
+    if (client?.connectedUsers != null && client!.connectedUsers!.isNotEmpty) {
+      final connectedUserActivities = client!.connectedUsers!
+          .where((user) => user != null)
+          .expand((user) =>
+              user!.activities?.cast<Activity>() ?? [] as List<Activity>);
 
-  dynamic _getActivityType(Map<String, dynamic> activity) {
-    switch (activity['type']) {
-      case 'income':
-        return 'Profit';
-      case 'profit':
-        return 'Profit';
-      case 'deposit':
-        return 'Deposit';
-      case 'withdrawal':
-        return 'Withdrawal';
-      case 'pending':
-        return 'Pending Withdrawal';
-      default:
-        return 'Error';
-    }
-  }
-
-  // Implement sorting on activities based on the user's selection (defaulted to _sorting = 'new-to-old')
-  void sort(List<Map<String, dynamic>> activities) {
-    try {
-      switch (_sorting) {
-        case 'new-to-old':
-          activities.sort((a, b) => b['time'].compareTo(a['time']));
-          break;
-        case 'old-to-new':
-          activities.sort((a, b) => (a['time']).compareTo(b['time']));
-          break;
-        case 'low-to-high':
-          activities.sort(
-              (a, b) => (a['amount']).compareTo((b['amount']).toDouble()));
-          break;
-        case 'high-to-low':
-          activities.sort((a, b) => (b['amount']).compareTo((a['amount'])));
-          break;
-      }
-    } catch (e) {
-      if (e is TypeError) {
-        // Handle TypeError here (usually casting error)
-        log('activity.dart: Caught TypeError: $e');
-      } else {
-        // Handle other exceptions here
-        log('activity.dart: Caught Exception: $e');
-      }
-    }
-  }
-
-  void filter(List<Map<String, dynamic>> activities) {
-    activities.removeWhere((element) => !_typeFilter.contains(element['type']));
-    activities
-        .removeWhere((element) => !_fundsFilter.contains(element['fund']));
-    activities.removeWhere((element) =>
-        element['time'].toDate().isBefore(selectedDates.start) ||
-        element['time'].toDate().isAfter(selectedDates.end));
-
-    if (_typeFilter.isEmpty) {
-      _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
+      activities.addAll(connectedUserActivities);
     }
 
-    if (_fundsFilter.isEmpty) {
-      _fundsFilter = ['AK1', 'AGQ'];
-    }
-  }
-
-  List<String> getSelectedFilters() {
-    // Ensure default filters are not considered as "selected" filters
-    List<String> defaultTypeFilter = [
-      'income',
-      'profit',
-      'deposit',
-      'withdrawal',
-      'pending'
-    ];
-    List<String> defaultFundsFilter = ['AK1', 'AGQ'];
-
-    List<String> selectedFilters = [];
-
-    // Add type filters if they are not the default
-    if (_typeFilter.toSet().difference(defaultTypeFilter.toSet()).isNotEmpty) {
-      selectedFilters.addAll(_typeFilter);
-    }
-
-    // Add funds filters if they are not the default
-    if (_fundsFilter
-        .toSet()
-        .difference(defaultFundsFilter.toSet())
-        .isNotEmpty) {
-      selectedFilters.addAll(_fundsFilter);
-    }
-
-    // Add date range filter if it's specified
-    String formatDate(DateTime date) => DateFormat('MM/dd/yy').format(date);
-    String dateRange =
-        '${formatDate(selectedDates.start)} to ${formatDate(selectedDates.end)}';
-    selectedFilters.add(dateRange);
-
-    return selectedFilters;
-  }
-
-  Scaffold _buildActivitySingleUser(AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) {
-    activities = activitiesSnapshot.data!;
-    filter(activities);
-    sort(activities);
+    filterActivities(activities, _typeFilter, _fundsFilter, selectedDates);
+    sortActivities(activities, _order);
 
     return Scaffold(
       body: Stack(
         children: [
           CustomScrollView(
             slivers: <Widget>[
-              _buildAppBar(),
+              ActivityAppBar(client: client!),
               SliverPadding(
                 padding: const EdgeInsets.only(top: 20.0),
                 sliver: SliverList(
@@ -428,6 +158,10 @@ class _ActivityPageState extends State<ActivityPage> {
                     (context, index) {
                       if (index == 0) {
                         return _buildFilterAndSort();
+                      } else if (index == 1) {
+                        return _buildSelectedOptionsDisplay();
+                      } else if (activities.isEmpty) {
+                        return buildNoActivityMessage();
                       } else {
                         final activity = activities[index - 1];
                         return _buildActivityWithDayHeader(
@@ -443,80 +177,20 @@ class _ActivityPageState extends State<ActivityPage> {
               ),
             ],
           ),
-          Positioned(
+          const Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildBottomNavigationBar(context),
+            child:
+                CustomBottomNavigationBar(currentItem: NavigationItem.activity),
           ),
         ],
       ),
     );
   }
 
-  Scaffold _buildActivityWithConnectedUsers(
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers,
-      AsyncSnapshot<List<Map<String, dynamic>>> activitiesSnapshot) {
-    activities = activitiesSnapshot.data!;
-
-    filter(activities);
-    sort(activities);
-
-    bool activitiesExist = activities.isNotEmpty;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(),
-              SliverPadding(
-                padding: const EdgeInsets.only(top: 20.0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == 0) {
-                        return _buildFilterAndSortForConnectedUsers();
-                      } else if (index == 1) {
-                        return _buildSelectedOptionsDisplay();
-                      } else {
-                        final activityIndex = index - 2;
-                        if (activityIndex < activities.length) {
-                          return _buildActivityWithDayHeader(
-                              activities[activityIndex],
-                              activityIndex,
-                              activities);
-                        } else if (!activitiesExist && index == 2) {
-                          // If there are no activities after filtering and sorting, show a message
-                          return _buildNoActivityMessage();
-                        }
-                      }
-                      return null; // Return null for any index beyond the activities list
-                    },
-                    childCount: activitiesExist
-                        ? activities.length + 2
-                        : 3, // Adjust child count based on activities existence
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 150.0), // Add some space at the bottom
-              ),
-            ],
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavigationBar(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterAndSort() => Padding(
+  
+Widget _buildFilterAndSort() => Padding(
         padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
         child: Row(
           children: [
@@ -766,27 +440,23 @@ class _ActivityPageState extends State<ActivityPage> {
           ),
         ],
       );
-
   // If the activity is on a new day, we create a header stating the day.
-  Widget _buildActivityWithDayHeader(Map<String, dynamic> activity, int index,
-      List<Map<String, dynamic>> activities) {
-    final activityDate = (activity['time'] as Timestamp).toDate();
-    final previousActivityDate = index > 0
-        ? (activities[index - 1]['time'] as Timestamp).toDate()
-        : null;
-    final nextActivityDate = index < activities.length - 1
-        ? (activities[index + 1]['time'] as Timestamp).toDate()
-        : null;
+  Widget _buildActivityWithDayHeader(
+      Activity activity, int index, List<Activity> activities) {
+    final activityDate = activity.time;
+    final previousActivityDate = index > 0 ? activities[index - 1].time : null;
+    final nextActivityDate =
+        index < activities.length - 1 ? activities[index + 1].time : null;
 
     bool isLastActivityForTheDay =
-        nextActivityDate == null || !_isSameDay(activityDate, nextActivityDate);
+        nextActivityDate == null || !isSameDay(activityDate, nextActivityDate);
 
     bool isFirstVisibleActivityOfTheDay = previousActivityDate == null ||
-        !_isSameDay(activityDate, previousActivityDate) ||
-        userCheckStatus[activities[index - 1]['recipient']] != true;
+        !isSameDay(activityDate, previousActivityDate) ||
+        userCheckStatus[activities[index - 1].recipient] != true;
 
-    if (userCheckStatus.containsKey(activity['recipient'])) {
-      if (userCheckStatus[activity['recipient']] == true) {
+    if (userCheckStatus.containsKey(activity.recipient)) {
+      if (userCheckStatus[activity.recipient] == true) {
         if (isFirstVisibleActivityOfTheDay) {
           return Column(
             children: <Widget>[
@@ -816,36 +486,30 @@ class _ActivityPageState extends State<ActivityPage> {
         return _buildActivity(activity, !isLastActivityForTheDay);
       }
     } else {
-      if (!allRecipients.contains(activity['recipient'])) {
-        allRecipients.add(activity['recipient']);
-        userCheckStatus[activity['recipient']] = true;
+      if (!allRecipients.contains(activity.recipient)) {
+        allRecipients.add(activity.recipient);
+        userCheckStatus[activity.recipient] = true;
       }
       return _buildActivity(activity, !isLastActivityForTheDay);
     }
   }
 
   Widget _buildActivity(
-    Map<String, dynamic> activity,
+    Activity activity,
     bool showDivider,
   ) {
-    if (userCheckStatus[activity['recipient']] == true) {
-      // Assuming activity['time'] is a Timestamp object
-      Timestamp timestamp = activity['time'];
-
-      // Convert the Timestamp to a DateTime
-      DateTime dateTime = timestamp.toDate();
-
+    if (userCheckStatus[activity.recipient] == true) {
       // Create a new DateFormat for the desired time format
       DateFormat timeFormat = DateFormat('h:mm a');
 
       // Use the timeFormat to format the dateTime
-      String time = timeFormat.format(dateTime);
+      String time = timeFormat.format(activity.time);
 
       // Create a new DateFormat for the desired date format
       DateFormat dateFormat = DateFormat('EEEE, MMM. d, yyyy');
 
       // Use the dateFormat to format the dateTime
-      String date = dateFormat.format(dateTime);
+      String date = dateFormat.format(activity.time);
 
       Color getColorBasedOnActivityType(String activityType) {
         switch (activityType) {
@@ -961,17 +625,17 @@ class _ActivityPageState extends State<ActivityPage> {
                         Icon(
                           Icons.circle,
                           color: getUnderlayColorBasedOnActivityType(
-                              activity['type']),
+                              activity.type),
                           size: 50,
                         ),
-                        getIconBasedOnActivityType(activity['type']),
+                        getIconBasedOnActivityType(activity.type),
                       ]),
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          activity['fund'],
+                          activity.fund,
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
@@ -981,11 +645,10 @@ class _ActivityPageState extends State<ActivityPage> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          _getActivityType(activity),
+                          getActivityType(activity),
                           style: TextStyle(
                             fontSize: 15,
-                            color:
-                                getColorBasedOnActivityType(activity['type']),
+                            color: getColorBasedOnActivityType(activity.type),
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Titillium Web',
                           ),
@@ -999,11 +662,10 @@ class _ActivityPageState extends State<ActivityPage> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
+                            '${activity.type == 'withdrawal' ? '-' : ''}${currencyFormat(activity.amount.toDouble())}',
                             style: TextStyle(
                               fontSize: 18,
-                              color:
-                                  getColorBasedOnActivityType(activity['type']),
+                              color: getColorBasedOnActivityType(activity.type),
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Titillium Web',
                             ),
@@ -1026,7 +688,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               height: 15,
                             ),
                             Text(
-                              activity['recipient'],
+                              activity.recipient,
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.white,
@@ -1091,11 +753,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                     ),
                                   ),
                                   Text(
-                                    '${activity['type'] == 'withdrawal' ? '-' : ''}${currencyFormat(activity['amount'].toDouble())}',
+                                    '${activity.type == 'withdrawal' ? '-' : ''}${currencyFormat(activity.amount.toDouble())}',
                                     style: TextStyle(
                                       fontSize: 30,
                                       color: getColorBasedOnActivityType(
-                                          activity['type']),
+                                          activity.type),
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'Titillium Web',
                                     ),
@@ -1104,7 +766,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                   Center(
                                     child: Text(
                                       '${() {
-                                        switch (activity['type']) {
+                                        switch (activity.type) {
                                           case 'deposit':
                                             return 'Deposit to your investment at';
                                           case 'withdrawal':
@@ -1118,7 +780,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                           default:
                                             return '';
                                         }
-                                      }()} ${activity['fund']}',
+                                      }()} ${activity.fund}',
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 15,
@@ -1135,15 +797,15 @@ class _ActivityPageState extends State<ActivityPage> {
                                           MainAxisAlignment.center,
                                       children: [
                                         getIconBasedOnActivityType(
-                                            activity['type'],
+                                            activity.type,
                                             size: 35),
                                         const SizedBox(width: 5),
                                         Text(
-                                          _getActivityType(activity),
+                                          getActivityType(activity),
                                           style: TextStyle(
                                             fontSize: 16,
                                             color: getColorBasedOnActivityType(
-                                                activity['type']),
+                                                activity.type),
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'Titillium Web',
                                           ),
@@ -1163,7 +825,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                               Icons.circle,
                                               color:
                                                   getActivityUnderlayColorBasedOnActivityType(
-                                                      activity['type']),
+                                                      activity.type),
                                               size: 50,
                                             ),
                                             Positioned.fill(
@@ -1173,7 +835,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                   'assets/icons/activity_description.svg',
                                                   color:
                                                       getColorBasedOnActivityType(
-                                                          activity['type']),
+                                                          activity.type),
                                                 ),
                                               ),
                                             ),
@@ -1199,8 +861,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                 children: [
                                                   Text(
                                                     '${() {
-                                                      switch (
-                                                          activity['type']) {
+                                                      switch (activity.type) {
                                                         case 'deposit':
                                                           return 'Deposit to your investment at';
                                                         case 'withdrawal':
@@ -1214,7 +875,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                         default:
                                                           return '';
                                                       }
-                                                    }()} ${activity['fund']}',
+                                                    }()} ${activity.fund}',
                                                     style: const TextStyle(
                                                       fontSize: 14,
                                                       color: Colors.white,
@@ -1249,7 +910,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                               Icons.circle,
                                               color:
                                                   getActivityUnderlayColorBasedOnActivityType(
-                                                      activity['type']),
+                                                      activity.type),
                                               size: 50,
                                             ),
                                             Positioned.fill(
@@ -1259,7 +920,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                     'assets/icons/activity_date.svg',
                                                     color:
                                                         getColorBasedOnActivityType(
-                                                            activity['type'])),
+                                                            activity.type)),
                                               ),
                                             ),
                                           ],
@@ -1318,7 +979,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                               Icons.circle,
                                               color:
                                                   getActivityUnderlayColorBasedOnActivityType(
-                                                      activity['type']),
+                                                      activity.type),
                                               size: 50,
                                             ),
                                             Positioned.fill(
@@ -1328,7 +989,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                                     'assets/icons/activity_user.svg',
                                                     color:
                                                         getColorBasedOnActivityType(
-                                                            activity['type'])),
+                                                            activity.type)),
                                               ),
                                             ),
                                           ],
@@ -1352,7 +1013,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                               Wrap(
                                                 children: [
                                                   Text(
-                                                    activity['recipient'],
+                                                    activity.recipient,
                                                     style: const TextStyle(
                                                       fontSize: 15,
                                                       color: Colors.white,
@@ -1433,110 +1094,7 @@ class _ActivityPageState extends State<ActivityPage> {
     });
   }
 
-// This is the bottom navigation bar
-  Widget _buildBottomNavigationBar(BuildContext context) => Container(
-        margin: const EdgeInsets.only(bottom: 30, right: 20, left: 20),
-        height: 80,
-        padding: const EdgeInsets.only(right: 10, left: 10),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 30, 41, 59),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              spreadRadius: 8,
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const DashboardPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: Container(
-                color: const Color.fromRGBO(239, 232, 232, 0),
-                padding: const EdgeInsets.all(20.0),
-                child: SvgPicture.asset(
-                  'assets/icons/dashboard_hollowed.svg',
-                  height: 22,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const AnalyticsPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: Container(
-                color: const Color.fromRGBO(239, 232, 232, 0),
-                padding: const EdgeInsets.all(20.0),
-                child: SvgPicture.asset(
-                  'assets/icons/analytics_hollowed.svg',
-                  height: 25,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                color: const Color.fromRGBO(239, 232, 232, 0),
-                padding: const EdgeInsets.all(20.0),
-                child: SvgPicture.asset(
-                  'assets/icons/activity_filled.svg',
-                  height: 22,
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const ProfilePage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            child,
-                  ),
-                );
-              },
-              child: Container(
-                color: const Color.fromRGBO(239, 232, 232, 0),
-                padding: const EdgeInsets.all(20.0),
-                child: SvgPicture.asset(
-                  'assets/icons/profile_hollowed.svg',
-                  height: 22,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-
-  bool isFilterSelected = false;
-
-  void _buildFilterOptions(BuildContext context) {
+void _buildFilterOptions(BuildContext context) {
     /// Edits the filter based on the value of `value`
     ///
     /// If `value` is true, it adds `key` to filter, if false it removes
@@ -1800,7 +1358,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   setState(() {
                                     log('activity.dart: $_fundsFilter');
                                     log('activity.dart: $_typeFilter');
-                                    filter(activities);
+                                    filterActivities(activities, _fundsFilter,
+                                        _typeFilter, selectedDates);
                                   });
                                 } // Close the bottom sheet,
                                 ),
@@ -2275,7 +1834,8 @@ class _ActivityPageState extends State<ActivityPage> {
                                   setState(() {
                                     log('activity.dart: $_fundsFilter');
                                     log('activity.dart: $_typeFilter');
-                                    filter(activities);
+                                    filterActivities(activities, _fundsFilter,
+                                        _typeFilter, selectedDates);
                                   });
                                 } // Close the bottom sheet,
                                 ),
@@ -2383,12 +1943,12 @@ class _ActivityPageState extends State<ActivityPage> {
                           height:
                               20.0), // Add some space between the title and the options
                       _buildOption(
-                          context, 'Date: New to Old (Default)', 'new-to-old'),
-                      _buildOption(context, 'Date: Old to New', 'old-to-new'),
+                          context, 'Date: New to Old (Default)', SortOrder.newToOld),
+                      _buildOption(context, 'Date: Old to New', SortOrder.oldToNew),
                       _buildOption(
-                          context, 'Amount: Low to High', 'low-to-high'),
+                          context, 'Amount: Low to High', SortOrder.lowToHigh),
                       _buildOption(
-                          context, 'Amount: High to Low', 'high-to-low'),
+                          context, 'Amount: High to Low', SortOrder.highToLow),
                       const SizedBox(
                           height: 20.0), // Add some space at the bottom
                     ],
@@ -2402,12 +1962,12 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  Widget _buildOption(BuildContext context, String title, String value) =>
+  Widget _buildOption(BuildContext context, String title, SortOrder value) =>
       Padding(
         padding: const EdgeInsets.all(4.0),
         child: GestureDetector(
           onTap: () => setState(() {
-            _sorting = value;
+            _order = value;
             Navigator.pop(context); // Close the bottom sheet
           }),
           child: Container(
@@ -2416,7 +1976,7 @@ class _ActivityPageState extends State<ActivityPage> {
             child: Container(
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
-                color: _sorting == value
+                color: _order == value
                     ? AppColors.defaultBlue500
                     : Colors
                         .transparent, // Change the color based on whether the option is selected
@@ -2434,9 +1994,7 @@ class _ActivityPageState extends State<ActivityPage> {
             ),
           ),
         ),
-      );
-
-  // Helper method to build activity type buttons
+      );  // Helper method to build activity type buttons
   Widget _buildActivityTypeButton(String activityType) => ButtonTheme(
         minWidth: 0, // Min width set to 0
         padding: EdgeInsets.zero, // Remove padding
@@ -2457,30 +2015,6 @@ class _ActivityPageState extends State<ActivityPage> {
               fontFamily: 'Titillium Web',
             ),
           ),
-        ),
-      );
-
-  Widget _buildNoActivityMessage() => const Padding(
-        padding: EdgeInsets.all(30.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              Icons.info_outline,
-              size: 50,
-              color: Colors.grey,
-            ),
-            Text(
-              'No Activities',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8), // Provides spacing between the text widgets
-            Text(
-              'Please adjust your filters to view activities.',
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
         ),
       );
 
@@ -2559,11 +2093,11 @@ class _ActivityPageState extends State<ActivityPage> {
                                           .min, // Use MainAxisSize.min for a compact row
                                       children: <Widget>[
                                         Text(
-                                          _sorting == 'new-to-old'
+                                          _order == 'new-to-old'
                                               ? 'Date: New to Old'
-                                              : _sorting == 'old-to-new'
+                                              : _order == 'old-to-new'
                                                   ? 'Date: Old to New'
-                                                  : _sorting == 'low-to-high'
+                                                  : _order == 'low-to-high'
                                                       ? 'Amount: Low to High'
                                                       : 'Amount: High to Low',
                                           style: const TextStyle(
@@ -2753,4 +2287,5 @@ class _ActivityPageState extends State<ActivityPage> {
       ],
     );
   }
+
 }

@@ -10,6 +10,7 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'dart:developer';
 import 'package:team_shaikh_app/screens/profile/PDFPreview.dart';
 import 'package:team_shaikh_app/screens/profile/downloadmethod.dart';

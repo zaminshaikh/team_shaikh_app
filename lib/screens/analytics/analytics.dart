@@ -17,7 +17,7 @@ import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 
-
+int unreadNotificationsCount = 0;
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
