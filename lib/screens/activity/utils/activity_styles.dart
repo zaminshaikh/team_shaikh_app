@@ -94,3 +94,26 @@ Widget getActivityIcon(String type, {double size = 50.0}) {
       );
   }
 }
+
+// Helper functions at the top
+String getActivityDescription(Activity activity) {
+  String action;
+  switch (activity.type) {
+    case 'deposit':
+      action = 'Deposit to your investment at';
+      break;
+    case 'withdrawal':
+      action = 'Withdrawal from your investment at';
+      break;
+    case 'pending':
+      action = 'Pending withdrawal from your investment at';
+      break;
+    case 'income':
+    case 'profit':
+      action = 'Profit to your investment at';
+      break;
+    default:
+      action = '';
+  }
+  return '$action ${activity.fund}';
+}
