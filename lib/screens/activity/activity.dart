@@ -10,6 +10,8 @@ import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/activity/components/activity_app_bar.dart';
+import 'package:team_shaikh_app/screens/activity/components/activity_details_modal.dart';
+import 'package:team_shaikh_app/screens/activity/components/activity_list_item.dart';
 import 'package:team_shaikh_app/screens/activity/components/no_activities_body.dart';
 import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
@@ -25,6 +27,7 @@ class ActivityPage extends StatefulWidget {
 class _ActivityPageState extends State<ActivityPage> {
   Client? client;
   List<Activity> activities = [];
+  List<String> allRecipients = [];
 
   // Initiliaze filters and sort
   SortOrder _order = SortOrder.newToOld;
@@ -35,8 +38,6 @@ class _ActivityPageState extends State<ActivityPage> {
       'withdrawal',
     ];
   List<String> _recipientsFilter = [];
-  
-
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
     end: DateTime.now(),
@@ -44,8 +45,6 @@ class _ActivityPageState extends State<ActivityPage> {
 
   Map<String, bool> userCheckStatus = {};
   List<String> selectedUsers = [];
-  List<String> allRecipients = [];
-
 
   // Date formatters
   final DateFormat timeFormat = DateFormat('h:mm a');
@@ -264,29 +263,12 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildActivity(Activity activity, bool showDivider) {
-    String time = timeFormat.format(activity.time);
-    // String date = dateFormat.format(activity.time);
 
     return Column(
       children: [
-        GestureDetector(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(30.0, 5.0, 15.0, 5.0),
-            child: Container(
-              color: Colors.transparent,
-              child: Row(
-                children: [
-                  _buildActivityIcon(activity),
-                  _buildActivityDetails(activity),
-                  const Spacer(),
-                  _buildActivityAmountAndTime(activity, time),
-                ],
-              ),
-            ),
-          ),
-          onTap: () {
-            _showActivityDetailsModal(context, activity);
-          },
+        ActivityListItem(
+          activity: activity,
+          onTap: () => _showActivityDetailsModal(context, activity),
         ),
         if (showDivider)
           const Padding(
@@ -300,287 +282,15 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  Widget _buildActivityIcon(Activity activity) => Padding(
-        padding: const EdgeInsets.only(right: 20),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(
-              Icons.circle,
-              color: getUnderlayColor(activity.type),
-              size: 50,
-            ),
-            getActivityIcon(activity.type),
-          ],
-        ),
-      );
-
-  Widget _buildActivityDetails(Activity activity) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            activity.fund,
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            getActivityType(activity),
-            style: TextStyle(
-              fontSize: 15,
-              color: getActivityColor(activity.type),
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ],
-      );
-
-  Widget _buildActivityAmountAndTime(Activity activity, String time) => Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '${activity.type == 'withdrawal' ? '-' : ''}${currencyFormat(activity.amount.toDouble())}',
-              style: TextStyle(
-                fontSize: 18,
-                color: getActivityColor(activity.type),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-          ),
-          const SizedBox(height: 5),
-          Row(
-            children: [
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-              SvgPicture.asset(
-                'assets/icons/line.svg',
-                color: Colors.white,
-                height: 15,
-              ),
-              Text(
-                activity.recipient,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-
-  // Activity details modal
   void _showActivityDetailsModal(BuildContext context, Activity activity) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) => ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-        child: FractionallySizedBox(
-          heightFactor: 0.67,
-          child: Container(
-            color: AppColors.defaultBlueGray800,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  _buildModalHeader(context),
-                  _buildModalBody(activity),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      builder: (BuildContext context) =>
+          ActivityDetailsModal(activity: activity),
     );
   }
-
-  Widget _buildModalHeader(BuildContext context) => Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 15, left: 10),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Color.fromARGB(171, 255, 255, 255),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
-            child: Text(
-              'Activity Details',
-              style: TextStyle(
-                  fontSize: 25.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web'),
-            ),
-          ),
-        ],
-      );
-
-  Widget _buildModalBody(Activity activity) {
-    String date = dateFormat.format(activity.time);
-    return Column(
-      children: [
-        Text(
-          '${activity.type == 'withdrawal' ? '-' : ''}${currencyFormat(activity.amount.toDouble())}',
-          style: TextStyle(
-            fontSize: 30,
-            color: getActivityColor(activity.type),
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        const SizedBox(height: 15),
-        Center(
-          child: Text(
-            getActivityDescription(activity),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              getActivityIcon(activity.type, size: 35),
-              const SizedBox(width: 5),
-              Text(
-                getActivityType(activity),
-                style: TextStyle(
-                  fontSize: 16,
-                  color: getActivityColor(activity.type),
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 25),
-        _buildModalDetailSection(
-          icon: SvgPicture.asset(
-            'assets/icons/activity_description.svg',
-            color: getActivityColor(activity.type),
-          ),
-          title: 'Description',
-          content: getActivityDescription(activity),
-          underlayColor: getUnderlayColor(activity.type),
-        ),
-        const Divider(color: Colors.white, thickness: 0.2),
-        _buildModalDetailSection(
-          icon: SvgPicture.asset(
-            'assets/icons/activity_date.svg',
-            color: getActivityColor(activity.type),
-          ),
-          title: 'Date',
-          content: date,
-          underlayColor: getUnderlayColor(activity.type),
-        ),
-        const Divider(color: Colors.white, thickness: 0.2),
-        _buildModalDetailSection(
-          icon: SvgPicture.asset(
-            'assets/icons/activity_user.svg',
-            color: getActivityColor(activity.type),
-          ),
-          title: 'Recipient',
-          content: activity.recipient,
-          underlayColor: getUnderlayColor(activity.type),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModalDetailSection({
-    required Widget icon,
-    required String title,
-    required String content,
-    required Color underlayColor,
-  }) =>
-      Padding(
-        padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-        child: Row(
-          children: [
-            Stack(
-              children: [
-                Icon(
-                  Icons.circle,
-                  color: underlayColor,
-                  size: 50,
-                ),
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: icon,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    content,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-
   // Filter and sort options
   void _showFilterModal(BuildContext context) {
     showModalBottomSheet(
@@ -803,7 +513,6 @@ class _ActivityPageState extends State<ActivityPage> {
                   'profit',
                   'deposit',
                   'withdrawal',
-                  'pending'
                 ];
                 selectedDates = DateTimeRange(
                   start: DateTime(1900),
@@ -816,7 +525,8 @@ class _ActivityPageState extends State<ActivityPage> {
         ],
       );
 
-  Widget _buildFilterDisplay(String buttonText) => Row(
+  Widget _buildFilterDisplay(List<String> buttonTexts) {
+      return Row(
         children: [
           const Text(
             'Filters: ',
@@ -827,19 +537,20 @@ class _ActivityPageState extends State<ActivityPage> {
               fontFamily: 'Titillium Web',
             ),
           ),
+          SizedBox(width: 10),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: [
-                  _buildFilterChip(buttonText),
-                  // Add more filter chips as needed
-                ],
+                mainAxisAlignment: MainAxisAlignment.end,
+                children:
+                    buttonTexts.map((text) => _buildFilterChip(text)).toList(),
               ),
             ),
           ),
         ],
       );
+    }
 
   Widget _buildFilterChip(String label) => Padding(
         padding: const EdgeInsets.all(4.0),
@@ -934,7 +645,11 @@ class _ActivityPageState extends State<ActivityPage> {
       );
 
   Widget _buildSelectedOptionsDisplay() {
-    String buttonText = getButtonText(selectedDates.start, selectedDates.end);
+    String dateButtonText =
+        getDateButtonText(selectedDates.start, selectedDates.end);
+    String typeButtonText = getTypeButtonText(_typeFilter);
+    String recipientsButtonText = getRecipientsButtonText(_recipientsFilter, allRecipients);
+    List<String> buttons = [dateButtonText, typeButtonText, recipientsButtonText];
     return Column(
       children: [
         Container(
@@ -945,7 +660,7 @@ class _ActivityPageState extends State<ActivityPage> {
           child: Column(
             children: [
               _buildSortDisplay(),
-              _buildFilterDisplay(buttonText),
+              _buildFilterDisplay(buttons),
             ],
           ),
         ),
@@ -956,6 +671,55 @@ class _ActivityPageState extends State<ActivityPage> {
       ],
     );
   }
+
+  String getDateButtonText(DateTime startDate, DateTime endDate) {
+    DateTime startOfRange = DateTime(1900, 1, 1);
+    DateTime today = DateTime.now();
+    DateTime todayDate = DateTime(today.year, today.month, today.day);
+
+    bool isAllTime = selectedDates.start == startOfRange &&
+        (selectedDates.end == todayDate ||
+            selectedDates.end.isAfter(todayDate));
+    if (isAllTime) {
+      return 'All Time';
+    } else {
+      String formattedStartDate =
+          '${selectedDates.start.month}/${selectedDates.start.day}/${selectedDates.start.year}';
+      String formattedEndDate =
+          '${selectedDates.end.month}/${selectedDates.end.day}/${selectedDates.end.year}';
+      return '$formattedStartDate - $formattedEndDate';
+    }
+  }
+
+  String getTypeButtonText(List<String> typeFilter) {
+      // List of all possible activity types
+      List<String> allTypes = ['profit', 'deposit', 'withdrawal'];
+
+      if (allTypes.every((type) => typeFilter.contains(type))) {
+        return 'All Types';
+      } else if (typeFilter.isEmpty) {
+        return 'No Types Selected';
+      } else {
+        // Filter out 'income' and convert types to title case for display
+        List<String> displayTypes = typeFilter
+            .where((type) => type != 'income')
+            .map((type) => toTitleCase(type))
+            .toList();
+        return displayTypes.join(', ');
+      }
+    }
+
+  String getRecipientsButtonText(List<String> recipientsFilter, List<String> allRecipients) {
+    if (allRecipients.every((recipient) => recipientsFilter.contains(recipient))) {
+      return 'All Recipients';
+    } else if (recipientsFilter.isEmpty) {
+      return 'No Recipients Selected';
+    } else {
+      return recipientsFilter.join(', ');
+    }
+  }
+
+
 
   Widget _buildSortDisplay() => Padding(
         padding: const EdgeInsets.only(bottom: 20),
@@ -1019,24 +783,7 @@ class _ActivityPageState extends State<ActivityPage> {
           },
         ),
       );
-  String getButtonText(DateTime startDate, DateTime endDate) {
-    DateTime startOfRange = DateTime(1900, 1, 1);
-    DateTime today = DateTime.now();
-    DateTime todayDate = DateTime(today.year, today.month, today.day);
-
-    bool isAllTime = selectedDates.start == startOfRange &&
-        (selectedDates.end == todayDate ||
-            selectedDates.end.isAfter(todayDate));
-    if (isAllTime) {
-      return 'All Time';
-    } else {
-      String formattedStartDate =
-          '${selectedDates.start.month}/${selectedDates.start.day}/${selectedDates.start.year}';
-      String formattedEndDate =
-          '${selectedDates.end.month}/${selectedDates.end.day}/${selectedDates.end.year}';
-      return '$formattedStartDate - $formattedEndDate';
-    }
-  }
+  
 
   String _getSortOrderText() {
     switch (_order) {
