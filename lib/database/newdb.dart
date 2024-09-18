@@ -168,6 +168,7 @@ class NewDB {
           notifications: notifications,
           graphPoints: graphPoints,
           connectedUsers: connectedUsers.whereType<Client>().toList(),
+
         );
       });
     } catch (e) {

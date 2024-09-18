@@ -25,7 +25,13 @@ class ActivityPage extends StatefulWidget {
 class _ActivityPageState extends State<ActivityPage> {
   List<Activity> activities = [];
   SortOrder _order = SortOrder.newToOld;
-  List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
+  List<String> _typeFilter = [
+    'income',
+    'profit',
+    'deposit',
+    'withdrawal',
+    'pending'
+  ];
   List<String> _fundsFilter = ['AK1', 'AGQ'];
 
   DateTimeRange selectedDates = DateTimeRange(
@@ -35,8 +41,6 @@ class _ActivityPageState extends State<ActivityPage> {
 
   Map<String, bool> userCheckStatus = {};
   List<String> selectedUsers = [];
-  bool allUsersChecked = true;
-  bool isFilterSelected = false;
 
   Client? client;
 
@@ -101,7 +105,8 @@ class _ActivityPageState extends State<ActivityPage> {
                         int activityIndex = index - 2;
                         if (activityIndex < activities.length) {
                           final activity = activities[activityIndex];
-                          return _buildActivityWithDayHeader(activity, activityIndex, activities);
+                          return _buildActivityWithDayHeader(
+                              activity, activityIndex, activities);
                         } else {
                           return null;
                         }
@@ -120,7 +125,8 @@ class _ActivityPageState extends State<ActivityPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: CustomBottomNavigationBar(currentItem: NavigationItem.activity),
+            child:
+                CustomBottomNavigationBar(currentItem: NavigationItem.activity),
           ),
         ],
       ),
@@ -129,83 +135,84 @@ class _ActivityPageState extends State<ActivityPage> {
 
   // Build methods
   Widget _buildFilterAndSort() => Padding(
-      padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
-      child: Row(
-        children: [
-          _buildFilterButton(),
-          const SizedBox(width: 10),
-          _buildSortButton(),
-        ],
-      ),
-    );
+        padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
+        child: Row(
+          children: [
+            _buildFilterButton(),
+            const SizedBox(width: 10),
+            _buildSortButton(),
+          ],
+        ),
+      );
 
   Widget _buildFilterButton() => Expanded(
-      child: ElevatedButton.icon(
-        icon: SvgPicture.asset(
-          'assets/icons/filter.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.defaultGray200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+        child: ElevatedButton.icon(
+          icon: SvgPicture.asset(
+            'assets/icons/filter.svg',
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            height: 24,
+            width: 24,
           ),
-          elevation: 0,
-        ),
-        label: const Text(
-          'Filter',
-          style: TextStyle(
-            color: AppColors.defaultGray200,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            fontFamily: 'Titillium Web',
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            side: const BorderSide(color: AppColors.defaultGray200),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            elevation: 0,
           ),
+          label: const Text(
+            'Filter',
+            style: TextStyle(
+              color: AppColors.defaultGray200,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          onPressed: () {
+            _buildFilterOptions(context);
+          },
         ),
-        onPressed: () {
-          _buildFilterOptions(context);
-        },
-      ),
-    );
+      );
 
   Widget _buildSortButton() => Expanded(
-      child: ElevatedButton.icon(
-        icon: SvgPicture.asset(
-          'assets/icons/sort.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.defaultGray200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+        child: ElevatedButton.icon(
+          icon: SvgPicture.asset(
+            'assets/icons/sort.svg',
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            height: 24,
+            width: 24,
           ),
-          elevation: 0,
-        ),
-        label: const Text(
-          'Sort',
-          style: TextStyle(
-            color: AppColors.defaultGray200,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            fontFamily: 'Titillium Web',
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            side: const BorderSide(color: AppColors.defaultGray200),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            elevation: 0,
           ),
+          label: const Text(
+            'Sort',
+            style: TextStyle(
+              color: AppColors.defaultGray200,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          onPressed: () {
+            _buildSortOptions(context);
+          },
         ),
-        onPressed: () {
-          _buildSortOptions(context);
-        },
-      ),
-    );
+      );
 
   Widget _buildActivityWithDayHeader(
       Activity activity, int index, List<Activity> activities) {
     final activityDate = activity.time;
     final previousActivityDate = index > 0 ? activities[index - 1].time : null;
-    final nextActivityDate = index < activities.length - 1 ? activities[index + 1].time : null;
+    final nextActivityDate =
+        index < activities.length - 1 ? activities[index + 1].time : null;
 
     bool isLastActivityForTheDay =
         nextActivityDate == null || !isSameDay(activityDate, nextActivityDate);
@@ -280,89 +287,89 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildActivityIcon(Activity activity) => Padding(
-      padding: const EdgeInsets.only(right: 20),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(
-            Icons.circle,
-            color: getUnderlayColor(activity.type),
-            size: 50,
-          ),
-          getActivityIcon(activity.type),
-        ],
-      ),
-    );
+        padding: const EdgeInsets.only(right: 20),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              Icons.circle,
+              color: getUnderlayColor(activity.type),
+              size: 50,
+            ),
+            getActivityIcon(activity.type),
+          ],
+        ),
+      );
 
   Widget _buildActivityDetails(Activity activity) => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          activity.fund,
-          style: const TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          getActivityType(activity),
-          style: TextStyle(
-            fontSize: 15,
-            color: getActivityColor(activity.type),
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    );
-
-  Widget _buildActivityAmountAndTime(Activity activity, String time) => Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            '${activity.type == 'withdrawal' ? '-' : ''}${currencyFormat(activity.amount.toDouble())}',
-            style: TextStyle(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            activity.fund,
+            style: const TextStyle(
               fontSize: 18,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            getActivityType(activity),
+            style: TextStyle(
+              fontSize: 15,
               color: getActivityColor(activity.type),
               fontWeight: FontWeight.bold,
               fontFamily: 'Titillium Web',
             ),
           ),
-        ),
-        const SizedBox(height: 5),
-        Row(
-          children: [
-            Text(
-              time,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-            SvgPicture.asset(
-              'assets/icons/line.svg',
-              color: Colors.white,
-              height: 15,
-            ),
-            Text(
-              activity.recipient,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.white,
+        ],
+      );
+
+  Widget _buildActivityAmountAndTime(Activity activity, String time) => Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '${activity.type == 'withdrawal' ? '-' : ''}${currencyFormat(activity.amount.toDouble())}',
+              style: TextStyle(
+                fontSize: 18,
+                color: getActivityColor(activity.type),
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Titillium Web',
               ),
             ),
-          ],
-        ),
-      ],
-    );
+          ),
+          const SizedBox(height: 5),
+          Row(
+            children: [
+              Text(
+                time,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+              SvgPicture.asset(
+                'assets/icons/line.svg',
+                color: Colors.white,
+                height: 15,
+              ),
+              Text(
+                activity.recipient,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
 
   // Activity details modal
   void _showActivityDetailsModal(BuildContext context, Activity activity) {
@@ -394,37 +401,37 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildModalHeader(BuildContext context) => Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 15, left: 10),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Color.fromARGB(171, 255, 255, 255),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 15, left: 10),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Color.fromARGB(171, 255, 255, 255),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
-            ),
-          ],
-        ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
-          child: Text(
-            'Activity Details',
-            style: TextStyle(
-                fontSize: 25.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'Titillium Web'),
+            ],
           ),
-        ),
-      ],
-    );
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
+            child: Text(
+              'Activity Details',
+              style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web'),
+            ),
+          ),
+        ],
+      );
 
   Widget _buildModalBody(Activity activity) {
     String date = dateFormat.format(activity.time);
@@ -510,54 +517,55 @@ class _ActivityPageState extends State<ActivityPage> {
     required String title,
     required String content,
     required Color underlayColor,
-  }) => Padding(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-      child: Row(
-        children: [
-          Stack(
-            children: [
-              Icon(
-                Icons.circle,
-                color: underlayColor,
-                size: 50,
-              ),
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.center,
-                  child: icon,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  }) =>
+      Padding(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+        child: Row(
+          children: [
+            Stack(
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Titillium Web',
-                  ),
+                Icon(
+                  Icons.circle,
+                  color: underlayColor,
+                  size: 50,
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  content,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: icon,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    content,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 
   // Filter and sort options
   void _buildFilterOptions(BuildContext context) {
@@ -623,65 +631,65 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildTimePeriodFilter() => ListTile(
-      title: GestureDetector(
-        onTap: () async {
-          final DateTimeRange? dateTimeRange = await showDateRangePicker(
-            context: context,
-            firstDate: DateTime(2000),
-            lastDate: DateTime(3000),
-            builder: (BuildContext context, Widget? child) => Theme(
-              data: Theme.of(context).copyWith(
-                scaffoldBackgroundColor: AppColors.defaultGray500,
-                textTheme: const TextTheme(
-                  headlineMedium: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Titillium Web',
-                    fontSize: 20,
-                  ),
-                  bodyMedium: TextStyle(
-                    color: Colors.black,
-                    fontFamily: 'Titillium Web',
-                    fontSize: 16,
+        title: GestureDetector(
+          onTap: () async {
+            final DateTimeRange? dateTimeRange = await showDateRangePicker(
+              context: context,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(3000),
+              builder: (BuildContext context, Widget? child) => Theme(
+                data: Theme.of(context).copyWith(
+                  scaffoldBackgroundColor: AppColors.defaultGray500,
+                  textTheme: const TextTheme(
+                    headlineMedium: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                      fontSize: 20,
+                    ),
+                    bodyMedium: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'Titillium Web',
+                      fontSize: 16,
+                    ),
                   ),
                 ),
+                child: child!,
               ),
-              child: child!,
-            ),
-          );
-          if (dateTimeRange != null) {
-            setState(() {
-              selectedDates = dateTimeRange;
-            });
-          }
-        },
-        child: Container(
-          color: Colors.transparent,
-          child: const Text('By Time Period',
+            );
+            if (dateTimeRange != null) {
+              setState(() {
+                selectedDates = dateTimeRange;
+              });
+            }
+          },
+          child: Container(
+            color: Colors.transparent,
+            child: const Text('By Time Period',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Titillium Web')),
+          ),
+        ),
+      );
+
+  Widget _buildActivityTypeFilter() => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
+        child: ExpansionTile(
+          title: const Text('By Type of Activity',
               style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Titillium Web')),
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          children: [
+            _buildActivityTypeCheckbox('Profit', 'income'),
+            _buildActivityTypeCheckbox('Withdrawal', 'withdrawal'),
+            _buildActivityTypeCheckbox('Deposit', 'deposit'),
+          ],
         ),
-      ),
-    );
-
-  Widget _buildActivityTypeFilter() => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: ExpansionTile(
-        title: const Text('By Type of Activity',
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Titillium Web')),
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        children: [
-          _buildActivityTypeCheckbox('Profit', 'income'),
-          _buildActivityTypeCheckbox('Withdrawal', 'withdrawal'),
-          _buildActivityTypeCheckbox('Deposit', 'deposit'),
-        ],
-      ),
-    );
+      );
 
   Widget _buildActivityTypeCheckbox(String title, String filterKey) {
     bool isChecked = _typeFilter.contains(filterKey);
@@ -705,64 +713,71 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildFilterApplyButtons() => Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-          child: SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.defaultBlue500,
-              ),
-              child: const Text('Apply',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web')),
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  filterActivities(activities, _fundsFilter, _typeFilter, selectedDates);
-                });
-              },
-            ),
-          ),
-        ),
-        GestureDetector(
-          child: Container(
-            color: Colors.transparent,
-            child: const Padding(
-              padding: EdgeInsets.all(4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(Icons.close, color: Colors.white),
-                  Text('Clear',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web')),
-                ],
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.defaultBlue500,
+                ),
+                child: const Text('Apply',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web')),
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    filterActivities(
+                        activities, _fundsFilter, _typeFilter, selectedDates);
+                  });
+                },
               ),
             ),
           ),
-          onTap: () {
-            setState(() {
-              _typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
-              _fundsFilter = ['AK1', 'AGQ'];
-              selectedDates = DateTimeRange(
-                start: DateTime(1900),
-                end: DateTime.now(),
-              );
-            });
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    );
+          GestureDetector(
+            child: Container(
+              color: Colors.transparent,
+              child: const Padding(
+                padding: EdgeInsets.all(4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.close, color: Colors.white),
+                    Text('Clear',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Titillium Web')),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              setState(() {
+                _typeFilter = [
+                  'income',
+                  'profit',
+                  'deposit',
+                  'withdrawal',
+                  'pending'
+                ];
+                _fundsFilter = ['AK1', 'AGQ'];
+                selectedDates = DateTimeRange(
+                  start: DateTime(1900),
+                  end: DateTime.now(),
+                );
+              });
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      );
 
   void _buildSortOptions(BuildContext context) {
     showModalBottomSheet(
@@ -795,7 +810,8 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                 ),
                 const SizedBox(height: 20.0),
-                _buildSortOption('Date: New to Old (Default)', SortOrder.newToOld),
+                _buildSortOption(
+                    'Date: New to Old (Default)', SortOrder.newToOld),
                 _buildSortOption('Date: Old to New', SortOrder.oldToNew),
                 _buildSortOption('Amount: Low to High', SortOrder.lowToHigh),
                 _buildSortOption('Amount: High to Low', SortOrder.highToLow),
@@ -809,18 +825,30 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildSortOption(String title, SortOrder value) => ListTile(
-      title: Text(
-        title,
-        style: const TextStyle(
-            color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18, fontFamily: 'Titillium Web'),
-      ),
-      onTap: () {
-        setState(() {
-          _order = value;
-          Navigator.pop(context);
-        });
-      },
-    );
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color:
+                _order == value ? AppColors.defaultBlue500 : Colors.transparent,
+            borderRadius:
+                BorderRadius.circular(15), // Adjust the radius as needed
+          ),
+          child: Text(
+            title,
+            style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                fontFamily: 'Titillium Web'),
+          ),
+        ),
+        onTap: () {
+          setState(() {
+            _order = value;
+            Navigator.pop(context);
+          });
+        },
+      );
 
   Widget _buildSelectedOptionsDisplay() {
     String buttonText = getButtonText(selectedDates.start, selectedDates.end);
@@ -847,111 +875,112 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   Widget _buildSortDisplay() => Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: GestureDetector(
-        child: Container(
-          color: Colors.transparent,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                const Text(
-                  'Sort: ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Titillium Web',
+        padding: const EdgeInsets.only(bottom: 20),
+        child: GestureDetector(
+          child: Container(
+            color: Colors.transparent,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                children: [
+                  const Text(
+                    'Sort: ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Titillium Web',
+                    ),
                   ),
-                ),
-                const Spacer(),
-                Container(
-                  color: Colors.transparent,
-                  child: GestureDetector(
-                    onTap: () {
-                      _buildSortOptions(context);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            _getSortOrderText(),
-                            style: const TextStyle(
-                              color: AppColors.defaultBlue300,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
+                  const Spacer(),
+                  Container(
+                    color: Colors.transparent,
+                    child: GestureDetector(
+                      onTap: () {
+                        _buildSortOptions(context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 10, right: 10, bottom: 5),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              _getSortOrderText(),
+                              style: const TextStyle(
+                                color: AppColors.defaultBlue300,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Titillium Web',
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          SvgPicture.asset(
-                            'assets/icons/sort.svg',
-                            colorFilter: const ColorFilter.mode(
-                                AppColors.defaultBlue300, BlendMode.srcIn),
-                            height: 18,
-                            width: 18,
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            SvgPicture.asset(
+                              'assets/icons/sort.svg',
+                              colorFilter: const ColorFilter.mode(
+                                  AppColors.defaultBlue300, BlendMode.srcIn),
+                              height: 18,
+                              width: 18,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+          onTap: () {
+            _buildSortOptions(context);
+          },
         ),
-        onTap: () {
-          _buildSortOptions(context);
-        },
-      ),
-    );
+      );
 
   Widget _buildFilterDisplay(String buttonText) => Row(
-      children: [
-        const Text(
-          'Filters: ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Titillium Web',
+        children: [
+          const Text(
+            'Filters: ',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Titillium Web',
+            ),
           ),
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip(buttonText),
-                // Add more filter chips as needed
-              ],
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip(buttonText),
+                  // Add more filter chips as needed
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+
+  Widget _buildFilterChip(String label) => Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.defaultBlueGray700,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.defaultBlueGray100,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Titillium Web',
             ),
           ),
         ),
-      ],
-    );
-
-  Widget _buildFilterChip(String label) => Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.defaultBlueGray700,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.defaultBlueGray100,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ),
-    );
+      );
 
   // Helper methods
   String getButtonText(DateTime startDate, DateTime endDate) {
@@ -960,7 +989,8 @@ class _ActivityPageState extends State<ActivityPage> {
     DateTime todayDate = DateTime(today.year, today.month, today.day);
 
     bool isAllTime = selectedDates.start == startOfRange &&
-        (selectedDates.end == todayDate || selectedDates.end.isAfter(todayDate));
+        (selectedDates.end == todayDate ||
+            selectedDates.end.isAfter(todayDate));
     if (isAllTime) {
       return 'All Time';
     } else {
@@ -986,5 +1016,4 @@ class _ActivityPageState extends State<ActivityPage> {
         return '';
     }
   }
-
 }

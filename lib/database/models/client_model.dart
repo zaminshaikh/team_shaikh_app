@@ -5,6 +5,7 @@ import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 
 class Client {
+  
   final String cid;
   final String uid;
   final String firstName;
@@ -24,6 +25,8 @@ class Client {
   List<Activity>? activities;
   List<GraphPoint>? graphPoints;
   final Assets? assets;
+
+
 
   Client({
     required this.cid,
@@ -46,6 +49,7 @@ class Client {
     this.graphPoints,
     this.assets,
   });
+
 
   factory Client.fromMap(Map<String, dynamic>? data,
       {String? cid,
@@ -122,28 +126,3 @@ class Client {
         'assets': assets?.toMap(),
       };
 }
-
-Client getClient(cid) => Client(
-      cid: cid,
-      uid: '',
-      firstName: '',
-      lastName: '',
-      companyName: '',
-      address: '',
-      dob: null,
-      phoneNumber: '',
-      appEmail: '',
-      initEmail: '',
-      firstDepositDate: null,
-      beneficiaries: [],
-      connectedUsers: [],
-      totalAssets: 0,
-      activities: [],
-      graphPoints: [],
-      notifications: [],
-      assets: Assets(
-        funds: {},
-        ytd: null,
-        totalAssets: null,
-      ),
-    );
