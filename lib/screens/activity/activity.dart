@@ -23,7 +23,10 @@ class ActivityPage extends StatefulWidget {
 }
 
 class _ActivityPageState extends State<ActivityPage> {
+  Client? client;
   List<Activity> activities = [];
+
+  // Initiliaze filters and sort
   SortOrder _order = SortOrder.newToOld;
   List<String> _typeFilter =  [
       'income',
@@ -33,7 +36,6 @@ class _ActivityPageState extends State<ActivityPage> {
     ];
   List<String> _recipientsFilter = [];
   
-  List<String> _fundsFilter = ['AK1', 'AGQ'];
 
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
@@ -44,7 +46,6 @@ class _ActivityPageState extends State<ActivityPage> {
   List<String> selectedUsers = [];
   List<String> allRecipients = [];
 
-  Client? client;
 
   // Date formatters
   final DateFormat timeFormat = DateFormat('h:mm a');
@@ -184,7 +185,7 @@ class _ActivityPageState extends State<ActivityPage> {
             ),
           ),
           onPressed: () {
-            _buildFilterOptions(context);
+            _showFilterModal(context);
           },
         ),
       );
@@ -581,7 +582,7 @@ class _ActivityPageState extends State<ActivityPage> {
       );
 
   // Filter and sort options
-void _buildFilterOptions(BuildContext context) {
+  void _showFilterModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -749,7 +750,6 @@ void _buildFilterOptions(BuildContext context) {
     );
   }
 
-
   Widget _buildFilterApplyClearButtons() => Column(
         children: [
           Padding(
@@ -771,7 +771,7 @@ void _buildFilterOptions(BuildContext context) {
                   Navigator.pop(context);
                   setState(() {
                     filterActivities(
-                        activities, _fundsFilter, _typeFilter, selectedDates);
+                        activities, _typeFilter, _recipientsFilter, selectedDates);
                   });
                 },
               ),
@@ -805,7 +805,6 @@ void _buildFilterOptions(BuildContext context) {
                   'withdrawal',
                   'pending'
                 ];
-                _fundsFilter = ['AK1', 'AGQ'];
                 selectedDates = DateTimeRange(
                   start: DateTime(1900),
                   end: DateTime.now(),
@@ -817,6 +816,52 @@ void _buildFilterOptions(BuildContext context) {
         ],
       );
 
+  Widget _buildFilterDisplay(String buttonText) => Row(
+        children: [
+          const Text(
+            'Filters: ',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip(buttonText),
+                  // Add more filter chips as needed
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+
+  Widget _buildFilterChip(String label) => Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.defaultBlueGray700,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.defaultBlueGray100,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+        ),
+      );
+
+  // Helper methods
   void _buildSortOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -974,53 +1019,6 @@ void _buildFilterOptions(BuildContext context) {
           },
         ),
       );
-
-  Widget _buildFilterDisplay(String buttonText) => Row(
-        children: [
-          const Text(
-            'Filters: ',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip(buttonText),
-                  // Add more filter chips as needed
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-
-  Widget _buildFilterChip(String label) => Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.defaultBlueGray700,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.defaultBlueGray100,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Titillium Web',
-            ),
-          ),
-        ),
-      );
-
-  // Helper methods
   String getButtonText(DateTime startDate, DateTime endDate) {
     DateTime startOfRange = DateTime(1900, 1, 1);
     DateTime today = DateTime.now();
