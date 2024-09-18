@@ -21,6 +21,7 @@ class Client {
   final List<Client?>? connectedUsers;
   final double? totalAssets;
   final int? numNotifsUnread;
+  final List<String>? recipients;
   List<Notif>? notifications;
   List<Activity>? activities;
   List<GraphPoint>? graphPoints;
@@ -48,6 +49,7 @@ class Client {
     this.activities,
     this.graphPoints,
     this.assets,
+    this.recipients,
   });
 
 
@@ -76,6 +78,7 @@ class Client {
       firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
       beneficiaries: List<String>.from(data['beneficiaries'] ?? []),
       numNotifsUnread: notifications?.where((notif) => notif.isRead != null && !notif.isRead!).length,
+      recipients: activities?.map((activity) => activity.recipient).toSet().toList(),
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],
       graphPoints: graphPoints ?? [],
@@ -101,6 +104,7 @@ class Client {
         connectedUsers = [],
         totalAssets = 0.0,
         numNotifsUnread = 0,
+        recipients = [],
         notifications = [],
         activities = [],
         graphPoints = [],

@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 
 void filterActivities(List<Activity> activities, List<String> typeFilter,
-    List<String> fundsFilter, DateTimeRange selectedDates) {
+    List<String> recipientsFilter, DateTimeRange selectedDates) {
   activities.removeWhere((activity) => !typeFilter.contains(activity.type));
-  activities.removeWhere((activity) => !fundsFilter.contains(activity.fund));
+  activities.removeWhere((activity) => !recipientsFilter.contains(activity.recipient));
   activities.removeWhere((activity) =>
       activity.time.isBefore(selectedDates.start) ||
       activity.time.isAfter(selectedDates.end));
@@ -14,12 +14,12 @@ void filterActivities(List<Activity> activities, List<String> typeFilter,
     typeFilter = ['income', 'profit', 'deposit', 'withdrawal', 'pending'];
   }
 
-  if (fundsFilter.isEmpty) {
-    fundsFilter = ['AK1', 'AGQ'];
+  if (recipientsFilter.isEmpty) {
+    recipientsFilter = []; // Assuming no default recipients filter
   }
 }
 
-List<String> getSelectedFilters(List<String> fundsFilter, List<String> typeFilter,
+List<String> getSelectedFilters(List<String> recipientsFilter, List<String> typeFilter,
     DateTimeRange selectedDates) {
   // Ensure default filters are not considered as "selected" filters
   List<String> defaultTypeFilter = [
@@ -29,7 +29,6 @@ List<String> getSelectedFilters(List<String> fundsFilter, List<String> typeFilte
     'withdrawal',
     'pending'
   ];
-  List<String> defaultFundsFilter = ['AK1', 'AGQ'];
 
   List<String> selectedFilters = [];
 
@@ -38,9 +37,9 @@ List<String> getSelectedFilters(List<String> fundsFilter, List<String> typeFilte
     selectedFilters.addAll(typeFilter);
   }
 
-  // Add funds filters if they are not the default
-  if (fundsFilter.toSet().difference(defaultFundsFilter.toSet()).isNotEmpty) {
-    selectedFilters.addAll(fundsFilter);
+  // Add recipients filters if they are not empty
+  if (recipientsFilter.isNotEmpty) {
+    selectedFilters.addAll(recipientsFilter);
   }
 
   // Add date range filter if it's specified

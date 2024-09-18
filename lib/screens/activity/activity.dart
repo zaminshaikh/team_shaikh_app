@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, library_private_types_in_public_api, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use, library_private_types_in_public_api, use_build_context_synchronously, prefer_expression_function_bodies
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,13 +25,14 @@ class ActivityPage extends StatefulWidget {
 class _ActivityPageState extends State<ActivityPage> {
   List<Activity> activities = [];
   SortOrder _order = SortOrder.newToOld;
-  List<String> _typeFilter = [
-    'income',
-    'profit',
-    'deposit',
-    'withdrawal',
-    'pending'
-  ];
+  List<String> _typeFilter =  [
+      'income',
+      'profit',
+      'deposit',
+      'withdrawal',
+    ];
+  List<String> _recipientsFilter = [];
+  
   List<String> _fundsFilter = ['AK1', 'AGQ'];
 
   DateTimeRange selectedDates = DateTimeRange(
@@ -41,6 +42,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   Map<String, bool> userCheckStatus = {};
   List<String> selectedUsers = [];
+  List<String> allRecipients = [];
 
   Client? client;
 
@@ -53,6 +55,12 @@ class _ActivityPageState extends State<ActivityPage> {
   void initState() {
     super.initState();
     _validateAuth();
+    // Initialize _recipientsFilter after allRecipients is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _recipientsFilter = List.from(allRecipients);
+      });
+    });
   }
 
   Future<void> _validateAuth() async {
@@ -72,16 +80,21 @@ class _ActivityPageState extends State<ActivityPage> {
   @override
   Widget build(BuildContext context) {
     activities = List.from(client?.activities ?? []);
+    allRecipients = List.from(client?.recipients ?? []);
 
     // Collect connected users' activities if any
     if (client?.connectedUsers != null && client!.connectedUsers!.isNotEmpty) {
       final connectedUserActivities = client!.connectedUsers!
           .where((user) => user != null)
           .expand((user) => user!.activities ?? [].cast<Activity>());
+      final connectedUserRecipients = client!.connectedUsers!
+          .where((user) => user != null)
+          .expand((user) => user!.recipients ?? [].cast<String>());
       activities.addAll(connectedUserActivities);
+      allRecipients.addAll(connectedUserRecipients);
     }
 
-    filterActivities(activities, _typeFilter, _fundsFilter, selectedDates);
+    filterActivities(activities, _typeFilter, _recipientsFilter, selectedDates);
     sortActivities(activities, _order);
 
     return Scaffold(
@@ -568,7 +581,7 @@ class _ActivityPageState extends State<ActivityPage> {
       );
 
   // Filter and sort options
-  void _buildFilterOptions(BuildContext context) {
+void _buildFilterOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -615,11 +628,15 @@ class _ActivityPageState extends State<ActivityPage> {
                         controller: controller,
                         children: [
                           _buildTimePeriodFilter(),
-                          _buildActivityTypeFilter(),
+                          _buildFilter('By Type of Activity',
+                              ['profit', 'withdrawal', 'deposit'], _typeFilter),
+                          _buildFilter('By Recipients', allRecipients,
+                              _recipientsFilter),
                         ],
                       ),
                     ),
-                    _buildFilterApplyButtons(),
+                    _buildFilterApplyClearButtons(),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -673,46 +690,66 @@ class _ActivityPageState extends State<ActivityPage> {
         ),
       );
 
-  Widget _buildActivityTypeFilter() => Padding(
+  Widget _buildFilter(
+          String title, List<String> items, List<String> filterList) =>
+      Padding(
         padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: ExpansionTile(
-          title: const Text('By Type of Activity',
-              style: TextStyle(
+          title: Text(title,
+              style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Titillium Web')),
           iconColor: Colors.white,
           collapsedIconColor: Colors.white,
-          children: [
-            _buildActivityTypeCheckbox('Profit', 'income'),
-            _buildActivityTypeCheckbox('Withdrawal', 'withdrawal'),
-            _buildActivityTypeCheckbox('Deposit', 'deposit'),
-          ],
+          children: items
+              .map(
+                  (item) => _buildCheckbox(toTitleCase(item), item, filterList))
+              .toList(),
         ),
       );
 
-  Widget _buildActivityTypeCheckbox(String title, String filterKey) {
-    bool isChecked = _typeFilter.contains(filterKey);
-    return CheckboxListTile(
-      title: Text(
-        title,
-        style: const TextStyle(
-            fontSize: 16.0, color: Colors.white, fontFamily: 'Titillium Web'),
-      ),
-      value: isChecked,
-      onChanged: (bool? value) {
-        setState(() {
-          if (value == true) {
-            _typeFilter.add(filterKey);
-          } else {
-            _typeFilter.remove(filterKey);
-          }
-        });
+  Widget _buildCheckbox(
+      String title, String filterKey, List<String> filterList) {
+    bool isChecked = filterList.contains(filterKey);
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        return CheckboxListTile(
+          title: Text(
+            title,
+            style: const TextStyle(
+                fontSize: 16.0,
+                color: Colors.white,
+                fontFamily: 'Titillium Web'),
+          ),
+          value: isChecked,
+          onChanged: (bool? value) {
+            setState(() {
+              isChecked = value!;
+              if (value == true) {
+                if (filterKey == 'profit') {
+                  filterList.add('income');
+                }
+                filterList.add(filterList.contains(filterKey.toLowerCase()) 
+                    ? filterKey.toLowerCase() 
+                    : filterKey);
+              } else {
+                if (filterKey == 'profit') {
+                  filterList.remove('income');
+                }
+                filterList.remove(filterList.contains(filterKey.toLowerCase())
+                    ? filterKey.toLowerCase()
+                    : filterKey);
+              }
+            });
+          },
+        );
       },
     );
   }
 
-  Widget _buildFilterApplyButtons() => Column(
+
+  Widget _buildFilterApplyClearButtons() => Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
