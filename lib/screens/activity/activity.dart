@@ -722,6 +722,7 @@ void _buildFilterOptions(BuildContext context) {
                 color: Colors.white,
                 fontFamily: 'Titillium Web'),
           ),
+          activeColor: AppColors.defaultBlue500, 
           value: isChecked,
           onChanged: (bool? value) {
             setState(() {
