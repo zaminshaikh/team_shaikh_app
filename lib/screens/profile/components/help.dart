@@ -533,25 +533,25 @@ class _HelpPageState extends State<HelpPage> {
 
             CustomExpansionTile(
               title: 'Is the app secure?',
-              content: 'Yes, the Team Shaikh App is designed with strong security measures to protect your data and ensure your privacy.',
+              content: 'Absolutely. The Team Shaikh app employs cutting-edge security measures to safeguard your data and ensure your privacy is fully protected. Your security is our top priority, and we are committed to maintaining the highest standards of data protection.',
             ),
             CustomExpansionTile(
               title: 'How do I contact customer support?',
-              content: 'If you have any questions or issues, please feel free to reach out to melinda@agqconsulting.com. If it is urgent or of high priority, please contact Kashif or Sonny Shaikh. Their numbers are listed higher on the page.',
+              content: 'You can contact us via email at management@agqconsulting.com, or by phone at 973-610-4916 or 631-487-9818.',
             ),
             CustomExpansionTile(
               title: 'How do I update my personal information?',
-              content: 'To update your personal information, including changing your email and password, go to the settings page, under the "Security" section. If there is anything that seems incorrect about your personal information, please reach out to melinda@agqconsulting.com.',
+              content: 'Log in to your account, go to profile settings, edit your information, and save the changes. For help, contact our support team at management@agqconsulting.com.',
             ),
             CustomExpansionTile(
-              title: 'What happens if my phone is lost or stolen?',
-              content: 'The app requires a PIN or Face ID for access, so it should be secure. However, if you believe that the app may still be accessible, we can temporarily disable your account for your safety.',
+              title: 'What should I do if my phone is lost or stolen?',
+              content: 'If your phone is lost or stolen, contact us immediately. Even though the app is secured with a PIN or face ID, we will promptly disable your account to ensure your safety.',
             ),
             CustomExpansionTile(
-              title: 'Can I export my financial data?',
-              content: 'Yes, you can export your financial statements and documents. Go to the documents page and look for the download button. Wait for the options dialog to appear to export your document in your preffered format.',
+              title: 'How can I export my financial data?',
+              content: 'Go to the Documents section, click the Download button, and choose your preferred format from the options dialog.',
             ),
-
+            
             SizedBox(height: 20),
           
           ],

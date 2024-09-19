@@ -732,66 +732,66 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildDisclaimer() {
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const Divider(
-                color: Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
-            const SizedBox(height: 15),
-            const Text(
-              'DISCLAIMER',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
-              ),
+    return  Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Divider(color: Color.fromARGB(46, 255, 255, 255), thickness: 1.5),
+          const SizedBox(height: 15),
+          const Text(
+            'DISCLAIMER',
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
             ),
-            const SizedBox(height: 15),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const DisclaimerPage()),
-                );
-              },
-              child: const Center(
-                child: Row(
-                  children: [
-                    Text(
-                      'Read Full Disclaimer',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    SizedBox(width: 5),
-                    Icon(
-                      Icons.arrow_forward_ios,
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            'Investment products and services are offered through AGQ Consulting LLC, a Florida limited liability company.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+          const SizedBox(height: 15),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DisclaimerPage()),
+              );
+            },
+            child: const Center(
+              child: Row(
+                children: [
+                  Text(
+                    'Read Full Disclaimer',
+                    style: TextStyle(
+                      fontSize: 16,
                       color: Colors.blue,
-                      size: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(width: 5),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.blue,
+                    size: 16,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 15),
-            const Text(
-              'Investment products and services are offered through AGQ Consulting LLC, a Florida limited liability company.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-              ),
-            )
-          ],
-        ));
+          ),
+        ],
+        
+      )
+    );
   }
 
   Widget _buildLogoutButton() => Padding(
