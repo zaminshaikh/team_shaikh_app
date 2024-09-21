@@ -5,14 +5,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
 
@@ -25,175 +29,23 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late Future<void> _initializeWidgetFuture = Future.value();
 
-  // database service instance
-  DatabaseService? _databaseService;
+  Client? client;
   bool activitySwitchValue = false;
   bool statementsSwitchValue = false;
 
 
-  Future<void> _initData() async {
-
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      log('settings.dart: User is not logged in');
-      await Navigator.pushReplacementNamed(context, '/login');
-    }
-    // Fetch CID using async constructor
-    DatabaseService? service =
-        await DatabaseService.fetchCID(context, user!.uid, 1);
-    // If there is no matching CID, redirect to login page
-    // ignore: duplicate_ignore
-    if (service == null) {
-      // ignore: use_build_context_synchronously
-      await Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      // Otherwise set the database service instance
-      setState(() {
-        _databaseService = service;
-      });
-    }
-  }
-  
-    String? cid;
-
-
   @override
-  Widget build(BuildContext context) => FutureBuilder(
-    future: _initializeWidgetFuture, // Initialize the database service
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return Center(
-          child: Container(
-            padding: const EdgeInsets.all(26.0),
-            margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-            decoration: BoxDecoration(
-              color: AppColors.defaultBlue500,
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            child: const Stack(
-              children: [
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  strokeWidth: 6.0,
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-      return StreamBuilder<UserWithAssets>(
-        stream: _databaseService?.getUserWithAssets,
-        builder: (context, userSnapshot) {
-          if (!userSnapshot.hasData || userSnapshot.data == null) {
-            return Center(
-              child: Container(
-                padding: const EdgeInsets.all(26.0),
-                margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-                decoration: BoxDecoration(
-                  color: AppColors.defaultBlue500,
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                child: const Stack(
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 6.0,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          // Fetch connected users before building the settings page
-          return StreamBuilder<List<UserWithAssets>>(
-            stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
-            builder: (context, connectedUsersSnapshot) {
-              if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
-                // If there is no connected users, we build the dashboard for a single user
-                return buildsettingsPage(context, userSnapshot, connectedUsersSnapshot);
-              }
-              // Once we have the connected users, proceed to fetch notifications
-              return StreamBuilder<List<Map<String, dynamic>>>(
-                stream: _databaseService?.getNotifications,
-                builder: (context, notificationsSnapshot) {
-                  if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-                    return Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(26.0),
-                        margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-                        decoration: BoxDecoration(
-                          color: AppColors.defaultBlue500,
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        child: const Stack(
-                          children: [
-                            CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              strokeWidth: 6.0,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
-                  // Now that we have all necessary data, build the settings page
-                  return buildsettingsPageWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
-                }
-              );
-            }
-          );
-        }
-      );
-    }
-  );
-
-
-
-
-
-
-
-
-    void signUserOut(BuildContext context) async {
-    ('settings.dart: Signing out...');
-    await FirebaseAuth.instance.signOut();
-    assert(FirebaseAuth.instance.currentUser == null);
-
-    // Async gap mounted widget check
-    if (!mounted) {
-      log('settings.dart: No longer mounted!');
-      return;
-    }
-
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
-    );  }
-  
-  
-
-
-
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeWidgetFuture = _initData();
-    _loadSwitchValue();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client?>(context);
   }
 
 
-
-
-
+  @override
+  Widget build(BuildContext context) {
+    return buildsettingsPage();
+  }
 
   void _loadSwitchValue() async {
     final prefs = await SharedPreferences.getInstance();
@@ -208,17 +60,14 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setBool(key, value);
   }
 
-
-
-
-
-
 // This is the selected button, initially set to an empty string
   // Assuming these fields are part of the `user.info` map
-  Scaffold buildsettingsPage(
-      BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
+  Scaffold buildsettingsPage() {
+    if (client == null) {
+      return const Scaffold(
+        body: CustomProgressIndicator(),
+      );
+    }
     return Scaffold(
       body: Stack(
         children: [
@@ -242,34 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Scaffold buildsettingsPageWithConnectedUsers(
-      BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(context),
-              SliverPadding(
-                padding: const EdgeInsets.all(0.0),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      _settings(),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-// This is the settings section
+  // This is the settings section
   Padding _settings() => Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
@@ -854,60 +676,13 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
 
             const SizedBox(height: 20),
-            Column(
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    List<dynamic>? tokens = await _databaseService!
-                            .getField('tokens') as List<dynamic>? ??
-                        [];
-                    // Get the current token
-                    String currentToken =
-                        await FirebaseMessaging.instance.getToken() ?? '';
-                    tokens.remove(currentToken);
-                    // Update the list of tokens in the database for the user
-                    await _databaseService!.updateField('tokens', tokens);
-                    signUserOut(context);
-                  },
-                  child: Container(
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 149, 28, 28),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/logout.svg',
-                            color: Colors.white,
-                            height: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'Logout',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            LogoutButton(client: client!),
             const SizedBox(height: 50),
           ],
         ),
       );
 
-// This is the app bar
+  // This is the app bar
   SliverAppBar _buildAppBar(context) => SliverAppBar(
         backgroundColor: const Color.fromARGB(255, 30, 41, 59),
         automaticallyImplyLeading: false,
