@@ -326,162 +326,180 @@ class _DocumentsPageState extends State<DocumentsPage> {
     );
   }
   
-// This is the Statements and Documents section
+  // This is the Statements and Documents section
   Padding _documents() => Padding(
-        padding: const EdgeInsets.fromLTRB(10, 20, 10, 120),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              fit: FlexFit.loose,
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(), // Disable scrolling
-                itemCount: pdfFiles.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Column(
-                            children: [
-                              if (index != 0) // Only show the divider if it's not the first file
-                                const Padding(
-                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                  child: Divider(
-                                    color: Colors.white,
-                                    thickness: 0.2,
-                                    height: 10,
-                                  ),
-                                ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ListTile(
-                                      splashColor: Colors.transparent,
-                                      title: Text(
-                                        pdfFiles[index].name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'Titillium Web',
-                                        ),
-                                      ),
-                                      onTap: () async {
-                                        await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
-                                        String filePath = await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => PDFScreen(filePath),
-                                          ),
-                                        );
-                                      },
-                                      trailing: IconButton(
-                                        icon: SvgPicture.asset(
-                                          'assets/icons/download.svg',
-                                          width: 24,
-                                          height: 24,
-                                          color: AppColors.defaultBlueGray300,
-                                        ),
-                                        onPressed: () {
-                                          shareFile(context, _databaseService?.cid, pdfFiles[index].name);
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+    padding: const EdgeInsets.fromLTRB(10, 20, 10, 120),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (pdfFiles.isEmpty && pdfFilesConnectedUsers.isEmpty)
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: 30),
+            child: Text(
+              'There are no documents available.',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+                fontSize: 20,
               ),
             ),
-            Flexible(
-              fit: FlexFit.loose,
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(), // Disable scrolling
-                itemCount: pdfFilesConnectedUsers.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Column(
-                            children: [
-                                const Padding(
-                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                  child: Divider(
-                                    color: Colors.white,
-                                    thickness: 0.2,
-                                    height: 10,
-                                  ),
+          ),
+        )
+      else ...[
+        if (pdfFiles.isNotEmpty)
+          Flexible(
+            fit: FlexFit.loose,
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+              itemCount: pdfFiles.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: const EdgeInsets.all(0.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        Column(
+                          children: [
+                            if (index != 0) // Only show the divider if it's not the first file
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                child: Divider(
+                                  color: Colors.white,
+                                  thickness: 0.2,
+                                  height: 10,
                                 ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ListTile(
-                                      splashColor: Colors.transparent,
-                                      title: Text(
-                                        pdfFilesConnectedUsers[index].file.name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'Titillium Web',
-                                        ),
-                                      ),
-                                      onTap: () async {
-                                        String filePath = '';
-                                        filePath = await downloadFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => PDFScreen(filePath),
-                                            ),
-                                          );
-                                      },
-                                      trailing: IconButton(
-                                        icon: SvgPicture.asset(
-                                          'assets/icons/download.svg',
-                                          width: 24,
-                                          height: 24,
-                                          color: AppColors.defaultBlueGray300,
-                                        ),
-                                        onPressed: () {
-                                          shareFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
-                                        },
+                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ListTile(
+                                    splashColor: Colors.transparent,
+                                    title: Text(
+                                      pdfFiles[index].name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Titillium Web',
                                       ),
                                     ),
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                                    onTap: () async {
+                                      await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                      String filePath = await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PDFScreen(filePath),
+                                        ),
+                                      );
+                                    },
+                                    trailing: IconButton(
+                                      icon: SvgPicture.asset(
+                                        'assets/icons/download.svg',
+                                        width: 24,
+                                        height: 24,
+                                        color: AppColors.defaultBlueGray300,
+                                      ),
+                                      onPressed: () {
+                                        shareFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            )
-        
-        
-          ],
-        ),
-      );
+                  ),
+                );
+              },
+            ),
+          ),
+        if (pdfFilesConnectedUsers.isNotEmpty)
+          Flexible(
+            fit: FlexFit.loose,
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+              itemCount: pdfFilesConnectedUsers.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: const EdgeInsets.all(0.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        Column(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                              child: Divider(
+                                color: Colors.white,
+                                thickness: 0.2,
+                                height: 10,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ListTile(
+                                    splashColor: Colors.transparent,
+                                    title: Text(
+                                      pdfFilesConnectedUsers[index].file.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Titillium Web',
+                                      ),
+                                    ),
+                                    onTap: () async {
+                                      String filePath = '';
+                                      filePath = await downloadFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PDFScreen(filePath),
+                                        ),
+                                      );
+                                    },
+                                    trailing: IconButton(
+                                      icon: SvgPicture.asset(
+                                        'assets/icons/download.svg',
+                                        width: 24,
+                                        height: 24,
+                                        color: AppColors.defaultBlueGray300,
+                                      ),
+                                      onPressed: () {
+                                        shareFile(context, pdfFilesConnectedUsers[index].cid, pdfFilesConnectedUsers[index].file.name);
+                                      },
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    ],
+  ),
+);
+
+
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(

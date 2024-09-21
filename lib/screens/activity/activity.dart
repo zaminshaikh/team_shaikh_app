@@ -1057,9 +1057,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                             case 'pending':
                                               return 'Pending withdrawal from your investment at';
                                             case 'income':
-                                              return 'Profit to your investment at';
+                                              return 'Profit from your investment at';
                                             case 'profit':
-                                              return 'Profit to your investment at';
+                                              return 'Profit from your investment at';
                                             default:
                                               return '';
                                           }
@@ -1145,9 +1145,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                                           case 'pending':
                                                             return 'Pending withdrawal from your investment at';
                                                           case 'income':
-                                                            return 'Profit to your investment at';
+                                                            return 'Profit from your investment at';
                                                           case 'profit':
-                                                            return 'Profit to your investment at';
+                                                            return 'Profit from your investment at';
                                                           default:
                                                             return '';
                                                         }

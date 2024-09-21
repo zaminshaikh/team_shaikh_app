@@ -19,10 +19,9 @@ class NotificationPage extends StatefulWidget {
 String uid = '';
 
 class _NotificationPageState extends State<NotificationPage> {
-    final Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
-  DatabaseService? _databaseService;
+  late DatabaseService? _databaseService;
   
 
   Future<void> _initData() async {
@@ -53,8 +52,15 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   @override
+  void initState() {
+    _initData();
+    super.initState();
+  }
+
+
+  @override
   Widget build(BuildContext context) => FutureBuilder(
-    future: _initializeWidgetFuture,
+    future: _initData(),
     builder: (context, snapshot) {
       // Check if the Future is still loading
       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -107,7 +113,6 @@ class _NotificationPageState extends State<NotificationPage> {
   
           // Check if the snapshot has data
           if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
-            print('notification.dart: No notifications found');
             return Scaffold(
               body: CustomScrollView(
                 slivers: <Widget>[

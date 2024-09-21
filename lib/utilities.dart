@@ -1,7 +1,10 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'dart:convert';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class Config {
@@ -28,23 +31,39 @@ class Config {
 /// ```dart
 /// CustomAlertDialog.showAlertDialog(context, 'Alert', 'This is an alert message');
 /// ```
+
 class CustomAlertDialog {
-  static Future<void> showAlertDialog(BuildContext context, String title, String message, {Icon? icon}) async => showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) => AlertDialog(
-        backgroundColor: AppColors.defaultBlueGray800,
+  static Future<void> showAlertDialog(
+    BuildContext context,
+    String title,
+    String message, {
+    Icon? icon,
+    String? svgIconPath,
+    Color? svgIconColor, // Add this parameter to specify the color of the SVG icon
+  }) async => showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) => AlertDialog(
+          backgroundColor: AppColors.defaultBlueGray800,
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(
-                  children: <Widget>[
-                    Text(title, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(width: 10),
-                    icon ?? const Icon(Icons.square, color: Colors.transparent),
-                  ],
+                    children: <Widget>[
+                      Text(title, style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(width: 10),
+                      if (svgIconPath != null)
+                        SvgPicture.asset(
+                          svgIconPath,
+                          width: 24,
+                          height: 24,
+                          color: svgIconColor, // Set the color of the SVG icon
+                        )
+                      else
+                        icon ?? const Icon(Icons.square, color: Colors.transparent),
+                    ],
                   ),
                 ),
                 Text(message),
@@ -71,8 +90,9 @@ class CustomAlertDialog {
             )
           ],
         ),
-    );
+      );
 }
+
 /// Formats the given amount as a currency string.
 String currencyFormat(double amount) => NumberFormat.currency(
     symbol: '\$',
