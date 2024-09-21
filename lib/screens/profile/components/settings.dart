@@ -5,7 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:team_shaikh_app/components/progress_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
@@ -14,8 +15,7 @@ import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:team_shaikh_app/components/alert_dialog.dart';
+
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -25,12 +25,16 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final Future<void> _initializeWidgetFuture = Future.value();
+  late Future<void> _initializeWidgetFuture = Future.value();
 
   // database service instance
   DatabaseService? _databaseService;
+  bool activitySwitchValue = false;
+  bool statementsSwitchValue = false;
+
 
   Future<void> _initData() async {
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       log('settings.dart: User is not logged in');
@@ -46,111 +50,114 @@ class _SettingsPageState extends State<SettingsPage> {
       await Navigator.pushReplacementNamed(context, '/login');
     } else {
       // Otherwise set the database service instance
-      _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService?.cid}');
+      setState(() {
+        _databaseService = service;
+      });
     }
   }
+  
+    String? cid;
 
-  String? cid;
-  static final CollectionReference usersCollection =
-      FirebaseFirestore.instance.collection('testUsers');
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initializeWidgetFuture, // Initialize the database service
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: Container(
-              padding: const EdgeInsets.all(26.0),
-              margin:
-                  const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue500,
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              child: const Stack(
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 6.0,
-                  ),
-                ],
-              ),
+    future: _initializeWidgetFuture, // Initialize the database service
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.all(26.0),
+            margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+            decoration: BoxDecoration(
+              color: AppColors.defaultBlue500,
+              borderRadius: BorderRadius.circular(15.0),
             ),
+            child: const Stack(
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 6.0,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return StreamBuilder<UserWithAssets>(
+        stream: _databaseService?.getUserWithAssets,
+        builder: (context, userSnapshot) {
+          if (!userSnapshot.hasData || userSnapshot.data == null) {
+            return Center(
+              child: Container(
+                padding: const EdgeInsets.all(26.0),
+                margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                decoration: BoxDecoration(
+                  color: AppColors.defaultBlue500,
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                child: const Stack(
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 6.0,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          // Fetch connected users before building the settings page
+          return StreamBuilder<List<UserWithAssets>>(
+            stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
+            builder: (context, connectedUsersSnapshot) {
+              if (!connectedUsersSnapshot.hasData || connectedUsersSnapshot.data!.isEmpty) {
+                // If there is no connected users, we build the dashboard for a single user
+                return buildsettingsPage(context, userSnapshot, connectedUsersSnapshot);
+              }
+              // Once we have the connected users, proceed to fetch notifications
+              return StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _databaseService?.getNotifications,
+                builder: (context, notificationsSnapshot) {
+                  if (!notificationsSnapshot.hasData || notificationsSnapshot.data == null) {
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(26.0),
+                        margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.defaultBlue500,
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        child: const Stack(
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 6.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  unreadNotificationsCount = notificationsSnapshot.data!.where((notification) => !notification['isRead']).length;
+                  // Now that we have all necessary data, build the settings page
+                  return buildsettingsPageWithConnectedUsers(context, userSnapshot, connectedUsersSnapshot);
+                }
+              );
+            }
           );
         }
-        return StreamBuilder<UserWithAssets>(
-            stream: _databaseService?.getUserWithAssets,
-            builder: (context, userSnapshot) {
-              if (!userSnapshot.hasData || userSnapshot.data == null) {
-                return Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(26.0),
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 50.0, horizontal: 50.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.defaultBlue500,
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    child: const Stack(
-                      children: [
-                        CustomProgressIndicator(),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              // Fetch connected users before building the settings page
-              return StreamBuilder<List<UserWithAssets>>(
-                  stream: _databaseService
-                      ?.getConnectedUsersWithAssets, // Assuming this is the correct stream
-                  builder: (context, connectedUsersSnapshot) {
-                    if (!connectedUsersSnapshot.hasData ||
-                        connectedUsersSnapshot.data!.isEmpty) {
-                      // If there is no connected users, we build the dashboard for a single user
-                      return buildsettingsPage(
-                          context, userSnapshot, connectedUsersSnapshot);
-                    }
-                    // Once we have the connected users, proceed to fetch notifications
-                    return StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: _databaseService?.getNotifications,
-                        builder: (context, notificationsSnapshot) {
-                          if (!notificationsSnapshot.hasData ||
-                              notificationsSnapshot.data == null) {
-                            return Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(26.0),
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 50.0, horizontal: 50.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.defaultBlue500,
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                child: const Stack(
-                                  children: [
-                                    CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                      strokeWidth: 6.0,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          unreadNotificationsCount = notificationsSnapshot.data!
-                              .where((notification) => !notification['isRead'])
-                              .length;
-                          // Now that we have all necessary data, build the settings page
-                          return buildsettingsPageWithConnectedUsers(
-                              context, userSnapshot, connectedUsersSnapshot);
-                        });
-                  });
-            });
-      });
+      );
+    }
+  );
 
-  void signUserOut(BuildContext context) async {
+
+
+
+
+
+
+
+    void signUserOut(BuildContext context) async {
     ('settings.dart: Signing out...');
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
@@ -161,106 +168,50 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
 
-    // // Pop the current page and go to login
-    // await Navigator.pushAndRemoveUntil(
-    //   context,
-    //   PageRouteBuilder(
-    //     pageBuilder: (context, animation1, animation2) =>
-    //         const OnboardingPage(),
-    //     transitionDuration: Duration.zero,
-    //   ),
-    //   (route) => false,
-    // );
-  }
+    // Pop the current page and go to login
+    await Navigator.pushAndRemoveUntil(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => const OnboardingPage(),
+        transitionDuration: Duration.zero,
+      ),
+      (route) => false,
+    );  }
+  
+  
 
-  DateTime? dob;
-  String? userDob;
 
-  String? email;
-  String? userEmail;
 
-  DateTime? firstDepositDate;
-  String? userFirstDepositDate;
-
-  String? initEmail;
-  String? phoneNumber;
-  String? address;
-  String? firstName;
-  String? lastName;
-  String? companyName;
-  String userName = '';
-  double totalUserAssets = 0.00,
-      totalAGQ = 0.00,
-      totalAK1 = 0.00,
-      totalAssets = 0.00;
-  String? assets;
-  double latestIncome = 0.00;
-  String? beneficiaryFirstName;
-  String? beneficiaryLastName;
-  String? beneficiary;
-  String? appEmail;
-
-  List<String> userDobs = [];
-  List<String> userEmails = [];
-  List<String> userFirstDepositDates = [];
-  List<String> initEmails = [];
-  List<String> phoneNumbers = [];
-  List<String> addresses = [];
-  List<String> beneficiaryFirstNames = [];
-  List<String> beneficiaryLastNames = [];
-  List<String> beneficiaries = [];
-  List<String> appEmails = [];
-  List<String> firstNames = [];
-  List<String> lastNames = [];
-  List<String> companyNames = [];
-  List<String> userNames = [];
-  List<double> totalUserAssetsList = [];
-  List<double> totalAGQList = [];
-  List<double> totalAK1List = [];
-  List<String> totalAssetsList = [];
-  List<double> latestIncomes = [];
-  List<String> assetsFormatted = [];
-
-  bool hapticsSwitchValue = false;
-  bool activitySwitchValue = false;
-  bool statementsSwitchValue = false;
-  List<String> connectedUserNames = [];
-  List<String> connectedUserCids = [];
 
   @override
   void initState() {
     super.initState();
-    fetchConnectedCids(_databaseService?.cid ?? '$cid');
-    _initData().then((_) {
-      _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
-        if (mounted) {
-          setState(() {
-            connectedUserNames = connectedUsers.map<String>((user) {
-              String firstName = user.info['name']['first'] as String;
-              String lastName = user.info['name']['last'] as String;
-              Map<String, String> userName = {
-                'first': firstName,
-                'last': lastName,
-              };
-              return userName.values.join(' ');
-            }).toList();
-          });
-        }
-      });
+    _initializeWidgetFuture = _initData();
+    _loadSwitchValue();
+  }
+
+
+
+
+
+
+  void _loadSwitchValue() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      statementsSwitchValue = prefs.getBool('statementsSwitchValue') ?? false;
+      activitySwitchValue = prefs.getBool('activitySwitchValue') ?? false;
     });
   }
 
-  Future<List<String>> fetchConnectedCids(String cid) async {
-    DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
-    if (userSnapshot.exists) {
-      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
-      List<String> connectedUsers = info['connectedUsers'].cast<String>();
-      connectedUserCids = connectedUsers;
-      return connectedUsers;
-    } else {
-      return [];
-    }
+  void _saveSwitchValue(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
   }
+
+
+
+
+
 
 // This is the selected button, initially set to an empty string
   // Assuming these fields are part of the `user.info` map
@@ -326,96 +277,107 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             const SizedBox(height: 25),
 
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Notifications',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start, 
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        children: [
+                          const Text(
+                            'Notifications',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            'Activity',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+
+                          const SizedBox(height: 5),
+                          const Text(
+                            'Let me know about new activity within my portfolio.',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CupertinoSwitch(
+                                // This bool value toggles the switch.
+                                value: activitySwitchValue,
+                                activeColor: CupertinoColors.activeBlue,
+                                onChanged: (bool? value) {
+                                  // This is called when the user toggles the switch.
+                                  setState(() {
+                                    activitySwitchValue = value ?? false;
+                      _saveSwitchValue('activitySwitchValue', activitySwitchValue);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          const Text(
+                            'Statement',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            'Let me know when I recieve a new statement.',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CupertinoSwitch(
+                                // This bool value toggles the switch.
+                                value: statementsSwitchValue,
+                                activeColor: CupertinoColors.activeBlue,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    statementsSwitchValue = value ?? false;
+                                    _saveSwitchValue('statementsSwitchValue', statementsSwitchValue);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+
+
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Activity',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      'Let me know about new activity within my portfolio.',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CupertinoSwitch(
-                          // This bool value toggles the switch.
-                          value: activitySwitchValue,
-                          activeColor: CupertinoColors.activeBlue,
-                          onChanged: (bool? value) {
-                            // This is called when the user toggles the switch.
-                            setState(() {
-                              activitySwitchValue = value ?? false;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    const Text(
-                      'Statement',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      'Let me know when I recieve a new statement.',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CupertinoSwitch(
-                          // This bool value toggles the switch.
-                          value: statementsSwitchValue,
-                          activeColor: CupertinoColors.activeBlue,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              statementsSwitchValue = value ?? false;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
 
             const SizedBox(height: 15),
 

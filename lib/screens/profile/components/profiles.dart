@@ -26,6 +26,8 @@ class _ProfilesPageState extends State<ProfilesPage> {
   // database service instance
   DatabaseService? _databaseService;
 
+  String? clientId;
+
   Future<void> _initData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -249,10 +251,10 @@ class _ProfilesPageState extends State<ProfilesPage> {
         : DateTime.now();
     userDob = DateFormat('MM/dd/yyyy').format(dob);
 
-    email = (((user.info['appEmail'] ?? user.info['initEmail']) ??
-            user.info['email']) ??
-        'N/A') as String;
-    userEmail = email;
+      email = (((user.info['appEmail'] ?? user.info['initEmail']) ?? user.info['email']) ?? 'N/A') as String;
+      userEmail = email;
+      connectedUserCids = user.info['connectedUsers'] != null ? List<String>.from(user.info['connectedUsers']) : [];
+
 
     if (user.info['firstDepositDate'] != null) {
       DateTime firstDepositDateTime =
@@ -380,6 +382,9 @@ class _ProfilesPageState extends State<ProfilesPage> {
   void initState() {
     super.initState();
     _initData().then((_) {
+      setState(() {
+        clientId = _databaseService?.cid;
+      });
       _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
         if (mounted) {
           setState(() {
@@ -391,248 +396,244 @@ class _ProfilesPageState extends State<ProfilesPage> {
                 'last': lastName,
               };
               return userName.values.join(' ');
-            }).toList();
+            }).toList();  
           });
         }
       });
     });
   }
 
+
 // This is the Profiless section
   Container _profilesForUser() => Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-        child: Column(
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+    child: Column(
+      children: [
+        const Row(
           children: [
-            const Row(
-              children: [
-                Text(
-                  'My Profiles',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Color.fromRGBO(255, 255, 255, 1),
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-                border:
-                    Border.all(color: Colors.white, width: 1), // Add this line
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          userName.toString(),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Text(
-                          'First Deposit Date: $userFirstDepositDate', // Assuming firstDepositDate is a String variable
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Communication Email: $initEmail', // Assuming initEmail is a String variable
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Phone Number: $phoneNumber', // Assuming phoneNumber is a String variable
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Address: $address', // Assuming address is a String variable
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Assets:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          '\$$assets', // Assuming totalAssets is a String variable
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color.fromRGBO(255, 255, 255, 1),
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: Colors
-                            .transparent, // Change this to your desired color
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                    )
-                  ],
-                ),
+            Text(
+              'My Profiles', 
+              style: TextStyle(
+                fontSize: 22,
+                color: Color.fromRGBO(255, 255, 255, 1),
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
               ),
             ),
           ],
         ),
-      );
 
-// This is the Profiless section
-  Column _profilesForConnectedUser() => Column(
-        children: [
-          const Row(
-            children: [
-              SizedBox(width: 20),
-              Text(
-                'Connected Users',
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Color.fromRGBO(255, 255, 255, 1),
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
+        const SizedBox(height: 20),
+
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10), 
+            border: Border.all(color: Colors.white, width: 1), // Add this line
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            child: ListView.builder(
-              itemCount: connectedUserNames.length,
-              itemBuilder: (context, index) => Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: Colors.white, width: 1), // Add this line
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // name and icon
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            connectedUserNames[index],
-                            style: const TextStyle(
-                              fontSize: 20,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Text(
-                            'First Deposit Date: ${userFirstDepositDates[index]}', // Adjusted
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Communication Email: ${initEmails[index]}', // Adjusted
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Phone Number: ${phoneNumbers[index]}', // Adjusted
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Address: ${addresses[index]}', // Adjusted
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'Assets:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '\$${totalAssetsList[index]}', // Adjusted
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color.fromRGBO(255, 255, 255, 1),
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                        ],
+          
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName.toString(), 
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
                       ),
-
-                      const Spacer(),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Client ID: $clientId', 
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue,
+                        fontFamily: 'Titillium Web',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      'First Deposit Date: $userFirstDepositDate', // Assuming firstDepositDate is a String variable
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Communication Email: $initEmail', // Assuming initEmail is a String variable
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Phone Number: $phoneNumber', // Assuming phoneNumber is a String variable
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Address: $address', // Assuming address is a String variable
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                 ),
-              ),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+
+                const Spacer(),
+        
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent, // Change this to your desired color
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                )
+              ],
             ),
           ),
-        ],
-      );
+        ),
+
+      ],
+    ),
+  
+  );
+
+// This is the Profiless section
+  Container _profilesForConnectedUser() => Container(
+    padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
+    child: Column(
+      children: [
+        const Row(
+          children: [
+            Text(
+              'Connected Users', 
+              style: TextStyle(
+                fontSize: 22,
+                color: Color.fromRGBO(255, 255, 255, 1),
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+          ],
+        ),
+
+
+        ListView.builder(
+
+          padding: const EdgeInsets.only(top: 20),
+          
+          itemCount: connectedUserNames.length,
+          itemBuilder: (context, index) => Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10), 
+            border: Border.all(color: Colors.white, width: 1), // Add this line
+          ),
+          
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // name and icon
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      connectedUserNames[index], 
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Client ID: ${connectedUserCids[index]}', 
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      'First Deposit Date: ${userFirstDepositDates[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Communication Email: ${initEmails[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Phone Number: ${phoneNumbers[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Address: ${addresses[index]}', // Adjusted
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+          
+                const Spacer(),
+        
+              ],
+            ),
+          ),
+        ),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+        ),
+    
+      ],
+    ),
+  );
 
   Column _profilesForAllUsers() => Column(
         children: [
