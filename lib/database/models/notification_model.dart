@@ -51,7 +51,6 @@ class Notif {
           time: (data['time'] as Timestamp).toDate(),
         );
   }
-  
 
   Map<String, dynamic> toMap() => {
         'activityId': activityId,

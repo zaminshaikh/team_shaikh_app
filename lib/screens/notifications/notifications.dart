@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
+import 'package:team_shaikh_app/database/newdb.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
@@ -27,13 +28,9 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   Client? client;  
+  List<Notif> notifications = [];
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-    @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     client = Provider.of<Client?>(context);
@@ -46,6 +43,14 @@ class _NotificationPageState extends State<NotificationPage> {
         child: CustomProgressIndicator(),
       );
     }
+    notifications = List.from(client!.notifications!);
+    if (client!.connectedUsers != null && client!.connectedUsers!.isNotEmpty) {
+      final connectedUserNotifications = client!.connectedUsers!
+        .where((user) => user != null)
+        .expand((user) => user!.notifications ?? [].cast<Notif>());
+      notifications.addAll(connectedUserNotifications);
+    }
+    notifications.sort((a, b) => b.time.compareTo(a.time));
     return Scaffold(
       body: Stack(
         children: [
@@ -56,13 +61,13 @@ class _NotificationPageState extends State<NotificationPage> {
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     // Get the notification data
-                    Notif notification = client!.notifications![index];
+                    Notif notification = notifications[index];
                     // Get the previous notification date
-                    DateTime previousNotificationDate = index > 0 ? (client!.notifications![index - 1].time ?? DateTime(1)): DateTime(0);
+                    DateTime previousNotificationDate = index > 0 ? (notifications[index - 1].time): DateTime(0);
                     // Check if the current notification is on a different day than the previous one
                     return NotificationCard(notification: notification, client: client!, previousNotificationDate: previousNotificationDate);
                   },
-                  childCount: client!.notifications!.length,
+                  childCount: notifications.length,
                 ),
               ),
               const SliverToBoxAdapter(
@@ -77,5 +82,4 @@ class _NotificationPageState extends State<NotificationPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
-  
 }

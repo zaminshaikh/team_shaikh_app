@@ -50,6 +50,14 @@ class _ActivityPageState extends State<ActivityPage> {
   final DateFormat dateFormat = DateFormat('EEEE, MMM. d, yyyy');
   final DateFormat dayHeaderFormat = DateFormat('MMMM d, yyyy');
 
+  Future<void> _validateAuth() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null && mounted) {
+      log('dashboard.dart: User is not logged in');
+      await Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+  
   @override
   void initState() {
     super.initState();
@@ -62,13 +70,6 @@ class _ActivityPageState extends State<ActivityPage> {
     });
   }
 
-  Future<void> _validateAuth() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null && mounted) {
-      log('dashboard.dart: User is not logged in');
-      await Navigator.pushReplacementNamed(context, '/login');
-    }
-  }
 
   @override
   void didChangeDependencies() {
