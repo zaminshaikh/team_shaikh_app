@@ -3,18 +3,15 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
-import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/activity/activity.dart';
-import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'dart:developer';
 import 'package:team_shaikh_app/screens/profile/PDFPreview.dart';
 import 'package:team_shaikh_app/screens/profile/downloadmethod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:team_shaikh_app/utilities.dart';
 
 class DocumentsPage extends StatefulWidget {
   const DocumentsPage({Key? key}) : super(key: key);
@@ -23,134 +20,33 @@ class DocumentsPage extends StatefulWidget {
   _DocumentsPageState createState() => _DocumentsPageState();
 }
 
-class PdfFileWithCid {
+class PDF {
   final Reference file;
   final String cid;
 
-  PdfFileWithCid(this.file, this.cid);
+  PDF(this.file, this.cid);
 }
 
 class _DocumentsPageState extends State<DocumentsPage> {
-  final Future<void> _initializeWidgetFuture = Future.value();
-
-  // database service instance
-  DatabaseService? _databaseService;
-
-  String? cid;
-  static final CollectionReference usersCollection =
-      FirebaseFirestore.instance.collection('testUsers');
-
-  Stream<List<String>> get getConnectedUsersWithCid => usersCollection
-          .doc(_databaseService?.cid)
-          .snapshots()
-          .asyncMap((userSnapshot) async {
-        final data = userSnapshot.data();
-        if (data == null) {
-          return [];
-        }
-        List<String> connectedUsers = [];
-        // Safely add _databaseService.cid to the list of connected users if it's not null
-        if (_databaseService?.cid != null) {}
-        return connectedUsers;
-      });
+  Client? client;
+  final FirebaseStorage storage = FirebaseStorage.instance;
+  List<Reference> pdfFiles = [];  
 
   @override
-  Widget build(BuildContext context) => FutureBuilder(
-      future: _initializeWidgetFuture, // Initialize the database service
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: Container(
-              padding: const EdgeInsets.all(26.0),
-              margin:
-                  const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue500,
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              child: const Stack(
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 6.0,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        return StreamBuilder<UserWithAssets>(
-            stream: _databaseService?.getUserWithAssets,
-            builder: (context, userSnapshot) {
-              if (!userSnapshot.hasData || userSnapshot.data == null) {
-                return Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(26.0),
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 50.0, horizontal: 50.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.defaultBlue500,
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    child: const Stack(
-                      children: [
-                        CustomProgressIndicator(),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              // Fetch connected users before building the Documents page
-              return StreamBuilder<List<UserWithAssets>>(
-                  stream: _databaseService
-                      ?.getConnectedUsersWithAssets, // Assuming this is the correct stream
-                  builder: (context, connectedUsersSnapshot) {
-                    if (!connectedUsersSnapshot.hasData ||
-                        connectedUsersSnapshot.data!.isEmpty) {
-                      // If there is no connected users, we build the dashboard for a single user
-                      return buildDocumentsPage(
-                          context, userSnapshot, connectedUsersSnapshot);
-                    }
-                    // Once we have the connected users, proceed to fetch notifications
-                    return StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: _databaseService?.getNotifications,
-                        builder: (context, notificationsSnapshot) {
-                          if (!notificationsSnapshot.hasData ||
-                              notificationsSnapshot.data == null) {
-                            return Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(26.0),
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 50.0, horizontal: 50.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.defaultBlue500,
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                child: const Stack(
-                                  children: [
-                                    CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                      strokeWidth: 6.0,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          unreadNotificationsCount = notificationsSnapshot.data!
-                              .where((notification) => !notification['isRead'])
-                              .length;
-                          // Now that we have all necessary data, build the Documents page
-                          return buildDocumentsPage(
-                              context, userSnapshot, connectedUsersSnapshot);
-                        });
-                  });
-            });
-      });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client?>(context);
+    _initializeDocuments();
+  }
 
-  List<String> connectedUserNames = [];
-  List<String> connectedUserCids = [];
+  @override
+  Widget build(BuildContext context) {
+    if (client == null) {
+      return const CustomProgressIndicator();
+    }
+
+    return buildDocumentsPage();
+  }
 
   Future<void> shareFile(context, clientId, documentName) async {
     try {
@@ -171,53 +67,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
     } catch (e) {}
   }
 
-  Future<void> _initData() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      log('Documents.dart: User is not logged in');
-      await Navigator.pushReplacementNamed(context, '/login');
-    }
-    // Fetch CID using async constructor
-    DatabaseService? service =
-        await DatabaseService.fetchCID(context, user!.uid, 1);
-    // If there is no matching CID, redirect to login page
-    // ignore: duplicate_ignore
-    if (service == null) {
-      // ignore: use_build_context_synchronously
-      await Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      // Otherwise set the database service instance
-      _databaseService = service;
-      log('Database Service has been initialized with CID: ${_databaseService?.cid}');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize other data
-    _initData().then((_) {
-      // Ensure _databaseService is initialized before calling _initializeDocuments
-      _initializeDocuments();
-
-      _databaseService?.getConnectedUsersWithAssets.listen((connectedUsers) {
-        if (mounted) {
-          setState(() {
-            connectedUserNames = connectedUsers.map<String>((user) {
-              String firstName = user.info['name']['first'] as String;
-              String lastName = user.info['name']['last'] as String;
-              Map<String, String> userName = {
-                'first': firstName,
-                'last': lastName,
-              };
-              return userName.values.join(' ');
-            }).toList();
-          });
-        }
-      });
-    });
-  }
-
   Future<void> _initializeDocuments() async {
     await showDocumentsSection();
   }
@@ -229,20 +78,15 @@ class _DocumentsPageState extends State<DocumentsPage> {
     // List the PDF files available
     await listPDFFiles();
 
-    // Fetch the connected CIDs using the database service's CID or a fallback CID
-    await fetchConnectedCids(_databaseService?.cid ?? '$cid');
-
     // List the PDF files for connected users
     await listPDFFilesConnectedUsers();
   }
 
-  final FirebaseStorage storage = FirebaseStorage.instance;
-  List<Reference> pdfFiles = [];
 
   Future<void> listPDFFiles() async {
-    final String? userFolder = _databaseService?.cid;
+    final String? userFolder = client!.cid;
     final ListResult result =
-        await storage.ref('testUsersStatements/$userFolder').listAll();
+        await storage.ref('${Config.get('DOCUMENTS_PATH')}/$userFolder').listAll();
     final List<Reference> allFiles =
         result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
 
@@ -254,33 +98,21 @@ class _DocumentsPageState extends State<DocumentsPage> {
     for (int i = 0; i < pdfFiles.length; i++) {}
   }
 
-  List<PdfFileWithCid> pdfFilesConnectedUsers = [];
-
-  Future<List<String>> fetchConnectedCids(String cid) async {
-    DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
-    if (userSnapshot.exists) {
-      Map<String, dynamic> info = userSnapshot.data() as Map<String, dynamic>;
-      List<String> connectedUsers = info['connectedUsers'].cast<String>();
-      connectedUserCids = connectedUsers;
-      return connectedUsers;
-    } else {
-      return [];
-    }
-  }
+  List<PDF> pdfFilesConnectedUsers = [];
 
   Future<void> listPDFFilesConnectedUsers() async {
-    final List<String> connectedUserFolders = connectedUserCids;
-    List<PdfFileWithCid> allConnectedFiles = [];
 
-    for (String folder in connectedUserFolders) {
+    List<PDF> allConnectedFiles = [];
+
+    for (String folder in client!.connectedUsers!.whereType<Client>().map((client) => client.cid)) {
       final ListResult result =
-          await storage.ref('testUsersStatements/$folder').listAll();
+          await storage.ref('${Config.get('DOCUMENTS_PATH')}/$folder').listAll();
       final List<Reference> pdfFilesInFolder =
           result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
 
       // Convert List<Reference> to List<PdfFileWithCid>
-      final List<PdfFileWithCid> pdfFilesWithCid =
-          pdfFilesInFolder.map((file) => PdfFileWithCid(file, folder)).toList();
+      final List<PDF> pdfFilesWithCid =
+          pdfFilesInFolder.map((file) => PDF(file, folder)).toList();
       allConnectedFiles.addAll(pdfFilesWithCid);
     }
 
@@ -306,10 +138,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
   // This is the selected button, initially set to an empty string
 
-  Scaffold buildDocumentsPage(
-      BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
+  Scaffold buildDocumentsPage() {
     return Scaffold(
       body: Stack(
         children: [
@@ -395,8 +224,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
                                       ),
                                     ),
                                     onTap: () async {
-                                      await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
-                                      String filePath = await downloadFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                      await downloadFile(context, client!.cid, pdfFiles[index].name);
+                                      String filePath = await downloadFile(context, client!.cid, pdfFiles[index].name);
                                       await Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -412,7 +241,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
                                         color: AppColors.defaultBlueGray300,
                                       ),
                                       onPressed: () {
-                                        shareFile(context, _databaseService?.cid, pdfFiles[index].name);
+                                        shareFile(context, client!.cid, pdfFiles[index].name);
                                       },
                                     ),
                                   ),
