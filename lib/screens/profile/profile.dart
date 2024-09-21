@@ -1,23 +1,17 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
-import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
-import 'package:team_shaikh_app/components/progress_indicator.dart';
-import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/newdb.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/components/documents.dart';
@@ -25,8 +19,6 @@ import 'package:team_shaikh_app/screens/profile/components/help.dart';
 import 'package:team_shaikh_app/screens/profile/components/settings.dart';
 import 'package:team_shaikh_app/screens/profile/components/profiles.dart';
 import 'dart:developer';
-import 'downloadmethod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -35,15 +27,14 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class PdfFileWithCid {
-  final Reference file;
-  final String cid;
-
-  PdfFileWithCid(this.file, this.cid);
-}
-
 class _ProfilePageState extends State<ProfilePage> {
-  final Future<void> _initializeWidgetFuture = Future.value();
+  Client? client;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client?>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -473,8 +464,8 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       );
 
-// Assuming _databaseService? is initialized and accessible in this context
-Widget _buildClientNameAndID() {
+  // Assuming _databaseService? is initialized and accessible in this context
+  Widget _buildClientNameAndID() {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -487,7 +478,7 @@ Widget _buildClientNameAndID() {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    client!.firstName + ' ' + client!.lastName,
                     style: const TextStyle(
                       fontSize: 22,
                       color: Colors.white,
@@ -497,7 +488,7 @@ Widget _buildClientNameAndID() {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Client ID: $cid',
+                    'Client ID: ${client!.cid}',
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white,
