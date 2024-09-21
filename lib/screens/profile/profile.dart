@@ -16,7 +16,7 @@ import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
-// import 'package:team_shaikh_app/screens/profile/components/authentication.dart';
+import 'package:team_shaikh_app/screens/profile/components/authentication.dart';
 import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/components/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/help.dart';
@@ -687,12 +687,12 @@ Widget _buildSampleCupertinoListSection() {
               ),
             ),
             trailing: const CupertinoListTileChevron(),
-            // onTap: () {
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(builder: (context) => AuthenticationPage()),
-            //   );
-            // },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AuthenticationPage()),
+              );
+            },
           ),
           const SizedBox(height: 10),
         ],

@@ -23,6 +23,7 @@ import 'utilities.dart';
 import 'package:team_shaikh_app/screens/authenticate/faceid.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,12 +54,22 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   AppState? appState;
+  String? selectedTimeOption;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     appState?.setHasNavigatedToFaceIDPage(false);
+    _loadSelectedTimeOption();
+  }
+
+  Future<void> _loadSelectedTimeOption() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
+    });
+    print('Loaded selected time option: $selectedTimeOption');
   }
 
   @override
@@ -77,8 +88,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             state == AppLifecycleState.hidden) &&
         !appState.hasNavigatedToFaceIDPage &&
         isAuthenticated() &&
-        (appState.initiallyAuthenticated)) {
-      // Check if the user was initially authenticated
+        (appState.initiallyAuthenticated) &&
+        (selectedTimeOption != null)) {
+      // Check if the user was initially authenticated and the selected time option is set
 
       appState.setHasNavigatedToFaceIDPage(true);
       navigatorKey.currentState?.pushReplacement(
@@ -225,7 +237,7 @@ class AuthChecker extends StatelessWidget {
               } else if (serviceSnapshot.hasData &&
                   serviceSnapshot.data != null) {
                 log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
-                return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
+                return const DashboardPage(); // If the UID is found, show the FaceIdPage
               } else {
                 log('main.dart: UID: ${user.uid} not found in Firestore.'); // Log that the UID was not found in Firestore
                 return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
