@@ -9,7 +9,7 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/database.dart';
-import 'package:team_shaikh_app/screens/notification.dart';
+import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/utilities.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';

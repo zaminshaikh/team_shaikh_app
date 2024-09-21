@@ -13,7 +13,6 @@ import 'package:team_shaikh_app/screens/activity/components/activity_app_bar.dar
 import 'package:team_shaikh_app/screens/activity/components/activity_details_modal.dart';
 import 'package:team_shaikh_app/screens/activity/components/activity_list_item.dart';
 import 'package:team_shaikh_app/screens/activity/components/no_activities_body.dart';
-import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
 import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
 import 'package:team_shaikh_app/utilities.dart';

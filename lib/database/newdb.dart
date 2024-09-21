@@ -11,6 +11,7 @@ import 'package:rxdart/rxdart.dart';
 class NewDB {
   String? cid;
   String? uid;
+  bool isConnectedUser = false;
   static final CollectionReference usersCollection = FirebaseFirestore.instance
       .collection(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'));
   CollectionReference? assetsSubCollection;
@@ -22,6 +23,7 @@ class NewDB {
   NewDB(this.uid);
   NewDB.connectedUser(this.cid) {
     setSubCollections(this);
+    isConnectedUser = true;
   }
   NewDB.withCID(this.uid, this.cid);
 
@@ -76,7 +78,7 @@ class NewDB {
   }
 
   // Stream that listens to changes in the user's client data and subcollections
-  Stream<Client?> getClientStream({bool isConnectedUser = false}) {
+  Stream<Client?> getClientStream() {
     if (cid == null) {
       return Stream.value(null);
     }
@@ -93,7 +95,7 @@ class NewDB {
         connectedUsersStream =
             Rx.combineLatestList(connectedUsersCIDs!.map((cid) {
           NewDB db = NewDB.connectedUser(cid);
-          return db.getClientStream(isConnectedUser: true).asBroadcastStream();
+          return db.getClientStream().asBroadcastStream();
         }).toList())
                 .asBroadcastStream();
       } else {
@@ -126,10 +128,21 @@ class NewDB {
       });
 
       // Stream for the notifications subcollection
-      Stream<List<Notif>> notificationsStream = notificationsSubCollection!
+      Stream<List<Notif?>> notificationsStream = notificationsSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) => Notif.fromMap(doc.data() as Map<String, dynamic>))
+              .map((doc) {
+                try {
+                  return Notif.fromMap(<String, dynamic>{
+                    ...doc.data() as Map<String, dynamic>,
+                    'id': doc.id,
+                    'parentCID': cid
+                  });
+                } catch (e) {
+                  log('database.dart: Error creating Notif from map: $e');
+                  return null;
+                }
+              })
               .toList());
 
       // Stream for the graphPoints subcollection
@@ -149,7 +162,7 @@ class NewDB {
           connectedUsersStream, (DocumentSnapshot clientDoc,
               List<Activity> activities,
               Assets assets,
-              List<Notif> notifications,
+              List<Notif?> notifications,
               List<GraphPoint> graphPoints,
               List<Client?> connectedUsers) {
         final clientData = clientDoc.data() as Map<String, dynamic>?;
@@ -164,10 +177,9 @@ class NewDB {
           clientData,
           activities: activities,
           assets: assets,
-          notifications: notifications,
+          notifications: notifications.whereType<Notif>().toList(),
           graphPoints: graphPoints,
           connectedUsers: connectedUsers.whereType<Client>().toList(),
-
         );
       });
     } catch (e) {
@@ -218,4 +230,72 @@ class NewDB {
       throw Exception('Error updating field: $e');
     }
   }
+
+  Future<bool> markNotificationAsRead(String notificationId) async {
+    if (cid == null) {
+      log('CID is null');
+      return false;
+    } else if (notificationsSubCollection == null) {
+      setSubCollections(this);
+    }
+    if (notificationsSubCollection == null) {
+      log('notificationsSubCollection is null, try checking the path.');
+      return false;
+    } 
+    try {
+      DocumentReference docRef = notificationsSubCollection!.doc(notificationId);
+
+      DocumentSnapshot docSnap = await docRef.get();
+
+      if (docSnap.exists) {
+        await docRef.update({'isRead': true});
+        return true;
+      }
+    } catch (e) {
+      log('Error updating notification: $e');
+    }
+    return false;
+  }
+
+  Future<bool> markAllNotificationsAsRead() async {
+      if (cid == null) {
+        log('CID is null');
+        return false;
+      } else if (notificationsSubCollection == null) {
+        setSubCollections(this);
+      }
+      if (notificationsSubCollection == null) {
+        log('notificationsSubCollection is null, try checking the path.');
+        return false;
+      }
+      try {
+        DocumentSnapshot clientSnapshot = await usersCollection.doc(cid).get();
+        QuerySnapshot querySnapshot = await notificationsSubCollection!.get();
+
+        List<Future> futures = [];
+
+        if (querySnapshot.size > 0) {
+          for (DocumentSnapshot doc in querySnapshot.docs) {
+            futures.add(doc.reference.update({'isRead': true}));
+          }
+        }
+
+        Map<String, dynamic>? clientData =
+            clientSnapshot.data() as Map<String, dynamic>?;
+        if (clientData != null && clientData['connectedUsers'] != null) {
+          for (String connectedCid in clientData['connectedUsers']) {
+            futures.add(
+                NewDB.withCID('', connectedCid).markAllNotificationsAsRead());
+          }
+        }
+
+        await Future.wait(futures);
+        return true;
+      } catch (e) {
+        log('Error updating notifications: $e');
+      }
+      return false;
+    }
+
+  
 }

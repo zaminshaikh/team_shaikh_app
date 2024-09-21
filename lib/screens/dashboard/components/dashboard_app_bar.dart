@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:team_shaikh_app/screens/notification.dart';
+import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 
 class DashboardAppBar extends StatelessWidget {

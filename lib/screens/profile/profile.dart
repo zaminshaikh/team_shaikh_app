@@ -12,7 +12,7 @@ import 'package:team_shaikh_app/database/newdb.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/notification.dart';
+import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/pages/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
@@ -69,29 +69,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-    );
-  }
-
-  void signUserOut(BuildContext context) async {
-    ('profile.dart: Signing out...');
-    await FirebaseAuth.instance.signOut();
-    assert(FirebaseAuth.instance.currentUser == null);
-
-    // Async gap mounted widget check
-    if (!mounted) {
-      log('profile.dart: No longer mounted!');
-      return;
-    }
-
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) =>
-            const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
     );
   }
 
@@ -303,7 +280,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // This is the app bar
   SliverAppBar _buildAppBar(context) => SliverAppBar(
         backgroundColor: const Color.fromARGB(255, 30, 41, 59),
         automaticallyImplyLeading: false,
@@ -413,9 +389,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       );
 
-  // Assuming _databaseService? is initialized and accessible in this context
   Widget _buildClientNameAndID() {
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       child: Row(
@@ -427,7 +401,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    client!.firstName + ' ' + client!.lastName,
+                    '${client!.firstName} ${client!.lastName}',
                     style: const TextStyle(
                       fontSize: 22,
                       color: Colors.white,
@@ -452,4 +426,5 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
 }

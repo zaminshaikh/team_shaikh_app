@@ -77,7 +77,7 @@ class Client {
       initEmail: data['initEmail'] ?? '',
       firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
       beneficiaries: List<String>.from(data['beneficiaries'] ?? []),
-      numNotifsUnread: notifications?.where((notif) => notif.isRead != null && !notif.isRead!).length,
+      numNotifsUnread: notifications?.where((notif) => !notif.isRead).length,
       recipients: activities?.map((activity) => activity.recipient).toSet().toList(),
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],

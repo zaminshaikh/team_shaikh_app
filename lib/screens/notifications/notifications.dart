@@ -1,0 +1,81 @@
+// ignore_for_file: library_private_types_in_public_api, unused_element, use_build_context_synchronously
+
+import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
+import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/database/models/notification_model.dart';
+import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/screens/activity/activity.dart';
+import 'package:team_shaikh_app/screens/notifications/components/mark_all_read_button.dart';
+import 'package:team_shaikh_app/screens/notifications/components/notification_card.dart';
+import 'package:team_shaikh_app/screens/notifications/components/notifications_app_bar.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'package:team_shaikh_app/utilities.dart';
+
+class NotificationPage extends StatefulWidget {
+  const NotificationPage({Key? key}) : super(key: key);
+  @override
+  _NotificationPageState createState() => _NotificationPageState();
+}
+
+class _NotificationPageState extends State<NotificationPage> {
+  Client? client;  
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+    @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    client = Provider.of<Client?>(context);
+  }
+
+  @override
+  Widget build(BuildContext context){
+    if (client == null) {
+      return const Center(
+        child: CustomProgressIndicator(),
+      );
+    }
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              const NotificationsAppBar(),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    // Get the notification data
+                    Notif notification = client!.notifications![index];
+                    // Get the previous notification date
+                    DateTime previousNotificationDate = index > 0 ? (client!.notifications![index - 1].time ?? DateTime(1)): DateTime(0);
+                    // Check if the current notification is on a different day than the previous one
+                    return NotificationCard(notification: notification, client: client!, previousNotificationDate: previousNotificationDate);
+                  },
+                  childCount: client!.notifications!.length,
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 150),
+              ),
+            ],
+          ),
+        ],
+      ),
+      floatingActionButton: MarkAllAsReadButton(client: client!, 
+        onRefresh: () { setState(() {}); },),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+  
+}
