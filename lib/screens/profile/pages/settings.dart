@@ -39,6 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     client = Provider.of<Client?>(context);
+    _loadSwitchValue();
   }
 
 
@@ -150,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   // This is called when the user toggles the switch.
                                   setState(() {
                                     activitySwitchValue = value ?? false;
-                      _saveSwitchValue('activitySwitchValue', activitySwitchValue);
+                                    _saveSwitchValue('activitySwitchValue', activitySwitchValue);
                                   });
                                 },
                               ),

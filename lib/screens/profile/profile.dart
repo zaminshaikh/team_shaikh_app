@@ -13,12 +13,12 @@ import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/notification.dart';
-import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
-import 'package:team_shaikh_app/screens/profile/components/documents.dart';
-import 'package:team_shaikh_app/screens/profile/components/help.dart';
+import 'package:team_shaikh_app/screens/profile/pages/disclaimer.dart';
+import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
-import 'package:team_shaikh_app/screens/profile/components/settings.dart';
-import 'package:team_shaikh_app/screens/profile/components/profiles.dart';
+import 'package:team_shaikh_app/screens/profile/pages/help.dart';
+import 'package:team_shaikh_app/screens/profile/pages/settings.dart';
+import 'package:team_shaikh_app/screens/profile/pages/profiles.dart';
 import 'dart:developer';
 
 class ProfilePage extends StatefulWidget {
@@ -52,7 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     [
                       _buildClientNameAndID(),
                       _buildCupertinoListSection(),
-                      LogoutButton(),
+                      const LogoutButton(),
                       _buildDisclaimer(),
                       const SizedBox(height: 120),
                     ],
