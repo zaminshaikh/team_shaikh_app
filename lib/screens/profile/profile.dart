@@ -16,6 +16,7 @@ import 'package:team_shaikh_app/screens/notification.dart';
 import 'package:team_shaikh_app/screens/profile/components/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/components/documents.dart';
 import 'package:team_shaikh_app/screens/profile/components/help.dart';
+import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
 import 'package:team_shaikh_app/screens/profile/components/settings.dart';
 import 'package:team_shaikh_app/screens/profile/components/profiles.dart';
 import 'dart:developer';
@@ -51,7 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     [
                       _buildClientNameAndID(),
                       _buildCupertinoListSection(),
-                      _buildLogoutButton(),
+                      LogoutButton(),
                       _buildDisclaimer(),
                       const SizedBox(height: 120),
                     ],
@@ -94,7 +95,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // This is the list of vertical buttons
   Widget _buildCupertinoListSection() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -302,57 +302,6 @@ class _ProfilePageState extends State<ProfilePage> {
       )
     );
   }
-
-  Widget _buildLogoutButton() => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () async {
-                NewDB? db = await NewDB.withCID(FirebaseAuth.instance.currentUser!.uid, client?.cid);
-                List<dynamic>? tokens = await db?.getField('tokens') as List<dynamic>? ?? [];
-                // Get the current token
-                String currentToken =
-                    await FirebaseMessaging.instance.getToken() ?? '';
-                tokens.remove(currentToken);
-                // Update the list of tokens in the database for the user
-                await db!.updateField('tokens', tokens);
-                signUserOut(context);
-              },
-              child: Container(
-                height: 45,
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 149, 28, 28),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/logout.svg',
-                        color: Colors.white,
-                        height: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
 
   // This is the app bar
   SliverAppBar _buildAppBar(context) => SliverAppBar(
