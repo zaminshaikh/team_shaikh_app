@@ -134,3 +134,5 @@ double getBottomTitleInterval(String dropdownValue) {
       return 1;
   }
 }
+
+double calculateHorizontalInterval(double maxValue) => maxValue / 15;

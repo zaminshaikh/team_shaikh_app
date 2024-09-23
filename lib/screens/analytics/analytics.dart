@@ -19,10 +19,10 @@ import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
   @override
-  _AnalyticsPageState createState() => _AnalyticsPageState();
+  AnalyticsPageState createState() => AnalyticsPageState();
 }
 
-class _AnalyticsPageState extends State<AnalyticsPage> {
+class AnalyticsPageState extends State<AnalyticsPage> {
   Client? client;
 
   @override
@@ -34,8 +34,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Variables for the line chart
   List<FlSpot> spots = [];
   double maxAmount = 0.0;
-  String dropdownValue = 'last-week';
-  Timeline timeline = Timeline();
+  String dropdownValue = 'last-year';
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +98,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         double xValue = calculateXValue(dateTime, dropdownValue);
         if (xValue >= 0) {
           spots.add(FlSpot(xValue, amount));
-          if (amount > maxAmount) {
-            maxAmount = amount * 1.5;
+          if ((amount * 2) > maxAmount) {
+            maxAmount = amount * 2;
           }
         }
       }
@@ -289,7 +288,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(right: 20, bottom: 20),
@@ -333,6 +332,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           color: Color.fromARGB(255, 102, 102, 102),
           strokeWidth: 0.5,
         ),
+        // horizontalInterval: calculateHorizontalInterval(maxAmount)
       );
 
   FlTitlesData get titlesData => FlTitlesData(
@@ -342,12 +342,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 50,
+            reservedSize: 55,
             getTitlesWidget: (value, meta) {
               if (value == 0) {
                 return const Text('');
               }
-              return Text(abbreviateNumber(value));
+              return Padding(
+                padding: const EdgeInsets.only(right:5),
+                child: Text(abbreviateNumber(value), textAlign: TextAlign.center,),
+              );
             },
           ),
         ),
@@ -416,7 +419,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       show: true,
     ),
   );
-
 
   LineTouchData _buildLineTouchData() => LineTouchData(
     touchTooltipData: LineTouchTooltipData(
