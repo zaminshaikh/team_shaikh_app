@@ -18,15 +18,12 @@ class Config {
   static dynamic get(String key) => _config[key];
 }
 
-
-
 /// Formats the given amount as a currency string.
 String currencyFormat(double amount) => NumberFormat.currency(
     symbol: '\$',
     decimalDigits: 2,
     locale: 'en_US',
   ).format(amount);
-
 
 bool isSameDay(DateTime date1, DateTime date2) =>
     date1.year == date2.year &&

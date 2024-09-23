@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,18 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await PushNotificationService().initialize();
   await Config.loadConfig();
+  
+    // Terminate Firestore to detach any active listeners
+  await FirebaseFirestore.instance.terminate();
+
+  // Clear persisted data
+  await FirebaseFirestore.instance.clearPersistence();
+
+  // Optionally disable persistence
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: false,
+  );
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

@@ -9,6 +9,7 @@ import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/timeline.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/analytics_utilities.dart';
@@ -32,7 +33,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Variables for the line chart
   List<FlSpot> spots = [];
   double maxAmount = 0.0;
-  String dropdownValue = 'last-year';
+  String dropdownValue = 'last-week';
   Timeline timeline = Timeline();
 
   @override
@@ -116,10 +117,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         FlSpot lastSpot = spots.last;
         FlSpot extendedSpot = FlSpot(maxXValue, lastSpot.y);
         spots.add(extendedSpot);
+      } else if (spots.isEmpty) {
+        GraphPoint mostRecentSpot = client!.graphPoints!.last;
+        spots.add(FlSpot(0, mostRecentSpot.amount ?? 0));
+        spots.add(FlSpot(maxXValue, mostRecentSpot.amount ?? 0));
+        maxAmount = mostRecentSpot.amount! * 1.5;
       }
     } else {
       // No data points
-      // Use the user's most recent asset value or 0.0
+      // Use the user's total assets as the y-value
       yValue = client!.assets?.totalAssets ?? 0.0;
 
       // Handle case where yValue is 0
@@ -134,7 +140,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       spots.add(FlSpot(maxX(dropdownValue), yValue));
     }
   }
-
 
 
   SliverAppBar _buildAppBar() => SliverAppBar(
@@ -364,25 +369,37 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     color: AppColors.defaultBlue300,
     isStrokeCapRound: true,
     dotData: FlDotData(
-          show: true,
-          getDotPainter: (spot, percent, barData, index) {
-            if (spot.x == 0 || spot.x == maxX(dropdownValue)) {
-              // Hide the dot for the starting and ending data points
-              return FlDotCirclePainter(
-                radius: 0,
-                color: Colors.transparent,
-                strokeWidth: 0,
-                strokeColor: Colors.transparent,
-              );
-            }
-            return FlDotCirclePainter(
-              radius: 4,
-              color: AppColors.defaultBlue300,
-              strokeWidth: 2,
-              strokeColor: Colors.white,
-            );
-          },
-        ),
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                if (spot.x == 0 || spot.x == maxX(dropdownValue)) {
+                  // Hide dots for starting and ending points
+                  return FlDotCirclePainter(
+                    radius: 0,
+                    color: Colors.transparent,
+                    strokeWidth: 0,
+                    strokeColor: Colors.transparent,
+                  );
+                }
+                // Show dots only if there are actual data points
+                if (client!.graphPoints != null &&
+                    client!.graphPoints!.isNotEmpty) {
+                  return FlDotCirclePainter(
+                    radius: 4,
+                    color: AppColors.defaultBlue300,
+                    strokeWidth: 2,
+                    strokeColor: Colors.white,
+                  );
+                } else {
+                  // Hide dots when there are no data points
+                  return FlDotCirclePainter(
+                    radius: 0,
+                    color: Colors.transparent,
+                    strokeWidth: 0,
+                    strokeColor: Colors.transparent,
+                  );
+                }
+              },
+            ),
     belowBarData: BarAreaData(
       gradient: LinearGradient(
         begin: Alignment.topCenter,
@@ -520,7 +537,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   Widget _buildDateRangeText() {
     // String displayText = timeline.getDateRangeText(dropdownValue);
-    String displayText = 'TEST';
+    String displayText = '';
     return Container(
       color: Colors.transparent,
       child: Align(

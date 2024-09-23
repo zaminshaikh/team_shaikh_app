@@ -172,6 +172,9 @@ class NewDB {
           return Client.empty();
         }
 
+        graphPoints = graphPoints.whereType<GraphPoint>().toList();
+        graphPoints.sort((a, b) => a.time!.compareTo(b.time!));
+
         return Client.fromMap(
           cid: cid,
           clientData,
