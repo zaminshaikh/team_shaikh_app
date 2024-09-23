@@ -119,3 +119,18 @@ double calculateMaxY(double value) {
   }
   return ((value / increment).ceil() * increment).toDouble();
 }
+
+double getBottomTitleInterval(String dropdownValue) {
+  switch (dropdownValue) {
+    case 'last-week':
+      return maxX(dropdownValue) / 2; // Label every day
+    case 'last-month':
+      return maxX(dropdownValue) / 2; // Start and end of the month
+    case 'last-6-months':
+      return maxX(dropdownValue) / 2.5; // Adjust as needed
+    case 'last-year':
+      return maxX(dropdownValue) / 2; // Start, middle, end
+    default:
+      return 1;
+  }
+}

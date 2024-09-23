@@ -340,27 +340,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: getBottomTitleInterval(),
+            interval: getBottomTitleInterval(dropdownValue),
             getTitlesWidget: bottomTitlesWidget,
           ),
         ),
       );
-
-
-  double getBottomTitleInterval() {
-    switch (dropdownValue) {
-      case 'last-week':
-        return 1; // Label every day
-      case 'last-month':
-        return maxX(dropdownValue) / 2; // Start and end of the month
-      case 'last-6-months':
-        return maxX(dropdownValue) / 2.5; // Adjust as needed
-      case 'last-year':
-        return maxX(dropdownValue) / 2; // Start, middle, end
-      default:
-        return 1;
-    }
-  }
 
   LineChartBarData _buildLineChartBarData() => LineChartBarData(
         spots: spots,
