@@ -10,6 +10,8 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/screens/analytics/utils/timeline.dart';
+import 'package:team_shaikh_app/screens/analytics/utils/analytics_utilities.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 
 class AnalyticsPage extends StatefulWidget {
@@ -18,166 +20,6 @@ class AnalyticsPage extends StatefulWidget {
   _AnalyticsPageState createState() => _AnalyticsPageState();
 }
 
-class Timeline {
-  late DateTime now;
-  late DateTime firstDayOfCurrentMonth;
-  late DateTime lastDayOfPreviousMonth;
-  late int daysInLastMonth;
-  late List<String> lastSixMonths;
-  late List<String> lastYearMonths;
-  late String lastWeekRange;
-  late String lastMonthRange;
-  late String lastSixMonthsRange;
-  late String lastYearRange;
-  late List<String> lastWeekDays;
-  late List<String> lastMonthDays;
-
-  Timeline() {
-    now = DateTime.now();
-    firstDayOfCurrentMonth = DateTime(now.year, now.month, 1);
-    lastDayOfPreviousMonth =
-        firstDayOfCurrentMonth.subtract(const Duration(days: 1));
-    daysInLastMonth = lastDayOfPreviousMonth.day;
-    lastSixMonths = _calculateLastSixMonths();
-    lastWeekRange = _calculateLastWeekRange();
-    lastMonthRange = _calculateLastMonthRange();
-    lastSixMonthsRange = _calculateLastSixMonthsRange();
-    lastYearRange = _calculateLastYearRange();
-    lastWeekDays = _calculateLastWeekDays();
-    lastMonthDays = _calculateLastMonthDays();
-    lastYearMonths = _calculateLastYearMonths();
-  }
-
-  List<String> _calculateLastSixMonths() {
-    List<String> months = [];
-    DateTime now = DateTime.now();
-    for (int i = 0; i < 6; i++) {
-      DateTime month = DateTime(now.year, now.month - i, 1);
-      months.add(DateFormat('MMM').format(month));
-    }
-    return months.reversed.toList(); // Reverse to get the months in order
-  }
-
-  List<String> _calculateLastWeekDays() {
-    DateTime now = DateTime.now();
-    return List.generate(7, (index) {
-      DateTime day = now.subtract(Duration(days: 6 - index));
-      return DateFormat('EEE').format(day);
-    });
-  }
-
-  String _calculateLastWeekRange() {
-    DateTime now = DateTime.now();
-    // Calculate the start of the range (7 days ago)
-    DateTime startOfRange = now.subtract(const Duration(days: 6));
-    // Calculate the end of the range (today)
-    DateTime endOfRange = now;
-    String formattedStart = DateFormat('MMMM dd, yyyy').format(startOfRange);
-    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfRange);
-    return '$formattedStart - $formattedEnd';
-  }
-
-  String _calculateLastMonthRange() {
-    DateTime now = DateTime.now();
-    DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
-    DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
-    String formattedStart = DateFormat('MMMM d, yyyy').format(startOfLastMonth);
-    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastMonth);
-    return '$formattedStart - $formattedEnd';
-  }
-
-  List<String> _calculateLastMonthDays() {
-    DateTime now = DateTime.now();
-    DateTime startOfLastMonth = DateTime(now.year, now.month - 1, now.day);
-    DateTime endOfLastMonth = DateTime(now.year, now.month, now.day);
-
-    // Calculate the midpoint date
-    DateTime midOfLastMonth = startOfLastMonth.add(Duration(
-        days:
-            (endOfLastMonth.difference(startOfLastMonth).inDays / 2).round()));
-
-    String formattedStart = DateFormat('MMM d').format(startOfLastMonth);
-    String formattedMid = DateFormat('MMM d').format(midOfLastMonth);
-    String formattedEnd = DateFormat('MMM dd').format(endOfLastMonth);
-
-    return [formattedStart, formattedMid, formattedEnd];
-  }
-
-  String _calculateLastSixMonthsRange() {
-    DateTime now = DateTime.now();
-    DateTime startOfSixMonthsAgo = DateTime(now.year, now.month - 5, now.day);
-    DateTime endOfLastMonth = now;
-    String formattedStart =
-        DateFormat('MMMM dd, yyyy').format(startOfSixMonthsAgo);
-    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfLastMonth);
-    return '$formattedStart - $formattedEnd';
-  }
-
-  String _calculateLastYearRange() {
-    DateTime now = DateTime.now();
-    DateTime startOfCurrentYear = DateTime(now.year, 1, 1);
-    DateTime endOfCurrentYear = now;
-    String formattedStart =
-        DateFormat('MMMM dd, yyyy').format(startOfCurrentYear);
-    String formattedEnd = DateFormat('MMMM dd, yyyy').format(endOfCurrentYear);
-    return '$formattedStart - $formattedEnd';
-  }
-
-  List<String> _calculateLastYearMonths() {
-    List<String> months = [];
-    DateTime now = DateTime.now();
-    for (int i = 0; i < 13; i++) {
-      DateTime month = DateTime(now.year, now.month - i, 1);
-      months.add(DateFormat('MM').format(month));
-    }
-    return months.reversed.toList(); // Reverse to get the months in order
-  }
-
-  // Method to get labels for each month in the last year
-  List<String> getLastYearMonthLabel() {
-    List<String> labels = [];
-    DateTime now = DateTime.now();
-    for (int i = 0; i < 12; i++) {
-      DateTime date = DateTime(now.year, now.month - i, 1);
-      labels.add(DateFormat('MM/yy').format(date));
-    }
-    return labels.reversed.toList(); // Reverse to get chronological order
-  }
-
-  // Method to get labels for each day in the last week
-  List<String> getLastWeekDayLabel() {
-    List<String> labels = [];
-    DateTime now = DateTime.now();
-    for (int i = 0; i < 7; i++) {
-      DateTime date = now.subtract(Duration(days: i));
-      labels.add(DateFormat('EEE').format(date));
-    }
-    return labels.reversed.toList(); // Reverse to get chronological order
-  }
-
-  // Method to get labels for each month in the last six months
-  List<String> getLastSixMonthsLabel() {
-    List<String> labels = [];
-    DateTime now = DateTime.now();
-    for (int i = 0; i < 6; i++) {
-      DateTime date = DateTime(now.year, now.month - i, 1);
-      labels.add(DateFormat('MM/yy').format(date));
-    }
-    return labels.reversed.toList(); // Reverse to get chronological order
-  }
-
-  // Method to get labels for each day in the last month
-  List<String> getLastMonthDayLabel() {
-    List<String> labels = [];
-    DateTime now = DateTime.now();
-    for (int i = 0; i < 30; i++) {
-      DateTime date = now.subtract(Duration(days: i));
-      labels.add(DateFormat('MMM dd').format(date));
-    }
-    return labels.reversed.toList(); // Reverse to get chronological order
-  }
-
-}
 class _AnalyticsPageState extends State<AnalyticsPage> {  
   Client? client;
 
@@ -190,7 +32,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Variables for the line chart
   List<FlSpot> spots = [];
   double maxAmount = 0.0;
-  String dropdownValue = 'last-year';
+  String dropdownValue = 'last-week';
   Timeline timeline = Timeline();
 
   @override
@@ -272,7 +114,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         DateTime dateTime = point.time!;
         double amount = point.amount ?? 0;
 
-        double xValue = _calculateXValue(dateTime);
+        double xValue = calculateXValue(dateTime, dropdownValue);
         if (xValue >= 0) {
           spots.add(FlSpot(xValue, amount));
           if (amount > maxAmount) {
@@ -284,128 +126,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // Ensure spots are sorted by x-value
       spots.sort((a, b) => a.x.compareTo(b.x));
     }
-  }
-
-  double _calculateXValue(DateTime dateTime) {
-    DateTime now = DateTime.now();
-    DateTime startDate;
-    double totalPeriod;
-    double maxXValue = maxX(dropdownValue);
-
-    switch (dropdownValue) {
-      case 'last-week':
-        startDate = now.subtract(const Duration(days: 6));
-        totalPeriod = 7;
-        break;
-      case 'last-month':
-        startDate = DateTime(now.year, now.month - 1, now.day);
-        totalPeriod = 30;
-        break;
-      case 'last-6-months':
-        startDate = DateTime(now.year, now.month - 5, now.day);
-        totalPeriod = 180;
-        break;
-      case 'last-year':
-        startDate = DateTime(now.year, 1, 1);
-        totalPeriod = 365;
-        break;
-      default:
-        return -1.0;
-    }
-
-    if (dateTime.isBefore(startDate) || dateTime.isAfter(now)) {
-      return -1.0;
-    }
-
-    double dayDifference = dateTime.difference(startDate).inDays.toDouble();
-    return (dayDifference / totalPeriod) * maxXValue;
-  }
-
-  DateTime _calculateDateTimeFromXValue(double xValue) {
-      DateTime now = DateTime.now();
-      DateTime startDate;
-      DateTime endDate;
-      double totalPeriod;
-      double maxXValue = maxX(dropdownValue);
-
-      switch (dropdownValue) {
-        case 'last-week':
-          startDate = now.subtract(const Duration(days: 6));
-          endDate = now;
-          break;
-        case 'last-month':
-          startDate = now.subtract(const Duration(days: 29));
-          endDate = now;
-          break;
-        case 'last-6-months':
-          startDate = DateTime(now.year, now.month - 5, now.day);
-          endDate = now;
-          break;
-        case 'last-year':
-          startDate = DateTime(now.year, 1, 1);
-          endDate = DateTime(now.year, 12, 31);
-          totalPeriod = 365;
-          break;
-        default:
-          return DateTime.now();
-      }
-
-      totalPeriod = endDate.difference(startDate).inDays.toDouble();
-
-      double dayDifference = (xValue / maxXValue) * totalPeriod;
-
-      // Use microseconds to handle fractional days
-      int microsecondsDifference =
-          (dayDifference * Duration.microsecondsPerDay).round();
-      DateTime dateTime =
-          startDate.add(Duration(microseconds: microsecondsDifference));
-
-      return dateTime;
-    }
-
-  double maxX(String dropdownValue) {
-    switch (dropdownValue) {
-      case 'last-week':
-        return 6; // 7 days (0 to 6)
-      case 'last-month':
-        return 29; // 30 days (0 to 29)
-      case 'last-6-months':
-        return 5; // 6 months (0 to 5)
-      case 'last-year':
-        return 11; // 12 months (0 to 11)
-      default:
-        return 6;
-    }
-  }
-
-  String _abbreviateNumber(double value) {
-    if (value >= 1e6) {
-      return '${(value / 1e6).toStringAsFixed(1)}M';
-    } else if (value >= 1e3) {
-      return '${(value / 1e3).toStringAsFixed(1)}K';
-    } else {
-      return value.toStringAsFixed(0);
-    }
-  }
-
-  double calculateMaxY(double value) {
-    double increment = 1.0;
-    if (value >= 100000000) {
-      increment = 10000000;
-    } else if (value >= 10000000) {
-      increment = 1000000;
-    } else if (value >= 1000000) {
-      increment = 100000;
-    } else if (value >= 100000) {
-      increment = 10000;
-    } else if (value >= 10000) {
-      increment = 1000;
-    } else if (value >= 1000) {
-      increment = 100;
-    } else if (value >= 500) {
-      increment = 50;
-    }
-    return ((value / increment).ceil() * increment).toDouble();
   }
 
   SliverAppBar _buildAppBar() => SliverAppBar(
@@ -610,7 +330,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               if (value == 0) {
                 return const Text('');
               }
-              return Text(_abbreviateNumber(value));
+              return Text(abbreviateNumber(value));
             },
           ),
         ),
@@ -670,6 +390,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ),
           show: true,
         ),
+        preventCurveOverShooting: true,
+        preventCurveOvershootingThreshold: 10.0
       );
 
   LineTouchData _buildLineTouchData() =>  LineTouchData(
@@ -681,7 +403,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           final xValue = barSpot.x;
           final formattedYValue = NumberFormat.currency(symbol: '\$').format(yValue);
 
-          DateTime dateTime = _calculateDateTimeFromXValue(xValue);
+          DateTime dateTime = calculateDateTimeFromXValue(xValue, dropdownValue);
           final formattedDate = DateFormat('MMM dd').format(dateTime);
 
           return LineTooltipItem(
@@ -697,20 +419,19 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     ),
   );
 
-
   Widget bottomTitlesWidget(double value, TitleMeta meta) {
-    DateTime dateTime = _calculateDateTimeFromXValue(value);
+    DateTime dateTime = calculateDateTimeFromXValue(value, dropdownValue);
     String text = '';
 
     if (dropdownValue == 'last-year') {
       if (value == 0) {
         text = DateFormat('MMM yyyy').format(dateTime); // Start date
       } else if (value == maxX(dropdownValue) / 2) {
-        text = DateFormat('MMM yyyy').format(_calculateDateTimeFromXValue(
-            maxX(dropdownValue) / 2)); // Middle date
+        text = DateFormat('MMM yyyy').format(calculateDateTimeFromXValue(
+            maxX(dropdownValue) / 2, dropdownValue)); // Middle date
       } else if (value == maxX(dropdownValue)) {
         text = DateFormat('MMM yyyy').format(
-            _calculateDateTimeFromXValue(maxX(dropdownValue))); // End date
+            calculateDateTimeFromXValue(maxX(dropdownValue), dropdownValue)); // End date
       }
     } else {
       // Handle other cases similarly
