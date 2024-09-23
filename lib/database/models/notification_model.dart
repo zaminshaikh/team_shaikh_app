@@ -36,7 +36,7 @@ class Notif {
       || data['type'] == null
       || data['id'] == null
       || data['parentCID'] == null) {
-      throw ArgumentError('Missing required fields in data map');
+      throw ArgumentError('Missing required fields in data map for notification');
     }
       return Notif(
           parentCID: data['parentCID'],

@@ -109,7 +109,19 @@ class AnalyticsPageState extends State<AnalyticsPage> {
 
       // Add a starting data point at x=0, y=0 if needed
       if (spots.isNotEmpty && spots.first.x > 0) {
-        FlSpot startingSpot = FlSpot(0, 0);
+        double firstXValue = spots.first.x;
+        double startingY = 0;
+
+        // Iterate through client.graphPoints in reverse order
+        for (var point in client!.graphPoints!.reversed) {
+          double xValue = calculateXValue(point.time!, dropdownValue);
+          if (xValue < firstXValue) {
+            startingY = point.amount ?? 0;
+            break;
+          }
+        }
+
+        FlSpot startingSpot = FlSpot(0, startingY);
         spots.insert(0, startingSpot);
       }
 

@@ -146,11 +146,17 @@ class NewDB {
               .toList());
 
       // Stream for the graphPoints subcollection
-      Stream<List<GraphPoint>> graphPointsStream = graphPointsSubCollection!
+      Stream<List<GraphPoint?>> graphPointsStream = graphPointsSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) =>
-                  GraphPoint.fromMap(doc.data() as Map<String, dynamic>))
+              .map((doc) {
+                try {
+                  return GraphPoint.fromMap(doc.data() as Map<String, dynamic>);
+                } catch (e) {
+                  log('database.dart: Error creating GraphPoint from map: $e');
+                  return null;
+                }
+              })
               .toList());
 
       return Rx.combineLatest6(
@@ -163,7 +169,7 @@ class NewDB {
               List<Activity> activities,
               Assets assets,
               List<Notif?> notifications,
-              List<GraphPoint> graphPoints,
+              List<GraphPoint?> graphPoints,
               List<Client?> connectedUsers) {
         final clientData = clientDoc.data() as Map<String, dynamic>?;
 
@@ -172,8 +178,10 @@ class NewDB {
           return Client.empty();
         }
 
-        graphPoints = graphPoints.whereType<GraphPoint>().toList();
-        graphPoints.sort((a, b) => a.time!.compareTo(b.time!));
+        // Filter out null values and sort the graphPoints
+        List<GraphPoint> filteredGraphPoints =
+            graphPoints.whereType<GraphPoint>().toList();
+        filteredGraphPoints.sort((a, b) => a.time.compareTo(b.time));
 
         return Client.fromMap(
           cid: cid,
@@ -181,10 +189,11 @@ class NewDB {
           activities: activities,
           assets: assets,
           notifications: notifications.whereType<Notif>().toList(),
-          graphPoints: graphPoints,
+          graphPoints: filteredGraphPoints,
           connectedUsers: connectedUsers.whereType<Client>().toList(),
         );
       });
+      
     } catch (e) {
       log('database.dart: Error in getClientStream: $e');
       return Stream.value(null);
