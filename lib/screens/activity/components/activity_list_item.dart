@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/utilities.dart';
-import '../utils/activity_styles.dart';
 
 class ActivityListItem extends StatelessWidget {
   final Activity activity;

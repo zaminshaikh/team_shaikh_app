@@ -114,9 +114,9 @@ class AnalyticsPageState extends State<AnalyticsPage> {
 
         // Iterate through client.graphPoints in reverse order
         for (var point in client!.graphPoints!.reversed) {
-          double xValue = calculateXValue(point.time!, dropdownValue);
+          double xValue = calculateXValue(point.time, dropdownValue);
           if (xValue < firstXValue) {
-            startingY = point.amount ?? 0;
+            startingY = point.amount;
             break;
           }
         }
@@ -140,11 +140,11 @@ class AnalyticsPageState extends State<AnalyticsPage> {
     } else {
       // No data points
       // Use the user's total assets as the y-value
-      yValue = client!.assets?.totalAssets ?? 0.0;
+      yValue = 0.0;
 
       // Handle case where yValue is 0
       if (yValue == 0.0) {
-        maxAmount = 10.0; // Set a default max Y value
+        maxAmount = 100000.0; // Set a default max Y value
       } else {
         maxAmount = yValue * 1.5;
       }
