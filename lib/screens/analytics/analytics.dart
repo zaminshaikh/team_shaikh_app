@@ -32,7 +32,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Variables for the line chart
   List<FlSpot> spots = [];
   double maxAmount = 0.0;
-  String dropdownValue = 'last-week';
+  String dropdownValue = 'last-year';
   Timeline timeline = Timeline();
 
   @override
