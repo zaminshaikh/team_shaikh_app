@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
+import 'package:team_shaikh_app/components/assets_structure_section.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
@@ -63,6 +64,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     [
                       // Line chart section
                       _buildLineChartSection(),
+                      // Pie chart section
+                      AssetsStructureSection(client: client),
                     ],
                   ),
                 ),
