@@ -45,34 +45,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   Scaffold buildAnalyticsPage(Client client) {
-    // Calculate total assets of the user
-    double totalAGQ = 0.0;
-    double totalAK1 = 0.0;
-
-    // Calculate user's total assets
-    if (client.assets != null) {
-      for (var fundEntry in client.assets!.funds.entries) {
-        String fundName = fundEntry.key;
-        Fund fund = fundEntry.value;
-
-        switch (fundName.toUpperCase()) {
-          case 'AGQ':
-            totalAGQ += fund.total;
-            break;
-          case 'AK1':
-            totalAK1 += fund.total;
-            break;
-        }
-      }
-    }
-
-    // Calculate percentages
-    double percentageAGQ = client.assets!.totalAssets! > 0
-        ? (totalAGQ / client!.assets!.totalAssets!.toDouble()) * 100
-        : 0;
-    double percentageAK1 = client.assets!.totalAssets! > 0
-        ? (totalAK1 / client!.assets!.totalAssets!.toDouble()) * 100
-        : 0;
 
     // Prepare graph points
     _prepareGraphPoints();
@@ -386,7 +358,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   LineChartBarData _buildLineChartBarData() => LineChartBarData(
     spots: spots,
     isCurved: false,
-    isStepLineChart: false,
+    isStepLineChart: true,
+    lineChartStepData: const LineChartStepData(stepDirection: 0),
     barWidth: 3,
     color: AppColors.defaultBlue300,
     isStrokeCapRound: true,
