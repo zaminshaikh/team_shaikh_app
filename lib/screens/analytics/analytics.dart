@@ -12,6 +12,7 @@ import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/screens/analytics/components/analytics_app_bar.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/timeline.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/analytics_utilities.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
@@ -55,7 +56,7 @@ class AnalyticsPageState extends State<AnalyticsPage> {
         children: [
           CustomScrollView(
             slivers: <Widget>[
-              _buildAppBar(),
+              AnalyticsAppBar(client: client,),
               SliverPadding(
                 padding: const EdgeInsets.all(16.0),
                 sliver: SliverList(
@@ -154,95 +155,6 @@ class AnalyticsPageState extends State<AnalyticsPage> {
       spots.add(FlSpot(maxX(dropdownValue), yValue));
     }
   }
-
-
-  SliverAppBar _buildAppBar() => SliverAppBar(
-        backgroundColor: const Color.fromARGB(255, 30, 41, 59),
-        automaticallyImplyLeading: false,
-        toolbarHeight: 80,
-        expandedHeight: 0,
-        snap: false,
-        floating: true,
-        pinned: true,
-        flexibleSpace: const SafeArea(
-          child: Stack(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Analytics',
-                      style: TextStyle(
-                        fontSize: 27,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 5.0, bottom: 5.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationPage(),
-                  ),
-                );
-              },
-              child: Container(
-                color: Colors.transparent,
-                padding: const EdgeInsets.all(10.0),
-                child: Stack(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/bell.svg',
-                      colorFilter:
-                          const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                      height: 32,
-                    ),
-                    if ((client!.numNotifsUnread ?? 0) > 0)
-                      Positioned(
-                        right: 0,
-                        top: 5,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF267DB5),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 18,
-                            minHeight: 18,
-                          ),
-                          child: Text(
-                            '${client!.numNotifsUnread}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'Titillium Web',
-                              fontSize: 12,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
 
   Widget _buildLineChartSection() => Padding(
         padding: const EdgeInsets.only(bottom: 25),
