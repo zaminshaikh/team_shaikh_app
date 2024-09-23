@@ -20,7 +20,7 @@ class AnalyticsPage extends StatefulWidget {
   _AnalyticsPageState createState() => _AnalyticsPageState();
 }
 
-class _AnalyticsPageState extends State<AnalyticsPage> {  
+class _AnalyticsPageState extends State<AnalyticsPage> {
   Client? client;
 
   @override
@@ -63,14 +63,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             totalAK1 += fund.total;
             break;
         }
-        
       }
     }
 
-
     // Calculate percentages
-    double percentageAGQ = client.assets!.totalAssets! > 0 ? (totalAGQ / client!.assets!.totalAssets!.toDouble()) * 100 : 0;
-    double percentageAK1 = client.assets!.totalAssets! > 0 ? (totalAK1 / client!.assets!.totalAssets!.toDouble()) * 100 : 0;
+    double percentageAGQ = client.assets!.totalAssets! > 0
+        ? (totalAGQ / client!.assets!.totalAssets!.toDouble()) * 100
+        : 0;
+    double percentageAK1 = client.assets!.totalAssets! > 0
+        ? (totalAK1 / client!.assets!.totalAssets!.toDouble()) * 100
+        : 0;
 
     // Prepare graph points
     _prepareGraphPoints();
@@ -98,7 +100,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: CustomBottomNavigationBar(currentItem: NavigationItem.analytics),
+            child: CustomBottomNavigationBar(
+                currentItem: NavigationItem.analytics),
           ),
         ],
       ),
@@ -109,7 +112,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     spots.clear();
     maxAmount = 0.0;
 
+    double yValue;
+
     if (client!.graphPoints != null && client!.graphPoints!.isNotEmpty) {
+      // There are data points
       for (var point in client!.graphPoints!) {
         DateTime dateTime = point.time!;
         double amount = point.amount ?? 0;
@@ -125,8 +131,39 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
       // Ensure spots are sorted by x-value
       spots.sort((a, b) => a.x.compareTo(b.x));
+
+      // Add a starting data point at x=0, y=0 if needed
+      if (spots.isNotEmpty && spots.first.x > 0) {
+        FlSpot startingSpot = FlSpot(0, 0);
+        spots.insert(0, startingSpot);
+      }
+
+      // Add an extra data point at the end of the x-axis if needed
+      double maxXValue = maxX(dropdownValue);
+      if (spots.isNotEmpty && spots.last.x < maxXValue) {
+        FlSpot lastSpot = spots.last;
+        FlSpot extendedSpot = FlSpot(maxXValue, lastSpot.y);
+        spots.add(extendedSpot);
+      }
+    } else {
+      // No data points
+      // Use the user's most recent asset value or 0.0
+      yValue = client!.assets?.totalAssets ?? 0.0;
+
+      // Handle case where yValue is 0
+      if (yValue == 0.0) {
+        maxAmount = 10.0; // Set a default max Y value
+      } else {
+        maxAmount = yValue * 1.5;
+      }
+
+      // Create two spots: from x=0 to x=maxX, at y=yValue
+      spots.add(FlSpot(0, yValue));
+      spots.add(FlSpot(maxX(dropdownValue), yValue));
     }
   }
+
+
 
   SliverAppBar _buildAppBar() => SliverAppBar(
         backgroundColor: const Color.fromARGB(255, 30, 41, 59),
@@ -347,60 +384,89 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       );
 
   LineChartBarData _buildLineChartBarData() => LineChartBarData(
-        spots: spots,
-        isCurved: true,
-        curveSmoothness: 0.15,
-        color: AppColors.defaultBlue300,
-        barWidth: 3,
-        isStrokeCapRound: true,
-        dotData: FlDotData(
+    spots: spots,
+    isCurved: false,
+    isStepLineChart: false,
+    barWidth: 3,
+    color: AppColors.defaultBlue300,
+    isStrokeCapRound: true,
+    dotData: FlDotData(
           show: true,
-          getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-            radius: 4,
-            color: AppColors.defaultBlue300,
-            strokeWidth: 2,
-            strokeColor: Colors.white,
-          ),
+          getDotPainter: (spot, percent, barData, index) {
+            if (spot.x == 0 || spot.x == maxX(dropdownValue)) {
+              // Hide the dot for the starting and ending data points
+              return FlDotCirclePainter(
+                radius: 0,
+                color: Colors.transparent,
+                strokeWidth: 0,
+                strokeColor: Colors.transparent,
+              );
+            }
+            return FlDotCirclePainter(
+              radius: 4,
+              color: AppColors.defaultBlue300,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            );
+          },
         ),
-        belowBarData: BarAreaData(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.defaultBlue300,
-              AppColors.defaultBlue500,
-              AppColors.defaultBlue500.withOpacity(0.2),
-            ],
-          ),
-          show: true,
-        ),
-        preventCurveOverShooting: true,
-        preventCurveOvershootingThreshold: 10.0
-      );
+    belowBarData: BarAreaData(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppColors.defaultBlue300,
+          AppColors.defaultBlue500,
+          AppColors.defaultBlue500.withOpacity(0.2),
+        ],
+      ),
+      show: true,
+    ),
+  );
 
-  LineTouchData _buildLineTouchData() =>  LineTouchData(
-      touchTooltipData: LineTouchTooltipData(
+
+  LineTouchData _buildLineTouchData() => LineTouchData(
+    touchTooltipData: LineTouchTooltipData(
       tooltipBgColor: AppColors.defaultBlueGray100,
       tooltipRoundedRadius: 16.0,
       getTooltipItems: (List<LineBarSpot> touchedSpots) => touchedSpots.map((barSpot) {
+          if (barSpot.x == 0 || barSpot.x == maxX(dropdownValue)) {
+            // Exclude the starting and ending data points from showing tooltip
+            return null;
+          }
           final yValue = barSpot.y;
           final xValue = barSpot.x;
-          final formattedYValue = NumberFormat.currency(symbol: '\$').format(yValue);
+          final formattedYValue =
+              NumberFormat.currency(symbol: '\$').format(yValue);
 
-          DateTime dateTime = calculateDateTimeFromXValue(xValue, dropdownValue);
+          DateTime dateTime =
+              calculateDateTimeFromXValue(xValue, dropdownValue);
           final formattedDate = DateFormat('MMM dd').format(dateTime);
 
           return LineTooltipItem(
-              '$formattedYValue\n$formattedDate',
-              const TextStyle(
-                  color: AppColors.defaultBlue300,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                  fontSize: 16,
-              ),
+            '$formattedYValue\n$formattedDate',
+            const TextStyle(
+              color: AppColors.defaultBlue300,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
+              fontSize: 16,
+            ),
           );
-      }).toList(),
+        }).toList(),
     ),
+    getTouchedSpotIndicator:
+        (LineChartBarData barData, List<int> spotIndexes) => spotIndexes.map((index) {
+        final FlSpot spot = barData.spots[index];
+        if (spot.x == 0 || spot.x == maxX(dropdownValue)) {
+          // Exclude the starting and ending data points from touch indicators
+          return null;
+        }
+        return const TouchedSpotIndicatorData(
+          FlLine(color: Colors.white, strokeWidth: 2),
+          FlDotData(show: false),
+        );
+      }).toList(),
+    handleBuiltInTouches: true,
   );
 
   Widget bottomTitlesWidget(double value, TitleMeta meta) {
@@ -414,8 +480,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         text = DateFormat('MMM yyyy').format(calculateDateTimeFromXValue(
             maxX(dropdownValue) / 2, dropdownValue)); // Middle date
       } else if (value == maxX(dropdownValue)) {
-        text = DateFormat('MMM yyyy').format(
-            calculateDateTimeFromXValue(maxX(dropdownValue), dropdownValue)); // End date
+        text = DateFormat('MMM yyyy').format(calculateDateTimeFromXValue(
+            maxX(dropdownValue), dropdownValue)); // End date
       }
     } else {
       // Handle other cases similarly
@@ -531,4 +597,3 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 }
-
