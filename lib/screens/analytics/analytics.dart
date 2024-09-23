@@ -276,7 +276,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         if (xValue >= 0) {
           spots.add(FlSpot(xValue, amount));
           if (amount > maxAmount) {
-            maxAmount = amount;
+            maxAmount = amount * 1.5;
           }
         }
       }
@@ -322,52 +322,57 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   DateTime _calculateDateTimeFromXValue(double xValue) {
-    DateTime now = DateTime.now();
-    DateTime startDate;
-    double totalPeriod;
-    double maxXValue = maxX(dropdownValue);
+      DateTime now = DateTime.now();
+      DateTime startDate;
+      DateTime endDate;
+      double totalPeriod;
+      double maxXValue = maxX(dropdownValue);
 
-    switch (dropdownValue) {
-      case 'last-week':
-        startDate = now.subtract(const Duration(days: 6));
-        totalPeriod = 7;
-        break;
-      case 'last-month':
-        startDate = DateTime(now.year, now.month - 1, now.day);
-        totalPeriod = 30;
-        break;
-      case 'last-6-months':
-        startDate = DateTime(now.year, now.month - 5, now.day);
-        totalPeriod = 180;
-        break;
-      case 'last-year':
-        startDate = DateTime(now.year, 1, 1);
-        totalPeriod = 365;
-        break;
-      default:
-        return DateTime.now(); // Return current date for default case
+      switch (dropdownValue) {
+        case 'last-week':
+          startDate = now.subtract(const Duration(days: 6));
+          endDate = now;
+          break;
+        case 'last-month':
+          startDate = now.subtract(const Duration(days: 29));
+          endDate = now;
+          break;
+        case 'last-6-months':
+          startDate = DateTime(now.year, now.month - 5, now.day);
+          endDate = now;
+          break;
+        case 'last-year':
+          startDate = DateTime(now.year, 1, 1);
+          endDate = DateTime(now.year, 12, 31);
+          totalPeriod = 365;
+          break;
+        default:
+          return DateTime.now();
+      }
+
+      totalPeriod = endDate.difference(startDate).inDays.toDouble();
+
+      double dayDifference = (xValue / maxXValue) * totalPeriod;
+
+      // Use microseconds to handle fractional days
+      int microsecondsDifference =
+          (dayDifference * Duration.microsecondsPerDay).round();
+      DateTime dateTime =
+          startDate.add(Duration(microseconds: microsecondsDifference));
+
+      return dateTime;
     }
-
-    double dayDifference = (xValue / maxXValue) * totalPeriod;
-    DateTime dateTime = startDate.add(Duration(days: dayDifference.round()));
-
-    return dateTime;
-  }
-
 
   double maxX(String dropdownValue) {
     switch (dropdownValue) {
       case 'last-week':
-        return 6;
+        return 6; // 7 days (0 to 6)
       case 'last-month':
-        return 2;
+        return 29; // 30 days (0 to 29)
       case 'last-6-months':
-        return 5;
+        return 5; // 6 months (0 to 5)
       case 'last-year':
-        return 12;
-      case 'custom-time-period':
-        // Handle custom time period
-        return 2; // Adjust as necessary
+        return 11; // 12 months (0 to 11)
       default:
         return 6;
     }
@@ -615,17 +620,27 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: dropdownValue == 'last-week'
-                ? 1
-                : dropdownValue == 'last-month'
-                    ? 5
-                    : dropdownValue == 'last-6-months'
-                        ? 30
-                        : 60,
+            interval: getBottomTitleInterval(),
             getTitlesWidget: bottomTitlesWidget,
           ),
         ),
       );
+
+
+  double getBottomTitleInterval() {
+    switch (dropdownValue) {
+      case 'last-week':
+        return 1; // Label every day
+      case 'last-month':
+        return maxX(dropdownValue) / 2; // Start and end of the month
+      case 'last-6-months':
+        return maxX(dropdownValue) / 2.5; // Adjust as needed
+      case 'last-year':
+        return maxX(dropdownValue) / 2; // Start, middle, end
+      default:
+        return 1;
+    }
+  }
 
   LineChartBarData _buildLineChartBarData() => LineChartBarData(
         spots: spots,
@@ -685,31 +700,32 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   Widget bottomTitlesWidget(double value, TitleMeta meta) {
     DateTime dateTime = _calculateDateTimeFromXValue(value);
-    String text;
+    String text = '';
 
-    switch (dropdownValue) {
-      case 'last-week':
-        text = DateFormat('EEE').format(dateTime); // e.g., Mon, Tue
-        break;
-      case 'last-month':
-        text = DateFormat('MMM dd').format(dateTime); // e.g., Sep 01
-        break;
-      case 'last-6-months':
-        text = DateFormat('MMM').format(dateTime); // e.g., Apr
-        break;
-      case 'last-year':
-        text = DateFormat('MMM').format(dateTime); // e.g., Jan, Feb
-        break;
-      default:
-        text = '';
+    if (dropdownValue == 'last-year') {
+      if (value == 0) {
+        text = DateFormat('MMM yyyy').format(dateTime); // Start date
+      } else if (value == maxX(dropdownValue) / 2) {
+        text = DateFormat('MMM yyyy').format(_calculateDateTimeFromXValue(
+            maxX(dropdownValue) / 2)); // Middle date
+      } else if (value == maxX(dropdownValue)) {
+        text = DateFormat('MMM yyyy').format(
+            _calculateDateTimeFromXValue(maxX(dropdownValue))); // End date
+      }
+    } else {
+      // Handle other cases similarly
+      text = DateFormat('MMM dd').format(dateTime);
     }
+
+    if (text.isEmpty) return const SizedBox();
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 3,
       child: Text(
         text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
