@@ -133,13 +133,13 @@ class Timeline {
     return months.reversed.toList(); // Reverse to get the months in order
   }
 
-    // Method to get labels for each month in the last year
+  // Method to get labels for each month in the last year
   List<String> getLastYearMonthLabel() {
     List<String> labels = [];
     DateTime now = DateTime.now();
     for (int i = 0; i < 12; i++) {
       DateTime date = DateTime(now.year, now.month - i, 1);
-      labels.add(DateFormat('MMM yyyy').format(date));
+      labels.add(DateFormat('MM/yy').format(date));
     }
     return labels.reversed.toList(); // Reverse to get chronological order
   }
@@ -161,7 +161,7 @@ class Timeline {
     DateTime now = DateTime.now();
     for (int i = 0; i < 6; i++) {
       DateTime date = DateTime(now.year, now.month - i, 1);
-      labels.add(DateFormat('MMM yyyy').format(date));
+      labels.add(DateFormat('MM/yy').format(date));
     }
     return labels.reversed.toList(); // Reverse to get chronological order
   }
@@ -176,8 +176,8 @@ class Timeline {
     }
     return labels.reversed.toList(); // Reverse to get chronological order
   }
-}
 
+}
 class _AnalyticsPageState extends State<AnalyticsPage> {  
   Client? client;
 
@@ -191,7 +191,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   List<FlSpot> spots = [];
   double maxAmount = 0.0;
   String dropdownValue = 'last-year';
-
   Timeline timeline = Timeline();
 
   @override
@@ -228,8 +227,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
 
     // Calculate percentages
-    double percentageAGQ = client!.assets!.totalAssets! > 0 ? (totalAGQ / client!.assets!.totalAssets!.toDouble()) * 100 : 0;
-    double percentageAK1 = client!.assets!.totalAssets! > 0 ? (totalAK1 / client!.assets!.totalAssets!.toDouble()) * 100 : 0;
+    double percentageAGQ = client.assets!.totalAssets! > 0 ? (totalAGQ / client!.assets!.totalAssets!.toDouble()) * 100 : 0;
+    double percentageAK1 = client.assets!.totalAssets! > 0 ? (totalAK1 / client!.assets!.totalAssets!.toDouble()) * 100 : 0;
 
     // Prepare graph points
     _prepareGraphPoints();
@@ -321,6 +320,40 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     double dayDifference = dateTime.difference(startDate).inDays.toDouble();
     return (dayDifference / totalPeriod) * maxXValue;
   }
+
+  DateTime _calculateDateTimeFromXValue(double xValue) {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+    double totalPeriod;
+    double maxXValue = maxX(dropdownValue);
+
+    switch (dropdownValue) {
+      case 'last-week':
+        startDate = now.subtract(const Duration(days: 6));
+        totalPeriod = 7;
+        break;
+      case 'last-month':
+        startDate = DateTime(now.year, now.month - 1, now.day);
+        totalPeriod = 30;
+        break;
+      case 'last-6-months':
+        startDate = DateTime(now.year, now.month - 5, now.day);
+        totalPeriod = 180;
+        break;
+      case 'last-year':
+        startDate = DateTime(now.year, 1, 1);
+        totalPeriod = 365;
+        break;
+      default:
+        return DateTime.now(); // Return current date for default case
+    }
+
+    double dayDifference = (xValue / maxXValue) * totalPeriod;
+    DateTime dateTime = startDate.add(Duration(days: dayDifference.round()));
+
+    return dateTime;
+  }
+
 
   double maxX(String dropdownValue) {
     switch (dropdownValue) {
@@ -582,7 +615,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 1,
+            interval: dropdownValue == 'last-week'
+                ? 1
+                : dropdownValue == 'last-month'
+                    ? 5
+                    : dropdownValue == 'last-6-months'
+                        ? 30
+                        : 60,
             getTitlesWidget: bottomTitlesWidget,
           ),
         ),
@@ -618,51 +657,53 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       );
 
-  LineTouchData _buildLineTouchData() => LineTouchData(
-        touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: AppColors.defaultBlueGray100,
-          tooltipRoundedRadius: 16.0,
-          getTooltipItems: (List<LineBarSpot> touchedSpots) {
-            return touchedSpots.map((barSpot) {
-              final yValue = barSpot.y;
-              final xValue = barSpot.x;
-              final formattedYValue =
-                  NumberFormat.currency(symbol: '\$').format(yValue);
-              final formattedDate = DateFormat('MMM dd')
-                  .format(DateTime.now()); // Adjust as needed
+  LineTouchData _buildLineTouchData() =>  LineTouchData(
+      touchTooltipData: LineTouchTooltipData(
+      tooltipBgColor: AppColors.defaultBlueGray100,
+      tooltipRoundedRadius: 16.0,
+      getTooltipItems: (List<LineBarSpot> touchedSpots) => touchedSpots.map((barSpot) {
+          final yValue = barSpot.y;
+          final xValue = barSpot.x;
+          final formattedYValue = NumberFormat.currency(symbol: '\$').format(yValue);
 
-              return LineTooltipItem(
-                '$formattedYValue\n$formattedDate',
-                const TextStyle(
+          DateTime dateTime = _calculateDateTimeFromXValue(xValue);
+          final formattedDate = DateFormat('MMM dd').format(dateTime);
+
+          return LineTooltipItem(
+              '$formattedYValue\n$formattedDate',
+              const TextStyle(
                   color: AppColors.defaultBlue300,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Titillium Web',
                   fontSize: 16,
-                ),
-              );
-            }).toList();
-          },
-        ),
-      );
+              ),
+          );
+      }).toList(),
+    ),
+  );
+
 
   Widget bottomTitlesWidget(double value, TitleMeta meta) {
-    String text = '';
+    DateTime dateTime = _calculateDateTimeFromXValue(value);
+    String text;
+
     switch (dropdownValue) {
       case 'last-week':
-        text = timeline.getLastWeekDayLabel().first;
+        text = DateFormat('EEE').format(dateTime); // e.g., Mon, Tue
         break;
       case 'last-month':
-        text = timeline.getLastMonthDayLabel().first;
+        text = DateFormat('MMM dd').format(dateTime); // e.g., Sep 01
         break;
       case 'last-6-months':
-        text = timeline.getLastSixMonthsLabel().first;
+        text = DateFormat('MMM').format(dateTime); // e.g., Apr
         break;
       case 'last-year':
-        text = timeline.getLastYearMonthLabel().first;
+        text = DateFormat('MMM').format(dateTime); // e.g., Jan, Feb
         break;
       default:
         text = '';
     }
+
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 3,
@@ -769,3 +810,4 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 }
+
