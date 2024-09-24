@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class InitialFaceIdPage extends StatefulWidget {
   const InitialFaceIdPage({super.key});

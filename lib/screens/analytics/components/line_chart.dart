@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/analytics_utilities.dart';
 
 /// A widget that displays the line chart section in the Analytics page.

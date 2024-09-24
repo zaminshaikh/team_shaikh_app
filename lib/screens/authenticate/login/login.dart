@@ -12,7 +12,7 @@ import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
