@@ -11,7 +11,16 @@ class TotalAssetsSection extends StatelessWidget {
   const TotalAssetsSection({Key? key, required this.client}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Stack(
+  Widget build(BuildContext context) {
+    double totalAssets = client.assets?.totalAssets ?? 0;
+
+    // Check if connectedUsers is not null before iterating
+    if (client.connectedUsers != null) {
+      for (var user in client.connectedUsers!) {
+        totalAssets += user?.assets?.totalAssets ?? 0;
+      }
+    }
+    return Stack(
         children: [
           Container(
             width: 400,
@@ -49,7 +58,7 @@ class TotalAssetsSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      currencyFormat(client.assets?.totalAssets ?? 0),
+                      currencyFormat(totalAssets),
                       style: const TextStyle(
                         fontSize: 35,
                         fontWeight: FontWeight.w600,
@@ -162,4 +171,5 @@ class TotalAssetsSection extends StatelessWidget {
           ),
         ],
       );
+    }
 }
