@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/screens/profile/components/authentication.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/pages/disclaimer.dart';
@@ -200,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfilesPage()),
+                  MaterialPageRoute(builder: (context) => const AuthenticationPage()),
                 );
               },
             ),

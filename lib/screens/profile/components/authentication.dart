@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:team_shaikh_app/database.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/database/database.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 
 class AuthenticationPage extends StatefulWidget {
   const AuthenticationPage({Key? key}) : super(key: key);
@@ -23,6 +23,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
 
   String? cid;
   String? selectedTimeOption;
+
+  bool _isAppLockEnabled = false;
 
   @override
   void initState() {
@@ -48,24 +50,13 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   Widget build(BuildContext context) => FutureBuilder(
       future: _initializeWidgetFuture, // Initialize the database service
       builder: (context, snapshot) {
-        return StreamBuilder<UserWithAssets>(
-          stream: _databaseService?.getUserWithAssets,
-          builder: (context, userSnapshot) {
-            return StreamBuilder<List<UserWithAssets>>(
-              stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
-              builder: (context, connectedUsersSnapshot) {
-                return buildAuthenticationPage(context, userSnapshot, connectedUsersSnapshot);
-              }
-            );
-          }
-        );
+            return buildAuthenticationPage(context);
       }
     );
 
   Scaffold buildAuthenticationPage(
     BuildContext context,
-    AsyncSnapshot<UserWithAssets> userSnapshot,
-    AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
+  ) {
     return Scaffold(
       body: Stack(
         children: [
@@ -78,7 +69,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                   delegate: SliverChildListDelegate(
                     [
                       _buildLockFeatureInfo(),
-                      _buildSampleCupertinoListSection(),
+                      if (_isAppLockEnabled) 
+                        _buildSampleCupertinoListSection(),
                     ],
                   ),
                 ),
@@ -133,31 +125,41 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0),
           child: Row(
-            children: [
-              SvgPicture.asset(
-                'assets/icons/face_id.svg',
-                color: Colors.white,
-                height: 40,
-                width: 40,
+                children: [
+                  SvgPicture.asset(
+                    'assets/icons/face_id.svg',
+                    color: Colors.white,
+                    height: 40,
+                    width: 40,
+                  ),
+                  const SizedBox(width: 15),
+                  Text(
+                    'App Lock',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Titillium Web',
+                    ),
+                  ),
+                  const Spacer(),
+                  CupertinoSwitch(
+                    value: _isAppLockEnabled,
+                    onChanged: (bool value) {
+                      setState(() {
+                        _isAppLockEnabled = value;
+                      });
+                    },
+                    activeColor: AppColors.defaultBlue300, // Set the active color
+                  )
+                ],
               ),
-              const SizedBox(width: 15),
-              Text(
-                'App Lock',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
         const SizedBox(height: 20),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0),
           child: Text(
-            'Each time you exit the app, a passcode or biometric authentication such as Face ID will be required to re-enter.'
+            'Each time you exit the app, a passcode or biometric authentication such as Face ID will be required to re-enter. '
             'To reduce how often you are prompted, you can set a timer below. '
             'Choose how much time should pass before a passcode or biometric authentication is requested again.',
             style: TextStyle(

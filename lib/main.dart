@@ -1,3 +1,4 @@
+import 'dart:async'; // Import the Timer class
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -68,6 +69,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   AuthState? appState;
   late final Stream<Client?> clientStream;
   String? selectedTimeOption;
+  double selectedTimeInMinutes = 1.0; // Default value
+  Timer? _inactivityTimer;
 
   @override
   void initState() {
@@ -82,13 +85,27 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
+      selectedTimeInMinutes = _parseTimeOption(selectedTimeOption!);
+      print('Loaded selected time option: $selectedTimeOption');
+      print('Parsed time in minutes: $selectedTimeInMinutes');
     });
-    print('Loaded selected time option: $selectedTimeOption');
+  }
+
+  double _parseTimeOption(String timeOption) {
+    final timeParts = timeOption.split(' ');
+    if (timeParts.length == 2) {
+      final timeValue = double.tryParse(timeParts[0]);
+      if (timeValue != null) {
+        return timeValue;
+      }
+    }
+    return 1.0; // Default to 1 minute if parsing fails
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _inactivityTimer?.cancel();
     super.dispose();
   }
 
@@ -108,38 +125,38 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Update the lifecycle state
     final appState = Provider.of<AuthState>(context, listen: false);
 
-    if ((state == AppLifecycleState.paused ||
-            state == AppLifecycleState.inactive ||
-            state == AppLifecycleState.hidden) &&
-        !appState.hasNavigatedToFaceIDPage &&
-        isAuthenticated() &&
-        (appState.initiallyAuthenticated) &&
-        (selectedTimeOption != null)) {
-      // Check if the user was initially authenticated and the selected time option is set
-
-      appState.setHasNavigatedToFaceIDPage(true);
-      navigatorKey.currentState?.pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const FaceIdPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              child,
-        ),
-      );
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      // Start the timer when the app goes inactive
+      _inactivityTimer?.cancel();
+      print('Inactivity timer started');
+      _inactivityTimer = Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
+        if (!appState.hasNavigatedToFaceIDPage &&
+            isAuthenticated() &&
+            appState.initiallyAuthenticated &&
+            selectedTimeOption != null) {
+          appState.setHasNavigatedToFaceIDPage(true);
+          navigatorKey.currentState?.pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const FaceIdPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child,
+            ),
+          );
+        }
+      });
     } else {
-      if (appState.hasNavigatedToFaceIDPage) {}
-      if (!isAuthenticated()) {}
-      if (!appState.initiallyAuthenticated) {}
+      // Cancel the timer if the app becomes active again
+      _inactivityTimer?.cancel();
+    }
 
-      if (appState.justAuthenticated) {
-        appState.setHasNavigatedToFaceIDPage(false);
-        appState.setJustAuthenticated(false);
-      }
-      if (appState.hasNavigatedToFaceIDPage) {
-      } else {}
+    if (appState.justAuthenticated) {
+      appState.setHasNavigatedToFaceIDPage(false);
+      appState.setJustAuthenticated(false);
     }
   }
 
