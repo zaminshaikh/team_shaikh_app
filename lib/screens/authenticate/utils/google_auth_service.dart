@@ -1,7 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart'; // For Navigator
@@ -50,16 +53,6 @@ class GoogleAuthService {
           debugPrint(
               'GoogleAuthService: UID does not exist in Firestore. Deleting UID and redirecting to login.');
 
-          try {
-            // Delete the UID from Firestore
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .delete();
-          } catch (e) {
-            debugPrint('Error deleting UID from Firestore: $e');
-          }
-
           showAlert = true;
           await showGoogleFailAlert(context);
           await Navigator.pushReplacement(
@@ -79,6 +72,22 @@ class GoogleAuthService {
         return null;
       }
 
+      DatabaseService? db =
+          await DatabaseService.fetchCID(user.uid);
+      String? token = await FirebaseMessaging.instance.getToken();
+      
+      if (token != null && db != null) {
+        try {
+          List<dynamic> tokens = (await db.getField('tokens') ?? []);
+
+          if (!tokens.contains(token)) {
+            tokens = [...tokens, token];
+            await db.updateField('tokens', tokens);
+          }
+        } catch (e) {
+          log('login.dart: Error fetching tokens: $e');
+        }
+      }
       // Navigate to Dashboard
       await Navigator.pushReplacement(
         context,

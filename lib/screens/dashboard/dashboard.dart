@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/components/assets_structure_section.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/dashboard_app_bar.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/total_assets_section.dart';

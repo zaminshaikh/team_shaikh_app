@@ -12,7 +12,7 @@ import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'services/firebase_options.dart';
+import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/authenticate/create_account.dart';
 import 'screens/authenticate/login/login.dart';
@@ -20,8 +20,8 @@ import 'screens/authenticate/login/forgot_password.dart';
 import 'screens/dashboard/dashboard.dart';
 import 'dart:developer';
 import 'package:team_shaikh_app/utils/utilities.dart';
-import 'package:team_shaikh_app/screens/authenticate/faceid.dart';
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/faceid.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:provider/provider.dart';
 
 void main() async {

@@ -9,9 +9,9 @@ import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 
 class LogoutButton extends StatefulWidget {
-  final Client? client;
+  final Client client;
 
-  const LogoutButton({Key? key, this.client}) : super(key: key);
+  const LogoutButton({Key? key, required this.client}) : super(key: key);
 
   @override
   _LogoutButtonState createState() => _LogoutButtonState();
@@ -26,7 +26,7 @@ class _LogoutButtonState extends State<LogoutButton> {
             GestureDetector(
               onTap: () async {
                 DatabaseService? db = await DatabaseService.withCID(
-                    FirebaseAuth.instance.currentUser!.uid, widget.client?.cid);
+                    FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
                 List<dynamic>? tokens =
                     await db.getField('tokens') as List<dynamic>? ?? [];
                 // Get the current token

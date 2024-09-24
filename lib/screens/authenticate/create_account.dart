@@ -1,17 +1,18 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/services/google_auth_service.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:flutter/services.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 
@@ -221,6 +222,27 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     // Link the UID to CID
                     await db.linkNewUser(user.email!);
                     log('create_account.dart: User $uid connected to Client ID $_cid');
+
+                     String? token = await FirebaseMessaging.instance.getToken();
+                    if (token != null) {
+                      // Fetch CID using async constructor
+                      DatabaseService? db =
+                          await DatabaseService.fetchCID(user.uid);
+
+                      if (db != null) {
+                        try {
+                          List<dynamic> tokens =
+                              (await db.getField('tokens') ?? []);
+
+                          if (!tokens.contains(token)) {
+                            tokens = [...tokens, token];
+                            await db.updateField('tokens', tokens);
+                          }
+                        } catch (e) {
+                          log('login.dart: Error fetching tokens: $e');
+                        }
+                      }
+                    }
 
                     if (!mounted) {
                       return;

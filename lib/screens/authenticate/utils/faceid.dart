@@ -6,7 +6,7 @@ import 'package:team_shaikh_app/main.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:async';
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:provider/provider.dart';
 
 class FaceIdPage extends StatefulWidget {

@@ -8,13 +8,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:team_shaikh_app/services/google_auth_service.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 
 // Creating a stateful widget for the Login page

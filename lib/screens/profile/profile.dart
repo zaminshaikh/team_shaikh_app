@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     [
                       _buildClientNameAndID(),
                       _buildCupertinoListSection(),
-                      const LogoutButton(),
+                      LogoutButton(client: client!,),
                       _buildDisclaimer(),
                       const SizedBox(height: 120),
                     ],
