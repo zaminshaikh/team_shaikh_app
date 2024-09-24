@@ -7,5 +7,6 @@
     "ASSETS_GENERAL_DOC_ID": "general",
     "ASSETS_AGQ_DOC_ID": "agq",
     "ASSETS_AK1_DOC_ID": "ak1",
-    "NUM_ASSETS_PER_FUND": 7
+    "NUM_ASSETS_PER_FUND": 7,
+    "DOCUMENTS_PATH": "testUsersStatements"
 }
