@@ -17,6 +17,17 @@ class AssetsStructureSection extends StatelessWidget {
     double totalAK1 = client.assets?.funds['ak1']?.total ?? 0;
     double totalAssets = client.assets?.totalAssets ?? 0;
 
+    // Include connected users' total assets
+    if (client.connectedUsers != null) {
+      for (var user in client.connectedUsers!) {
+        if (user != null) {
+          totalAGQ += user.assets?.funds['agq']?.total ?? 0;
+          totalAK1 += user.assets?.funds['ak1']?.total ?? 0;
+          totalAssets += user.assets?.totalAssets ?? 0;
+        }
+      }
+    }
+
     double percentageAGQ = totalAGQ / totalAssets * 100;
     double percentageAK1 = totalAK1 / totalAssets * 100;
 
@@ -91,7 +102,7 @@ class AssetsStructureSection extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        currencyFormat(client.assets?.totalAssets ?? 0),
+                        currencyFormat(totalAssets),
                         style: const TextStyle(
                           fontSize: 22,
                           color: Colors.white,
