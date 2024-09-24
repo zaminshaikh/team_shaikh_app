@@ -55,6 +55,7 @@ dependencies:
   mime: ^1.0.0
   path_provider: ^2.1.2
   provider: ^6.0.3
+  rxdart: ^0.28.0
   share_plus: ^7.2.2
   shared_preferences: ^2.2.3
   url_launcher: ^6.3.0
