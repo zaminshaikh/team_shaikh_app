@@ -1,7 +1,7 @@
 // mark_all_as_read_button.dart
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/database/newdb.dart';
+import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/resources.dart'; // Update with the correct import path
 
 class MarkAllAsReadButton extends StatelessWidget {
@@ -31,7 +31,8 @@ class MarkAllAsReadButton extends StatelessWidget {
             padding: const EdgeInsets.all(16.0), // Adjust padding as needed
             child: ElevatedButton(
               onPressed: () async {
-                await NewDB.withCID(client.uid, client.cid).markAllNotificationsAsRead();
+                await DatabaseService.withCID(client.uid, client.cid)
+                    .markAllNotificationsAsRead();
                 onRefresh();
               },
               style: ElevatedButton.styleFrom(
@@ -39,7 +40,8 @@ class MarkAllAsReadButton extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding to the button
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0), // Add padding to the button
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min, // Add this

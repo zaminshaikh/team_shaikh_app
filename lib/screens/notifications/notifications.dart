@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
-import 'package:team_shaikh_app/database/newdb.dart';
+import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';

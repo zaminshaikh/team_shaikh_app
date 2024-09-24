@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
@@ -8,7 +9,7 @@ import 'package:team_shaikh_app/database/models/client_model.dart';
 import '../utilities.dart';
 import 'package:rxdart/rxdart.dart';
 
-class NewDB {
+class DatabaseService {
   String? cid;
   String? uid;
   bool isConnectedUser = false;
@@ -20,16 +21,16 @@ class NewDB {
   CollectionReference? graphPointsSubCollection;
   List<dynamic>? connectedUsersCIDs;
 
-  NewDB(this.uid);
-  NewDB.connectedUser(this.cid) {
+  DatabaseService(this.uid);
+  DatabaseService.connectedUser(this.cid) {
     setSubCollections(this);
     isConnectedUser = true;
   }
-  NewDB.withCID(this.uid, this.cid);
+  DatabaseService.withCID(this.uid, this.cid);
 
   // Asynchronous factory constructor
-  static Future<NewDB?> fetchCID(String uid) async {
-    NewDB service = NewDB(uid);
+  static Future<DatabaseService?> fetchCID(String uid) async {
+    DatabaseService db = DatabaseService(uid);
 
     // Access Firestore and get the document
     QuerySnapshot querySnapshot =
@@ -40,40 +41,40 @@ class NewDB {
 
       // Document found, access the 'cid' field
       QueryDocumentSnapshot snapshot = querySnapshot.docs.first;
-      service.cid = snapshot.id;
+      db.cid = snapshot.id;
 
       // Cast snapshot.data() to Map<String, dynamic>
       Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
 
       // Check if 'connectedUsers' field exists before trying to access it
       if (data.containsKey('connectedUsers')) {
-        service.connectedUsersCIDs = data['connectedUsers'] ?? [];
+        db.connectedUsersCIDs = data['connectedUsers'] ?? [];
       } else {
         log('database.dart: Field "connectedUsers" does not exist in document.');
-        service.connectedUsersCIDs = []; // Or handle this case as needed
+        db.connectedUsersCIDs = []; // Or handle this case as needed
       }
 
-      setSubCollections(service);
+      setSubCollections(db);
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
       return null;
     }
 
-    return service;
+    return db;
   }
 
-  static void setSubCollections(NewDB service) {
-    service.assetsSubCollection = usersCollection
-        .doc(service.cid)
+  static void setSubCollections(DatabaseService db) {
+    db.assetsSubCollection = usersCollection
+        .doc(db.cid)
         .collection(Config.get('ASSETS_SUBCOLLECTION'));
-    service.graphPointsSubCollection = service.assetsSubCollection
+    db.graphPointsSubCollection = db.assetsSubCollection
         ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
         .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
-    service.activitiesSubCollection = usersCollection
-        .doc(service.cid)
+    db.activitiesSubCollection = usersCollection
+        .doc(db.cid)
         .collection(Config.get('ACTIVITIES_SUBCOLLECTION'));
-    service.notificationsSubCollection = usersCollection
-        .doc(service.cid)
+    db.notificationsSubCollection = usersCollection
+        .doc(db.cid)
         .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
   }
 
@@ -94,7 +95,7 @@ class NewDB {
           connectedUsersCIDs!.isNotEmpty) {
         connectedUsersStream =
             Rx.combineLatestList(connectedUsersCIDs!.map((cid) {
-          NewDB db = NewDB.connectedUser(cid);
+          DatabaseService db = DatabaseService.connectedUser(cid);
           return db.getClientStream().asBroadcastStream();
         }).toList())
                 .asBroadcastStream();
@@ -130,8 +131,7 @@ class NewDB {
       // Stream for the notifications subcollection
       Stream<List<Notif?>> notificationsStream = notificationsSubCollection!
           .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) {
+          .map((snapshot) => snapshot.docs.map((doc) {
                 try {
                   return Notif.fromMap(<String, dynamic>{
                     ...doc.data() as Map<String, dynamic>,
@@ -142,22 +142,19 @@ class NewDB {
                   log('database.dart: Error creating Notif from map: $e');
                   return null;
                 }
-              })
-              .toList());
+              }).toList());
 
       // Stream for the graphPoints subcollection
       Stream<List<GraphPoint?>> graphPointsStream = graphPointsSubCollection!
           .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) {
+          .map((snapshot) => snapshot.docs.map((doc) {
                 try {
                   return GraphPoint.fromMap(doc.data() as Map<String, dynamic>);
                 } catch (e) {
                   log('database.dart: Error creating GraphPoint from map: $e');
                   return null;
                 }
-              })
-              .toList());
+              }).toList());
 
       return Rx.combineLatest6(
           clientDocumentStream,
@@ -193,14 +190,13 @@ class NewDB {
           connectedUsers: connectedUsers.whereType<Client>().toList(),
         );
       });
-      
     } catch (e) {
       log('database.dart: Error in getClientStream: $e');
       return Stream.value(null);
     }
   }
 
-    /// Returns a field from the user document.
+  /// Returns a field from the user document.
   ///
   /// Parameters:
   /// - [uid]: The ID of the user.
@@ -227,7 +223,7 @@ class NewDB {
     }
   }
 
-    /// Updates a field in the user document.
+  /// Updates a field in the user document.
   ///
   /// Parameters:
   /// - [fieldName]: The name of the field to update.
@@ -253,9 +249,10 @@ class NewDB {
     if (notificationsSubCollection == null) {
       log('notificationsSubCollection is null, try checking the path.');
       return false;
-    } 
+    }
     try {
-      DocumentReference docRef = notificationsSubCollection!.doc(notificationId);
+      DocumentReference docRef =
+          notificationsSubCollection!.doc(notificationId);
 
       DocumentSnapshot docSnap = await docRef.get();
 
@@ -270,44 +267,157 @@ class NewDB {
   }
 
   Future<bool> markAllNotificationsAsRead() async {
-      if (cid == null) {
-        log('CID is null');
-        return false;
-      } else if (notificationsSubCollection == null) {
-        setSubCollections(this);
-      }
-      if (notificationsSubCollection == null) {
-        log('notificationsSubCollection is null, try checking the path.');
-        return false;
-      }
-      try {
-        DocumentSnapshot clientSnapshot = await usersCollection.doc(cid).get();
-        QuerySnapshot querySnapshot = await notificationsSubCollection!.get();
-
-        List<Future> futures = [];
-
-        if (querySnapshot.size > 0) {
-          for (DocumentSnapshot doc in querySnapshot.docs) {
-            futures.add(doc.reference.update({'isRead': true}));
-          }
-        }
-
-        Map<String, dynamic>? clientData =
-            clientSnapshot.data() as Map<String, dynamic>?;
-        if (clientData != null && clientData['connectedUsers'] != null) {
-          for (String connectedCid in clientData['connectedUsers']) {
-            futures.add(
-                NewDB.withCID('', connectedCid).markAllNotificationsAsRead());
-          }
-        }
-
-        await Future.wait(futures);
-        return true;
-      } catch (e) {
-        log('Error updating notifications: $e');
-      }
+    if (cid == null) {
+      log('CID is null');
+      return false;
+    } else if (notificationsSubCollection == null) {
+      setSubCollections(this);
+    }
+    if (notificationsSubCollection == null) {
+      log('notificationsSubCollection is null, try checking the path.');
       return false;
     }
+    try {
+      DocumentSnapshot clientSnapshot = await usersCollection.doc(cid).get();
+      QuerySnapshot querySnapshot = await notificationsSubCollection!.get();
 
-  
+      List<Future> futures = [];
+
+      if (querySnapshot.size > 0) {
+        for (DocumentSnapshot doc in querySnapshot.docs) {
+          futures.add(doc.reference.update({'isRead': true}));
+        }
+      }
+
+      Map<String, dynamic>? clientData =
+          clientSnapshot.data() as Map<String, dynamic>?;
+      if (clientData != null && clientData['connectedUsers'] != null) {
+        for (String connectedCid in clientData['connectedUsers']) {
+          futures.add(DatabaseService.withCID('', connectedCid)
+              .markAllNotificationsAsRead());
+        }
+      }
+
+      await Future.wait(futures);
+      return true;
+    } catch (e) {
+      log('Error updating notifications: $e');
+    }
+    return false;
+  }
+
+  /// Links a new user to the database using the provided email.
+  ///
+  /// This method fetches the existing data for the user with the given [cid] (Client ID) from the database.
+  /// Each [cid] corresponds to a document in the 'users' collection in the database.
+  /// If the user already exists (determined by the presence of a [uid] in the existing data), an exception is thrown.
+  /// Otherwise, the method updates the existing data with the new user's [uid] and [email] and sets the document in the database with the updated data.
+  ///
+  /// Throws a [FirebaseException] if:
+  /// - **No document found**
+  ///   - The document does not exist for the given [cid]
+  /// - **User already exists**
+  ///   - The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid]
+  ///
+  /// Catches any other unhandled exceptions and logs an error message.
+  ///
+  /// Parameters:
+  /// - [email]: The email of the new user to be linked to the database.
+  ///
+  /// Usage:
+  /// ```dart
+  /// try {
+  ///   DatabaseService db = new DatabaseService(cid, uid);
+  ///   await db.linkUserToDatabase(email, cid);
+  ///   log('database.dart: User linked to database successfully.');
+  /// } catch (e) {
+  ///   log('database.dart: Error linking user to database: $e');
+  /// }
+  /// ```
+  ///
+  /// Returns a [Future] that completes when the document is successfully set in the database.
+  Future linkNewUser(String email) async {
+    try {
+      // Fetch existing data
+      DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
+
+      // Check if the document exists
+      if (userSnapshot.exists) {
+        // Get existing data
+        Map<String, dynamic> existingData =
+            userSnapshot.data() as Map<String, dynamic>;
+
+        // If the document we pulled has a UID, then the user already exists
+        if (existingData['uid'] != '') {
+          throw FirebaseAuthException(
+              code: 'user-already-exists',
+              message: 'User already exists for cid: $cid');
+        }
+        // Update new fields and keep old ones from snapshot
+        Map<String, dynamic> updatedData = {
+          ...existingData,
+          'uid': uid,
+          'email': email,
+          'appEmail': email,
+        };
+
+        // Set the document with the updated data
+        await usersCollection.doc(cid).set(updatedData);
+
+        log('database.dart: User $uid has been linked with document $cid in Firestore');
+
+        return;
+      } else {
+        throw FirebaseAuthException(
+            code: 'document-not-found',
+            message: 'Document does not exist for cid: $cid');
+      }
+      // This throws the exception to the calling method
+    } on FirebaseAuthException catch (e) {
+      // Handle FirebaseAuth exceptions
+      log('database.dart: FirebaseAuthException: $e');
+      rethrow; // Rethrow to propagate the exception to the caller
+    } on FirebaseException catch (e) {
+      // Handle Firebase exceptions
+      log('database.dart: FirebaseException: $e');
+      rethrow; // Rethrow to propagate the exception to the caller
+    } catch (e) {
+      // Catch any other exceptions
+      log('database.dart: Error creating/updating: $e',
+          stackTrace: StackTrace.current);
+      rethrow; // Rethrow to propagate the exception to the caller
+    }
+  }
+
+  /// Returns a stream of [DocumentSnapshot] containing a single user document.
+  ///
+  /// This stream will emit a new [DocumentSnapshot] whenever the user document is updated.
+  Stream<DocumentSnapshot> get getUser => usersCollection.doc(cid).snapshots();
+
+  /// Checks if a document with the given [cid] exists in the users collection.
+  /// Returns a [Future] that completes with a boolean value indicating whether the document exists or not.
+  ///
+  /// Parameters:
+  /// - [cid]: The ID of the document to check.
+  ///
+  /// Returns:
+  /// - A [Future] that completes with a boolean value indicating whether the document exists or not.
+  Future<bool> docExists(String cid) async {
+    DocumentSnapshot doc = await usersCollection.doc(cid).get();
+    return doc.exists;
+  }
+
+  /// Checks if a document with the given [cid] is linked to a user.
+  /// Returns a [Future] that completes with a boolean value indicating whether the document is linked or not.
+  ///
+  /// Parameters:
+  /// - [cid]: The ID of the document to check.
+  ///
+  /// Returns:
+  /// - A [Future] that completes with a boolean value indicating whether the document is linked or not.
+  Future<bool> docLinked(String cid) async {
+    DocumentSnapshot doc = await usersCollection.doc(cid).get();
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return data['uid'] != '';
+  }
 }

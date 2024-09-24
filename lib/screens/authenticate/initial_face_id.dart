@@ -10,7 +10,7 @@ import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/database/newdb.dart';
+import 'package:team_shaikh_app/database/database.dart';
 
 class InitialFaceIdPage extends StatefulWidget {
   const InitialFaceIdPage({super.key});

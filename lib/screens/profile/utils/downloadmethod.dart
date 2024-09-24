@@ -7,10 +7,6 @@ import 'dart:io';
 import 'package:team_shaikh_app/database.dart';
 import 'package:http/http.dart' as http;
 
-DatabaseService _databaseService = DatabaseService(FirebaseAuth.instance.currentUser!.uid);
-
-String clientId = _databaseService.cid ?? ''; 
-String documentName = ''; 
 
 void downloadToFiles(String documentName) async {
   Directory downloadDir = await getApplicationDocumentsDirectory();

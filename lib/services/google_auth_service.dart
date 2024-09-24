@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart'; // For Navigator
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
@@ -20,14 +21,16 @@ class GoogleAuthService {
     debugPrint('GoogleAuthService: Starting Google sign-in process.');
 
     try {
-      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
       if (googleSignInAccount == null) {
         debugPrint('GoogleAuthService: Google sign-in aborted by user.');
         return null;
       }
       debugPrint('GoogleAuthService: Google sign-in successful.');
 
-      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
       debugPrint('GoogleAuthService: Google authentication obtained.');
 
       final credential = GoogleAuthProvider.credential(
@@ -36,19 +39,24 @@ class GoogleAuthService {
       );
       debugPrint('GoogleAuthService: Firebase credential created.');
 
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
       debugPrint('GoogleAuthService: Firebase sign-in successful.');
 
       // Check if the uid exists in Firestore
       final User? user = userCredential.user;
       if (user != null) {
-        final DatabaseService? service = await DatabaseService.fetchCID(context, user.uid, 1);
-        if (service == null) {
-          debugPrint('GoogleAuthService: UID does not exist in Firestore. Deleting UID and redirecting to login.');
+        final DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+        if (db == null) {
+          debugPrint(
+              'GoogleAuthService: UID does not exist in Firestore. Deleting UID and redirecting to login.');
 
           try {
             // Delete the UID from Firestore
-            await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .delete();
           } catch (e) {
             debugPrint('Error deleting UID from Firestore: $e');
           }
@@ -62,7 +70,8 @@ class GoogleAuthService {
           return null;
         }
       } else {
-        debugPrint('GoogleAuthService: User UID is null. Redirecting to login.');
+        debugPrint(
+            'GoogleAuthService: User UID is null. Redirecting to login.');
         showAlert = true;
         await Navigator.pushReplacement(
           context,
@@ -85,45 +94,40 @@ class GoogleAuthService {
   }
 
   Future<bool> showGoogleFailAlert(context) async {
-  if (showAlert) {
-    await CustomAlertDialog.showAlertDialog(
-      context,
-      'Google Sign-In Failed',
-      'The Gmail Account you tried to sign in with has not been registered with the app yet. Please try again or sign in with your email and password.',
-      icon: const Icon(
-        FontAwesomeIcons.google,
-        color: Colors.blue,
-      )
-    );
-    return false;
+    if (showAlert) {
+      await CustomAlertDialog.showAlertDialog(context, 'Google Sign-In Failed',
+          'The Gmail Account you tried to sign in with has not been registered with the app yet. Please try again or sign in with your email and password.',
+          icon: const Icon(
+            FontAwesomeIcons.google,
+            color: Colors.blue,
+          ));
+      return false;
+    }
+    return true;
   }
-  return true;
-}
 
   Future<bool> wrongCIDFailAlert(context) async {
-  if (showAlert) {
-    await CustomAlertDialog.showAlertDialog(
-      context,
-      'Google Sign-Up Failed',
-      'The CID you entered does not exist. Please try again with a valid CID.',
-      icon: const Icon(
-        FontAwesomeIcons.google,
-        color: Colors.blue,
-      )
-    );
-    return false;
+    if (showAlert) {
+      await CustomAlertDialog.showAlertDialog(context, 'Google Sign-Up Failed',
+          'The CID you entered does not exist. Please try again with a valid CID.',
+          icon: const Icon(
+            FontAwesomeIcons.google,
+            color: Colors.blue,
+          ));
+      return false;
+    }
+    return true;
   }
-  return true;
-}
 
-
-  Future<UserCredential?> signUpWithGoogle(BuildContext context, String cid) async {
+  Future<UserCredential?> signUpWithGoogle(
+      BuildContext context, String cid) async {
     // Log the start of the Google sign-up process
     debugPrint('GoogleAuthService: Starting Google sign-up process.');
-  
+
     try {
       // Attempt to sign in with Google
-      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
       if (googleSignInAccount == null) {
         // If the user aborts the sign-in process, log it and return null
         debugPrint('GoogleAuthService: Google sign-up aborted by user.');
@@ -131,12 +135,13 @@ class GoogleAuthService {
       }
       // Log successful Google sign-in
       debugPrint('GoogleAuthService: Google sign-up successful.');
-  
+
       // Obtain Google authentication details
-      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
       // Log that Google authentication details have been obtained
       debugPrint('GoogleAuthService: Google authentication obtained.');
-  
+
       // Create a credential for Firebase authentication using the Google authentication details
       final credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
@@ -144,44 +149,46 @@ class GoogleAuthService {
       );
       // Log that the Firebase credential has been created
       debugPrint('GoogleAuthService: Firebase credential created.');
-  
+
       // Sign in to Firebase with the Google credential
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
       // Log successful Firebase sign-in
       debugPrint('GoogleAuthService: Firebase sign-up successful.');
-  
+
       // Get the user from the user credential
       final User? user = userCredential.user;
       if (user != null) {
         // Log the user's UID
         debugPrint('GoogleAuthService: User UID: ${user.uid}');
         // Check if the user exists in Firestore by fetching the CID
-        final DatabaseService service = DatabaseService.withCID(user.uid, cid);
-          // If the user does not exist in Firestore, log it and create a new user
+        final DatabaseService db = DatabaseService.withCID(user.uid, cid);
+        // If the user does not exist in Firestore, log it and create a new user
 
-  
-          try {
-            // Add the new user to Firestore with the provided CID
-            debugPrint('cid: $cid');
-            await service.linkNewUser(user.email!);
+        try {
+          // Add the new user to Firestore with the provided CID
+          debugPrint('cid: $cid');
+          await db.linkNewUser(user.email!);
 
-            // Retrieve the newly created user document
-            DocumentSnapshot newUserDoc = await FirebaseFirestore.instance.collection('testUsers').doc(cid).get();
+          // Retrieve the newly created user document
+          DocumentSnapshot newUserDoc = await FirebaseFirestore.instance
+              .collection('testUsers')
+              .doc(cid)
+              .get();
 
-            // Print the new user's details
-            debugPrint('New user created: ${newUserDoc.data()}');
-
-          } catch (e) {
-            // If there is an error adding the new user to Firestore, log the error and show an alert
-            debugPrint('Error adding new user to Firestore: $e');
-            showAlert = true;
-            await wrongCIDFailAlert(context);
-            return null;
-          }
-
+          // Print the new user's details
+          debugPrint('New user created: ${newUserDoc.data()}');
+        } catch (e) {
+          // If there is an error adding the new user to Firestore, log the error and show an alert
+          debugPrint('Error adding new user to Firestore: $e');
+          showAlert = true;
+          await wrongCIDFailAlert(context);
+          return null;
+        }
       } else {
         // If the user UID is null, log it and redirect to the login page
-        debugPrint('GoogleAuthService: User UID is null. Redirecting to login.');
+        debugPrint(
+            'GoogleAuthService: User UID is null. Redirecting to login.');
         showAlert = true;
         await Navigator.pushReplacement(
           context,
@@ -189,16 +196,18 @@ class GoogleAuthService {
         );
         return null;
       }
-  
+
       // Navigate to the Dashboard page
       await Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const DashboardPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              child,
         ),
       );
-  
+
       // Return the user credential
       return userCredential;
     } catch (e) {
@@ -206,8 +215,8 @@ class GoogleAuthService {
       debugPrint('GoogleAuthService: Error during Google sign-up: $e');
       rethrow;
     }
-  }  
-  
+  }
+
   Future<void> signOut() async {
     debugPrint('GoogleAuthService: Starting sign-out process.');
 
@@ -222,5 +231,4 @@ class GoogleAuthService {
       rethrow;
     }
   }
-
 }

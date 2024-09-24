@@ -9,8 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/profile/PDFPreview.dart';
-import 'package:team_shaikh_app/screens/profile/downloadmethod.dart';
+import 'package:team_shaikh_app/screens/profile/utils/PDFPreview.dart';
+import 'package:team_shaikh_app/screens/profile/utils/downloadmethod.dart';
 import 'package:team_shaikh_app/utilities.dart';
 
 class DocumentsPage extends StatefulWidget {

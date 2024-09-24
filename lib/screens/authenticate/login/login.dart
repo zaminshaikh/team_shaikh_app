@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/database.dart';
+import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
@@ -377,18 +378,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   context, '/login');
                             }
                             // Fetch CID using async constructor
-                            DatabaseService? service =
-                                await DatabaseService.fetchCID(
-                                    context, user!.uid, 1);
+                            DatabaseService? db =
+                                await DatabaseService.fetchCID(user!.uid);
 
-                            if (service != null) {
+                            if (db != null) {
                               try {
                                 List<dynamic> tokens =
-                                    (await service.getField('tokens') ?? []);
+                                    (await db.getField('tokens') ?? []);
 
                                 if (!tokens.contains(token)) {
                                   tokens = [...tokens, token];
-                                  await service.updateField('tokens', tokens);
+                                  await db.updateField('tokens', tokens);
                                 }
                               } catch (e) {
                                 log('login.dart: Error fetching tokens: $e');

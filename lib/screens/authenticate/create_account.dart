@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/resources.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
@@ -29,7 +30,7 @@ class CreateAccountPage extends StatefulWidget {
 class _CreateAccountPageState extends State<CreateAccountPage> {
   // Boolean to switch password visibility, init as true
   bool _hidePassword = true;
-  late DatabaseService _databaseService;
+  late DatabaseService db;
   late AuthState appState;
   bool _isButtonEnabled = false;
 
@@ -121,12 +122,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
       log('create_account.dart: UserCredential created: ${userCredential.user!.uid}. In buffer.');
 
-      // Create a new database service for our new user
-      _databaseService =
-          DatabaseService.withCID(userCredential.user!.uid, _cid);
+      // Create a new database db for our new user
+      db = DatabaseService.withCID(userCredential.user!.uid, _cid);
 
       // If the user inputs a CID that is not in the database or is already linked to a user, show an error dialog and return.
-      if (!(await _databaseService.docExists(_cid))) {
+      if (!(await db.docExists(_cid))) {
         if (!mounted) {
           return;
         }
@@ -135,7 +135,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         await FirebaseAuth.instance.currentUser?.delete();
         log('create_account.dart: No document for _cid: $_cid.');
         return;
-      } else if (await _databaseService.docLinked(_cid)) {
+      } else if (await db.docLinked(_cid)) {
         if (!mounted) {
           return;
         }
@@ -221,7 +221,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   if (user != null && user.emailVerified) {
                     String uid = user.uid;
                     // Link the UID to CID
-                    await _databaseService.linkNewUser(user.email!);
+                    await db.linkNewUser(user.email!);
                     log('create_account.dart: User $uid connected to Client ID $_cid');
 
                     if (!mounted) {

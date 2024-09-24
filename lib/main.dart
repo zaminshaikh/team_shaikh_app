@@ -12,7 +12,7 @@ import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
-import 'package:team_shaikh_app/database/newdb.dart';
+import 'package:team_shaikh_app/database/database.dart';
 import '/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/authenticate/create_account.dart';
@@ -31,8 +31,8 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await PushNotificationService().initialize();
   await Config.loadConfig();
-  
-    // Terminate Firestore to detach any active listeners
+
+  // Terminate Firestore to detach any active listeners
   await FirebaseFirestore.instance.terminate();
 
   // Clear persisted data
@@ -82,22 +82,21 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Stream<Client?> getClientStream() => FirebaseAuth.instance
-        .authStateChanges()
-        .asyncExpand((User? user) async* {
-      if (user == null) {
-        yield null;
-      } else {
-        NewDB? db = await NewDB.fetchCID(user.uid);
-        if (db == null) {
+  Stream<Client?> getClientStream() =>
+      FirebaseAuth.instance.authStateChanges().asyncExpand((User? user) async* {
+        if (user == null) {
           yield null;
         } else {
-          yield* db.getClientStream();
+          DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+          if (db == null) {
+            yield null;
+          } else {
+            yield* db.getClientStream();
+          }
         }
-      }
-    });
+      });
 
-   @override
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Update the lifecycle state
     final appState = Provider.of<AuthState>(context, listen: false);
@@ -140,131 +139,134 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) => StreamProvider<Client?>.value(
-      value: clientStream,
-      initialData: null,
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            boldText: false,
-            textScaler: const TextScaler.linear(1),
+        value: clientStream,
+        initialData: null,
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              boldText: false,
+              textScaler: const TextScaler.linear(1),
+            ),
+            child: child!,
           ),
-          child: child!,
-        ),
-        title: 'Team Shaikh Investments',
-        theme: ThemeData(
-          scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
-          textTheme: const TextTheme(
-            titleLarge: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-                fontWeight: FontWeight.bold),
-            titleMedium: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-                fontWeight: FontWeight.bold),
-            titleSmall: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-                fontWeight: FontWeight.bold),
-            labelLarge:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            labelMedium:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            labelSmall:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            displayLarge:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            displayMedium:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            displaySmall:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            headlineLarge: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-                fontWeight: FontWeight.bold),
-            headlineMedium: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-                fontWeight: FontWeight.bold),
-            headlineSmall: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Titillium Web',
-                fontWeight: FontWeight.bold),
-            bodyLarge:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            bodyMedium:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            bodySmall:
-                TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          title: 'Team Shaikh Investments',
+          theme: ThemeData(
+            scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
+            textTheme: const TextTheme(
+              titleLarge: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                  fontWeight: FontWeight.bold),
+              titleMedium: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                  fontWeight: FontWeight.bold),
+              titleSmall: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                  fontWeight: FontWeight.bold),
+              labelLarge:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              labelMedium:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              labelSmall:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              displayLarge:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              displayMedium:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              displaySmall:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              headlineLarge: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                  fontWeight: FontWeight.bold),
+              headlineMedium: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                  fontWeight: FontWeight.bold),
+              headlineSmall: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Titillium Web',
+                  fontWeight: FontWeight.bold),
+              bodyLarge:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              bodyMedium:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+              bodySmall:
+                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+            ),
           ),
+          home: const AuthCheck(),
+          routes: {
+            '/create_account': (context) => const CreateAccountPage(),
+            '/login': (context) => const LoginPage(),
+            '/forgot_password': (context) => const ForgotPasswordPage(),
+            '/dashboard': (context) => const DashboardPage(),
+            '/analytics': (context) => const AnalyticsPage(),
+            '/activity': (context) => const ActivityPage(),
+            '/profile': (context) => const ProfilePage(),
+            '/notification': (context) => const NotificationPage(),
+            '/onboarding': (context) => const OnboardingPage(),
+          },
         ),
-        home: const AuthCheck(),
-        routes: {
-          '/create_account': (context) => const CreateAccountPage(),
-          '/login': (context) => const LoginPage(),
-          '/forgot_password': (context) => const ForgotPasswordPage(),
-          '/dashboard': (context) => const DashboardPage(),
-          '/analytics': (context) => const AnalyticsPage(),
-          '/activity': (context) => const ActivityPage(),
-          '/profile': (context) => const ProfilePage(),
-          '/notification': (context) => const NotificationPage(),
-          '/onboarding': (context) => const OnboardingPage(),
-        },
-      ),
-    );
+      );
 }
 
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
   Future<DatabaseService?> _fetchDatabaseService(
-      BuildContext context, String uid) async => await DatabaseService.fetchCID(context, uid, 1);
-      
+          BuildContext context, String uid) async =>
+      await DatabaseService.fetchCID(uid);
+
   @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
-      stream: FirebaseAuth.instance
-          .userChanges(), // Stream that listens for changes in the user's authentication state
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
-            strokeWidth: 6.0,
-          ); // Show a loading indicator while waiting for the authentication state
-        } else if (snapshot.hasError) {
-          log('main.dart: StreamBuilder error: ${snapshot.error}'); // Log any errors that occur during the stream
-          return Text(
-              'Error: ${snapshot.error}'); // Show an error message if there is an error in the stream
-        } else if (snapshot.hasData) {
-          final user =
-              snapshot.data!; // Get the authenticated user from the snapshot
-          log('main.dart: User is logged in as ${user.email}'); // Log the user's email
-          return FutureBuilder<DatabaseService?>(
-            future: _fetchDatabaseService(context, user.uid),
-            builder: (context, serviceSnapshot) {
-              if (serviceSnapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
-                  strokeWidth: 6.0,
-                ); // Show a loading indicator while waiting for the Firestore query
-              } else if (serviceSnapshot.hasError) {
-                log('main.dart: Firestore query error: ${serviceSnapshot.error}'); // Log any errors that occur during the Firestore query
-                return Text(
-                    'Error: ${serviceSnapshot.error}'); // Show an error message if there is an error in the Firestore query
-              } else if (serviceSnapshot.hasData &&
-                  serviceSnapshot.data != null) {
-                log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
-                return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
-              } else {
-                log('main.dart: UID: ${user.uid} not found in Firestore.'); // Log that the UID was not found in Firestore
-                return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
-              }
-            },
-          );
-        } else {
-          log('main.dart: User is not logged in yet.'); // Log that the user is not logged in
-          return const OnboardingPage(); // If the user is not authenticated, show the OnboardingPage
-        }
-      },
-    );
+        stream: FirebaseAuth.instance
+            .userChanges(), // Stream that listens for changes in the user's authentication state
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
+              strokeWidth: 6.0,
+            ); // Show a loading indicator while waiting for the authentication state
+          } else if (snapshot.hasError) {
+            log('main.dart: StreamBuilder error: ${snapshot.error}'); // Log any errors that occur during the stream
+            return Text(
+                'Error: ${snapshot.error}'); // Show an error message if there is an error in the stream
+          } else if (snapshot.hasData) {
+            final user =
+                snapshot.data!; // Get the authenticated user from the snapshot
+            log('main.dart: User is logged in as ${user.email}'); // Log the user's email
+            return FutureBuilder<DatabaseService?>(
+              future: _fetchDatabaseService(context, user.uid),
+              builder: (context, serviceSnapshot) {
+                if (serviceSnapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.transparent),
+                    strokeWidth: 6.0,
+                  ); // Show a loading indicator while waiting for the Firestore query
+                } else if (serviceSnapshot.hasError) {
+                  log('main.dart: Firestore query error: ${serviceSnapshot.error}'); // Log any errors that occur during the Firestore query
+                  return Text(
+                      'Error: ${serviceSnapshot.error}'); // Show an error message if there is an error in the Firestore query
+                } else if (serviceSnapshot.hasData &&
+                    serviceSnapshot.data != null) {
+                  log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
+                  return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
+                } else {
+                  log('main.dart: UID: ${user.uid} not found in Firestore.'); // Log that the UID was not found in Firestore
+                  return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
+                }
+              },
+            );
+          } else {
+            log('main.dart: User is not logged in yet.'); // Log that the user is not logged in
+            return const OnboardingPage(); // If the user is not authenticated, show the OnboardingPage
+          }
+        },
+      );
 }

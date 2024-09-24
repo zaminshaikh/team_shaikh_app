@@ -21,61 +21,9 @@ class PdfFileWithCid {
 }
 
 class _DisclaimerPageState extends State<DisclaimerPage> {
-  final Future<void> _initializeWidgetFuture = Future.value();
-
-  // database service instance
-  DatabaseService? _databaseService;
-
-  
-    String? cid;
-  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
-
-  Stream<List<String>> get getConnectedUsersWithCid => usersCollection.doc(_databaseService?.cid).snapshots().asyncMap((userSnapshot) async {
-    final data = userSnapshot.data();
-    if (data == null) {
-      return [];
-    }
-    List<String> connectedUsers = [];
-    // Safely add _databaseService.cid to the list of connected users if it's not null
-    if (_databaseService?.cid != null) {
-    }
-    return connectedUsers;
-  });
 
   @override
-  Widget build(BuildContext context) => FutureBuilder(
-      future: _initializeWidgetFuture, // Initialize the database service
-      builder: (context, snapshot) {
-        return StreamBuilder<UserWithAssets>(
-          stream: _databaseService?.getUserWithAssets,
-          builder: (context, userSnapshot) {
-            return StreamBuilder<List<UserWithAssets>>(
-              stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
-              builder: (context, connectedUsersSnapshot) {
-
-                  return buildDisclaimerPage(context, userSnapshot, connectedUsersSnapshot);
-                // Once we have the connected users, proceed to fetch notifications
-              }
-            );
-          }
-        );
-      }
-    );  
-    
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  // Assuming these fields are part of the `user.info` map
-  Scaffold buildDisclaimerPage(
-    
-    BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
-
-    return Scaffold(
+  Widget build(BuildContext context) =>  Scaffold(
         body: Stack(
           children: [
             CustomScrollView(
@@ -96,9 +44,6 @@ class _DisclaimerPageState extends State<DisclaimerPage> {
           ],
         ),
       );   
-  }
-  
-
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(

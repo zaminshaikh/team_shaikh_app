@@ -5,70 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/screens/profile/components/custom_expansion_tile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-class CustomExpansionTile extends StatefulWidget {
-  final String title;
-  final String content;
-
-  const CustomExpansionTile({
-    Key? key,
-    required this.title,
-    required this.content,
-  }) : super(key: key);
-
-  @override
-  _CustomExpansionTileState createState() => _CustomExpansionTileState();
-}
-
-class _CustomExpansionTileState extends State<CustomExpansionTile> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Theme(
-      data: ThemeData(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-      ),
-      child: ExpansionTile(
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        trailing: Icon(
-          _isExpanded ? Icons.remove : Icons.add,
-          color: _isExpanded ? Colors.blue : Colors.white,
-        ),
-        children: <Widget>[
-          ListTile(
-            title: Text(
-              widget.content,
-              style: const TextStyle(
-                fontSize: 14,
-                fontFamily: 'Titillium Web',
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-        onExpansionChanged: (bool expanded) {
-          setState(() {
-            _isExpanded = expanded;
-          });
-        },
-      ),
-    );
-  }
-}
 
 class HelpPage extends StatefulWidget {
   const HelpPage({Key? key}) : super(key: key);
@@ -80,59 +19,8 @@ class HelpPage extends StatefulWidget {
 class _HelpPageState extends State<HelpPage> {
   final Future<void> _initializeWidgetFuture = Future.value();
 
-  // database service instance
-  DatabaseService? _databaseService;
-
-  
-    String? cid;
-  static final CollectionReference usersCollection = FirebaseFirestore.instance.collection('testUsers');
-
-  Stream<List<String>> get getConnectedUsersWithCid => usersCollection.doc(_databaseService?.cid).snapshots().asyncMap((userSnapshot) async {
-    final data = userSnapshot.data();
-    if (data == null) {
-      return [];
-    }
-    List<String> connectedUsers = [];
-    // Safely add _databaseService.cid to the list of connected users if it's not null
-    if (_databaseService?.cid != null) {
-    }
-    return connectedUsers;
-  });
-
   @override
-  Widget build(BuildContext context) => FutureBuilder(
-      future: _initializeWidgetFuture, // Initialize the database service
-      builder: (context, snapshot) {
-        return StreamBuilder<UserWithAssets>(
-          stream: _databaseService?.getUserWithAssets,
-          builder: (context, userSnapshot) {
-            return StreamBuilder<List<UserWithAssets>>(
-              stream: _databaseService?.getConnectedUsersWithAssets, // Assuming this is the correct stream
-              builder: (context, connectedUsersSnapshot) {
-
-                  return buildHelpPage(context, userSnapshot, connectedUsersSnapshot);
-                // Once we have the connected users, proceed to fetch notifications
-              }
-            );
-          }
-        );
-      }
-    );  
-    
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  // Assuming these fields are part of the `user.info` map
-  Scaffold buildHelpPage(
-    
-    BuildContext context,
-      AsyncSnapshot<UserWithAssets> userSnapshot,
-      AsyncSnapshot<List<UserWithAssets>> connectedUsers) {
-
-    return Scaffold(
+  Widget build(BuildContext context) =>  Scaffold(
         body: Stack(
           children: [
             CustomScrollView(
@@ -153,7 +41,6 @@ class _HelpPageState extends State<HelpPage> {
           ],
         ),
       );   
-  }
   
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
