@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 import '../utils/activity_styles.dart';
 
 final DateFormat timeFormat = DateFormat('h:mm a');
@@ -19,7 +19,7 @@ class ActivityDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String date = DateFormat('EEEE, MMM. d, yyyy').format(activity.time);
+    DateFormat('EEEE, MMM. d, yyyy').format(activity.time);
 
     return FractionallySizedBox(
       heightFactor: 0.67,

@@ -2,9 +2,7 @@
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
-import 'package:team_shaikh_app/database.dart';
 import 'package:http/http.dart' as http;
 
 

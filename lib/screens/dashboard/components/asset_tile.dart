@@ -3,11 +3,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 
 // ignore: constant_identifier_names
 enum FundName { AGQ, AK1 }
 
+// ignore: must_be_immutable
 class AssetTile extends StatelessWidget {
 
   final String fieldName;

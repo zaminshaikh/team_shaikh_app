@@ -1,16 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
-import 'package:team_shaikh_app/database/models/client_model.dart';
 
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/database/database.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 
 class InitialFaceIdPage extends StatefulWidget {
   const InitialFaceIdPage({super.key});

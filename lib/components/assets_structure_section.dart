@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 
 class AssetsStructureSection extends StatelessWidget {
   final Client client;

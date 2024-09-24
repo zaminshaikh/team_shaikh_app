@@ -1,6 +1,5 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,15 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
-import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/screens/activity/activity.dart';
-import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
-import 'package:team_shaikh_app/utilities.dart';
 import 'dart:developer';
 
 class SettingsPage extends StatefulWidget {

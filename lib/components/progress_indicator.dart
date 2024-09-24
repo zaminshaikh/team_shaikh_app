@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 
 class CustomProgressIndicator extends StatelessWidget {
   const CustomProgressIndicator({Key? key}) : super(key: key);

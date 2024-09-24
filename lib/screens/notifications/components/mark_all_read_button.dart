@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/resources.dart'; // Update with the correct import path
+import 'package:team_shaikh_app/utils/resources.dart'; // Update with the correct import path
 
 class MarkAllAsReadButton extends StatelessWidget {
   final Client client;

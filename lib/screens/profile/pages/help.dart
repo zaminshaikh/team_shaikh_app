@@ -3,11 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:team_shaikh_app/database.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/components/custom_expansion_tile.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HelpPage extends StatefulWidget {
   const HelpPage({Key? key}) : super(key: key);
@@ -17,7 +15,6 @@ class HelpPage extends StatefulWidget {
 }
 
 class _HelpPageState extends State<HelpPage> {
-  final Future<void> _initializeWidgetFuture = Future.value();
 
   @override
   Widget build(BuildContext context) =>  Scaffold(

@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart'; // Update with the correct import path

@@ -1,17 +1,12 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/analytics/analytics.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/pages/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
@@ -19,7 +14,6 @@ import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
 import 'package:team_shaikh_app/screens/profile/pages/help.dart';
 import 'package:team_shaikh_app/screens/profile/pages/settings.dart';
 import 'package:team_shaikh_app/screens/profile/pages/profiles.dart';
-import 'dart:developer';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);

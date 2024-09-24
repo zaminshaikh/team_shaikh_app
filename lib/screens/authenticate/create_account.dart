@@ -6,14 +6,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/services/google_auth_service.dart';
-import 'package:team_shaikh_app/utilities.dart';
 import 'package:flutter/services.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 

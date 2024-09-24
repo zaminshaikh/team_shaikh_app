@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/main.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:async';
 import 'package:team_shaikh_app/screens/authenticate/app_state.dart';

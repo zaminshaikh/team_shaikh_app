@@ -1,19 +1,9 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
-import 'package:team_shaikh_app/database.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/screens/activity/activity.dart';
-import 'package:team_shaikh_app/screens/analytics/analytics.dart';
-import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'dart:developer';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilesPage extends StatefulWidget {
   const ProfilesPage({Key? key}) : super(key: key);
@@ -150,7 +140,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${c!.firstName} ${c!.lastName}', 
+                      '${c.firstName} ${c.lastName}', 
                       style: const TextStyle(
                         fontSize: 20,
                         color: Color.fromRGBO(255, 255, 255, 1),
@@ -160,7 +150,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      'Client ID: ${c!.cid}', 
+                      'Client ID: ${c.cid}', 
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.blue,
@@ -170,7 +160,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                     ),
                     const SizedBox(height: 15),
                     Text(
-                      'First Deposit Date: ${c!.firstDepositDate.toString()}', // Assuming firstDepositDate is a String variable
+                      'First Deposit Date: ${c.firstDepositDate.toString()}', // Assuming firstDepositDate is a String variable
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color.fromRGBO(255, 255, 255, 1),
@@ -179,7 +169,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Communication Email: ${c!.initEmail}', // Assuming initEmail is a String variable
+                      'Communication Email: ${c.initEmail}', // Assuming initEmail is a String variable
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color.fromRGBO(255, 255, 255, 1),
@@ -188,7 +178,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Phone Number: ${c!.phoneNumber}', // Assuming phoneNumber is a String variable
+                      'Phone Number: ${c.phoneNumber}', // Assuming phoneNumber is a String variable
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color.fromRGBO(255, 255, 255, 1),
@@ -197,7 +187,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Address: ${c!.address}', // Assuming address is a String variable
+                      'Address: ${c.address}', // Assuming address is a String variable
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color.fromRGBO(255, 255, 255, 1),

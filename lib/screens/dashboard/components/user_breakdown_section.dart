@@ -1,11 +1,11 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/asset_tile.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 
+// ignore: must_be_immutable
 class UserBreakdownSection extends StatelessWidget {
 
   final Client client;

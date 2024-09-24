@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/resources.dart';
-import 'package:team_shaikh_app/utilities.dart';
-
-
+import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 
 class TotalAssetsSection extends StatelessWidget {
 
@@ -51,7 +49,7 @@ class TotalAssetsSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      currencyFormat(client!.assets?.totalAssets ?? 0),
+                      currencyFormat(client.assets?.totalAssets ?? 0),
                       style: const TextStyle(
                         fontSize: 35,
                         fontWeight: FontWeight.w600,
@@ -69,7 +67,7 @@ class TotalAssetsSection extends StatelessWidget {
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          currencyFormat(client!.assets?.totalYTD ?? 0),
+                          currencyFormat(client.assets?.totalYTD ?? 0),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,

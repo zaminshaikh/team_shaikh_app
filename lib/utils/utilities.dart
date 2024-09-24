@@ -1,10 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:team_shaikh_app/resources.dart';
 import 'dart:convert';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class Config {

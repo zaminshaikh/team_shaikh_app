@@ -8,10 +8,10 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/utils/PDFPreview.dart';
 import 'package:team_shaikh_app/screens/profile/utils/downloadmethod.dart';
-import 'package:team_shaikh_app/utilities.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 
 class DocumentsPage extends StatefulWidget {
   const DocumentsPage({Key? key}) : super(key: key);
