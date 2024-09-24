@@ -1,3 +1,13 @@
+/// Calculate the x-coordinate value based on the date and selected time range.
+///
+/// The function calculates the proportional position on the x-axis for a given date
+/// within the selected date range (`dropdownValue`), which determines the scale of the x-axis.
+///
+/// - Parameters:
+///   - [dateTime]: The date to calculate the x-axis value for.
+///   - [dropdownValue]: A string determining the time range, e.g., 'last-week', 'last-month'.
+/// - Returns:
+///   - A double representing the x-coordinate on the chart, or -1.0 if out of range.
 double calculateXValue(DateTime dateTime, String dropdownValue) {
   DateTime now = DateTime.now();
   DateTime startDate;
@@ -22,7 +32,7 @@ double calculateXValue(DateTime dateTime, String dropdownValue) {
       totalPeriod = 365;
       break;
     default:
-      return -1.0;
+      return -1.0;  // Return -1.0 if the range is not recognized.
   }
 
   if (dateTime.isBefore(startDate) || dateTime.isAfter(now)) {
@@ -33,6 +43,16 @@ double calculateXValue(DateTime dateTime, String dropdownValue) {
   return (dayDifference / totalPeriod) * maxXValue;
 }
 
+/// Convert an x-axis value back to a corresponding date within the selected range.
+///
+/// This function reverses the transformation applied in `calculateXValue`, converting an x-value
+/// back to the corresponding date.
+///
+/// - Parameters:
+///   - [xValue]: The x-axis value to convert.
+///   - [dropdownValue]: The selected time range.
+/// - Returns:
+///   - A DateTime corresponding to the x-axis value.
 DateTime calculateDateTimeFromXValue(double xValue, String dropdownValue) {
   DateTime now = DateTime.now();
   DateTime startDate;
@@ -56,40 +76,49 @@ DateTime calculateDateTimeFromXValue(double xValue, String dropdownValue) {
     case 'last-year':
       startDate = DateTime(now.year, 1, 1);
       endDate = DateTime(now.year, 12, 31);
-      totalPeriod = 365;
       break;
     default:
       return DateTime.now();
   }
 
   totalPeriod = endDate.difference(startDate).inDays.toDouble();
-
   double dayDifference = (xValue / maxXValue) * totalPeriod;
-
-  // Use microseconds to handle fractional days
-  int microsecondsDifference =
-      (dayDifference * Duration.microsecondsPerDay).round();
-  DateTime dateTime =
-      startDate.add(Duration(microseconds: microsecondsDifference));
-
-  return dateTime;
+  return startDate.add(Duration(days: dayDifference.round()));
 }
 
+/// Determines the maximum x-value based on the selected time range.
+///
+/// This function provides the upper limit of the x-axis based on the time range selected,
+/// which corresponds to the number of intervals on the x-axis.
+///
+/// - Parameter:
+///   - [dropdownValue]: The selected time range.
+/// - Returns:
+///   - The maximum x-value for the chart's x-axis.
 double maxX(String dropdownValue) {
   switch (dropdownValue) {
     case 'last-week':
-      return 6; // 7 days (0 to 6)
+      return 6;  // 7 days (0 to 6)
     case 'last-month':
-      return 29; // 30 days (0 to 29)
+      return 29;  // 30 days (0 to 29)
     case 'last-6-months':
-      return 5; // 6 months (0 to 5)
+      return 5;  // 6 months (0 to 5)
     case 'last-year':
-      return 11; // 12 months (0 to 11)
+      return 11;  // 12 months (0 to 11)
     default:
-      return 6;
+      return 6;  // Default value if no match
   }
 }
 
+/// Abbreviates large numbers for better display on chart axes.
+///
+/// This function formats large numbers into a shorter form using 'K' for thousands,
+/// 'M' for millions. This is useful for displaying large figures concisely on chart axes.
+///
+/// - Parameter:
+///   - [value]: The number to abbreviate.
+/// - Returns:
+///   - A string representing the abbreviated form of the number.
 String abbreviateNumber(double value) {
   if (value >= 1e6) {
     return '${(value / 1e6).toStringAsFixed(1)}M';
@@ -100,6 +129,15 @@ String abbreviateNumber(double value) {
   }
 }
 
+/// Calculate the maximum Y value to use in charts, rounded to a suitable increment.
+///
+/// This function takes the maximum Y value from the data and adjusts it upwards to the nearest
+/// 'nice' value to ensure that the chart's Y-axis ticks are neatly aligned and spaced.
+///
+/// - Parameter:
+///   - [value]: The proposed maximum Y value from the data.
+/// - Returns:
+///   - The adjusted maximum Y value for the chart.
 double calculateMaxY(double value) {
   double increment = 1.0;
   if (value >= 100000000) {
@@ -120,19 +158,26 @@ double calculateMaxY(double value) {
   return ((value / increment).ceil() * increment).toDouble();
 }
 
+/// Determine the interval at which to show axis titles based on the chart's x-axis range.
+///
+/// This function determines the spacing between labels on the x-axis based on the selected time range,
+/// ensuring that labels are neither too sparse nor too densely packed.
+///
+/// - Parameter:
+///   - [dropdownValue]: The selected time range.
+/// - Returns:
+///   - The interval at which to place x-axis labels.
 double getBottomTitleInterval(String dropdownValue) {
   switch (dropdownValue) {
     case 'last-week':
-      return maxX(dropdownValue) / 2; // Label every day
+      return maxX(dropdownValue) / 2;  // Label every other day
     case 'last-month':
-      return maxX(dropdownValue) / 2; // Start and end of the month
+      return maxX(dropdownValue) / 2;  // Start and end of the month
     case 'last-6-months':
-      return maxX(dropdownValue) / 2.5; // Adjust as needed
+      return maxX(dropdownValue) / 2.5; // Approximately every two months
     case 'last-year':
-      return maxX(dropdownValue) / 2; // Start, middle, end
+      return maxX(dropdownValue) / 2; // Start, middle, end of the year
     default:
-      return 1;
+      return 1; // Default case for unspecified ranges
   }
 }
-
-double calculateHorizontalInterval(double maxValue) => maxValue / 15;
