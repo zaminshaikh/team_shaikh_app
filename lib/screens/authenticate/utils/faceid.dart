@@ -1,67 +1,139 @@
-// ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously
+// ignore_for_file: library_private_types_in_public_api, empty_catches
 
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
-
-import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
-import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/main.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'dart:async';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
+import 'package:provider/provider.dart';
 
-class InitialFaceIdPage extends StatefulWidget {
-  const InitialFaceIdPage({super.key});
+class FaceIdPage extends StatefulWidget {
+  const FaceIdPage({super.key});
 
   @override
-  _InitialFaceIdPageState createState() => _InitialFaceIdPageState();
+  _FaceIdPageState createState() => _FaceIdPageState();
 }
 
-class _InitialFaceIdPageState extends State<InitialFaceIdPage>
-    with WidgetsBindingObserver {
+class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
   final LocalAuthentication auth = LocalAuthentication();
+  bool _isAuthenticating = false;
+  AuthState? appState;
+  MyAppState? myAppState;
+  bool authenticated = false;
 
   @override
   void initState() {
     super.initState();
+    myAppState = MyAppState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    appState = Provider.of<AuthState>(context, listen: false);
+    myAppState = context.findAncestorStateOfType<MyAppState>();
   }
 
   @override
   void dispose() {
+    // Print a message to indicate that the FaceIdPage is being disposed
+
+    // Check if myAppState is not null
+    if (myAppState != null) {
+      // Print the appState value from myAppState
+    } else {
+      // Print a message to indicate that myAppState is null
+    }
+
+    // Reset the hasNavigatedToFaceIDPage value to false after disposing the page
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (authenticated) {
+        appState?.setHasNavigatedToFaceIDPage(false);
+      } else {}
+    });
+
+    // Remove the observer for this widget's lifecycle events
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  Future<void> _initialAuthenticate(BuildContext context) async {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (!_isAuthenticating) {
+        _isAuthenticating =
+            true; // Set the flag to true to prevent multiple calls
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appState?.setHasNavigatedToFaceIDPage(true);
+          if (mounted) {
+            _authenticate(context).then((_) {
+              _isAuthenticating =
+                  false; // Reset the flag after authentication completes
+            });
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> _authenticate(BuildContext context) async {
     if (!mounted) return;
 
+    setState(() {
+      _isAuthenticating = true;
+    });
+
+    authenticated = false;
+
     try {
-      bool authenticated = await auth.authenticate(
+      authenticated = await auth.authenticate(
         localizedReason: 'Please authenticate to login',
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
         ),
       );
+    } catch (e) {}
 
-      if (authenticated && mounted) {
-        final appState = Provider.of<AuthState>(context, listen: false);
-        appState.setInitiallyAuthenticated(true); // Set the flag
+    if (authenticated) {
+      if (mounted) {
+        setState(() {
+          _isAuthenticating = false;
+        });
+      }
 
-        // Set hasTransitioned to false
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('hasTransitioned', false);
-
+      if (mounted) {
         await Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                 const DashboardPage(fromFaceIdPage: true),
+                const DashboardPage(fromFaceIdPage: true),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) => child,
           ),
-        );
+        ).then((_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            appState?.setHasNavigatedToFaceIDPage(false);
+            appState?.setJustAuthenticated(true);
+          });
+        });
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appState?.setHasNavigatedToFaceIDPage(false);
+        });
       }
-    } catch (e) {
-      // Handle authentication error if needed
+    } else {
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appState?.setHasNavigatedToFaceIDPage(false);
+        });
+        setState(() {
+          _isAuthenticating = false;
+        });
+      }
     }
   }
 
@@ -120,9 +192,11 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage>
                     width: double.infinity,
                     height: 45,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        await _initialAuthenticate(context);
-                      },
+                      onPressed: _isAuthenticating
+                          ? null
+                          : () async {
+                              await _authenticate(context);
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.defaultBlue500,
                         shape: RoundedRectangleBorder(
