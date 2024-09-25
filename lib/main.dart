@@ -16,7 +16,7 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 // Local packages
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/create_account.dart';
+import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
 import 'package:team_shaikh_app/utils/push_notification.dart';
 import 'package:team_shaikh_app/utils/utilities.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
