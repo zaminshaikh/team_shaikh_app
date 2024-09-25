@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 
 // Get Activity Type Text
 String getActivityType(Activity activity) {
@@ -116,4 +118,68 @@ String getActivityDescription(Activity activity) {
       action = '';
   }
   return '$action ${activity.fund}';
+}
+
+/// Generates the date button text based on the selected date range.
+String getDateButtonText(DateTime startDate, DateTime endDate) {
+  DateTime startOfRange = DateTime(1900, 1, 1);
+  DateTime today = DateTime.now();
+  DateTime todayDate = DateTime(today.year, today.month, today.day);
+
+  bool isAllTime = startDate == startOfRange &&
+      (endDate == todayDate || endDate.isAfter(todayDate));
+  if (isAllTime) {
+    return 'All Time';
+  } else {
+    String formattedStartDate =
+        '${startDate.month}/${startDate.day}/${startDate.year}';
+    String formattedEndDate =
+        '${endDate.month}/${endDate.day}/${endDate.year}';
+    return '$formattedStartDate - $formattedEndDate';
+  }
+}
+
+/// Generates the type button text based on the selected types.
+String getTypeButtonText(List<String> typeFilter) {
+  List<String> allTypes = ['profit', 'deposit', 'withdrawal'];
+
+  if (allTypes.every((type) => typeFilter.contains(type))) {
+    return 'All Types';
+  } else if (typeFilter.isEmpty) {
+    return 'No Types Selected';
+  } else {
+    List<String> displayTypes = typeFilter
+        .where((type) => type != 'income')
+        .map((type) => toTitleCase(type))
+        .toList();
+    return displayTypes.join(', ');
+  }
+}
+
+/// Generates the recipients button text based on the selected recipients.
+String getRecipientsButtonText(
+    List<String> recipientsFilter, List<String> allRecipients) {
+  if (allRecipients.every((recipient) => recipientsFilter.contains(recipient))) {
+    return 'All Recipients';
+  } else if (recipientsFilter.isEmpty) {
+    return 'No Recipients Selected';
+  } else {
+    return recipientsFilter.join(', ');
+  }
+}
+
+/// Returns a string representation of the sort order.
+String getSortOrderText(SortOrder order) {
+  switch (order) {
+    case SortOrder.newToOld:
+      return 'Date: New to Old';
+    case SortOrder.oldToNew:
+      return 'Date: Old to New';
+    case SortOrder.lowToHigh:
+      return 'Amount: Low to High';
+    case SortOrder.highToLow:
+      return 'Amount: High to Low';
+    default:
+      return '';
+  }
 }

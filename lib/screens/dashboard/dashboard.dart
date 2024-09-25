@@ -87,7 +87,7 @@ class _DashboardPageState extends State<DashboardPage>
 
     if (!_hasTransitioned) {
       // Start the animation
-      _controller.forward();
+      await _controller.forward();
 
       // Set the flag to true after the animation completes
       _controller.addStatusListener((status) async {
