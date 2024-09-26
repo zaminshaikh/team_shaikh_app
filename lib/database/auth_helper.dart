@@ -1,8 +1,10 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
+import 'package:team_shaikh_app/database/database.dart';
 
 /// Deletes any user currently in the Firebase Auth buffer.
 Future<void> deleteUserInBuffer() async {
@@ -47,6 +49,23 @@ void handleFirebaseAuthException(
 
 /// Updates Firebase Messaging token.
 Future<void> updateFirebaseMessagingToken(User user) async {
-  // Implementation for updating the Firebase Messaging token.
-  // Replace with your actual code as needed.
+  String? token = await FirebaseMessaging.instance.getToken();
+  if (token != null) {
+    // Fetch CID using async constructor
+    DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+
+    if (db != null) {
+    try {
+      List<dynamic> tokens =
+          (await db.getField('tokens') ?? []);
+
+      if (!tokens.contains(token)) {
+        tokens = [...tokens, token];
+        await db.updateField('tokens', tokens);
+      }
+    } catch (e) {
+      log('login.dart: Error fetching tokens: $e');
+    }
+  }
+  }// async gap widget mounting check
 }

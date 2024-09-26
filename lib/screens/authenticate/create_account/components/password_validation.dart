@@ -1,5 +1,3 @@
-// password_validation.dart
-
 import 'package:flutter/material.dart';
 
 /// Widget to display password validation checks.
@@ -10,8 +8,7 @@ class PasswordValidation extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Column(
       children: [
         _buildValidationRow(
           'At least 8 characters',
@@ -34,11 +31,9 @@ class PasswordValidation extends StatelessWidget {
         ),
       ],
     );
-  }
 
   /// Builds a validation row with an icon and text.
-  Widget _buildValidationRow(String text, bool isValid) {
-    return Container(
+  Widget _buildValidationRow(String text, bool isValid) => Container(
       padding: const EdgeInsets.all(4.0),
       child: Row(
         children: [
@@ -61,5 +56,4 @@ class PasswordValidation extends StatelessWidget {
         ],
       ),
     );
-  }
 }

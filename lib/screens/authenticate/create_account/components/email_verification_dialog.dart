@@ -11,8 +11,7 @@ class EmailVerificationDialog extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Dialog(
+  Widget build(BuildContext context) => Dialog(
       backgroundColor: const Color.fromARGB(255, 37, 58, 86),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -81,5 +80,4 @@ class EmailVerificationDialog extends StatelessWidget {
         ),
       ),
     );
-  }
 }
