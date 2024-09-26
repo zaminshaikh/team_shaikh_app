@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
-import 'package:team_shaikh_app/screens/authenticate/app_state.dart';
+
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/resources.dart';
+import 'package:team_shaikh_app/utils/resources.dart';
 
 class InitialFaceIdPage extends StatefulWidget {
   const InitialFaceIdPage({super.key});
@@ -15,7 +16,8 @@ class InitialFaceIdPage extends StatefulWidget {
   _InitialFaceIdPageState createState() => _InitialFaceIdPageState();
 }
 
-class _InitialFaceIdPageState extends State<InitialFaceIdPage> with WidgetsBindingObserver {
+class _InitialFaceIdPageState extends State<InitialFaceIdPage>
+    with WidgetsBindingObserver {
   final LocalAuthentication auth = LocalAuthentication();
 
   @override
@@ -41,17 +43,20 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage> with WidgetsBindi
       );
 
       if (authenticated && mounted) {
-        final appState = Provider.of<AppState>(context, listen: false);
+        final appState = Provider.of<AuthState>(context, listen: false);
         appState.setInitiallyAuthenticated(true); // Set the flag
 
         // Set hasTransitioned to false
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('hasTransitioned', false);
+
         await Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const DashboardPage(fromFaceIdPage: true),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                 const DashboardPage(fromFaceIdPage: true),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) => child,
           ),
         );
       }
