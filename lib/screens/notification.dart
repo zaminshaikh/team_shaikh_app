@@ -284,6 +284,11 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ),
         ), // Day header
+        const Padding(
+          padding: EdgeInsets.all(20),
+          child: Divider(color: AppColors.defaultWhite),
+        ),
+
         _buildNotification(notification, false),
          // Notification
       ],
@@ -293,25 +298,25 @@ class _NotificationPageState extends State<NotificationPage> {
   bool _isSameDay(DateTime date1, DateTime date2) => 
     date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
     
-  Widget _buildNotification(Map<String, dynamic> notification, bool showDivider){
+  Widget _buildNotification(Map<String, dynamic> notification, bool showDivider) {
     String title;
-    Widget route;
     Color? color = Colors.grey[200];
     switch (notification['type']) {
       case 'activity':
         title = 'New Activity';
-        route = const ActivityPage(); // replace with your actual Activity page widget
         break;
       case 'statement':
         title = 'New Statement';
-        route = const ProfilePage(); // replace with your actual Profile page widget
         break;
       default:
         title = 'New Notification';
-        route = const NotificationPage(); // replace with your actual Notification page widget
         break;
     }
-
+  
+    // Determine if the message contains "AK1" or "AGQ"
+    bool containsAK1 = notification['message'].contains('AK1');
+    bool containsAGQ = notification['message'].contains('AGQ');
+  
     return Column(
       children: [
         Padding(
@@ -319,35 +324,16 @@ class _NotificationPageState extends State<NotificationPage> {
           child: Column(
             children: [
               Container(
-              decoration: BoxDecoration(
-                color: !notification['isRead'] ? color?.withOpacity(0.05) : null,
-                borderRadius: BorderRadius.circular(15.0), // Set the border radius
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
+                decoration: BoxDecoration(
+                  color: !notification['isRead'] ? color?.withOpacity(0.05) : null,
+                  borderRadius: BorderRadius.circular(15.0), // Set the border radius
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
                     children: [
                       ListTile(
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: AppTextStyles.lBold(color: AppColors.defaultWhite),
-                            ),
-                            const SizedBox(height: 4), // Add desired spacing between title and subtitle
-                            Text(
-                              notification['message'],
-                              style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
-                            ),
-                            const SizedBox(height: 4), // Add desired spacing between message and ID
-                            Text(
-                              'ID: ${notification['id']}', // Display the document ID
-                              style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
-                            ),
-                          ],
-                        ),
-                        trailing: !notification['isRead']
+                        leading: !notification['isRead']
                             ? const CircleAvatar(
                                 radius: 8,
                                 backgroundColor: AppColors.defaultBlue300,
@@ -356,55 +342,50 @@ class _NotificationPageState extends State<NotificationPage> {
                                 radius: 8,
                                 backgroundColor: Colors.transparent,
                               ),
+                        title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      title,
+                                      style: AppTextStyles.lBold(color: AppColors.defaultWhite),
+                                    ),
+                                    const SizedBox(width: 12.0), 
+                                    if (containsAK1)
+                                      SvgPicture.asset(
+                                        'assets/icons/ak1_logo.svg',
+                                        height: 16.0,
+                                        width: 16.0,
+                                      ),
+                                    if (containsAGQ)
+                                      SvgPicture.asset(
+                                        'assets/icons/agq_logo.svg',
+                                        height: 16.0,
+                                        width: 16.0,
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4), // Add desired spacing between title and subtitle
+                                Column(
+                                  children: [
+                                    Text(
+                                      notification['message'] ?? 'No message available',
+                                      style: AppTextStyles.xsRegular(color: AppColors.defaultWhite),
+                                      softWrap: true,
+                                      overflow: TextOverflow.visible,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4), // Add desired spacing between message and ID
+                              ],
+                            ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
                         dense: true,
                       ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              // Mark the notification as read
-                              DatabaseService databaseService = DatabaseService(uid);
-                              await databaseService.markAsRead(context, uid, notification['id']);
-                
-                              await Navigator.pushReplacement(context, PageRouteBuilder(
-                                pageBuilder: (context, animation1, animation2) => route,
-                                transitionDuration: Duration.zero,
-                              ));
-                            } catch (e) {
-                              if (e is FirebaseException && e.code == 'not-found') {
-                                log('notification.dart: The document was not found');
-                                log('notification.dart: Notification ID: ${notification['id']}');
-                                log('notification.dart: UID: $uid');
-                              } else {
-                                rethrow;
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.defaultBlue300,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                          ),
-                          child: Text(
-                            'View More',
-                            style: AppTextStyles.lBold(color: AppColors.defaultWhite),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15.0),
                     ],
                   ),
                 ),
-              ),
-
-              if (showDivider)
-              const Padding(
-                padding: EdgeInsets.all(5),
-                child: Divider(color: AppColors.defaultWhite),
               ),
             ],
           ),
@@ -412,6 +393,7 @@ class _NotificationPageState extends State<NotificationPage> {
       ],
     );
   }
+
 
 // This is the app bar 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
