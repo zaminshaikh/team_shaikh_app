@@ -175,6 +175,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) => StreamProvider<Client?>.value(
       value: clientStream,
+      catchError: (context, error) {
+        log('Error: $error');
+        return null;
+      },
       initialData: null,
       child: MaterialApp(
         navigatorKey: navigatorKey,
