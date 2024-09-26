@@ -246,7 +246,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
     );
 }
-
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
