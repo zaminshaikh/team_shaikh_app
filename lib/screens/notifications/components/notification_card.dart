@@ -1,6 +1,7 @@
 // notification_card.dart
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
@@ -41,6 +42,10 @@ class NotificationCard extends StatelessWidget {
               style: AppTextStyles.xl2(color: AppColors.defaultWhite),
             ),
           ),
+        ),
+        const Padding(
+          padding: EdgeInsets.all(20),
+          child: Divider(color: AppColors.defaultWhite),
         ), // Day header
         _buildNotification(context, notification, false),
         // Notification
@@ -71,10 +76,14 @@ class NotificationCard extends StatelessWidget {
         break;
     }
 
+    // Determine if the message contains "AK1" or "AGQ"
+    bool containsAK1 = notification.message.contains('AK1');
+    bool containsAGQ = notification.message.contains('AGQ');
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          padding: const EdgeInsets.fromLTRB(0, 0, 10, 5),
           child: Column(
             children: [
               Container(
@@ -88,25 +97,7 @@ class NotificationCard extends StatelessWidget {
                   child: Column(
                     children: [
                       ListTile(
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: AppTextStyles.lBold(
-                                  color: AppColors.defaultWhite),
-                            ),
-                            const SizedBox(
-                                height:
-                                    4), // Add desired spacing between title and subtitle
-                            Text(
-                              notification.message,
-                              style: AppTextStyles.xsRegular(
-                                  color: AppColors.defaultWhite),
-                            ),
-                          ],
-                        ),
-                        trailing: !notification.isRead
+                        leading: !notification.isRead
                             ? const CircleAvatar(
                                 radius: 8,
                                 backgroundColor: AppColors.defaultBlue300,
@@ -115,63 +106,59 @@ class NotificationCard extends StatelessWidget {
                                 radius: 8,
                                 backgroundColor: Colors.transparent,
                               ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  title,
+                                  style: AppTextStyles.lBold(
+                                      color: AppColors.defaultWhite),
+                                ),
+                                const SizedBox(width: 12.0),
+                                if (containsAK1)
+                                  SvgPicture.asset(
+                                    'assets/icons/ak1_logo.svg',
+                                    height: 16.0,
+                                    width: 16.0,
+                                  ),
+                                if (containsAGQ)
+                                  SvgPicture.asset(
+                                    'assets/icons/agq_logo.svg',
+                                    height: 16.0,
+                                    width: 16.0,
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(
+                                height:
+                                    4), // Add desired spacing between title and subtitle
+                            Column(
+                              children: [
+                                Text(
+                                  notification.message,
+                                  style: AppTextStyles.xsRegular(
+                                      color: AppColors.defaultWhite),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                                height:
+                                    4), // Add desired spacing between message and ID
+                          ],
+                        ),
+                        
                         contentPadding:
                             const EdgeInsets.symmetric(vertical: 8.0),
                         dense: true,
                       ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              // Mark the notification as read
-                              DatabaseService db = DatabaseService.withCID(
-                                  '', notification.parentCID);
-                              await db.markNotificationAsRead(notification.id);
-
-                              await Navigator.pushReplacement(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder:
-                                        (context, animation1, animation2) =>
-                                            route,
-                                    transitionDuration: Duration.zero,
-                                  ));
-                            } catch (e) {
-                              if (e is FirebaseException &&
-                                  e.code == 'not-found') {
-                                log('notification.dart: The document was not found');
-                                log('notification.dart: Notification ID: ${notification.id}');
-                                log('notification.dart: uid: ${client.uid}');
-                              } else {
-                                rethrow;
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.defaultBlue300,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                          ),
-                          child: Text(
-                            'View More',
-                            style: AppTextStyles.lBold(
-                                color: AppColors.defaultWhite),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15.0),
                     ],
                   ),
                 ),
               ),
-              if (showDivider)
-                const Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Divider(color: AppColors.defaultWhite),
-                ),
             ],
           ),
         ),
