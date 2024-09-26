@@ -126,7 +126,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
-
+    print('AppLifecycleState changed: $state');
+    print('Current AuthState: $appState');
+  
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
@@ -134,10 +136,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _inactivityTimer?.cancel();
       print('Inactivity timer started');
       _inactivityTimer = Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
+        print('Timer completed');
         if (!appState.hasNavigatedToFaceIDPage &&
             isAuthenticated() &&
             appState.initiallyAuthenticated &&
             selectedTimeOption != null) {
+          print('Navigating to FaceIDPage');
           appState.setHasNavigatedToFaceIDPage(true);
           navigatorKey.currentState?.pushReplacement(
             PageRouteBuilder(
@@ -147,19 +151,24 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   (context, animation, secondaryAnimation, child) => child,
             ),
           );
+        } else {
+          print('Conditions not met for navigation');
         }
       });
     } else {
       // Cancel the timer if the app becomes active again
       _inactivityTimer?.cancel();
+      print('Inactivity timer cancelled');
     }
-
+  
     if (appState.justAuthenticated) {
+      print('Just authenticated, resetting flags');
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
     }
+    print('didChangeAppLifecycleState method completed');
   }
-
+  
   bool isAuthenticated() {
     final user = FirebaseAuth.instance.currentUser;
     return user != null;
