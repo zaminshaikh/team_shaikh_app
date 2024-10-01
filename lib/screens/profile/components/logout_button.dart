@@ -78,20 +78,19 @@ class _LogoutButtonState extends State<LogoutButton> {
     assert(FirebaseAuth.instance.currentUser == null);
 
     // Async gap mounted widget check
-    if (!mounted) {
-      log('Profiles.dart: No longer mounted!');
-      return;
+    if (mounted) {
+      // Pop the current page and go to login
+      await Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) =>
+              const OnboardingPage(),
+          transitionDuration: Duration.zero,
+        ),
+        (route) => false,
+      );
     }
 
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) =>
-            const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
-    );
+
   }
 }

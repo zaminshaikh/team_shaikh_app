@@ -55,6 +55,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    emailController.clear();
+    passwordController.clear();
+    emailController.dispose();
+    passwordController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
