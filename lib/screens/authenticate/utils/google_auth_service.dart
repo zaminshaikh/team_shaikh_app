@@ -72,23 +72,9 @@ class GoogleAuthService {
         );
         return null;
       }
+          
+      await updateFirebaseMessagingToken(user);
 
-      DatabaseService? db =
-          await DatabaseService.fetchCID(user.uid);
-      String? token = await FirebaseMessaging.instance.getToken();
-      
-      if (token != null && db != null) {
-        try {
-          List<dynamic> tokens = (await db.getField('tokens') ?? []);
-
-          if (!tokens.contains(token)) {
-            tokens = [...tokens, token];
-            await db.updateField('tokens', tokens);
-          }
-        } catch (e) {
-          log('login.dart: Error fetching tokens: $e');
-        }
-      }
       // Navigate to Dashboard
       await Navigator.pushReplacement(
         context,
