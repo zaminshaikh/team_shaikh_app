@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
@@ -74,6 +75,8 @@ class _LogoutButtonState extends State<LogoutButton> {
 
   void signUserOut(BuildContext context) async {
     log('Profiles.dart: Signing out...');
+
+    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser);
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
 

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
@@ -71,6 +72,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         email: emailController.text,
         password: passwordController.text,
       );
+      await updateFirebaseMessagingToken(userCredential.user);
       log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
       log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
 
