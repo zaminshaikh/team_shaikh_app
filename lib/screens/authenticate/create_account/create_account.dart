@@ -92,11 +92,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       db = DatabaseService.withCID(userCredential.user!.uid, _cid);
 
       // Check if CID exists and is not linked.
-      if (!(await db.docExists(_cid))) {
+      if (!(await db.checkDocumentExists(_cid))) {
         await _showErrorAndDeleteUser(
             'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.');
         return;
-      } else if (await db.docLinked(_cid)) {
+      } else if (await db.checkDocumentLinked(_cid)) {
         await _showErrorAndDeleteUser(
             'User already exists for given Client ID $_cid. Please log in instead.');
         return;
