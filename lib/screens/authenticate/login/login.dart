@@ -57,8 +57,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   void dispose() {
     emailController.clear();
     passwordController.clear();
-    emailController.dispose();
-    passwordController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -119,15 +117,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
     if (authenticated) {
       // ignore: unawaited_futures
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const DashboardPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              child,
-        ),
-      );
+      // Navigator.pushReplacement(
+      //   context,
+      //   PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) =>
+      //         const DashboardPage(),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+      //         child,
+      //   ),
+      // );
+
+      await Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } else {
       // Handle failed authentication
     }

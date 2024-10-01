@@ -80,15 +80,17 @@ class _LogoutButtonState extends State<LogoutButton> {
     // Async gap mounted widget check
     if (mounted) {
       // Pop the current page and go to login
-      await Navigator.pushAndRemoveUntil(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) =>
-              const OnboardingPage(),
-          transitionDuration: Duration.zero,
-        ),
-        (route) => false,
-      );
+      // await Navigator.pushAndRemoveUntil(
+      //   context,
+      //   PageRouteBuilder(
+      //     pageBuilder: (context, animation1, animation2) =>
+      //         const OnboardingPage(),
+      //     transitionDuration: Duration.zero,
+      //   ),
+      //   (route) => false,
+      // );
+
+      await Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
     }
 
 
