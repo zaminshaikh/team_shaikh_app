@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart'; // For Navigator
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
@@ -177,15 +178,8 @@ class GoogleAuthService {
           // Add the new user to Firestore with the provided CID
           debugPrint('cid: $cid');
           await db.linkNewUser(user.email!);
+          await updateFirebaseMessagingToken(user);
 
-          // Retrieve the newly created user document
-          DocumentSnapshot newUserDoc = await FirebaseFirestore.instance
-              .collection('testUsers')
-              .doc(cid)
-              .get();
-
-          // Print the new user's details
-          debugPrint('New user created: ${newUserDoc.data()}');
         } catch (e) {
           // If there is an error adding the new user to Firestore, log the error and show an alert
           debugPrint('Error adding new user to Firestore: $e');
