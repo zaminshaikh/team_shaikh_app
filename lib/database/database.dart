@@ -107,6 +107,8 @@ class DatabaseService {
       return Stream.value(null);
     }
 
+    log('database.dart: Fetching client stream for CID: $cid');
+
     try {
       // Stream for the main client document
       Stream<DocumentSnapshot> clientDocumentStream =

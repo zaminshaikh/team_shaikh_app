@@ -99,9 +99,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
-    // Initialize client stream
-    clientStream = getClientStream();
-
     // Add this widget as an observer to the WidgetsBinding instance
     WidgetsBinding.instance.addObserver(this);
 
@@ -173,38 +170,45 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) => StreamProvider<Client?>.value(
-      value: clientStream,
-      catchError: (context, error) {
-        log('Error: $error');
-        return null;
-      },
-      initialData: null,
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            boldText: false,
-            textScaler: const TextScaler.linear(1),
+  Widget build(BuildContext context) => StreamBuilder<User?>(
+    stream: FirebaseAuth.instance.authStateChanges(),
+    builder: (context, authSnapshot) {
+      final user = authSnapshot.data;
+      return StreamProvider<Client?>(
+          key: ValueKey(user?.uid),
+          create: (_) => getClientStream(),
+          catchError: (context, error) {
+            log('Error: $error');
+            return null;
+          },
+          initialData: null,
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                boldText: false,
+                textScaler: const TextScaler.linear(1),
+              ),
+              child: child!,
+            ),
+            title: 'Team Shaikh Investments',
+            theme: _buildAppTheme(),
+            // home: const AuthCheck(),
+            routes: {
+              '/': (context) => const AuthCheck(),
+              '/create_account': (context) => const CreateAccountPage(),
+              '/login': (context) => const LoginPage(),
+              '/forgot_password': (context) => const ForgotPasswordPage(),
+              '/dashboard': (context) => const DashboardPage(),
+              '/analytics': (context) => const AnalyticsPage(),
+              '/activity': (context) => const ActivityPage(),
+              '/profile': (context) => const ProfilePage(),
+              '/notification': (context) => const NotificationPage(),
+              '/onboarding': (context) => const OnboardingPage(),
+            },
           ),
-          child: child!,
-        ),
-        title: 'Team Shaikh Investments',
-        theme: _buildAppTheme(),
-        home: const AuthCheck(),
-        routes: {
-          '/create_account': (context) => const CreateAccountPage(),
-          '/login': (context) => const LoginPage(),
-          '/forgot_password': (context) => const ForgotPasswordPage(),
-          '/dashboard': (context) => const DashboardPage(),
-          '/analytics': (context) => const AnalyticsPage(),
-          '/activity': (context) => const ActivityPage(),
-          '/profile': (context) => const ProfilePage(),
-          '/notification': (context) => const NotificationPage(),
-          '/onboarding': (context) => const OnboardingPage(),
-        },
-      ),
-    );
+        );
+    });
 
   /// Build the application theme
   ThemeData _buildAppTheme() => ThemeData(

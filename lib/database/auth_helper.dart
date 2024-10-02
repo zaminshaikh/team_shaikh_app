@@ -48,7 +48,11 @@ void handleFirebaseAuthException(
 }
 
 /// Updates Firebase Messaging token.
-Future<void> updateFirebaseMessagingToken(User user) async {
+Future<void> updateFirebaseMessagingToken(User? user) async {
+  if (user == null) {
+    return;
+  }
+  
   String? token = await FirebaseMessaging.instance.getToken();
   if (token != null) {
     // Fetch CID using async constructor
@@ -68,4 +72,37 @@ Future<void> updateFirebaseMessagingToken(User user) async {
     }
   }
   }// async gap widget mounting check
+}
+
+/// Deletes the Firebase Messaging token when the user signs out.
+Future<void> deleteFirebaseMessagingToken(User? user) async {
+  if (user == null) {
+    log('auth_helper.dart: User is null.'); 
+    return;
+  }
+  // Retrieve the current FCM token
+  String? token = await FirebaseMessaging.instance.getToken();
+
+  if (token != null) {
+    // Fetch the DatabaseService instance for the user
+    DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+
+    if (db != null) {
+      try {
+        // Retrieve the current list of tokens from Firestore
+        List<dynamic> tokens = (await db.getField('tokens')) ?? [];
+
+        if (tokens.contains(token)) {
+          // Remove the current token from the list
+          tokens.remove(token);
+
+          // Update the tokens field in Firestore
+          await db.updateField('tokens', tokens);
+          log('Token removed successfully.');
+        }
+      } catch (e) {
+        log('Error deleting token: $e');
+      }
+    }
+  }
 }
