@@ -15,6 +15,17 @@ class AuthenticationPage extends StatefulWidget {
   _AuthenticationPageState createState() => _AuthenticationPageState();
 }
 
+class AuthState with ChangeNotifier {
+  String _selectedTimeOption = '1 minute'; // Default value
+
+  String get selectedTimeOption => _selectedTimeOption;
+
+  void setSelectedTimeOption(String timeOption) {
+    _selectedTimeOption = timeOption;
+    notifyListeners();
+  }
+}
+
 class _AuthenticationPageState extends State<AuthenticationPage> {
   final Future<void> _initializeWidgetFuture = Future.value();
 
@@ -23,13 +34,13 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
 
   String? cid;
   String? selectedTimeOption;
-
   bool _isAppLockEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _loadSelectedTimeOption();
+    _loadAppLockState();
   }
 
   Future<void> _loadSelectedTimeOption() async {
@@ -44,6 +55,20 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTimeOption', timeOption);
     print('Saved selected time option: $timeOption');
+  }
+
+  Future<void> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isAppLockEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+    });
+    print('Loaded app lock state: $_isAppLockEnabled');
+  }
+
+  Future<void> _saveAppLockState(bool isEnabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isAppLockEnabled', isEnabled);
+    print('Saved app lock state: $isEnabled');
   }
 
   @override
@@ -148,6 +173,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                     onChanged: (bool value) {
                       setState(() {
                         _isAppLockEnabled = value;
+                        _saveAppLockState(value);
                       });
                     },
                     activeColor: AppColors.defaultBlue300, // Set the active color
@@ -236,3 +262,5 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     );
   }
 }
+
+

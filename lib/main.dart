@@ -1,4 +1,6 @@
 // Flutter and Dart packages
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Third-party packages
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 
 // Local packages
@@ -97,6 +100,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   String? selectedTimeOption;
   double selectedTimeInMinutes = 1.0; // Default value
   Timer? _inactivityTimer;
+  bool _isAppLockEnabled = false;
 
   @override
   void initState() {
@@ -110,6 +114,43 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       final appState = Provider.of<AuthState>(context, listen: false);
       appState.setHasNavigatedToFaceIDPage(false);
     });
+
+    // Load the selected time option and app lock state
+    _loadSelectedTimeOption();
+    _loadAppLockState();
+  }
+
+  Future<void> _loadSelectedTimeOption() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
+      selectedTimeInMinutes = _getTimeInMinutes(selectedTimeOption!);
+      print('Selected time option: $selectedTimeOption');
+      print('Timer duration in minutes: $selectedTimeInMinutes');
+    });
+  }
+
+  Future<void> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isAppLockEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+      print('Loaded app lock state: $_isAppLockEnabled');
+    });
+  }
+
+  double _getTimeInMinutes(String timeOption) {
+    switch (timeOption) {
+      case '1 minute':
+        return 1.0;
+      case '2 minute':
+        return 2.0;
+      case '5 minute':
+        return 5.0;
+      case '10 minute':
+        return 10.0;
+      default:
+        return 1.0;
+    }
   }
 
   @override
@@ -117,6 +158,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Remove this widget from the observer list
     WidgetsBinding.instance.removeObserver(this);
     _inactivityTimer?.cancel();
+    print('Timer cancelled in dispose');
     super.dispose();
   }
 
@@ -142,27 +184,42 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
+    print('AppLifecycleState changed: $state');
 
-    if ((state == AppLifecycleState.paused ||
-            state == AppLifecycleState.inactive ||
-            state == AppLifecycleState.hidden) &&
-        !appState.hasNavigatedToFaceIDPage &&
-        isAuthenticated() &&
-        appState.initiallyAuthenticated) {
-      // Navigate to FaceIdPage when app goes into background, and user is authenticated
-      appState.setHasNavigatedToFaceIDPage(true);
-      navigatorKey.currentState?.pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const FaceIdPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              child,
-        ),
-      );
+    if (state == AppLifecycleState.resumed) {
+      // Cancel the timer when the app is resumed
+      _inactivityTimer?.cancel();
+      print('Timer cancelled on app resume');
+    } else if ((state == AppLifecycleState.paused ||
+                state == AppLifecycleState.inactive ||
+                state == AppLifecycleState.hidden) &&
+            !appState.hasNavigatedToFaceIDPage &&
+            isAuthenticated() &&
+            appState.initiallyAuthenticated &&
+            _isAppLockEnabled) {
+      // Start a timer for the selected amount of time
+      _inactivityTimer?.cancel();
+      print('Timer cancelled');
+      _inactivityTimer =
+          Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
+        // Navigate to FaceIdPage when the timer completes
+        print('Timer completed, navigating to FaceIdPage');
+        appState.setHasNavigatedToFaceIDPage(true);
+        navigatorKey.currentState?.pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const FaceIdPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) => child,
+          ),
+        );
+      });
+      print('Timer started for $selectedTimeInMinutes minutes');
     } else if (appState.justAuthenticated) {
       // Reset navigation flags when the user has just authenticated
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
+      print('Reset navigation flags after authentication');
     }
   }
 
@@ -262,6 +319,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ),
       );
 }
+
+
+
+
+
 
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
