@@ -1,60 +1,87 @@
-import 'dart:async'; // Import the Timer class
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Flutter and Dart packages
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter/material.dart';
+import 'dart:developer';
+
+// Firebase packages
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Third-party packages
+import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
+
+// Local packages
 import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/database/database.dart';
+import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
 import 'package:team_shaikh_app/utils/push_notification.dart';
+import 'package:team_shaikh_app/utils/utilities.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
-import 'package:team_shaikh_app/screens/notifications/notifications.dart';
-import 'package:team_shaikh_app/screens/profile/profile.dart';
-import 'package:team_shaikh_app/database/database.dart';
-import 'firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'screens/authenticate/create_account.dart';
-import 'screens/authenticate/login/login.dart';
-import 'screens/authenticate/login/forgot_password.dart';
-import 'screens/dashboard/dashboard.dart';
-import 'dart:developer';
-import 'package:team_shaikh_app/utils/utilities.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/faceid.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
+import 'package:team_shaikh_app/screens/notifications/notifications.dart';
+import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize services and configurations
+  await _initializeServices();
+
+  // Lock device orientation to portrait mode
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AuthState(),
+      child: const MyApp(),
+    ),
+  );
+}
+
+/// Initialize third-party services and configurations
+Future<void> _initializeServices() async {
+  // Ensure screen size is initialized
   await ScreenUtil.ensureScreenSize();
+
+  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize push notifications
   await PushNotificationService().initialize();
+
+  // Load application configuration
   await Config.loadConfig();
 
+  // Reset Firestore settings to ensure a clean state
+  await _resetFirestore();
+}
+
+/// Reset Firestore settings to ensure a clean state
+Future<void> _resetFirestore() async {
   // Terminate Firestore to detach any active listeners
   await FirebaseFirestore.instance.terminate();
 
   // Clear persisted data
   await FirebaseFirestore.instance.clearPersistence();
 
-  // Optionally disable persistence
+  // Disable persistence
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: false,
   );
-
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]).then((_) {
-    runApp(
-      ChangeNotifierProvider(
-        create: (context) => AuthState(),
-        child: const MyApp(),
-      ),
-    );
-  });
 }
 
 class MyApp extends StatefulWidget {
@@ -66,7 +93,6 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  AuthState? appState;
   late final Stream<Client?> clientStream;
   String? selectedTimeOption;
   double selectedTimeInMinutes = 1.0; // Default value
@@ -75,49 +101,39 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    clientStream = getClientStream();
+
+    // Add this widget as an observer to the WidgetsBinding instance
     WidgetsBinding.instance.addObserver(this);
-    appState?.setHasNavigatedToFaceIDPage(false);
-    _loadSelectedTimeOption();
-  }
 
-  Future<void> _loadSelectedTimeOption() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
-      selectedTimeInMinutes = _parseTimeOption(selectedTimeOption!);
-      print('Loaded selected time option: $selectedTimeOption');
-      print('Parsed time in minutes: $selectedTimeInMinutes');
+    // Reset navigation flags when the app initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appState = Provider.of<AuthState>(context, listen: false);
+      appState.setHasNavigatedToFaceIDPage(false);
     });
-  }
-
-  double _parseTimeOption(String timeOption) {
-    final timeParts = timeOption.split(' ');
-    if (timeParts.length == 2) {
-      final timeValue = double.tryParse(timeParts[0]);
-      if (timeValue != null) {
-        return timeValue;
-      }
-    }
-    return 1.0; // Default to 1 minute if parsing fails
   }
 
   @override
   void dispose() {
+    // Remove this widget from the observer list
     WidgetsBinding.instance.removeObserver(this);
     _inactivityTimer?.cancel();
     super.dispose();
   }
 
+  /// Stream that provides Client data based on authentication state
   Stream<Client?> getClientStream() =>
       FirebaseAuth.instance.authStateChanges().asyncExpand((User? user) async* {
         if (user == null) {
+          // User is not authenticated
           yield null;
         } else {
+          // Fetch DatabaseService for the authenticated user
           DatabaseService? db = await DatabaseService.fetchCID(user.uid);
           if (db == null) {
+            // DatabaseService not found
             yield null;
           } else {
+            // Yield Client stream from DatabaseService
             yield* db.getClientStream();
           }
         }
@@ -126,127 +142,123 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
-    print('AppLifecycleState changed: $state');
-    print('Current AuthState: $appState');
-  
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.hidden) {
-      // Start the timer when the app goes inactive
-      _inactivityTimer?.cancel();
-      print('Inactivity timer started');
-      _inactivityTimer = Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
-        print('Timer completed');
-        if (!appState.hasNavigatedToFaceIDPage &&
-            isAuthenticated() &&
-            appState.initiallyAuthenticated &&
-            selectedTimeOption != null) {
-          print('Navigating to FaceIDPage');
-          appState.setHasNavigatedToFaceIDPage(true);
-          navigatorKey.currentState?.pushReplacement(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const FaceIdPage(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child,
-            ),
-          );
-        } else {
-          print('Conditions not met for navigation');
-        }
-      });
-    } else {
-      // Cancel the timer if the app becomes active again
-      _inactivityTimer?.cancel();
-      print('Inactivity timer cancelled');
-    }
-  
-    if (appState.justAuthenticated) {
-      print('Just authenticated, resetting flags');
+
+    if ((state == AppLifecycleState.paused ||
+            state == AppLifecycleState.inactive ||
+            state == AppLifecycleState.hidden) &&
+        !appState.hasNavigatedToFaceIDPage &&
+        isAuthenticated() &&
+        appState.initiallyAuthenticated) {
+      // Navigate to FaceIdPage when app goes into background, and user is authenticated
+      appState.setHasNavigatedToFaceIDPage(true);
+      navigatorKey.currentState?.pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const FaceIdPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              child,
+        ),
+      );
+    } else if (appState.justAuthenticated) {
+      // Reset navigation flags when the user has just authenticated
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
     }
-    print('didChangeAppLifecycleState method completed');
   }
-  
+
+  /// Check if the user is authenticated
   bool isAuthenticated() {
     final user = FirebaseAuth.instance.currentUser;
     return user != null;
   }
 
   @override
-  Widget build(BuildContext context) => StreamProvider<Client?>.value(
-        value: clientStream,
-        initialData: null,
-        child: MaterialApp(
-          navigatorKey: navigatorKey,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              boldText: false,
-              textScaler: const TextScaler.linear(1),
-            ),
-            child: child!,
-          ),
-          title: 'Team Shaikh Investments',
-          theme: ThemeData(
-            scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
-            textTheme: const TextTheme(
-              titleLarge: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                  fontWeight: FontWeight.bold),
-              titleMedium: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                  fontWeight: FontWeight.bold),
-              titleSmall: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                  fontWeight: FontWeight.bold),
-              labelLarge:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              labelMedium:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              labelSmall:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              displayLarge:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              displayMedium:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              displaySmall:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              headlineLarge: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                  fontWeight: FontWeight.bold),
-              headlineMedium: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                  fontWeight: FontWeight.bold),
-              headlineSmall: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                  fontWeight: FontWeight.bold),
-              bodyLarge:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              bodyMedium:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-              bodySmall:
-                  TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-            ),
-          ),
-          home: const AuthCheck(),
-          routes: {
-            '/create_account': (context) => const CreateAccountPage(),
-            '/login': (context) => const LoginPage(),
-            '/forgot_password': (context) => const ForgotPasswordPage(),
-            '/dashboard': (context) => const DashboardPage(),
-            '/analytics': (context) => const AnalyticsPage(),
-            '/activity': (context) => const ActivityPage(),
-            '/profile': (context) => const ProfilePage(),
-            '/notification': (context) => const NotificationPage(),
-            '/onboarding': (context) => const OnboardingPage(),
+  Widget build(BuildContext context) => StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, authSnapshot) {
+        final user = authSnapshot.data;
+        return StreamProvider<Client?>(
+          key: ValueKey(user?.uid),
+          create: (_) => getClientStream(),
+          catchError: (context, error) {
+            log('Error: $error');
+            return null;
           },
+          initialData: null,
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                boldText: false,
+                textScaler: const TextScaler.linear(1),
+              ),
+              child: child!,
+            ),
+            title: 'Team Shaikh Investments',
+            theme: _buildAppTheme(),
+            // home: const AuthCheck(),
+            routes: {
+              '/': (context) => const AuthCheck(),
+              '/create_account': (context) => const CreateAccountPage(),
+              '/login': (context) => const LoginPage(),
+              '/forgot_password': (context) => const ForgotPasswordPage(),
+              '/dashboard': (context) => const DashboardPage(),
+              '/analytics': (context) => const AnalyticsPage(),
+              '/activity': (context) => const ActivityPage(),
+              '/profile': (context) => const ProfilePage(),
+              '/notification': (context) => const NotificationPage(),
+              '/onboarding': (context) => const OnboardingPage(),
+            },
+          ),
+        );
+      });
+
+  /// Build the application theme
+  ThemeData _buildAppTheme() => ThemeData(
+        scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          titleMedium: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          titleSmall: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          labelLarge:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          labelMedium:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          labelSmall:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displayLarge:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displayMedium:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displaySmall:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          headlineLarge: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          headlineMedium: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          headlineSmall: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          bodyLarge:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          bodyMedium:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          bodySmall:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
         ),
       );
 }
@@ -254,55 +266,54 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
-  Future<DatabaseService?> _fetchDatabaseService(
-          BuildContext context, String uid) async =>
+  /// Fetch DatabaseService for the given UID
+  Future<DatabaseService?> _fetchDatabaseService(String uid) async =>
       await DatabaseService.fetchCID(uid);
 
   @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
-        stream: FirebaseAuth.instance
-            .userChanges(), // Stream that listens for changes in the user's authentication state
+        // Stream that listens for changes in the user's authentication state
+        stream: FirebaseAuth.instance.userChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.transparent),
-              strokeWidth: 6.0,
-            ); // Show a loading indicator while waiting for the authentication state
+            // Show a loading indicator while waiting for the authentication state
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            log('main.dart: StreamBuilder error: ${snapshot.error}'); // Log any errors that occur during the stream
-            return Text(
-                'Error: ${snapshot.error}'); // Show an error message if there is an error in the stream
+            // Log and display any errors
+            log('AuthCheck: StreamBuilder error: ${snapshot.error}');
+            return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
-            final user =
-                snapshot.data!; // Get the authenticated user from the snapshot
-            log('main.dart: User is logged in as ${user.email}'); // Log the user's email
+            // User is authenticated
+            final user = snapshot.data!;
+            log('AuthCheck: User is logged in as ${user.email}');
             return FutureBuilder<DatabaseService?>(
-              future: _fetchDatabaseService(context, user.uid),
+              // Fetch DatabaseService for the authenticated user
+              future: _fetchDatabaseService(user.uid),
               builder: (context, serviceSnapshot) {
                 if (serviceSnapshot.connectionState ==
                     ConnectionState.waiting) {
-                  return const CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.transparent),
-                    strokeWidth: 6.0,
-                  ); // Show a loading indicator while waiting for the Firestore query
+                  // Show a loading indicator while waiting for the Firestore query
+                  return const CustomProgressIndicatorPage();
                 } else if (serviceSnapshot.hasError) {
-                  log('main.dart: Firestore query error: ${serviceSnapshot.error}'); // Log any errors that occur during the Firestore query
-                  return Text(
-                      'Error: ${serviceSnapshot.error}'); // Show an error message if there is an error in the Firestore query
+                  // Log and display any errors
+                  log('AuthCheck: Firestore query error: ${serviceSnapshot.error}');
+                  return Center(child: Text('Error: ${serviceSnapshot.error}'));
                 } else if (serviceSnapshot.hasData &&
                     serviceSnapshot.data != null) {
-                  log('main.dart: UID found in Firestore.'); // Log that the UID was found in Firestore
-                  return const InitialFaceIdPage(); // If the UID is found, show the FaceIdPage
+                  // UID found in Firestore
+                  log('AuthCheck: UID found in Firestore.');
+                  return const InitialFaceIdPage();
                 } else {
-                  log('main.dart: UID: ${user.uid} not found in Firestore.'); // Log that the UID was not found in Firestore
-                  return const OnboardingPage(); // If the UID is not found, show the OnboardingPage
+                  // UID not found in Firestore
+                  log('AuthCheck: UID: ${user.uid} not found in Firestore.');
+                  return const OnboardingPage();
                 }
               },
             );
           } else {
-            log('main.dart: User is not logged in yet.'); // Log that the user is not logged in
-            return const OnboardingPage(); // If the user is not authenticated, show the OnboardingPage
+            // User is not authenticated
+            log('AuthCheck: User is not logged in yet.');
+            return const OnboardingPage();
           }
         },
       );
