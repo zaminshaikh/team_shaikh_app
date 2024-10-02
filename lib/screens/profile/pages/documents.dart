@@ -61,7 +61,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         File file = File(filePath);
         if (await file.exists()) {
           // Use Share.shareFiles to share the file
-          await Share.shareFiles([filePath]);
+          await Share.shareXFiles([XFile(filePath)]);
         } else {}
       } else {}
     } catch (e) {}
