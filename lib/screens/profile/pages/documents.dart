@@ -95,7 +95,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
         pdfFiles = allFiles;
       });
     }
-    for (int i = 0; i < pdfFiles.length; i++) {}
+
+    print(pdfFiles.map((file) => file.name).toList());
   }
 
   List<PDF> pdfFilesConnectedUsers = [];
