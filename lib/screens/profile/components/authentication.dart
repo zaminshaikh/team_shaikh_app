@@ -4,8 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/database/database.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
 
 class AuthenticationPage extends StatefulWidget {
@@ -13,17 +15,6 @@ class AuthenticationPage extends StatefulWidget {
   @override
   // ignore: library_private_types_in_public_api
   _AuthenticationPageState createState() => _AuthenticationPageState();
-}
-
-class AuthState with ChangeNotifier {
-  String _selectedTimeOption = '1 minute'; // Default value
-
-  String get selectedTimeOption => _selectedTimeOption;
-
-  void setSelectedTimeOption(String timeOption) {
-    _selectedTimeOption = timeOption;
-    notifyListeners();
-  }
 }
 
 class _AuthenticationPageState extends State<AuthenticationPage> {
@@ -94,8 +85,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                   delegate: SliverChildListDelegate(
                     [
                       _buildLockFeatureInfo(),
-                      if (_isAppLockEnabled) 
-                        _buildSampleCupertinoListSection(),
+                      _buildSampleCupertinoListSection(),
                     ],
                   ),
                 ),
@@ -161,20 +151,17 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                   Text(
                     'App Lock',
                     style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Titillium Web',
                     ),
                   ),
                   const Spacer(),
                   CupertinoSwitch(
-                    value: _isAppLockEnabled,
+                    value: context.watch<AuthState>().isAppLockEnabled,
                     onChanged: (bool value) {
-                      setState(() {
-                        _isAppLockEnabled = value;
-                        _saveAppLockState(value);
-                      });
+                      context.read<AuthState>().setAppLockEnabled(value);
+                      _saveAppLockState(value);
+                      print('App lock enabled: $value');
                     },
                     activeColor: AppColors.defaultBlue300, // Set the active color
                   )
@@ -262,5 +249,4 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     );
   }
 }
-
 

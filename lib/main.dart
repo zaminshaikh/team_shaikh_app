@@ -185,7 +185,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
     print('AppLifecycleState changed: $state');
-
+  
     if (state == AppLifecycleState.resumed) {
       // Cancel the timer when the app is resumed
       _inactivityTimer?.cancel();
@@ -196,32 +196,56 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             !appState.hasNavigatedToFaceIDPage &&
             isAuthenticated() &&
             appState.initiallyAuthenticated &&
-            _isAppLockEnabled) {
+            appState.isAppLockEnabled) {
+      // Print when all conditions are met
+      print('All conditions met: Navigating to FaceIdPage after timer');
+  
       // Start a timer for the selected amount of time
       _inactivityTimer?.cancel();
       print('Timer cancelled');
-      _inactivityTimer =
-          Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
+      _inactivityTimer = Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
         // Navigate to FaceIdPage when the timer completes
-        print('Timer completed, navigating to FaceIdPage');
         appState.setHasNavigatedToFaceIDPage(true);
         navigatorKey.currentState?.pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const FaceIdPage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) => child,
+            pageBuilder: (context, animation, secondaryAnimation) => const FaceIdPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
           ),
         );
       });
       print('Timer started for $selectedTimeInMinutes minutes');
-    } else if (appState.justAuthenticated) {
+    } else {
+      if (state != AppLifecycleState.paused &&
+          state != AppLifecycleState.inactive &&
+          state != AppLifecycleState.hidden) {
+        print('Condition not met: AppLifecycleState is not paused, inactive, or hidden');
+      }
+      if (appState.hasNavigatedToFaceIDPage) {
+        print('Condition not met: hasNavigatedToFaceIDPage is true');
+      }
+      if (!isAuthenticated()) {
+        print('Condition not met: User is not authenticated');
+      }
+      if (!appState.initiallyAuthenticated) {
+        print('Condition not met: initiallyAuthenticated is false');
+      }
+      if (!appState.isAppLockEnabled) {
+        print('Condition not met: isAppLockEnabled is false');
+      }
+    }
+  
+    if (appState.justAuthenticated) {
       // Reset navigation flags when the user has just authenticated
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
       print('Reset navigation flags after authentication');
     }
   }
+
+
+
+
+
 
   /// Check if the user is authenticated
   bool isAuthenticated() {

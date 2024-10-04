@@ -4,6 +4,7 @@ class AuthState extends ChangeNotifier {
   bool _hasNavigatedToFaceIDPage = false;
   bool _justAuthenticated = false;
   bool _initiallyAuthenticated = false;
+  bool _isAppLockEnabled = false;
 
   // Getter for _hasNavigatedToFaceIDPage
   bool get hasNavigatedToFaceIDPage => _hasNavigatedToFaceIDPage;
@@ -13,6 +14,9 @@ class AuthState extends ChangeNotifier {
 
   // Getter for _initiallyAuthenticated
   bool get initiallyAuthenticated => _initiallyAuthenticated;
+
+  // Getter for _isAppLockEnabled
+  bool get isAppLockEnabled => _isAppLockEnabled;
 
   // Setter for _hasNavigatedToFaceIDPage
   void setHasNavigatedToFaceIDPage(bool value) {
@@ -29,6 +33,12 @@ class AuthState extends ChangeNotifier {
   // Setter for _initiallyAuthenticated
   void setInitiallyAuthenticated(bool value) {
     _initiallyAuthenticated = value;
+    notifyListeners();
+  }
+
+  // Setter for _isAppLockEnabled
+  void setAppLockEnabled(bool value) {
+    _isAppLockEnabled = value;
     notifyListeners();
   }
 }
