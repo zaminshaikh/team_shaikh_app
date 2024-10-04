@@ -147,7 +147,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       appState = Provider.of<AuthState>(context, listen: false);
       appState.setInitiallyAuthenticated(true);
 
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      await Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       if (!mounted) return;
       await CustomAlertDialog.showAlertDialog(
