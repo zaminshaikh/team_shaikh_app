@@ -71,31 +71,34 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     );
 
   Scaffold buildAuthenticationPage(
-    BuildContext context,
-  ) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(context),
-              SliverPadding(
-                padding: const EdgeInsets.all(0.0),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      _buildLockFeatureInfo(),
-                      _buildSampleCupertinoListSection(),
-                    ],
+      BuildContext context,
+    ) {
+      final appState = Provider.of<AuthState>(context, listen: false);
+  
+      return Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: <Widget>[
+                _buildAppBar(context),
+                SliverPadding(
+                  padding: const EdgeInsets.all(0.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        _buildLockFeatureInfo(),
+                        if (appState.isAppLockEnabled) _buildSampleCupertinoListSection(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
 
   SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
@@ -153,6 +156,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Titillium Web',
+                      fontSize: 22,
                     ),
                   ),
                   const Spacer(),
