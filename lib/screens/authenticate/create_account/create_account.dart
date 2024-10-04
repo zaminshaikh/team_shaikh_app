@@ -133,7 +133,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       await db.linkNewUser(user.email!);
       log('User $uid connected to Client ID $_cid');
 
-      await updateFirebaseMessagingToken(user);
+      await updateFirebaseMessagingToken(user, context);
 
       if (!mounted) return;
       await CustomAlertDialog.showAlertDialog(
