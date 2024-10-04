@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart'; // Added for CupertinoSearchTextField
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
@@ -13,6 +14,7 @@ import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/utils/PDFPreview.dart';
 import 'package:team_shaikh_app/screens/profile/utils/downloadmethod.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
+
 
 class DocumentsPage extends StatefulWidget {
   const DocumentsPage({Key? key}) : super(key: key);
@@ -35,6 +37,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
   List<Reference> filteredPdfFiles = [];
   List<PDF> pdfFilesConnectedUsers = [];
   List<PDF> filteredPdfFilesConnectedUsers = [];
+  bool isSortAscending = true;
+
 
   @override
   void didChangeDependencies() {
@@ -135,6 +139,14 @@ class _DocumentsPageState extends State<DocumentsPage> {
     }
   }
 
+  Future<Map<String, dynamic>> getFileMetadata(Reference file) async {
+    final FullMetadata metadata = await file.getMetadata();
+    return {
+      'name': file.name,
+      'dateAdded': metadata.timeCreated,
+    };
+  }
+
   void _filterPdfFiles(String query) {
     setState(() {
       filteredPdfFiles = pdfFiles
@@ -148,6 +160,27 @@ class _DocumentsPageState extends State<DocumentsPage> {
     });
   }
 
+  void _sortPdfFiles(bool ascending) async {
+    List<Map<String, dynamic>> pdfFilesWithMetadata = [];
+    for (var file in filteredPdfFiles) {
+      final metadata = await getFileMetadata(file);
+      pdfFilesWithMetadata.add(metadata);
+    }
+
+    pdfFilesWithMetadata.sort((a, b) {
+      final dateA = a['dateAdded'] as DateTime?;
+      final dateB = b['dateAdded'] as DateTime?;
+      if (dateA == null || dateB == null) return 0;
+      return ascending ? dateA.compareTo(dateB) : dateB.compareTo(dateA);
+    });
+
+    setState(() {
+      filteredPdfFiles = pdfFilesWithMetadata.map((e) => pdfFiles.firstWhere((file) => file.name == e['name'])).toList();
+      isSortAscending = ascending; 
+    });
+  }
+
+
   Scaffold buildDocumentsPage() {
     return Scaffold(
       body: Stack(
@@ -160,7 +193,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
-                      _buildSearchBar(),
+                      _buildSearchAndSortBar(context),
                       _documents(),
                     ],
                   ),
@@ -173,22 +206,133 @@ class _DocumentsPageState extends State<DocumentsPage> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchAndSortBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      child: CupertinoSearchTextField(
-        onChanged: (query) {
-          _filterPdfFiles(query);
-        },
-        onSubmitted: (query) {
-          _filterPdfFiles(query);
-        },
-        placeholder: 'Search PDF files',
-        style: const TextStyle(
-          color: Colors.white,
-          fontFamily: 'Titillium Web',
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: CupertinoSearchTextField(
+              onChanged: (query) {
+                _filterPdfFiles(query);
+              },
+              onSubmitted: (query) {
+                _filterPdfFiles(query);
+              },
+              placeholder: 'Search PDF files',
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+          ),
+          SizedBox(width: 10.0),
+          _buildSortButton(context),
+        ],
       ),
+    );
+  }
+
+  Widget _buildSortButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        _showSortOptions(context);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        splashFactory: NoSplash.splashFactory,
+      ),
+      child: SvgPicture.asset(
+        'assets/icons/sort.svg',
+        color: Colors.white,
+        width: 24.0,
+        height: 24.0,
+      ),
+    );
+  }
+
+  void _showSortOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (BuildContext context) {
+        return ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+          child: Container(
+            color: AppColors.defaultBlueGray800,
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(width: 8.0),
+                    Text(
+                      'Sort by',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.0),
+                ListTile(
+                  title: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: !isSortAscending ? AppColors.defaultBlue500 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 8.0),
+                        Text(
+                          'New to Old',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    _sortPdfFiles(false);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: isSortAscending ? AppColors.defaultBlue500 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 8.0),
+                        Text(
+                          'Old to New',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    _sortPdfFiles(true);
+                    Navigator.pop(context);
+                  },
+                ),
+                SizedBox(height: 40.0),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -230,53 +374,89 @@ class _DocumentsPageState extends State<DocumentsPage> {
                           ),
                           child: Column(
                             children: [
-                              Column(
+                              if (index != 0)
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                  child: Divider(
+                                    color: Colors.white,
+                                    thickness: 0.2,
+                                    height: 10,
+                                  ),
+                                ),
+                              Row(
                                 children: [
-                                  if (index != 0)
-                                    const Padding(
-                                      padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                      child: Divider(
-                                        color: Colors.white,
-                                        thickness: 0.2,
-                                        height: 10,
-                                      ),
-                                    ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ListTile(
-                                          splashColor: Colors.transparent,
-                                          title: Text(
-                                            filteredPdfFiles[index].name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontFamily: 'Titillium Web',
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            await downloadFile(context, client!.cid, filteredPdfFiles[index].name);
-                                            String filePath = await downloadFile(context, client!.cid, filteredPdfFiles[index].name);
-                                            await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => PDFScreen(filePath),
+                                  Expanded(
+                                    child: FutureBuilder<Map<String, dynamic>>(
+                                      future: getFileMetadata(filteredPdfFiles[index]),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return ListTile(
+                                            title: Text(
+                                              filteredPdfFiles[index].name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
                                               ),
-                                            );
-                                          },
-                                          trailing: IconButton(
-                                            icon: SvgPicture.asset(
-                                              'assets/icons/download.svg',
-                                              width: 24,
-                                              height: 24,
-                                              color: AppColors.defaultBlueGray300,
                                             ),
-                                            onPressed: () {
-                                              shareFile(context, client!.cid, filteredPdfFiles[index].name);
+                                            subtitle: const Text('Loading...'),
+                                          );
+                                        } else if (snapshot.hasError) {
+                                          return ListTile(
+                                            title: Text(
+                                              filteredPdfFiles[index].name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
+                                            ),
+                                            subtitle: const Text('Error loading metadata'),
+                                          );
+                                        } else {
+                                          final metadata = snapshot.data!;
+                                          final dateAdded = metadata['dateAdded'] as DateTime?;
+                                          return ListTile(
+                                            splashColor: Colors.transparent,
+                                            title: Text(
+                                              filteredPdfFiles[index].name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              dateAdded != null
+                                                  ? 'Added on: ${DateFormat('MMMM dd, yyyy').format(dateAdded.toLocal())}'
+                                                  : 'Date not available',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              await downloadFile(context, client!.cid, filteredPdfFiles[index].name);
+                                              String filePath = await downloadFile(context, client!.cid, filteredPdfFiles[index].name);
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => PDFScreen(filePath),
+                                                ),
+                                              );
                                             },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                            trailing: IconButton(
+                                              icon: SvgPicture.asset(
+                                                'assets/icons/download.svg',
+                                                width: 24,
+                                                height: 24,
+                                                color: AppColors.defaultBlueGray300,
+                                              ),
+                                              onPressed: () {
+                                                shareFile(context, client!.cid, filteredPdfFiles[index].name);
+                                              },
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
@@ -304,52 +484,88 @@ class _DocumentsPageState extends State<DocumentsPage> {
                           ),
                           child: Column(
                             children: [
-                              Column(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                    child: Divider(
-                                      color: Colors.white,
-                                      thickness: 0.2,
-                                      height: 10,
-                                    ),
+                              if (index != 0)
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                  child: Divider(
+                                    color: Colors.white,
+                                    thickness: 0.2,
+                                    height: 10,
                                   ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ListTile(
-                                          splashColor: Colors.transparent,
-                                          title: Text(
-                                            filteredPdfFilesConnectedUsers[index].file.name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontFamily: 'Titillium Web',
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            String filePath = '';
-                                            filePath = await downloadFile(context, filteredPdfFilesConnectedUsers[index].cid, filteredPdfFilesConnectedUsers[index].file.name);
-                                            await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => PDFScreen(filePath),
+                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: FutureBuilder<Map<String, dynamic>>(
+                                      future: getFileMetadata(filteredPdfFilesConnectedUsers[index].file),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return ListTile(
+                                            title: Text(
+                                              filteredPdfFilesConnectedUsers[index].file.name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
                                               ),
-                                            );
-                                          },
-                                          trailing: IconButton(
-                                            icon: SvgPicture.asset(
-                                              'assets/icons/download.svg',
-                                              width: 24,
-                                              height: 24,
-                                              color: AppColors.defaultBlueGray300,
                                             ),
-                                            onPressed: () {
-                                              shareFile(context, filteredPdfFilesConnectedUsers[index].cid, filteredPdfFilesConnectedUsers[index].file.name);
+                                            subtitle: const Text('Loading...'),
+                                          );
+                                        } else if (snapshot.hasError) {
+                                          return ListTile(
+                                            title: Text(
+                                              filteredPdfFilesConnectedUsers[index].file.name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
+                                            ),
+                                            subtitle: const Text('Error loading metadata'),
+                                          );
+                                        } else {
+                                          final metadata = snapshot.data!;
+                                          final dateAdded = metadata['dateAdded'] as DateTime?;
+                                          return ListTile(
+                                            splashColor: Colors.transparent,
+                                            title: Text(
+                                              filteredPdfFilesConnectedUsers[index].file.name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              dateAdded != null
+                                                  ? 'Added on: ${DateFormat('MMMM dd, yyyy').format(dateAdded.toLocal())}'
+                                                  : 'Date not available',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'Titillium Web',
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              String filePath = await downloadFile(context, filteredPdfFilesConnectedUsers[index].cid, filteredPdfFilesConnectedUsers[index].file.name);
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => PDFScreen(filePath),
+                                                ),
+                                              );
                                             },
-                                          ),
-                                        ),
-                                      )
-                                    ],
+                                            trailing: IconButton(
+                                              icon: SvgPicture.asset(
+                                                'assets/icons/download.svg',
+                                                width: 24,
+                                                height: 24,
+                                                color: AppColors.defaultBlueGray300,
+                                              ),
+                                              onPressed: () {
+                                                shareFile(context, filteredPdfFilesConnectedUsers[index].cid, filteredPdfFilesConnectedUsers[index].file.name);
+                                              },
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
@@ -360,7 +576,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     },
                   ),
                 ),
-            ],
+            ]
+
           ],
         ),
       );
