@@ -201,16 +201,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   }
 
   /// Checks if the passwords match.
-  bool _doPasswordsMatch() {
-    return _createAccountPasswordString ==
+  bool _doPasswordsMatch() => _createAccountPasswordString ==
             _confirmCreateAccountPasswordString &&
         _createAccountPasswordString.isNotEmpty;
-  }
 
   /// Builds the create account screen widget.
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: SingleChildScrollView(
         // Wrapping everything in a column to arrange children vertically
         child: Column(
@@ -338,11 +335,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ),
     );
-  }
 
   /// Builds the Client ID input field.
-  Widget _buildClientIDField() {
-    return Container(
+  Widget _buildClientIDField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -428,11 +423,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Google Sign-Up button.
-  Widget _buildGoogleSignUpButton() {
-    return GestureDetector(
+  Widget _buildGoogleSignUpButton() => GestureDetector(
       onTap: _isButtonEnabled
           ? () async {
               await GoogleAuthService().signUpWithGoogle(
@@ -477,11 +470,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ),
     );
-  }
 
   /// Builds the OR divider.
-  Widget _buildOrDivider() {
-    return Row(
+  Widget _buildOrDivider() => Row(
       children: [
         Expanded(
           child: Container(
@@ -508,11 +499,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ],
     );
-  }
 
   /// Builds the Email input field.
-  Widget _buildEmailField() {
-    return Container(
+  Widget _buildEmailField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -552,11 +541,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Password input field.
-  Widget _buildPasswordField() {
-    return Container(
+  Widget _buildPasswordField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -610,11 +597,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Confirm Password input field.
-  Widget _buildConfirmPasswordField() {
-    return Container(
+  Widget _buildConfirmPasswordField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -662,11 +647,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Next button.
-  Widget _buildNextButton() {
-    return GestureDetector(
+  Widget _buildNextButton() => GestureDetector(
       onTap: _doPasswordsMatch() ? () => _signUserUp() : null,
       child: Container(
         height: 50,
@@ -694,11 +677,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ),
     );
-  }
 
   /// Builds the login option row.
-  Widget _buildLoginOption() {
-    return Row(
+  Widget _buildLoginOption() => Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -734,5 +715,4 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ],
     );
-  }
 }
