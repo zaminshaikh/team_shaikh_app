@@ -246,6 +246,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
       print('Reset navigation flags after authentication');
+      print('Reset navigation flags after authentication');
     }
   }
 
