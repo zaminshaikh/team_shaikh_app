@@ -91,11 +91,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       db = DatabaseService.withCID(userCredential.user!.uid, _cid);
 
       // Check if CID exists and is not linked.
-      if (!(await db.docExists(_cid))) {
+      if (!(await db.checkDocumentExists(_cid))) {
         await _showErrorAndDeleteUser(
             'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.');
         return;
-      } else if (await db.docLinked(_cid)) {
+      } else if (await db.checkDocumentLinked(_cid)) {
         await _showErrorAndDeleteUser(
             'User already exists for given Client ID $_cid. Please log in instead.');
         return;
@@ -132,7 +132,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       await db.linkNewUser(user.email!);
       log('User $uid connected to Client ID $_cid');
 
-      await updateFirebaseMessagingToken(user);
+      await updateFirebaseMessagingToken(user, context);
 
       if (!mounted) return;
       await CustomAlertDialog.showAlertDialog(
@@ -146,7 +146,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       appState = Provider.of<AuthState>(context, listen: false);
       appState.setInitiallyAuthenticated(true);
 
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      await Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       if (!mounted) return;
       await CustomAlertDialog.showAlertDialog(

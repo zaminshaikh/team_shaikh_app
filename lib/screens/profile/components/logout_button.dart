@@ -76,7 +76,7 @@ class _LogoutButtonState extends State<LogoutButton> {
   void signUserOut(BuildContext context) async {
     log('Profiles.dart: Signing out...');
 
-    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser);
+    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
 

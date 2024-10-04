@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         email: emailController.text,
         password: passwordController.text,
       );
-      await updateFirebaseMessagingToken(userCredential.user);
+      await updateFirebaseMessagingToken(userCredential.user, context);
       log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
       log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
 
@@ -383,7 +383,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             }
                             // Fetch CID using async constructor
                             DatabaseService? db =
-                                await DatabaseService.fetchCID(user!.uid);
+                                await DatabaseService.fetchCID(user!.uid, context);
 
                             if (db != null) {
                               try {

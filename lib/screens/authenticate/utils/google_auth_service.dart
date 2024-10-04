@@ -46,7 +46,7 @@ class GoogleAuthService {
       // Check if the uid exists in Firestore
       final User? user = userCredential.user;
       if (user != null) {
-        final DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+        final DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
         if (db == null) {
           debugPrint(
               'GoogleAuthService: UID does not exist in Firestore. Deleting UID and redirecting to login.');
@@ -70,7 +70,7 @@ class GoogleAuthService {
         return null;
       }
           
-      await updateFirebaseMessagingToken(user);
+      await updateFirebaseMessagingToken(user, context);
 
       // Navigate to Dashboard
       await Navigator.pushReplacement(
@@ -161,7 +161,7 @@ class GoogleAuthService {
           // Add the new user to Firestore with the provided CID
           debugPrint('cid: $cid');
           await db.linkNewUser(user.email!);
-          await updateFirebaseMessagingToken(user);
+          await updateFirebaseMessagingToken(user, context);
 
         } catch (e) {
           // If there is an error adding the new user to Firestore, log the error and show an alert
