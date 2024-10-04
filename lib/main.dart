@@ -181,7 +181,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         }
       });
 
-  @override
+    @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
     print('AppLifecycleState changed: $state');
@@ -203,7 +203,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       // Start a timer for the selected amount of time
       _inactivityTimer?.cancel();
       print('Timer cancelled');
-      _inactivityTimer = Timer(Duration(minutes: selectedTimeInMinutes.toInt()), () {
+      _inactivityTimer = Timer(Duration(minutes: appState.selectedTimeInMinutes.toInt()), () {
         // Navigate to FaceIdPage when the timer completes
         appState.setHasNavigatedToFaceIDPage(true);
         navigatorKey.currentState?.pushReplacement(
@@ -213,7 +213,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
         );
       });
-      print('Timer started for $selectedTimeInMinutes minutes');
+      print('Timer started for ${appState.selectedTimeInMinutes} minutes');
     } else {
       if (state != AppLifecycleState.paused &&
           state != AppLifecycleState.inactive &&

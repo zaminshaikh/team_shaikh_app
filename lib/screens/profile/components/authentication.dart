@@ -24,8 +24,6 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   DatabaseService? _databaseService;
 
   String? cid;
-  String? selectedTimeOption;
-  bool _isAppLockEnabled = false;
 
   @override
   void initState() {
@@ -36,29 +34,29 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
 
   Future<void> _loadSelectedTimeOption() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
-    });
-    print('Loaded selected time option: $selectedTimeOption');
+    final timeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
+    context.read<AuthState>().setSelectedTimeOption(timeOption);
+    print('Loaded selected time option: $timeOption');
   }
 
   Future<void> _saveSelectedTimeOption(String timeOption) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTimeOption', timeOption);
+    context.read<AuthState>().setSelectedTimeOption(timeOption);
     print('Saved selected time option: $timeOption');
   }
 
   Future<void> _loadAppLockState() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isAppLockEnabled = prefs.getBool('isAppLockEnabled') ?? false;
-    });
-    print('Loaded app lock state: $_isAppLockEnabled');
+    final isEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+    context.read<AuthState>().setAppLockEnabled(isEnabled);
+    print('Loaded app lock state: $isEnabled');
   }
 
   Future<void> _saveAppLockState(bool isEnabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isAppLockEnabled', isEnabled);
+    context.read<AuthState>().setAppLockEnabled(isEnabled);
     print('Saved app lock state: $isEnabled');
   }
 
@@ -99,7 +97,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
       );
     }
 
-
+    
   SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
@@ -243,11 +241,11 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
       ),
       onTap: () {
         setState(() {
-          selectedTimeOption = timeOption;
+          context.read<AuthState>().setSelectedTimeOption(timeOption);
           _saveSelectedTimeOption(timeOption);
         });
       },
-      trailing: selectedTimeOption == timeOption
+      trailing: context.watch<AuthState>().selectedTimeOption == timeOption
           ? const Icon(Icons.check_rounded, color: AppColors.defaultBlueGray400)
           : null,
     );
