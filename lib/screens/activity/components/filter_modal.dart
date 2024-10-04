@@ -1,7 +1,6 @@
 // activity_filter_modal.dart
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/utils/resources.dart';
 import 'package:team_shaikh_app/utils/utilities.dart';
 

@@ -26,7 +26,7 @@ class _LogoutButtonState extends State<LogoutButton> {
           children: [
             GestureDetector(
               onTap: () async {
-                DatabaseService? db = await DatabaseService.withCID(
+                DatabaseService? db = DatabaseService.withCID(
                     FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
                 List<dynamic>? tokens =
                     await db.getField('tokens') as List<dynamic>? ?? [];

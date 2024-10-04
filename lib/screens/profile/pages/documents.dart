@@ -84,7 +84,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
 
 
   Future<void> listPDFFiles() async {
-    final String? userFolder = client!.cid;
+    final String userFolder = client!.cid;
     final ListResult result =
         await storage.ref('${Config.get('DOCUMENTS_PATH')}/$userFolder').listAll();
     final List<Reference> allFiles =
@@ -95,7 +95,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
         pdfFiles = allFiles;
       });
     }
-    for (int i = 0; i < pdfFiles.length; i++) {}
+
+    print(pdfFiles.map((file) => file.name).toList());
   }
 
   List<PDF> pdfFilesConnectedUsers = [];

@@ -27,7 +27,7 @@ class _DashboardPageState extends State<DashboardPage>
   Client? client;
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
-  bool _hasTransitioned = false;
+  final bool _hasTransitioned = false;
 
   @override
   void initState() {
