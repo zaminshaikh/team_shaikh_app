@@ -125,7 +125,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         yield null;
       } else {
         // Fetch DatabaseService for the authenticated user
-        DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+        DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
         if (db == null) {
           // DatabaseService not found
           yield null;
@@ -139,7 +139,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
-
+  
     if ((state == AppLifecycleState.paused ||
             state == AppLifecycleState.inactive ||
             state == AppLifecycleState.hidden) &&
@@ -156,12 +156,37 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               child,
         ),
       );
-    } else if (appState.justAuthenticated) {
+      print('Navigated to FaceIdPage: All conditions met');
+    } else {
+      if (!(state == AppLifecycleState.paused ||
+            state == AppLifecycleState.inactive ||
+            state == AppLifecycleState.hidden)) {
+        print('Condition not met: AppLifecycleState is not paused, inactive, or hidden');
+      }
+      if (appState.hasNavigatedToFaceIDPage) {
+        print('Condition not met: hasNavigatedToFaceIDPage is true');
+      }
+      if (!isAuthenticated()) {
+        print('Condition not met: User is not authenticated');
+      }
+      if (!appState.initiallyAuthenticated) {
+        print('Condition not met: initiallyAuthenticated is false');
+      }
+    }
+  
+    if (appState.justAuthenticated) {
       // Reset navigation flags when the user has just authenticated
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
+      print('Reset navigation flags after authentication');
     }
   }
+
+
+
+
+
+
 
   /// Check if the user is authenticated
   bool isAuthenticated() {
@@ -258,7 +283,9 @@ class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
   /// Fetch DatabaseService for the given UID
-  Future<DatabaseService?> _fetchDatabaseService(String uid) async => await DatabaseService.fetchCID(uid);
+  Future<DatabaseService?> _fetchDatabaseService(String uid, BuildContext context) async {
+    return await DatabaseService.fetchCID(uid, context);
+  }
 
     @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
