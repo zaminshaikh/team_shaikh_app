@@ -491,7 +491,7 @@ class DatabaseService {
           FirebaseFunctions.instance.httpsCallable('checkDocumentLinked');
 
       // Call the function with 'cid' as the parameter
-      final result = await callable.call({'cid': cid, 'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'});
+      final result = await callable.call({'cid': cid, 'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')});
 
       // Return the boolean result from the function call
       return result.data['isLinked'] as bool;
