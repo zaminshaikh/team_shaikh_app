@@ -260,7 +260,7 @@ class AuthCheck extends StatelessWidget {
   /// Fetch DatabaseService for the given UID
   Future<DatabaseService?> _fetchDatabaseService(String uid) async => await DatabaseService.fetchCID(uid);
 
-  @override
+    @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
       // Stream that listens for changes in the user's authentication state
       stream: FirebaseAuth.instance.userChanges(),
@@ -276,29 +276,7 @@ class AuthCheck extends StatelessWidget {
           // User is authenticated
           final user = snapshot.data!;
           log('AuthCheck: User is logged in as ${user.email}');
-          return FutureBuilder<DatabaseService?>(
-            // Fetch DatabaseService for the authenticated user
-            future: _fetchDatabaseService(user.uid),
-            builder: (context, serviceSnapshot) {
-              if (serviceSnapshot.connectionState == ConnectionState.waiting) {
-                // Show a loading indicator while waiting for the Firestore query
-                return const CustomProgressIndicatorPage();
-              } else if (serviceSnapshot.hasError) {
-                // Log and display any errors
-                log('AuthCheck: Firestore query error: ${serviceSnapshot.error}');
-                return Center(child: Text('Error: ${serviceSnapshot.error}'));
-              } else if (serviceSnapshot.hasData &&
-                  serviceSnapshot.data != null) {
-                // UID found in Firestore
-                log('AuthCheck: UID found in Firestore.');
-                return const InitialFaceIdPage();
-              } else {
-                // UID not found in Firestore
-                log('AuthCheck: UID: ${user.uid} not found in Firestore.');
-                return const OnboardingPage();
-              }
-            },
-          );
+          return const InitialFaceIdPage();
         } else {
           // User is not authenticated
           log('AuthCheck: User is not logged in yet.');
