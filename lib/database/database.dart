@@ -9,26 +9,43 @@ import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
+/// A service class for interacting with the Firestore database.
+///
+/// This class handles operations related to the user's data in Firestore,
+/// such as fetching client data, updating fields, and managing notifications.
 class DatabaseService {
-  String? cid;
-  String? uid;
-  bool isConnectedUser = false;
+  String? cid; // Client ID: Document ID in Firestore
+  String? uid; // User ID: Firebase Auth UID
+
+  // Flag to indicate if the user is connected to another user  
+  // This is so we don't fetch the connected user's connected users and avoid infinite recursion
+  bool isConnectedUser = false; 
+
   static final CollectionReference usersCollection = FirebaseFirestore.instance
       .collection(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'));
+
   CollectionReference? assetsSubCollection;
   CollectionReference? activitiesSubCollection;
   CollectionReference? notificationsSubCollection;
   CollectionReference? graphPointsSubCollection;
   List<dynamic>? connectedUsersCIDs;
 
+  /// Constructs a [DatabaseService] instance with the given [uid].
   DatabaseService(this.uid);
+
+  /// Constructs a [DatabaseService] instance for a connected user with the given [cid].
   DatabaseService.connectedUser(this.cid) {
     setSubCollections(this);
     isConnectedUser = true;
   }
+
+  /// Constructs a [DatabaseService] instance with the given [uid] and [cid].
   DatabaseService.withCID(this.uid, this.cid);
 
-  // Asynchronous factory constructor
+  /// Asynchronously creates a [DatabaseService] instance by fetching the [cid] for the given [uid].
+  ///
+  /// Returns a [Future] that completes with a [DatabaseService] instance or `null` if the [uid] is not found.
+  /// Each user in Firestore has a document with a unique [uid] field. If the [uid] is found, the method fetches the [cid] and connected users from the document.
   static Future<DatabaseService?> fetchCID(String uid) async {
     DatabaseService db = DatabaseService(uid);
 
@@ -63,6 +80,9 @@ class DatabaseService {
     return db;
   }
 
+  /// Sets the sub-collections for the given [DatabaseService] instance.
+  ///
+  /// This includes assets, activities, notifications, and graph points sub-collections.
   static void setSubCollections(DatabaseService db) {
     db.assetsSubCollection = usersCollection
         .doc(db.cid)
@@ -78,24 +98,29 @@ class DatabaseService {
         .collection(Config.get('NOTIFICATIONS_SUBCOLLECTION'));
   }
 
-  // Stream that listens to changes in the user's client data and subcollections
+  /// Returns a stream that listens to changes in the user's client data and sub-collections.
+  ///
+  /// The stream emits [Client] objects containing updated client data whenever changes occur.
   Stream<Client?> getClientStream() {
     if (cid == null) {
       return Stream.value(null);
     }
+
+    log('database.dart: Fetching client stream for CID: $cid');
 
     try {
       // Stream for the main client document
       Stream<DocumentSnapshot> clientDocumentStream =
           usersCollection.doc(cid).snapshots();
 
+      // Stream for connected users
       Stream<List<Client?>> connectedUsersStream;
       if (!isConnectedUser &&
           connectedUsersCIDs != null &&
           connectedUsersCIDs!.isNotEmpty) {
         connectedUsersStream =
-            Rx.combineLatestList(connectedUsersCIDs!.map((cid) {
-          DatabaseService db = DatabaseService.connectedUser(cid);
+            Rx.combineLatestList(connectedUsersCIDs!.map((connectedCid) {
+          DatabaseService db = DatabaseService.connectedUser(connectedCid);
           return db.getClientStream().asBroadcastStream();
         }).toList())
                 .asBroadcastStream();
@@ -103,7 +128,7 @@ class DatabaseService {
         connectedUsersStream = Stream.value([null]);
       }
 
-      // Stream for the activities subcollection
+      // Stream for the activities sub-collection
       Stream<List<Activity>> activitiesStream = activitiesSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs
@@ -111,7 +136,7 @@ class DatabaseService {
                   (doc) => Activity.fromMap(doc.data() as Map<String, dynamic>))
               .toList());
 
-      // Stream for the assets subcollection (assuming a single document in assets)
+      // Stream for the assets sub-collection
       Stream<Assets> assetsStream =
           assetsSubCollection!.snapshots().map((snapshot) {
         Map<String, Fund> funds = {};
@@ -128,7 +153,7 @@ class DatabaseService {
         return Assets.fromMap(funds, general);
       });
 
-      // Stream for the notifications subcollection
+      // Stream for the notifications sub-collection
       Stream<List<Notif?>> notificationsStream = notificationsSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs.map((doc) {
@@ -144,7 +169,7 @@ class DatabaseService {
                 }
               }).toList());
 
-      // Stream for the graphPoints subcollection
+      // Stream for the graphPoints sub-collection
       Stream<List<GraphPoint?>> graphPointsStream = graphPointsSubCollection!
           .snapshots()
           .map((snapshot) => snapshot.docs.map((doc) {
@@ -156,18 +181,21 @@ class DatabaseService {
                 }
               }).toList());
 
+      // Combine all the streams into a single stream emitting Client objects
       return Rx.combineLatest6(
           clientDocumentStream,
           activitiesStream,
           assetsStream,
           notificationsStream,
           graphPointsStream,
-          connectedUsersStream, (DocumentSnapshot clientDoc,
-              List<Activity> activities,
-              Assets assets,
-              List<Notif?> notifications,
-              List<GraphPoint?> graphPoints,
-              List<Client?> connectedUsers) {
+          connectedUsersStream, (
+        DocumentSnapshot clientDoc,
+        List<Activity> activities,
+        Assets assets,
+        List<Notif?> notifications,
+        List<GraphPoint?> graphPoints,
+        List<Client?> connectedUsers,
+      ) {
         final clientData = clientDoc.data() as Map<String, dynamic>?;
 
         if (clientData == null) {
@@ -185,7 +213,7 @@ class DatabaseService {
           clientData,
           activities: activities,
           assets: assets,
-          notifications: notifications.whereType<Notif>().toList(),
+          notifications: notifications.whereType<Notif>().toList(), // Filter out null values
           graphPoints: filteredGraphPoints,
           connectedUsers: connectedUsers.whereType<Client>().toList(),
         );
@@ -199,11 +227,10 @@ class DatabaseService {
   /// Returns a field from the user document.
   ///
   /// Parameters:
-  /// - [uid]: The ID of the user.
   /// - [fieldName]: The name of the field to retrieve.
   ///
   /// Returns:
-  /// - A Future that completes with the value of the specified field.
+  /// - A [Future] that completes with the value of the specified field, or `null` if the field does not exist.
   Future<dynamic> getField(String fieldName) async {
     try {
       DocumentSnapshot userDoc = await usersCollection.doc(cid).get();
@@ -230,7 +257,7 @@ class DatabaseService {
   /// - [newValue]: The new value to set for the field.
   ///
   /// Returns:
-  /// - A Future that completes when the field is updated.
+  /// - A [Future] that completes when the field is updated.
   Future<void> updateField(String fieldName, dynamic newValue) async {
     try {
       await usersCollection.doc(cid).update({fieldName: newValue});
@@ -239,6 +266,13 @@ class DatabaseService {
     }
   }
 
+  /// Marks a specific notification as read.
+  ///
+  /// Parameters:
+  /// - [notificationId]: The ID of the notification to mark as read.
+  ///
+  /// Returns:
+  /// - A [Future] that completes with `true` if successful, `false` otherwise.
   Future<bool> markNotificationAsRead(String notificationId) async {
     if (cid == null) {
       log('CID is null');
@@ -266,6 +300,10 @@ class DatabaseService {
     return false;
   }
 
+  /// Marks all notifications as read for the current user and connected users.
+  ///
+  /// Returns:
+  /// - A [Future] that completes with `true` if successful, `false` otherwise.
   Future<bool> markAllNotificationsAsRead() async {
     if (cid == null) {
       log('CID is null');
@@ -314,10 +352,8 @@ class DatabaseService {
   /// Otherwise, the method updates the existing data with the new user's [uid] and [email] and sets the document in the database with the updated data.
   ///
   /// Throws a [FirebaseException] if:
-  /// - **No document found**
-  ///   - The document does not exist for the given [cid]
-  /// - **User already exists**
-  ///   - The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid]
+  /// - **No document found**: The document does not exist for the given [cid].
+  /// - **User already exists**: The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid].
   ///
   /// Catches any other unhandled exceptions and logs an error message.
   ///
@@ -395,26 +431,22 @@ class DatabaseService {
   Stream<DocumentSnapshot> get getUser => usersCollection.doc(cid).snapshots();
 
   /// Checks if a document with the given [cid] exists in the users collection.
-  /// Returns a [Future] that completes with a boolean value indicating whether the document exists or not.
+  ///
+  /// Returns a [Future] that completes with `true` if the document exists, `false` otherwise.
   ///
   /// Parameters:
   /// - [cid]: The ID of the document to check.
-  ///
-  /// Returns:
-  /// - A [Future] that completes with a boolean value indicating whether the document exists or not.
   Future<bool> docExists(String cid) async {
     DocumentSnapshot doc = await usersCollection.doc(cid).get();
     return doc.exists;
   }
 
   /// Checks if a document with the given [cid] is linked to a user.
-  /// Returns a [Future] that completes with a boolean value indicating whether the document is linked or not.
+  ///
+  /// Returns a [Future] that completes with `true` if the document is linked, `false` otherwise.
   ///
   /// Parameters:
   /// - [cid]: The ID of the document to check.
-  ///
-  /// Returns:
-  /// - A [Future] that completes with a boolean value indicating whether the document is linked or not.
   Future<bool> docLinked(String cid) async {
     DocumentSnapshot doc = await usersCollection.doc(cid).get();
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;

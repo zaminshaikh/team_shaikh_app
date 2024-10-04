@@ -4,31 +4,72 @@ import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 
+/// Represents a client in the application.
+///
+/// The `Client` class encapsulates all the relevant data for a client, including personal information,
+/// financial data, notifications, activities, assets, and connected users.
 class Client {
-  
+  /// Client ID (CID), a unique identifier for the client.
   final String cid;
+
+  /// User ID (UID) from Firebase Authentication.
   final String uid;
+
+  /// Client's first name.
   final String firstName;
+
+  /// Client's last name.
   final String lastName;
+
+  /// Company name associated with the client, if any.
   final String? companyName;
+
+  /// Client's address.
   final String? address;
+
+  /// Client's date of birth.
   final DateTime? dob;
+
+  /// Client's phone number.
   final String? phoneNumber;
+
+  /// Email used in the app for authentication.
   final String? appEmail;
+
+  /// Initial email associated with the client.
   final String? initEmail;
+
+  /// Date of the client's first deposit.
   final DateTime? firstDepositDate;
+
+  /// List of beneficiaries associated with the client.
   final List<String>? beneficiaries;
+
+  /// List of connected users (e.g., family members).
   final List<Client?>? connectedUsers;
+
+  /// Total assets value for the client.
   final double? totalAssets;
+
+  /// Number of unread notifications.
   final int? numNotifsUnread;
+
+  /// List of recipients associated with the client's activities.
   final List<String>? recipients;
+
+  /// List of notifications for the client.
   List<Notif>? notifications;
+
+  /// List of activities (transactions) for the client.
   List<Activity>? activities;
+
+  /// List of graph points for displaying financial data over time.
   List<GraphPoint>? graphPoints;
+
+  /// Financial assets associated with the client.
   final Assets? assets;
 
-
-
+  /// Creates a [Client] instance with the given parameters.
   Client({
     required this.cid,
     required this.uid,
@@ -52,14 +93,19 @@ class Client {
     this.recipients,
   });
 
-
-  factory Client.fromMap(Map<String, dynamic>? data,
-      {String? cid,
-      List<Activity>? activities,
-      Assets? assets,
-      List<Notif>? notifications,
-      List<GraphPoint>? graphPoints,
-      List<Client?>? connectedUsers}) {
+  /// Creates a [Client] instance from a [Map] representation.
+  ///
+  /// [data] is a map containing client data, typically from Firestore.
+  /// Additional parameters can be provided for activities, assets, notifications, etc.
+  factory Client.fromMap(
+    Map<String, dynamic>? data, {
+    String? cid,
+    List<Activity>? activities,
+    Assets? assets,
+    List<Notif>? notifications,
+    List<GraphPoint>? graphPoints,
+    List<Client?>? connectedUsers,
+  }) {
     if (data == null) {
       return Client.empty();
     }
@@ -78,7 +124,8 @@ class Client {
       firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
       beneficiaries: List<String>.from(data['beneficiaries'] ?? []),
       numNotifsUnread: notifications?.where((notif) => !notif.isRead).length,
-      recipients: activities?.map((activity) => activity.recipient).toSet().toList(),
+      recipients:
+          activities?.map((activity) => activity.recipient).toSet().toList(),
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],
       graphPoints: graphPoints ?? [],
@@ -87,7 +134,7 @@ class Client {
     );
   }
 
-  // Empty constructor
+  /// Creates an empty [Client] instance with default values.
   Client.empty()
       : cid = '',
         uid = '',
@@ -110,6 +157,9 @@ class Client {
         graphPoints = [],
         assets = Assets.empty();
 
+  /// Converts the [Client] instance into a [Map] representation.
+  ///
+  /// Useful for encoding data to store in Firestore.
   Map<String, dynamic> toMap() => {
         'cid': cid,
         'uid': uid,

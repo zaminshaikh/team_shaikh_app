@@ -33,6 +33,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (client == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       body: Stack(
         children: [
@@ -349,7 +356,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           Positioned(
                             right: 0,
                             top: 5,
-                            child: (client!.numNotifsUnread ?? 0) > 0
+                            child: (client?.numNotifsUnread ?? 0) > 0
                                 ? Container(
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF267DB5),
@@ -360,7 +367,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       minHeight: 18,
                                     ),
                                     child: Text(
-                                      '${client!.numNotifsUnread}',
+                                      '${client?.numNotifsUnread}',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800,

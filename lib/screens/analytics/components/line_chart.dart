@@ -328,7 +328,6 @@ class _LineChartSectionState extends State<LineChartSection> {
   /// This includes settings for how tooltips appear when the user interacts with the chart.
   LineTouchData _buildLineTouchData() => LineTouchData(
         touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: AppColors.defaultBlueGray100,
           tooltipRoundedRadius: 16.0,
           getTooltipItems: (List<LineBarSpot> touchedSpots) =>
               touchedSpots.map((barSpot) {

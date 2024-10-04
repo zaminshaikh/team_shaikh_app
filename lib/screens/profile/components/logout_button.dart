@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
@@ -25,7 +26,7 @@ class _LogoutButtonState extends State<LogoutButton> {
           children: [
             GestureDetector(
               onTap: () async {
-                DatabaseService? db = await DatabaseService.withCID(
+                DatabaseService? db = DatabaseService.withCID(
                     FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
                 List<dynamic>? tokens =
                     await db.getField('tokens') as List<dynamic>? ?? [];
@@ -74,24 +75,27 @@ class _LogoutButtonState extends State<LogoutButton> {
 
   void signUserOut(BuildContext context) async {
     log('Profiles.dart: Signing out...');
+
+    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser);
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
 
     // Async gap mounted widget check
-    if (!mounted) {
-      log('Profiles.dart: No longer mounted!');
-      return;
+    if (mounted) {
+      // Pop the current page and go to login
+      // await Navigator.pushAndRemoveUntil(
+      //   context,
+      //   PageRouteBuilder(
+      //     pageBuilder: (context, animation1, animation2) =>
+      //         const OnboardingPage(),
+      //     transitionDuration: Duration.zero,
+      //   ),
+      //   (route) => false,
+      // );
+
+      await Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
     }
 
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) =>
-            const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
-    );
+
   }
 }

@@ -27,20 +27,20 @@ class _DashboardPageState extends State<DashboardPage>
   Client? client;
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
-  bool _hasTransitioned = false;
+  final bool _hasTransitioned = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the animation controller and offset animation synchronously
+    // Initialize the animation controller and set its value to 1.0 by default
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    );
+    )..value = 1.0; // Animation is at the end by default
 
     _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.5),
-      end: Offset.zero,
+      begin: const Offset(0.0, 0.5), // Start position (offset)
+      end: Offset.zero, // End position (no offset)
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -81,23 +81,22 @@ class _DashboardPageState extends State<DashboardPage>
     } else {}
   }
 
+  /// Initializes the transition state and handles the animation logic.
   Future<void> _initializeTransitionState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _hasTransitioned = prefs.getBool('hasTransitioned') ?? false;
+    bool hasTransitioned = prefs.getBool('hasTransitioned') ?? false;
 
-    if (!_hasTransitioned) {
+    if (!hasTransitioned) {
+      // Reset controller to start of animation
+      _controller.value = 0.0;
+
       // Start the animation
-      _controller.forward();
-
-      // Set the flag to true after the animation completes
-      _controller.addStatusListener((status) async {
-        if (status == AnimationStatus.completed) {
-          _hasTransitioned = true;
-          await prefs.setBool('hasTransitioned', true);
-        }
+      await _controller.forward().whenComplete(() async {
+        // Set the flag to true after the animation completes
+        await prefs.setBool('hasTransitioned', true);
       });
     } else {
-      // If already transitioned, jump to the end of the animation
+      // Animation has already been shown; controller remains at end
       _controller.value = 1.0;
     }
   }

@@ -63,7 +63,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
         File file = File(filePath);
         if (await file.exists()) {
           // Use Share.shareFiles to share the file
-          await Share.shareFiles([filePath]);
+          await Share.shareXFiles([XFile(filePath)]);
         } else {}
       } else {}
     } catch (e) {}
@@ -85,7 +85,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
 
   Future<void> listPDFFiles() async {
-    final String? userFolder = client!.cid;
+    final String userFolder = client!.cid;
     final ListResult result =
         await storage.ref('${Config.get('DOCUMENTS_PATH')}/$userFolder').listAll();
     final List<Reference> allFiles =
@@ -97,6 +97,8 @@ class _DocumentsPageState extends State<DocumentsPage> {
         filteredPdfFiles = allFiles;
       });
     }
+
+    print(pdfFiles.map((file) => file.name).toList());
   }
 
   Future<void> listPDFFilesConnectedUsers() async {
