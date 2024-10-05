@@ -143,54 +143,100 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               // Logo and branding
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.defaultBlue500, // Start color
-                      Color.fromARGB(255, 17, 24, 39), // End color
-                    ],
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        const SizedBox(height: 60.0),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Align(
-                            alignment: const Alignment(-1.0, -1.0),
-                            child: Image.asset(
-                              'assets/icons/team_shaikh_transparent.png',
-                              height: 100,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30.0),
-                      ],
-                    ),
+            // Logo and branding
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF0D5EAF), // Start color
+                    Color.fromARGB(255, 17, 24, 39), // End color
                   ],
                 ),
               ),
+              child: Stack(
+                children: [
+                  // PNG gradient overlay
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.3, // Adjust the opacity as needed
+                      child: Image.asset(
+                        'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      const SizedBox(height: 60.0),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Align(
+                          alignment: const Alignment(-1.0, -1.0),
+                          child: Image.asset(
+                            'assets/icons/team_shaikh_transparent.png',
+                            height: 100,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40.0),
+            
+                      // Text widget to display "Create An Account"
+
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Additional container with another gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.fromARGB(255, 20, 33, 57), // End color
+                    Color.fromARGB(255, 17, 24, 39), // End color
+                  ],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                          const Text(
+                            'Login to Your Account',
+                            style: TextStyle(
+                              fontSize: 26,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                      const SizedBox(height: 20.0),
+                      Row(
+                        children: [
+                          Text(''),
+                          Spacer(),
+                          Text('')
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+
+
+
 
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Column(
                   children: [
-                    // Title for the login section
-                    const Text(
-                      'Login to Your Account',
-                      style: TextStyle(
-                          fontSize: 26,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web'),
-                    ),
-                    // Spacing
-                    const SizedBox(height: 35.0),
 
                     // Email input field
                     Container(

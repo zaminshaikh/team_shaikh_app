@@ -230,6 +230,16 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               ),
               child: Stack(
                 children: [
+                  // PNG gradient overlay
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.3, // Adjust the opacity as needed
+                      child: Image.asset(
+                        'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                   Column(
                     children: [
                       const SizedBox(height: 60.0),
@@ -243,31 +253,68 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 30.0),
+                      const SizedBox(height: 40.0),
+            
+                      // Text widget to display "Create An Account"
+
                     ],
                   ),
                 ],
               ),
             ),
+            
+            // Additional container with another gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.fromARGB(255, 20, 33, 57), // End color
+                    Color.fromARGB(255, 17, 24, 39), // End color
+                  ],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                          const Text(
+                            'Create An Account',
+                            style: TextStyle(
+                              fontSize: 26,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                      const SizedBox(height: 20.0),
+                      Row(
+                        children: [
+                          Text(''),
+                          Spacer(),
+                          Text('')
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+
+
+
+
+
+
+
+
 
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Text widget to display "Create An Account"
-                  const Text(
-                    'Create An Account',
-                    style: TextStyle(
-                      fontSize: 26,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                    ),
-                  ),
-
-                  // Adding some space here
-                  const SizedBox(height: 25.0),
-
                   // Client ID input field
                   _buildClientIDField(),
 
