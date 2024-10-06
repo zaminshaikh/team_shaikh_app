@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart'; // Update with the correct import path
@@ -98,7 +98,7 @@ class NotificationCard extends StatelessWidget {
                             ),
                             const SizedBox(
                                 height:
-                                    4), // Add desired spacing between title and subtitle
+                                    4),
                             Text(
                               notification.message,
                               style: AppTextStyles.xsRegular(
@@ -119,50 +119,6 @@ class NotificationCard extends StatelessWidget {
                             const EdgeInsets.symmetric(vertical: 8.0),
                         dense: true,
                       ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              // Mark the notification as read
-                              DatabaseService db = DatabaseService.withCID(
-                                  '', notification.parentCID);
-                              await db.markNotificationAsRead(notification.id);
-
-                              await Navigator.pushReplacement(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder:
-                                        (context, animation1, animation2) =>
-                                            route,
-                                    transitionDuration: Duration.zero,
-                                  ));
-                            } catch (e) {
-                              if (e is FirebaseException &&
-                                  e.code == 'not-found') {
-                                log('notification.dart: The document was not found');
-                                log('notification.dart: Notification ID: ${notification.id}');
-                                log('notification.dart: uid: ${client.uid}');
-                              } else {
-                                rethrow;
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.defaultBlue300,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                          ),
-                          child: Text(
-                            'View More',
-                            style: AppTextStyles.lBold(
-                                color: AppColors.defaultWhite),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15.0),
                     ],
                   ),
                 ),

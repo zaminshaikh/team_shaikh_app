@@ -48,7 +48,7 @@ void handleFirebaseAuthException(
 }
 
 /// Updates Firebase Messaging token.
-Future<void> updateFirebaseMessagingToken(User? user) async {
+Future<void> updateFirebaseMessagingToken(User? user, BuildContext context) async {
   if (user == null) {
     return;
   }
@@ -56,7 +56,7 @@ Future<void> updateFirebaseMessagingToken(User? user) async {
   String? token = await FirebaseMessaging.instance.getToken();
   if (token != null) {
     // Fetch CID using async constructor
-    DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+    DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
 
     if (db != null) {
     try {
@@ -75,7 +75,7 @@ Future<void> updateFirebaseMessagingToken(User? user) async {
 }
 
 /// Deletes the Firebase Messaging token when the user signs out.
-Future<void> deleteFirebaseMessagingToken(User? user) async {
+Future<void> deleteFirebaseMessagingToken(User? user, BuildContext context) async {
   if (user == null) {
     log('auth_helper.dart: User is null.'); 
     return;
@@ -85,7 +85,7 @@ Future<void> deleteFirebaseMessagingToken(User? user) async {
 
   if (token != null) {
     // Fetch the DatabaseService instance for the user
-    DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+    DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
 
     if (db != null) {
       try {

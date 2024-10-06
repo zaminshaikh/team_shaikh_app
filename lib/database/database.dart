@@ -1,13 +1,17 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
+import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
+
 
 /// A service class for interacting with the Firestore database.
 ///
@@ -17,9 +21,9 @@ class DatabaseService {
   String? cid; // Client ID: Document ID in Firestore
   String? uid; // User ID: Firebase Auth UID
 
-  // Flag to indicate if the user is connected to another user  
+  // Flag to indicate if the user is connected to another user
   // This is so we don't fetch the connected user's connected users and avoid infinite recursion
-  bool isConnectedUser = false; 
+  bool isConnectedUser = false;
 
   static final CollectionReference usersCollection = FirebaseFirestore.instance
       .collection(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'));
@@ -46,23 +50,24 @@ class DatabaseService {
   ///
   /// Returns a [Future] that completes with a [DatabaseService] instance or `null` if the [uid] is not found.
   /// Each user in Firestore has a document with a unique [uid] field. If the [uid] is found, the method fetches the [cid] and connected users from the document.
-  static Future<DatabaseService?> fetchCID(String uid) async {
+  
+  static Future<DatabaseService?> fetchCID(String uid, BuildContext context) async {
     DatabaseService db = DatabaseService(uid);
-
+  
     // Access Firestore and get the document
     QuerySnapshot querySnapshot =
         await usersCollection.where('uid', isEqualTo: uid).get();
-
+  
     if (querySnapshot.size > 0) {
       log('database.dart: UID $uid found in Firestore.');
-
+  
       // Document found, access the 'cid' field
       QueryDocumentSnapshot snapshot = querySnapshot.docs.first;
       db.cid = snapshot.id;
-
+  
       // Cast snapshot.data() to Map<String, dynamic>
       Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-
+  
       // Check if 'connectedUsers' field exists before trying to access it
       if (data.containsKey('connectedUsers')) {
         db.connectedUsersCIDs = data['connectedUsers'] ?? [];
@@ -70,15 +75,20 @@ class DatabaseService {
         log('database.dart: Field "connectedUsers" does not exist in document.');
         db.connectedUsersCIDs = []; // Or handle this case as needed
       }
-
+  
       setSubCollections(db);
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
+      log('database.dart: User signed out.');
+      await FirebaseAuth.instance.signOut();
       return null;
     }
-
+  
     return db;
   }
+
+
+
 
   /// Sets the sub-collections for the given [DatabaseService] instance.
   ///
@@ -213,7 +223,9 @@ class DatabaseService {
           clientData,
           activities: activities,
           assets: assets,
-          notifications: notifications.whereType<Notif>().toList(), // Filter out null values
+          notifications: notifications
+              .whereType<Notif>()
+              .toList(), // Filter out null values
           graphPoints: filteredGraphPoints,
           connectedUsers: connectedUsers.whereType<Client>().toList(),
         );
@@ -352,8 +364,10 @@ class DatabaseService {
   /// Otherwise, the method updates the existing data with the new user's [uid] and [email] and sets the document in the database with the updated data.
   ///
   /// Throws a [FirebaseException] if:
-  /// - **No document found**: The document does not exist for the given [cid].
-  /// - **User already exists**: The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid].
+  /// - **No document found**
+  ///   - The document does not exist for the given [cid]
+  /// - **User already exists**
+  ///   - The document we pulled has a non-empty [uid], meaning a user already exists for the given [cid]
   ///
   /// Catches any other unhandled exceptions and logs an error message.
   ///
@@ -372,56 +386,19 @@ class DatabaseService {
   /// ```
   ///
   /// Returns a [Future] that completes when the document is successfully set in the database.
-  Future linkNewUser(String email) async {
+  Future<void> linkNewUser(String email) async {
     try {
-      // Fetch existing data
-      DocumentSnapshot userSnapshot = await usersCollection.doc(cid).get();
-
-      // Check if the document exists
-      if (userSnapshot.exists) {
-        // Get existing data
-        Map<String, dynamic> existingData =
-            userSnapshot.data() as Map<String, dynamic>;
-
-        // If the document we pulled has a UID, then the user already exists
-        if (existingData['uid'] != '') {
-          throw FirebaseAuthException(
-              code: 'user-already-exists',
-              message: 'User already exists for cid: $cid');
-        }
-        // Update new fields and keep old ones from snapshot
-        Map<String, dynamic> updatedData = {
-          ...existingData,
-          'uid': uid,
-          'email': email,
-          'appEmail': email,
-        };
-
-        // Set the document with the updated data
-        await usersCollection.doc(cid).set(updatedData);
-
-        log('database.dart: User $uid has been linked with document $cid in Firestore');
-
-        return;
-      } else {
-        throw FirebaseAuthException(
-            code: 'document-not-found',
-            message: 'Document does not exist for cid: $cid');
-      }
-      // This throws the exception to the calling method
-    } on FirebaseAuthException catch (e) {
-      // Handle FirebaseAuth exceptions
-      log('database.dart: FirebaseAuthException: $e');
-      rethrow; // Rethrow to propagate the exception to the caller
-    } on FirebaseException catch (e) {
-      // Handle Firebase exceptions
-      log('database.dart: FirebaseException: $e');
-      rethrow; // Rethrow to propagate the exception to the caller
+      HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('linkNewUser');
+      final result = await callable.call({
+        'email': email,
+        'cid': cid,
+        'uid': uid,
+        'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')
+      });
+      print('Function result: ${result.data}');
     } catch (e) {
-      // Catch any other exceptions
-      log('database.dart: Error creating/updating: $e',
-          stackTrace: StackTrace.current);
-      rethrow; // Rethrow to propagate the exception to the caller
+      print('Error calling cloud function: $e');
     }
   }
 
@@ -451,5 +428,80 @@ class DatabaseService {
     DocumentSnapshot doc = await usersCollection.doc(cid).get();
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return data['uid'] != '';
+  }
+
+  /// Checks if a document exists in the Firestore 'users' collection.
+  ///
+  /// This function invokes a callable Cloud Function named 'checkDocumentExists' and passes it
+  /// a document ID ('cid') to check for existence in the Firestore database. This is useful
+  /// for client-side checks against database conditions without exposing direct database access.
+  ///
+  /// [cid] The ID of the document to check for existence.
+  ///
+  /// Returns a [Future] that completes with a boolean value indicating whether the document exists.
+  /// If the Cloud Function call fails, it logs the error and returns false, assuming non-existence
+  /// to safely handle potential failures.
+  ///
+  /// Usage:
+  /// ```dart
+  /// bool exists = await checkDocumentExists('some-document-id');
+  /// ```
+  Future<bool> checkDocumentExists(String cid) async {
+    try {
+      // Create an instance of the callable function 'checkDocumentExists' from Firebase Functions
+      HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('checkDocumentExists');
+
+      // Call the function with 'cid' as the parameter
+      final result = await callable.call({'cid': cid, 'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')});
+
+      // Return the boolean result from the function call
+      return result.data['exists'] as bool;
+    } catch (e) {
+      // Log any errors encountered during the function call
+      print('Error calling function: $e');
+
+      // Return false by default if an error occurs to handle the error gracefully
+      return false;
+    }
+  }
+
+  /// Checks if a document with a specific ID is linked to a user.
+  ///
+  /// This function makes a call to a Firebase Cloud Function named 'checkDocumentLinked'
+  /// to determine if the document in the Firestore 'users' collection has a non-empty
+  /// 'uid' field, indicating it is linked to a user.
+  ///
+  /// The function is wrapped in a try-catch block to handle any potential errors
+  /// that might occur during the execution of the cloud function, such as network issues
+  /// or problems with the cloud function itself.
+  ///
+  /// [cid] The ID of the document to check.
+  ///
+  /// Returns a [Future] that completes with a boolean value indicating whether the document
+  /// is linked to a user. If the cloud function call fails, it logs the error and returns false.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// bool isLinked = await checkDocumentLinked('documentId123');
+  /// ```
+  Future<bool> checkDocumentLinked(String cid) async {
+    try {
+      // Create an instance of the callable function 'checkDocumentLinked' from Firebase Functions
+      HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('checkDocumentLinked');
+
+      // Call the function with 'cid' as the parameter
+      final result = await callable.call({'cid': cid, 'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')});
+
+      // Return the boolean result from the function call
+      return result.data['isLinked'] as bool;
+    } catch (e) {
+      // Log any errors encountered during the function call
+      print('Error calling function: $e');
+
+      // Return true by default if an error occurs to handle the error gracefully
+      return true;
+    }
   }
 }

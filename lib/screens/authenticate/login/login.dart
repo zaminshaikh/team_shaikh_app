@@ -13,7 +13,7 @@ import 'package:team_shaikh_app/screens/authenticate/create_account/create_accou
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         email: emailController.text,
         password: passwordController.text,
       );
-      await updateFirebaseMessagingToken(userCredential.user);
+      await updateFirebaseMessagingToken(userCredential.user, context);
       log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
       log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
 
@@ -429,7 +429,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             }
                             // Fetch CID using async constructor
                             DatabaseService? db =
-                                await DatabaseService.fetchCID(user!.uid);
+                                await DatabaseService.fetchCID(user!.uid, context);
 
                             if (db != null) {
                               try {
