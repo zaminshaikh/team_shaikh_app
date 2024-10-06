@@ -9,8 +9,9 @@ import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
+
 
 /// A service class for interacting with the Firestore database.
 ///

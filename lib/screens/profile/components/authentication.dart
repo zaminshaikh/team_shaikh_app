@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class AuthenticationPage extends StatefulWidget {
   const AuthenticationPage({Key? key}) : super(key: key);

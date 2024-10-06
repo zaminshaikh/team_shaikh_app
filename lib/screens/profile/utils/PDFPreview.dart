@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class PDFScreen extends StatelessWidget {
   final String path;

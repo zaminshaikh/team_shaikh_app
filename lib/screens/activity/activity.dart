@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/activity/components/activity_app_bar.dart';
 import 'package:team_shaikh_app/screens/activity/components/activity_details_modal.dart';
 import 'package:team_shaikh_app/screens/activity/components/activity_list_item.dart';
@@ -17,8 +18,7 @@ import 'package:team_shaikh_app/screens/activity/components/sort_modal.dart';
 import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
 import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 import 'dart:developer';
 
 class ActivityPage extends StatefulWidget {

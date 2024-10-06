@@ -20,8 +20,6 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
-import 'package:team_shaikh_app/utils/push_notification.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
@@ -33,6 +31,8 @@ import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'package:team_shaikh_app/screens/utils/push_notification.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 import 'firebase_options.dart';
 
 void main() async {
