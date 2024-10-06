@@ -102,6 +102,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       }
 
       // Send email verification.
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _createAccountPasswordController.text.trim(),
+        );
+      }
+
+      user = FirebaseAuth.instance.currentUser;
+
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
 
       // Show email verification dialog.
@@ -114,7 +125,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      handleFirebaseAuthException(context, e, _email);
+      await handleFirebaseAuthException(context, e, _email);
     } catch (e) {
       log('Error signing user up: $e', stackTrace: StackTrace.current);
       await FirebaseAuth.instance.currentUser?.delete();

@@ -23,14 +23,17 @@ Future<void> deleteUserInBuffer() async {
 }
 
 /// Handles FirebaseAuthException and displays an error message.
-void handleFirebaseAuthException(
-    BuildContext context, FirebaseAuthException e, String email) {
+Future<void> handleFirebaseAuthException(
+    BuildContext context, FirebaseAuthException e, String email) async {
   String errorMessage = 'Failed to sign up. Please try again.';
+  String? temp = FirebaseAuth.instance.currentUser?.email;
   switch (e.code) {
     case 'email-already-in-use':
+      if (FirebaseAuth.instance.currentUser?.email == email) {
+        await deleteUserInBuffer();
+      } 
       errorMessage =
           'Email $email is already in use. Please use a different email.';
-      log('Email is already connected to a different CID.');
       break;
     case 'invalid-email':
       errorMessage = '"$email" is not a valid email format. Please try again.';
@@ -43,7 +46,7 @@ void handleFirebaseAuthException(
     default:
       log('FirebaseAuthException: $e');
   }
-  CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage,
+  await CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage,
       icon: const Icon(Icons.error, color: Colors.red));
 }
 
