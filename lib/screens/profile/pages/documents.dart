@@ -33,34 +33,34 @@ class PDF {
 class _DocumentsPageState extends State<DocumentsPage> {
   Client? client;
   final FirebaseStorage storage = FirebaseStorage.instance;
+  List<Reference> allFiles = [];
   List<Reference> pdfFiles = [];
   List<Reference> filteredPdfFiles = [];
   List<PDF> pdfFilesConnectedUsers = [];
   List<PDF> filteredPdfFilesConnectedUsers = [];
   bool isSortAscending = true;
-
-
+  
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     client = Provider.of<Client?>(context);
     _initializeDocuments();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     if (client == null) {
       return const CustomProgressIndicator();
     }
-
+  
     return buildDocumentsPage();
   }
-
+  
   Future<void> shareFile(context, clientId, documentName) async {
     try {
       // Call downloadFile to get the filePath
       String filePath = await downloadFile(context, clientId, documentName);
-
+  
       // Check if the filePath is not empty
       if (filePath.isNotEmpty) {
         // Check if the filePath is a file
@@ -68,118 +68,178 @@ class _DocumentsPageState extends State<DocumentsPage> {
         if (await file.exists()) {
           // Use Share.shareFiles to share the file
           await Share.shareXFiles([XFile(filePath)]);
-        } else {}
-      } else {}
-    } catch (e) {}
+        } else {
+          print('File does not exist.');
+        }
+      } else {
+        print('File path is empty.');
+      }
+    } catch (e) {
+      print('Error sharing file: $e');
+    }
   }
-
+  
   Future<void> _initializeDocuments() async {
     await showDocumentsSection();
   }
-
+  
   Future<void> showDocumentsSection() async {
+    print('Showing documents section...');
     // Update the state to indicate that the 'documents' button is selected
-    setState(() {});
-
+    setState(() {
+      print('Documents button selected.');
+    });
+  
     // List the PDF files available
     await listPDFFiles();
-
+  
     // List the PDF files for connected users
     await listPDFFilesConnectedUsers();
+  
+    // Combine and print both lists of PDF files
+    printCombinedPdfFiles();
+    print('Documents section shown.');
   }
-
+  
   Future<void> listPDFFiles() async {
+    print('Listing PDF files for the current user...');
+    // Get the user's folder identifier
     final String userFolder = client!.cid;
-    final ListResult result =
-        await storage.ref('${Config.get('DOCUMENTS_PATH')}/$userFolder').listAll();
-    final List<Reference> allFiles =
-        result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
-
+    print('User folder: $userFolder');
+  
+    // List all files in the user's document folder
+    final ListResult result = await storage.ref('${Config.get('DOCUMENTS_PATH')}/$userFolder').listAll();
+    print('Files listed in user folder.');
+  
+    // Filter the list to include only PDF files
+    final List<Reference> userPdfFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+    print('Filtered PDF files: ${userPdfFiles.map((file) => file.name).toList()}');
+  
+    // Update the state with the list of PDF files
     if (mounted) {
       setState(() {
-        pdfFiles = allFiles;
-        filteredPdfFiles = allFiles;
+        pdfFiles = userPdfFiles;
+        filteredPdfFiles = userPdfFiles;
+        allFiles.addAll(userPdfFiles);
+        print('State updated with user PDF files.');
       });
     }
-
-    print(pdfFiles.map((file) => file.name).toList());
+  
+    // Print the names of the PDF files for debugging purposes
+    print('User PDF files: ${pdfFiles.map((file) => file.name).toList()}');
   }
-
+  
   Future<void> listPDFFilesConnectedUsers() async {
+    print('Listing PDF files for connected users...');
+    // Initialize a list to hold all PDF files from connected users
     List<PDF> allConnectedFiles = [];
-
+  
+    // Iterate over each connected user's folder
     for (String folder in client!.connectedUsers!.whereType<Client>().map((client) => client.cid)) {
-      final ListResult result =
-          await storage.ref('${Config.get('DOCUMENTS_PATH')}/$folder').listAll();
-      final List<Reference> pdfFilesInFolder =
-          result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
-
-      // Convert List<Reference> to List<PDF>
-      final List<PDF> pdfFilesWithCid =
-          pdfFilesInFolder.map((file) => PDF(file, folder)).toList();
+      print('Listing files in connected user folder: $folder');
+      // List all files in the connected user's document folder
+      final ListResult result = await storage.ref('${Config.get('DOCUMENTS_PATH')}/$folder').listAll();
+      print('Files listed in connected user folder.');
+  
+      // Filter the list to include only PDF files
+      final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
+      print('Filtered PDF files in connected user folder: ${pdfFilesInFolder.map((file) => file.name).toList()}');
+  
+      // Convert List<Reference> to List<PDF> with the connected user's folder identifier
+      final List<PDF> pdfFilesWithCid = pdfFilesInFolder.map((file) => PDF(file, folder)).toList();
+      print('Converted PDF files with CID.');
+  
+      // Add the PDF files to the list of all connected files
       allConnectedFiles.addAll(pdfFilesWithCid);
+      print('Added PDF files to all connected files.');
     }
-
+  
+    // Update the state with the list of PDF files from connected users
     if (mounted) {
       setState(() {
         // Use a Set to keep track of already added files
-        final existingFiles = pdfFilesConnectedUsers
-            .map((pdfFileWithCid) => pdfFileWithCid.file.name)
-            .toSet();
-
+        final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
+        print('Existing files: $existingFiles');
+  
         // Add only the new files that are not already in the list
-        final newFiles = allConnectedFiles
-            .where((pdfFileWithCid) =>
-                !existingFiles.contains(pdfFileWithCid.file.name))
-            .toList();
-
+        final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
+        print('New files to add: ${newFiles.map((file) => file.file.name).toList()}');
+  
         pdfFilesConnectedUsers.addAll(newFiles);
         filteredPdfFilesConnectedUsers = pdfFilesConnectedUsers;
+        allFiles.addAll(newFiles.map((pdf) => pdf.file));
+        print('State updated with connected users PDF files.');
+  
+        // Add filteredPdfFilesConnectedUsers to filteredPdfFiles if not empty
+        if (filteredPdfFilesConnectedUsers.isNotEmpty) {
+          filteredPdfFiles.addAll(filteredPdfFilesConnectedUsers.map((pdf) => pdf.file));
+          print('Added filteredPdfFilesConnectedUsers to filteredPdfFiles.');
+        }
       });
     }
+    print('Connected users PDF files listed.');
   }
 
+
+
+  void printCombinedPdfFiles() {
+    // Combine the lists of PDF files from the current user and connected users
+    final combinedPdfFiles = allFiles.map((file) => file.name).toList();
+  
+    // Print the combined list of PDF files
+    print('Combined PDF files: $combinedPdfFiles');
+  }
+  
   Future<Map<String, dynamic>> getFileMetadata(Reference file) async {
+    print('Getting metadata for file: ${file.name}');
+    // Get the metadata for the given file
     final FullMetadata metadata = await file.getMetadata();
+    print('Metadata retrieved for file: ${file.name}');
+  
+    // Return a map containing the file name and the date it was added
     return {
       'name': file.name,
       'dateAdded': metadata.timeCreated,
     };
   }
-
+  
   void _filterPdfFiles(String query) {
+    print('Filtering PDF files with query: $query');
+    // Update the state with the filtered list of PDF files based on the query
     setState(() {
-      filteredPdfFiles = pdfFiles
-          .where((file) =>
-              file.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-      filteredPdfFilesConnectedUsers = pdfFilesConnectedUsers
-          .where((file) =>
-              file.file.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      filteredPdfFiles = allFiles.where((file) => file.name.toLowerCase().contains(query.toLowerCase())).toList();
+      print('Filtered PDF files: ${filteredPdfFiles.map((file) => file.name).toList()}');
     });
   }
-
+  
   void _sortPdfFiles(bool ascending) async {
+    print('Sorting PDF files in ${ascending ? 'ascending' : 'descending'} order...');
+    // Initialize a list to hold the metadata for each PDF file
     List<Map<String, dynamic>> pdfFilesWithMetadata = [];
+  
+    // Fetch metadata for each PDF file in the filtered list
     for (var file in filteredPdfFiles) {
       final metadata = await getFileMetadata(file);
       pdfFilesWithMetadata.add(metadata);
+      print('Metadata added for file: ${file.name}');
     }
-
+  
+    // Sort the list of metadata based on the date added
     pdfFilesWithMetadata.sort((a, b) {
       final dateA = a['dateAdded'] as DateTime?;
       final dateB = b['dateAdded'] as DateTime?;
       if (dateA == null || dateB == null) return 0;
       return ascending ? dateA.compareTo(dateB) : dateB.compareTo(dateA);
     });
-
+    print('PDF files sorted.');
+  
+    // Update the state with the sorted list of PDF files
     setState(() {
-      filteredPdfFiles = pdfFilesWithMetadata.map((e) => pdfFiles.firstWhere((file) => file.name == e['name'])).toList();
-      isSortAscending = ascending; 
+      filteredPdfFiles = pdfFilesWithMetadata.map((e) => allFiles.firstWhere((file) => file.name == e['name'])).toList();
+      isSortAscending = ascending;
+      print('State updated with sorted PDF files.');
     });
   }
-
 
   Scaffold buildDocumentsPage() {
     return Scaffold(
@@ -374,15 +434,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
                           ),
                           child: Column(
                             children: [
-                              if (index != 0)
-                                const Padding(
-                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                  child: Divider(
-                                    color: Colors.white,
-                                    thickness: 0.2,
-                                    height: 10,
-                                  ),
-                                ),
                               Row(
                                 children: [
                                   Expanded(
@@ -451,115 +502,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
                                               ),
                                               onPressed: () {
                                                 shareFile(context, client!.cid, filteredPdfFiles[index].name);
-                                              },
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              if (filteredPdfFilesConnectedUsers.isNotEmpty)
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: filteredPdfFilesConnectedUsers.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(0.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: [
-                              if (index != 0)
-                                const Padding(
-                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                  child: Divider(
-                                    color: Colors.white,
-                                    thickness: 0.2,
-                                    height: 10,
-                                  ),
-                                ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: FutureBuilder<Map<String, dynamic>>(
-                                      future: getFileMetadata(filteredPdfFilesConnectedUsers[index].file),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return ListTile(
-                                            title: Text(
-                                              filteredPdfFilesConnectedUsers[index].file.name,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'Titillium Web',
-                                              ),
-                                            ),
-                                            subtitle: const Text('Loading...'),
-                                          );
-                                        } else if (snapshot.hasError) {
-                                          return ListTile(
-                                            title: Text(
-                                              filteredPdfFilesConnectedUsers[index].file.name,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'Titillium Web',
-                                              ),
-                                            ),
-                                            subtitle: const Text('Error loading metadata'),
-                                          );
-                                        } else {
-                                          final metadata = snapshot.data!;
-                                          final dateAdded = metadata['dateAdded'] as DateTime?;
-                                          return ListTile(
-                                            splashColor: Colors.transparent,
-                                            title: Text(
-                                              filteredPdfFilesConnectedUsers[index].file.name,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'Titillium Web',
-                                              ),
-                                            ),
-                                            subtitle: Text(
-                                              dateAdded != null
-                                                  ? 'Added on: ${DateFormat('MMMM dd, yyyy').format(dateAdded.toLocal())}'
-                                                  : 'Date not available',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'Titillium Web',
-                                              ),
-                                            ),
-                                            onTap: () async {
-                                              String filePath = await downloadFile(context, filteredPdfFilesConnectedUsers[index].cid, filteredPdfFilesConnectedUsers[index].file.name);
-                                              await Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => PDFScreen(filePath),
-                                                ),
-                                              );
-                                            },
-                                            trailing: IconButton(
-                                              icon: SvgPicture.asset(
-                                                'assets/icons/download.svg',
-                                                width: 24,
-                                                height: 24,
-                                                color: AppColors.defaultBlueGray300,
-                                              ),
-                                              onPressed: () {
-                                                shareFile(context, filteredPdfFilesConnectedUsers[index].cid, filteredPdfFilesConnectedUsers[index].file.name);
                                               },
                                             ),
                                           );
