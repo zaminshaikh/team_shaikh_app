@@ -6,9 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// Dialog widget for email verification.
 class EmailVerificationDialog extends StatelessWidget {
   final VoidCallback onContinue;
+  bool isLoading = false;
 
-  const EmailVerificationDialog({Key? key, required this.onContinue})
-      : super(key: key);
+  EmailVerificationDialog({super.key, required this.onContinue, required this.isLoading});
 
   @override
   Widget build(BuildContext context) => Dialog(

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'dart:developer';
 import 'package:team_shaikh_app/database/database.dart';
@@ -26,6 +27,8 @@ class CreateAccountPage extends StatefulWidget {
 
 /// State class for the CreateAccountPage.
 class _CreateAccountPageState extends State<CreateAccountPage> {
+  bool isLoading = false;
+
   // Controllers for text fields.
   final TextEditingController _clientIDController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -70,6 +73,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
   /// Handles the sign-up process.
   void _signUserUp() async {
+    setState(() { isLoading = true; });
     // Delete any existing user in the buffer.
     await deleteUserInBuffer();
 
@@ -121,6 +125,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         context: context,
         builder: (BuildContext context) => EmailVerificationDialog(
           onContinue: _verifyEmail,
+          isLoading: isLoading,
         ),
       );
     } on FirebaseAuthException catch (e) {
@@ -129,11 +134,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     } catch (e) {
       log('Error signing user up: $e', stackTrace: StackTrace.current);
       await FirebaseAuth.instance.currentUser?.delete();
+    } finally {
+      setState(() { isLoading = false; });
     }
   }
 
   /// Verifies if the email is confirmed and proceeds accordingly.
   Future<void> _verifyEmail() async {
+    setState(() { isLoading = true; });
     User? user = FirebaseAuth.instance.currentUser;
     await user?.reload();
     user = FirebaseAuth.instance.currentUser;
@@ -156,7 +164,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       if (!mounted) return;
       appState = Provider.of<AuthState>(context, listen: false);
       appState.setInitiallyAuthenticated(true);
-
+      setState(() {
+        isLoading = false;
+      });
       await Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       if (!mounted) return;
@@ -166,6 +176,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         'Email not verified. Please check your inbox for the verification link.',
         icon: const Icon(Icons.error_outline, color: Colors.red),
       );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -218,178 +231,182 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   /// Builds the create account screen widget.
   @override
   Widget build(BuildContext context) => Scaffold(
-      body: SingleChildScrollView(
-        // Wrapping everything in a column to arrange children vertically
-        child: Column(
-          // Centering the children
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          // Making a list of child widgets in the Column
-          children: <Widget>[
-            // Logo and branding
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF0D5EAF), // Start color
-                    Color.fromARGB(255, 17, 24, 39), // End color
-                  ],
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // PNG gradient overlay
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.3, // Adjust the opacity as needed
-                      child: Image.asset(
-                        'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
-                        fit: BoxFit.cover,
-                      ),
+      body: Stack(
+        children: [ SingleChildScrollView
+          (
+            // Wrapping everything in a column to arrange children vertically
+            child: Column(
+              // Centering the children
+              mainAxisAlignment: MainAxisAlignment.center,
+          
+              // Making a list of child widgets in the Column
+              children: <Widget>[
+                // Logo and branding
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF0D5EAF), // Start color
+                        Color.fromARGB(255, 17, 24, 39), // End color
+                      ],
                     ),
                   ),
-                  Column(
+                  child: Stack(
                     children: [
-                      const SizedBox(height: 60.0),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Align(
-                          alignment: const Alignment(-1.0, -1.0),
+                      // PNG gradient overlay
+                      Positioned.fill(
+                        child: Opacity(
+                          opacity: 0.3, // Adjust the opacity as needed
                           child: Image.asset(
-                            'assets/icons/team_shaikh_transparent.png',
-                            height: 100,
+                            'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 40.0),
-            
-                      // Text widget to display "Create An Account"
-
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // Additional container with another gradient
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color.fromARGB(255, 20, 33, 57), // End color
-                    Color.fromARGB(255, 17, 24, 39), // End color
-                  ],
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                          const Text(
-                            'Create An Account',
-                            style: TextStyle(
-                              fontSize: 26,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
+                      Column(
+                        children: [
+                          const SizedBox(height: 60.0),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Align(
+                              alignment: const Alignment(-1.0, -1.0),
+                              child: Image.asset(
+                                'assets/icons/team_shaikh_transparent.png',
+                                height: 100,
+                              ),
                             ),
                           ),
-                      const SizedBox(height: 20.0),
-                      Row(
-                        children: [
-                          Text(''),
-                          Spacer(),
-                          Text('')
+                          const SizedBox(height: 40.0),
                         ],
                       ),
                     ],
                   ),
-                ],
+                ),
+                
+                // Additional container with another gradient
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.fromARGB(255, 20, 33, 57), // End color
+                        Color.fromARGB(255, 17, 24, 39), // End color
+                      ],
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      Column(
+                        children: [
+                              const Text(
+                                'Create An Account',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titillium Web',
+                                ),
+                              ),
+                          const SizedBox(height: 20.0),
+                          Row(
+                            children: [
+                              Text(''),
+                              Spacer(),
+                              Text('')
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // Client ID input field
+                      _buildClientIDField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 40.0),
+          
+                      // Google Sign-Up button
+                      _buildGoogleSignUpButton(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 30.0),
+          
+                      // OR divider
+                      _buildOrDivider(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 30.0),
+          
+                      // Email input field
+                      _buildEmailField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 16.0),
+          
+                      // Password input field
+                      _buildPasswordField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 12.0),
+          
+                      // Password security indicator
+                      PasswordSecurityIndicator(
+                          strength: _passwordSecurityIndicator),
+          
+                      // Adding some space here
+                      const SizedBox(height: 20.0),
+          
+                      // Password validation checks
+                      PasswordValidation(password: _createAccountPasswordString),
+          
+                      // Adding some space here
+                      const SizedBox(height: 16.0),
+          
+                      // Confirm password input field
+                      _buildConfirmPasswordField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 16.0),
+          
+                      // Next button
+                      _buildNextButton(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 30.0),
+          
+                      // Login option
+                      _buildLoginOption(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 20.0),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isLoading)
+            Opacity(
+              opacity: 0.5,
+              child: ModalBarrier(
+                dismissible: false,
+                color: Colors.black,
               ),
             ),
-            
-
-
-
-
-
-
-
-
-
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Client ID input field
-                  _buildClientIDField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 40.0),
-
-                  // Google Sign-Up button
-                  _buildGoogleSignUpButton(),
-
-                  // Adding some space here
-                  const SizedBox(height: 30.0),
-
-                  // OR divider
-                  _buildOrDivider(),
-
-                  // Adding some space here
-                  const SizedBox(height: 30.0),
-
-                  // Email input field
-                  _buildEmailField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 16.0),
-
-                  // Password input field
-                  _buildPasswordField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 12.0),
-
-                  // Password security indicator
-                  PasswordSecurityIndicator(
-                      strength: _passwordSecurityIndicator),
-
-                  // Adding some space here
-                  const SizedBox(height: 20.0),
-
-                  // Password validation checks
-                  PasswordValidation(password: _createAccountPasswordString),
-
-                  // Adding some space here
-                  const SizedBox(height: 16.0),
-
-                  // Confirm password input field
-                  _buildConfirmPasswordField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 16.0),
-
-                  // Next button
-                  _buildNextButton(),
-
-                  // Adding some space here
-                  const SizedBox(height: 30.0),
-
-                  // Login option
-                  _buildLoginOption(),
-
-                  // Adding some space here
-                  const SizedBox(height: 20.0),
-                ],
-              ),
+          if (isLoading)
+            Center(
+              child: CustomProgressIndicator(),
             ),
-          ],
-        ),
+        ],
       ),
     );
 
