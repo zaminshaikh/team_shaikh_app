@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// A StatefulWidget representing the Email Verification dialog.
 class EmailVerificationDialog extends StatefulWidget {
   /// Callback to execute when the user presses the Continue button.
-  final Future<void> Function() onContinue;
+  final Future<bool> Function() onContinue;
 
   const EmailVerificationDialog({
     super.key,
@@ -28,8 +28,15 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
     });
 
     try {
-      await widget.onContinue();
-      Navigator.of(context).pop(); // Close the dialog upon success.
+      if (await widget.onContinue() == true) {
+        if (mounted) {
+          Navigator.of(context).pop(); // Close the dialog upon success.
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
     } catch (e) {
       // Handle any errors here (optional).
       // For example, show an error message to the user.

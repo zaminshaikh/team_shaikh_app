@@ -139,7 +139,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   }
 
   /// Verifies if the email is confirmed and proceeds accordingly.
-  Future<void> _verifyEmail() async {
+  Future<bool> _verifyEmail() async {
     setState(() { isLoading = true; });
     User? user = FirebaseAuth.instance.currentUser;
     await user?.reload();
@@ -152,7 +152,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
       await updateFirebaseMessagingToken(user, context);
 
-      if (!mounted) return;
+      if (!mounted) return true;
       await CustomAlertDialog.showAlertDialog(
         context,
         'Success',
@@ -160,15 +160,16 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         icon:
             const Icon(Icons.check_circle_outline_rounded, color: Colors.green),
       );
-      if (!mounted) return;
+      if (!mounted) return true;
       appState = Provider.of<AuthState>(context, listen: false);
       appState.setInitiallyAuthenticated(true);
       setState(() {
         isLoading = false;
       });
       await Navigator.pushReplacementNamed(context, '/dashboard');
+      return true;
     } else {
-      if (!mounted) return;
+      if (!mounted) return false;
       await CustomAlertDialog.showAlertDialog(
         context,
         'Error',
@@ -178,6 +179,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       setState(() {
         isLoading = false;
       });
+      return false;
     }
   }
 
