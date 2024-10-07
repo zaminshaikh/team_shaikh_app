@@ -134,8 +134,18 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isAppLockEnabled = prefs.getBool('isAppLockEnabled') ?? false;
-      print('Loaded app lock state: $_isAppLockEnabled');
+      print('Bruh Loaded app lock state: $_isAppLockEnabled');
     });
+  
+    final appState = Provider.of<AuthState>(context, listen: false);
+    if (!_isAppLockEnabled) {
+      appState.setInitiallyAuthenticated(true);
+      print('App lock is disabled. Setting initiallyAuthenticated to true.');
+      print('initiallyAuthenticated: ${appState.initiallyAuthenticated}');
+    } else {
+      appState.setInitiallyAuthenticated(false);
+      print('App lock is enabled. Setting initiallyAuthenticated to false.');
+    }
   }
 
   double _getTimeInMinutes(String timeOption) {
@@ -360,28 +370,60 @@ class AuthCheck extends StatelessWidget {
     return await DatabaseService.fetchCID(uid, context);
   }
 
+
+  Future<bool> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isAppLockEnabled') ?? false;
+  }
+
+
   @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
-      // Stream that listens for changes in the user's authentication state
-      stream: FirebaseAuth.instance.userChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show a loading indicator while waiting for the authentication state
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          // Log and display any errors
-          log('AuthCheck: StreamBuilder error: ${snapshot.error}');
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          // User is authenticated
-          final user = snapshot.data!;
-          log('AuthCheck: User is logged in as ${user.email}');
-          return const InitialFaceIdPage();
-        } else {
-          // User is not authenticated
-          log('AuthCheck: User is not logged in yet.');
-          return const OnboardingPage();
-        }
-      },
-    );
-}
+        // Stream that listens for changes in the user's authentication state
+        stream: FirebaseAuth.instance.userChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show a loading indicator while waiting for the authentication state
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            // Log and display any errors
+            log('AuthCheck: StreamBuilder error: ${snapshot.error}');
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            // User is authenticated
+            final user = snapshot.data!;
+            log('AuthCheck: User is logged in as ${user.email}');
+  
+            // Use FutureBuilder to load app lock state
+            return FutureBuilder<bool>(
+              future: _loadAppLockState(),
+              builder: (context, appLockSnapshot) {
+                if (appLockSnapshot.connectionState == ConnectionState.waiting) {
+                  // Show a loading indicator while waiting for the app lock state
+                  return const Center(child: CircularProgressIndicator());
+                } else if (appLockSnapshot.hasError) {
+                  // Log and display any errors
+                  log('AuthCheck: FutureBuilder error: ${appLockSnapshot.error}');
+                  return Center(child: Text('Error: ${appLockSnapshot.error}'));
+                } else if (appLockSnapshot.hasData) {
+                  // Check if app lock is enabled
+                  final isAppLockEnabled = appLockSnapshot.data!;
+                  if (!isAppLockEnabled) {
+                    return const DashboardPage();
+                  }
+                  return const InitialFaceIdPage();
+                } else {
+                  // Default case if no data is available
+                  return const InitialFaceIdPage();
+                }
+              },
+            );
+          } else {
+            // User is not authenticated
+            log('AuthCheck: User is not logged in yet.');
+            return const OnboardingPage();
+          }
+        },
+      );
+      
+  }
