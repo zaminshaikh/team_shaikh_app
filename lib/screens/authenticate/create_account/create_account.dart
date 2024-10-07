@@ -125,7 +125,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         context: context,
         builder: (BuildContext context) => EmailVerificationDialog(
           onContinue: _verifyEmail,
-          isLoading: isLoading,
         ),
       );
     } on FirebaseAuthException catch (e) {
