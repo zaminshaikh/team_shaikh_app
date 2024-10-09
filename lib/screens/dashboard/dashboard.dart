@@ -1,3 +1,4 @@
+// lib/screens/dashboard/dashboard.dart
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,12 +6,14 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
+import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/components/assets_structure_section.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/dashboard_app_bar.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/total_assets_section.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/user_breakdown_section.dart';
+import 'package:team_shaikh_app/screens/dashboard/components/three_recent_activities.dart';
 
 class DashboardPage extends StatefulWidget {
   final bool fromFaceIdPage;
@@ -27,6 +30,7 @@ class _DashboardPageState extends State<DashboardPage>
   Client? client;
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
+  List<Activity> activities = [];
 
   @override
   void initState() {
@@ -63,6 +67,7 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     client = Provider.of<Client?>(context);
+    _retrieveActivities();
   }
 
   void _updateAuthState() {
@@ -108,6 +113,20 @@ class _DashboardPageState extends State<DashboardPage>
     }
   }
 
+  void _retrieveActivities() {
+    activities = List.from(client?.activities ?? []);
+    if (client?.connectedUsers != null && client!.connectedUsers!.isNotEmpty) {
+      final connectedUserActivities = client!.connectedUsers!
+          .where((user) => user != null)
+          .expand((user) => user!.activities ?? [].cast<Activity>());
+      activities.addAll(connectedUserActivities);
+    }
+  
+    activities.sort((a, b) => b.time.compareTo(a.time)); 
+    activities = activities.take(3).toList();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     if (client == null) {
@@ -130,24 +149,25 @@ class _DashboardPageState extends State<DashboardPage>
                         position: _offsetAnimation,
                         child: TotalAssetsSection(client: client!),
                       ),
-                      // const SizedBox(height: 32),
-                      // // Recent text
-                      // SlideTransition(
-                      //   position: _offsetAnimation,
-                      //   child: _buildRecentText(),
-                      // ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 22),
+                      SlideTransition(
+                        position: _offsetAnimation, 
+                        child: buildRecentTransactionsSection(context),
+                      ),
                       // User breakdown section
+                      const SizedBox(height: 32),
                       SlideTransition(
                         position: _offsetAnimation,
                         child: UserBreakdownSection(client: client!),
                       ),
+
                       if (client!.connectedUsers != null &&
                           client!.connectedUsers!.isNotEmpty)
                         SlideTransition(
                           position: _offsetAnimation,
                           child: _buildConnectedUsersSection(),
                         ),
+                      // Activity tiles section
                       const SizedBox(height: 32),
                       // Assets structure section
                       SlideTransition(
@@ -173,122 +193,27 @@ class _DashboardPageState extends State<DashboardPage>
     );
   }
 
-
-  // Widget _buildRecentText() {
-  //   print('Building Recent Text Section');
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         '3 Recent Transactions',
-  //         style: TextStyle(
-  //           fontSize: 20,
-  //           fontWeight: FontWeight.bold,
-  //           color: Colors.white,
-  //           fontFamily: 'Titillium Web',
-  //         ),
-  //       ),
-  //       SizedBox(height: 20.0),
-  //       _buildActivityCard(),
-  //       SizedBox(height: 20.0),
-  //       Row(
-  //         children: [
-  //           Text(
-  //             'View all transactions',
-  //             style: TextStyle(
-  //               fontSize: 18,
-  //               color: Colors.blue,
-  //               fontFamily: 'Titillium Web',
-  //             ),
-  //           ),
-  //           SizedBox(width: 8.0),
-  //           Icon(
-  //             Icons.arrow_forward_ios,
-  //             color: Colors.blue,
-  //             size: 18.0,
-  //           ),
-  //         ],
-  //       ),
-        
-
-
-  //     ],
-  //   );
-  // }
-  
-
-
-
-  // Widget _buildActivityCard() {
-  //   return FractionallySizedBox(
-  //     widthFactor: 3/5,
-  //     child: Container(
-  //       padding: EdgeInsets.all(16.0),
-  //       decoration: BoxDecoration(
-  //         color: Colors.transparent,
-  //         borderRadius: BorderRadius.circular(12.0),
-  //         border: Border.all(color: Colors.white, width: 2.0),
-  //       ),
-  //       child: Row(
-  //         children: [
-  //           Expanded(
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Text(
-  //                   'Title',
-  //                   style: TextStyle(
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.bold,
-  //                     color: Colors.white,
-  //                     fontFamily: 'Titillium Web',
-  //                   ),
-  //                 ),
-  //                 SizedBox(height: 4.0),
-  //                 Text(
-  //                   'Subtitle',
-  //                   style: TextStyle(
-  //                     fontSize: 14,
-  //                     color: Colors.white70,
-  //                     fontFamily: 'Titillium Web',
-  //                   ),
-  //                 ),
-  //                 SizedBox(height: 16.0),
-  //                 Text(
-  //                   '\$123.45',
-  //                   style: TextStyle(
-  //                     fontSize: 24,
-  //                     fontWeight: FontWeight.bold,
-  //                     color: Colors.white,
-  //                     fontFamily: 'Titillium Web',
-  //                   ),
-  //                 ),
-  //                 SizedBox(height: 16.0),
-  //                 Text(
-  //                   'Date: January 1, 2023',
-  //                   style: TextStyle(
-  //                     fontSize: 12,
-  //                     color: Colors.white70,
-  //                     fontFamily: 'Titillium Web',
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           CircleAvatar(
-  //             radius: 24.0,
-  //             backgroundColor: Colors.white,
-  //             child: Icon(
-  //               Icons.attach_money,
-  //               color: Colors.blue,
-  //               size: 24.0,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
+    Widget buildRecentTransactionsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            '3 Recent Transactions',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ActivityTilesSection(activities: activities),
+      ],
+    );
+  }
 
 
   Widget _buildConnectedUsersSection() => Column(
