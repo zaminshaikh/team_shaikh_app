@@ -154,10 +154,10 @@ class _LogoutButtonState extends State<LogoutButton> {
     tokens.remove(currentToken);
     // Update the list of tokens in the database for the user
     await db.updateField('tokens', tokens);
-    signUserOut(context);
+    signUserOut();
   }
 
-  void signUserOut(BuildContext context) async {
+  void signUserOut() async {
     log('Profiles.dart: Signing out...');
 
     await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
@@ -165,10 +165,10 @@ class _LogoutButtonState extends State<LogoutButton> {
     assert(FirebaseAuth.instance.currentUser == null);
 
     // Async gap mounted widget check
-    if (mounted) {
-      // Pop the current page and go to login
-      await Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+    if (!mounted) {
+      return;
     }
+    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
   }
 }
 
