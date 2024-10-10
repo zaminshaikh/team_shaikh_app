@@ -56,12 +56,33 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _clientIDController.addListener(_checkIfFilled);
   }
 
+  /// Check if the user is authenticated and linked
+  Future<bool> isAuthenticated() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+
+    String uid = user.uid;
+
+    DatabaseService db = DatabaseService(uid);
+
+    bool isLinked = await db.isUIDLinked(uid);
+
+    return isLinked;
+  }
+
   @override
-  void dispose() {
+  void dispose() async {
     _clientIDController.removeListener(_checkIfFilled);
     _clientIDController.dispose();
     super.dispose();
+    if (!(await isAuthenticated())) {
+      await FirebaseAuth.instance.signOut();
+    }
   }
+
+
 
   /// Checks if the Client ID field is filled to enable the button.
   void _checkIfFilled() {
@@ -166,7 +187,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       setState(() {
         isLoading = false;
       });
-      await Navigator.pushReplacementNamed(context, '/dashboard');
+
+      await Navigator.of(context)
+          .pushNamedAndRemoveUntil('/dashboard', (route) => false);
+
       return true;
     } else {
       if (!mounted) return false;

@@ -504,4 +504,37 @@ class DatabaseService {
       return true;
     }
   }
+
+  /// Calls the Cloud Function `isUIDLinked` to check if a UID is linked.
+  Future<bool> isUIDLinked(String uid) async {
+    try {
+      // Initialize the callable function
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
+        'isUIDLinked',
+        options: HttpsCallableOptions(
+          timeout: const Duration(seconds: 30),
+        ),
+      );
+
+      // Call the function with the required parameters
+      final HttpsCallableResult result = await callable.call({
+        'uid': uid,
+        'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'),
+      });
+
+      // Extract the 'isLinked' value from the result
+      final data = result.data as Map<String, dynamic>;
+      final bool isLinked = data['isLinked'] as bool;
+
+      return isLinked;
+    } on FirebaseFunctionsException catch (e) {
+      // Handle Firebase Functions errors
+      print('Firebase Functions Exception: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      // Handle other errors
+      print('Unknown error occurred while calling isUIDLinked: $e');
+      return false;
+    }
+  }
 }

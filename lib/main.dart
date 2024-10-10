@@ -199,11 +199,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       }});
 
     @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     final appState = Provider.of<AuthState>(context, listen: false);
     print('AppLifecycleState changed: $state');
-
-    bool imright = isAuthenticated();
   
     if (state == AppLifecycleState.resumed) {
       // Cancel the timer when the app is resumed
@@ -213,7 +211,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 state == AppLifecycleState.inactive ||
                 state == AppLifecycleState.hidden) &&
             !appState.hasNavigatedToFaceIDPage &&
-            isAuthenticated() &&
+            await isAuthenticated() &&
             appState.initiallyAuthenticated &&
             appState.isAppLockEnabled) {
       // Print when all conditions are met
@@ -242,7 +240,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (appState.hasNavigatedToFaceIDPage) {
         print('Condition not met: hasNavigatedToFaceIDPage is true');
       }
-      if (!isAuthenticated()) {
+      if (!(await isAuthenticated())) {
         print('Condition not met: User is not authenticated');
       }
       if (!appState.initiallyAuthenticated) {
@@ -262,11 +260,18 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Check if the user is authenticated
-  bool isAuthenticated() {
+  /// Check if the user is authenticated and linked
+  Future<bool> isAuthenticated() async {
     final user = FirebaseAuth.instance.currentUser;
-    print(user);
-    return user != null;
+    if (user == null) { return false; }
+
+    String uid = user.uid;
+
+    DatabaseService db = DatabaseService(uid);
+
+    bool isLinked = await db.isUIDLinked(uid);
+
+    return isLinked;
   }
 
   @override
