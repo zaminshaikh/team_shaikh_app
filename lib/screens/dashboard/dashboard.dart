@@ -31,6 +31,7 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   void initState() {
     super.initState();
+    _loadAppLockState();
     // Initialize the animation controller and set its value to 1.0 by default
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
@@ -63,6 +64,13 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     client = Provider.of<Client?>(context);
+  }
+
+  Future<void> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+    context.read<AuthState>().setAppLockEnabled(isEnabled);
+    print('Loaded app lock state: $isEnabled');
   }
 
   void _updateAuthState() {

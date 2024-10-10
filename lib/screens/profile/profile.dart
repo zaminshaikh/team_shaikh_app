@@ -8,7 +8,7 @@ import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
-import 'package:team_shaikh_app/screens/profile/components/authentication.dart';
+import 'package:team_shaikh_app/screens/profile/pages/authentication.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/pages/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
