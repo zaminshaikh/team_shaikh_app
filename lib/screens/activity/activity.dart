@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
@@ -75,6 +76,10 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (client == null) {
+      return CustomProgressIndicatorPage();
+    }
+
     // Retrieve activities and recipients
     _retrieveActivitiesAndRecipients();
 
