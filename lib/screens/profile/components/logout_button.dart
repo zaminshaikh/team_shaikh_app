@@ -1,12 +1,12 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class LogoutButton extends StatefulWidget {
   final Client client;
@@ -24,19 +24,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         child: Column(
           children: [
             GestureDetector(
-              onTap: () async {
-                DatabaseService? db = await DatabaseService.withCID(
-                    FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
-                List<dynamic>? tokens =
-                    await db.getField('tokens') as List<dynamic>? ?? [];
-                // Get the current token
-                String currentToken =
-                    await FirebaseMessaging.instance.getToken() ?? '';
-                tokens.remove(currentToken);
-                // Update the list of tokens in the database for the user
-                await db.updateField('tokens', tokens);
-                signUserOut(context);
-              },
+              onTap: () => _showLogoutDialog(context),
               child: Container(
                 height: 45,
                 decoration: BoxDecoration(
@@ -72,26 +60,116 @@ class _LogoutButtonState extends State<LogoutButton> {
         ),
       );
 
-  void signUserOut(BuildContext context) async {
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) => AlertDialog(
+          backgroundColor: AppColors.defaultBlueGray800,
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        'Confirm Logout',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(width: 10),
+                      SvgPicture.asset(
+                        'assets/icons/logout.svg',
+                        width: 24,
+                        height: 24,
+                        color: Colors.white, 
+                      ),
+                    ],
+                  ),
+                ),
+                const Text('Are you sure you want to log out?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop(); 
+                _logout(context); 
+              },
+              child: Container(
+                width: double.infinity, 
+                padding: const EdgeInsets.symmetric(vertical: 10), 
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 149, 28, 28),
+                  borderRadius: BorderRadius.circular(20), 
+                ),
+                child: const Text(
+                  'Logout',
+                  textAlign: TextAlign.center, 
+                ),
+              ),
+            ),
+            const SizedBox(height: 10), 
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop(); 
+              },
+              child: Container(
+                width: double.infinity, 
+                padding: const EdgeInsets.symmetric(vertical: 10), 
+                decoration: BoxDecoration(
+                  color: Colors.transparent, 
+                  border: Border.all(
+                    color: Colors.white, 
+                    width: 1, 
+                  ),
+                  borderRadius: BorderRadius.circular(20), 
+                ),
+                child: const Text(
+                  'Cancel',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white, 
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+    );
+  }
+
+
+
+
+  void _logout(BuildContext context) async {
+    DatabaseService? db = DatabaseService.withCID(
+        FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
+    List<dynamic>? tokens =
+        await db.getField('tokens') as List<dynamic>? ?? [];
+    // Get the current token
+    String currentToken =
+        await FirebaseMessaging.instance.getToken() ?? '';
+    tokens.remove(currentToken);
+    // Update the list of tokens in the database for the user
+    await db.updateField('tokens', tokens);
+    signUserOut();
+  }
+
+  void signUserOut() async {
     log('Profiles.dart: Signing out...');
+
+    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
     await FirebaseAuth.instance.signOut();
     assert(FirebaseAuth.instance.currentUser == null);
 
     // Async gap mounted widget check
     if (!mounted) {
-      log('Profiles.dart: No longer mounted!');
       return;
     }
-
-    // Pop the current page and go to login
-    await Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) =>
-            const OnboardingPage(),
-        transitionDuration: Duration.zero,
-      ),
-      (route) => false,
-    );
+    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
   }
 }
+
+

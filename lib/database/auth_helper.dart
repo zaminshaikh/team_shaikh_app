@@ -23,14 +23,17 @@ Future<void> deleteUserInBuffer() async {
 }
 
 /// Handles FirebaseAuthException and displays an error message.
-void handleFirebaseAuthException(
-    BuildContext context, FirebaseAuthException e, String email) {
+Future<void> handleFirebaseAuthException(
+    BuildContext context, FirebaseAuthException e, String email) async {
   String errorMessage = 'Failed to sign up. Please try again.';
+  String? temp = FirebaseAuth.instance.currentUser?.email;
   switch (e.code) {
     case 'email-already-in-use':
+      if (FirebaseAuth.instance.currentUser?.email == email) {
+        await deleteUserInBuffer();
+      } 
       errorMessage =
           'Email $email is already in use. Please use a different email.';
-      log('Email is already connected to a different CID.');
       break;
     case 'invalid-email':
       errorMessage = '"$email" is not a valid email format. Please try again.';
@@ -43,16 +46,20 @@ void handleFirebaseAuthException(
     default:
       log('FirebaseAuthException: $e');
   }
-  CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage,
+  await CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage,
       icon: const Icon(Icons.error, color: Colors.red));
 }
 
 /// Updates Firebase Messaging token.
-Future<void> updateFirebaseMessagingToken(User user) async {
+Future<void> updateFirebaseMessagingToken(User? user, BuildContext context) async {
+  if (user == null) {
+    return;
+  }
+  
   String? token = await FirebaseMessaging.instance.getToken();
   if (token != null) {
     // Fetch CID using async constructor
-    DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+    DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
 
     if (db != null) {
     try {
@@ -68,4 +75,37 @@ Future<void> updateFirebaseMessagingToken(User user) async {
     }
   }
   }// async gap widget mounting check
+}
+
+/// Deletes the Firebase Messaging token when the user signs out.
+Future<void> deleteFirebaseMessagingToken(User? user, BuildContext context) async {
+  if (user == null) {
+    log('auth_helper.dart: User is null.'); 
+    return;
+  }
+  // Retrieve the current FCM token
+  String? token = await FirebaseMessaging.instance.getToken();
+
+  if (token != null) {
+    // Fetch the DatabaseService instance for the user
+    DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
+
+    if (db != null) {
+      try {
+        // Retrieve the current list of tokens from Firestore
+        List<dynamic> tokens = (await db.getField('tokens')) ?? [];
+
+        if (tokens.contains(token)) {
+          // Remove the current token from the list
+          tokens.remove(token);
+
+          // Update the tokens field in Firestore
+          await db.updateField('tokens', tokens);
+          log('Token removed successfully.');
+        }
+      } catch (e) {
+        log('Error deleting token: $e');
+      }
+    }
+  }
 }

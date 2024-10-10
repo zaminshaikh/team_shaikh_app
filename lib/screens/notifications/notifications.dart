@@ -29,7 +29,7 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context){
     if (client == null) {
       return const Center(
-        child: CustomProgressIndicator(),
+        child: CustomProgressIndicatorPage(),
       );
     }
     notifications = List.from(client!.notifications!);

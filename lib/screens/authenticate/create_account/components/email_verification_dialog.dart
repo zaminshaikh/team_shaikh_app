@@ -3,81 +3,147 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Dialog widget for email verification.
-class EmailVerificationDialog extends StatelessWidget {
-  final VoidCallback onContinue;
+/// A StatefulWidget representing the Email Verification dialog.
+class EmailVerificationDialog extends StatefulWidget {
+  /// Callback to execute when the user presses the Continue button.
+  final Future<bool> Function() onContinue;
 
-  const EmailVerificationDialog({Key? key, required this.onContinue})
-      : super(key: key);
+  const EmailVerificationDialog({
+    super.key,
+    required this.onContinue,
+  });
+
+  @override
+  _EmailVerificationDialogState createState() =>
+      _EmailVerificationDialogState();
+}
+
+class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
+  bool isLoading = false;
+
+  /// Handles the Continue button press.
+  Future<void> _handleContinue() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      if (await widget.onContinue() == true) {
+        if (mounted) {
+          Navigator.of(context).pop(); // Close the dialog upon success.
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      // Handle any errors here (optional).
+      // For example, show an error message to the user.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Dialog(
-      backgroundColor: const Color.fromARGB(255, 37, 58, 86),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        height: 500,
-        width: 1000,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        backgroundColor: const Color.fromARGB(255, 37, 58, 86),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Stack(
           children: [
-            const SizedBox(height: 20),
-            SvgPicture.asset(
-              'assets/icons/verify_email_iconart.svg',
-              height: 200,
-              width: 200,
-            ),
-            const Spacer(),
-            const Text(
-              'Verify your Email Address',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Titillium Web',
+            Container(
+              padding: const EdgeInsets.all(20),
+              constraints: const BoxConstraints(
+                maxWidth: 400,
               ),
-            ),
-            const Spacer(),
-            const Center(
-              child: Text(
-                'You will recieve an Email with a link to verify your email. Please check your inbox.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontFamily: 'Titillium Web',
-                ),
-              ),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: onContinue,
-              child: Container(
-                height: 55,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                    color: Colors.blue,
-                    width: 2,
+              child: Column(
+                mainAxisSize: MainAxisSize
+                    .min, // Adjusts the dialog size based on content.
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  SvgPicture.asset(
+                    'assets/icons/verify_email_iconart.svg',
+                    height: 200,
+                    width: 200,
                   ),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Continue',
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Verify your Email Address',
                     style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.blue,
+                      fontSize: 20,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Titillium Web',
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'You will receive an email with a link to verify your email. Please check your inbox.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontFamily: 'Titillium Web',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
+                  TextButton(
+                    onPressed: isLoading ? null : _handleContinue,
+                    child: Container(
+                      height: 55,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
+                      ),
+                      child: Center(
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.blue),
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : const Text(
+                                'Continue',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titillium Web',
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
+            if (isLoading)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ),
           ],
         ),
-      ),
-    );
+      );
 }

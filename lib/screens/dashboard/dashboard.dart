@@ -27,11 +27,11 @@ class _DashboardPageState extends State<DashboardPage>
   Client? client;
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
-  bool _hasTransitioned = false;
 
   @override
   void initState() {
     super.initState();
+    _loadAppLockState();
     // Initialize the animation controller and set its value to 1.0 by default
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
@@ -64,6 +64,13 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     client = Provider.of<Client?>(context);
+  }
+
+  Future<void> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+    context.read<AuthState>().setAppLockEnabled(isEnabled);
+    print('Loaded app lock state: $isEnabled');
   }
 
   void _updateAuthState() {
@@ -131,6 +138,12 @@ class _DashboardPageState extends State<DashboardPage>
                         position: _offsetAnimation,
                         child: TotalAssetsSection(client: client!),
                       ),
+                      // const SizedBox(height: 32),
+                      // // Recent text
+                      // SlideTransition(
+                      //   position: _offsetAnimation,
+                      //   child: _buildRecentText(),
+                      // ),
                       const SizedBox(height: 32),
                       // User breakdown section
                       SlideTransition(
@@ -167,6 +180,124 @@ class _DashboardPageState extends State<DashboardPage>
       ),
     );
   }
+
+
+  // Widget _buildRecentText() {
+  //   print('Building Recent Text Section');
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         '3 Recent Transactions',
+  //         style: TextStyle(
+  //           fontSize: 20,
+  //           fontWeight: FontWeight.bold,
+  //           color: Colors.white,
+  //           fontFamily: 'Titillium Web',
+  //         ),
+  //       ),
+  //       SizedBox(height: 20.0),
+  //       _buildActivityCard(),
+  //       SizedBox(height: 20.0),
+  //       Row(
+  //         children: [
+  //           Text(
+  //             'View all transactions',
+  //             style: TextStyle(
+  //               fontSize: 18,
+  //               color: Colors.blue,
+  //               fontFamily: 'Titillium Web',
+  //             ),
+  //           ),
+  //           SizedBox(width: 8.0),
+  //           Icon(
+  //             Icons.arrow_forward_ios,
+  //             color: Colors.blue,
+  //             size: 18.0,
+  //           ),
+  //         ],
+  //       ),
+        
+
+
+  //     ],
+  //   );
+  // }
+  
+
+
+
+  // Widget _buildActivityCard() {
+  //   return FractionallySizedBox(
+  //     widthFactor: 3/5,
+  //     child: Container(
+  //       padding: EdgeInsets.all(16.0),
+  //       decoration: BoxDecoration(
+  //         color: Colors.transparent,
+  //         borderRadius: BorderRadius.circular(12.0),
+  //         border: Border.all(color: Colors.white, width: 2.0),
+  //       ),
+  //       child: Row(
+  //         children: [
+  //           Expanded(
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   'Title',
+  //                   style: TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                     color: Colors.white,
+  //                     fontFamily: 'Titillium Web',
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 4.0),
+  //                 Text(
+  //                   'Subtitle',
+  //                   style: TextStyle(
+  //                     fontSize: 14,
+  //                     color: Colors.white70,
+  //                     fontFamily: 'Titillium Web',
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 16.0),
+  //                 Text(
+  //                   '\$123.45',
+  //                   style: TextStyle(
+  //                     fontSize: 24,
+  //                     fontWeight: FontWeight.bold,
+  //                     color: Colors.white,
+  //                     fontFamily: 'Titillium Web',
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 16.0),
+  //                 Text(
+  //                   'Date: January 1, 2023',
+  //                   style: TextStyle(
+  //                     fontSize: 12,
+  //                     color: Colors.white70,
+  //                     fontFamily: 'Titillium Web',
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           CircleAvatar(
+  //             radius: 24.0,
+  //             backgroundColor: Colors.white,
+  //             child: Icon(
+  //               Icons.attach_money,
+  //               color: Colors.blue,
+  //               size: 24.0,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
 
   Widget _buildConnectedUsersSection() => Column(
         children: [

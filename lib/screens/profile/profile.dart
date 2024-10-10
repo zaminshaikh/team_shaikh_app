@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/components/custom_bottom_navigation_bar.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
+import 'package:team_shaikh_app/screens/profile/pages/authentication.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/pages/disclaimer.dart';
 import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
@@ -33,6 +35,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (client == null) {
+      return CustomProgressIndicatorPage();
+    }
     return Scaffold(
       body: Stack(
         children: [
@@ -178,32 +183,32 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
               },
             ),
-            // const Padding(
-            //   padding: EdgeInsets.symmetric(horizontal: 24.0),
-            //   child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
-            // ),
-            // CupertinoListTile(
-            //   leading: SvgPicture.asset(
-            //     'assets/icons/face_id.svg',
-            //     color: Colors.white,
-            //     height: 40,
-            //   ),
-            //   title: const Text(
-            //     'Authentication',
-            //     style: TextStyle(
-            //       fontFamily: 'Titillium Web',
-            //       color: Colors.white,
-            //       fontWeight: FontWeight.w600,
-            //     ),
-            //   ),
-            //   trailing: const CupertinoListTileChevron(),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => const ProfilesPage()),
-            //     );
-            //   },
-            // ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Divider(color: CupertinoColors.separator, thickness: 1.5 ),
+            ),
+            CupertinoListTile(
+              leading: SvgPicture.asset(
+                'assets/icons/face_id.svg',
+                color: Colors.white,
+                height: 40,
+              ),
+              title: const Text(
+                'Authentication',
+                style: TextStyle(
+                  fontFamily: 'Titillium Web',
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              trailing: const CupertinoListTileChevron(),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthenticationPage()),
+                );
+              },
+            ),
             const SizedBox(height: 10),
           ],
         ),
@@ -349,7 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           Positioned(
                             right: 0,
                             top: 5,
-                            child: (client!.numNotifsUnread ?? 0) > 0
+                            child: (client?.numNotifsUnread ?? 0) > 0
                                 ? Container(
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF267DB5),
@@ -360,7 +365,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       minHeight: 18,
                                     ),
                                     child: Text(
-                                      '${client!.numNotifsUnread}',
+                                      '${client?.numNotifsUnread}',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800,

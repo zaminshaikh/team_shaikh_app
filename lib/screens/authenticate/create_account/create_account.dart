@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'dart:developer';
 import 'package:team_shaikh_app/database/database.dart';
@@ -27,6 +27,8 @@ class CreateAccountPage extends StatefulWidget {
 
 /// State class for the CreateAccountPage.
 class _CreateAccountPageState extends State<CreateAccountPage> {
+  bool isLoading = false;
+
   // Controllers for text fields.
   final TextEditingController _clientIDController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -54,12 +56,33 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     _clientIDController.addListener(_checkIfFilled);
   }
 
+  /// Check if the user is authenticated and linked
+  Future<bool> isAuthenticated() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+
+    String uid = user.uid;
+
+    DatabaseService db = DatabaseService(uid);
+
+    bool isLinked = await db.isUIDLinked(uid);
+
+    return isLinked;
+  }
+
   @override
-  void dispose() {
+  void dispose() async {
     _clientIDController.removeListener(_checkIfFilled);
     _clientIDController.dispose();
     super.dispose();
+    if (!(await isAuthenticated())) {
+      await FirebaseAuth.instance.signOut();
+    }
   }
+
+
 
   /// Checks if the Client ID field is filled to enable the button.
   void _checkIfFilled() {
@@ -71,6 +94,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
   /// Handles the sign-up process.
   void _signUserUp() async {
+    setState(() { isLoading = true; });
     // Delete any existing user in the buffer.
     await deleteUserInBuffer();
 
@@ -92,17 +116,28 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       db = DatabaseService.withCID(userCredential.user!.uid, _cid);
 
       // Check if CID exists and is not linked.
-      if (!(await db.docExists(_cid))) {
+      if (!(await db.checkDocumentExists(_cid))) {
         await _showErrorAndDeleteUser(
             'There is no record of the Client ID $_cid in the database. Please contact support or re-enter your Client ID.');
         return;
-      } else if (await db.docLinked(_cid)) {
+      } else if (await db.checkDocumentLinked(_cid)) {
         await _showErrorAndDeleteUser(
             'User already exists for given Client ID $_cid. Please log in instead.');
         return;
       }
 
       // Send email verification.
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _createAccountPasswordController.text.trim(),
+        );
+      }
+
+      user = FirebaseAuth.instance.currentUser;
+
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
 
       // Show email verification dialog.
@@ -115,15 +150,18 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      handleFirebaseAuthException(context, e, _email);
+      await handleFirebaseAuthException(context, e, _email);
     } catch (e) {
       log('Error signing user up: $e', stackTrace: StackTrace.current);
       await FirebaseAuth.instance.currentUser?.delete();
+    } finally {
+      setState(() { isLoading = false; });
     }
   }
 
   /// Verifies if the email is confirmed and proceeds accordingly.
-  Future<void> _verifyEmail() async {
+  Future<bool> _verifyEmail() async {
+    setState(() { isLoading = true; });
     User? user = FirebaseAuth.instance.currentUser;
     await user?.reload();
     user = FirebaseAuth.instance.currentUser;
@@ -133,9 +171,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       await db.linkNewUser(user.email!);
       log('User $uid connected to Client ID $_cid');
 
-      await updateFirebaseMessagingToken(user);
+      await updateFirebaseMessagingToken(user, context);
 
-      if (!mounted) return;
+      if (!mounted) return true;
       await CustomAlertDialog.showAlertDialog(
         context,
         'Success',
@@ -143,19 +181,29 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         icon:
             const Icon(Icons.check_circle_outline_rounded, color: Colors.green),
       );
-      if (!mounted) return;
+      if (!mounted) return true;
       appState = Provider.of<AuthState>(context, listen: false);
       appState.setInitiallyAuthenticated(true);
+      setState(() {
+        isLoading = false;
+      });
 
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      await Navigator.of(context)
+          .pushNamedAndRemoveUntil('/dashboard', (route) => false);
+
+      return true;
     } else {
-      if (!mounted) return;
+      if (!mounted) return false;
       await CustomAlertDialog.showAlertDialog(
         context,
         'Error',
         'Email not verified. Please check your inbox for the verification link.',
         icon: const Icon(Icons.error_outline, color: Colors.red),
       );
+      setState(() {
+        isLoading = false;
+      });
+      return false;
     }
   }
 
@@ -201,148 +249,194 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   }
 
   /// Checks if the passwords match.
-  bool _doPasswordsMatch() {
-    return _createAccountPasswordString ==
+  bool _doPasswordsMatch() => _createAccountPasswordString ==
             _confirmCreateAccountPasswordString &&
         _createAccountPasswordString.isNotEmpty;
-  }
 
   /// Builds the create account screen widget.
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        // Wrapping everything in a column to arrange children vertically
-        child: Column(
-          // Centering the children
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          // Making a list of child widgets in the Column
-          children: <Widget>[
-            // Logo and branding
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF0D5EAF), // Start color
-                    Color.fromARGB(255, 17, 24, 39), // End color
-                  ],
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Column(
+  Widget build(BuildContext context) => Scaffold(
+      body: Stack(
+        children: [ SingleChildScrollView
+          (
+            // Wrapping everything in a column to arrange children vertically
+            child: Column(
+              // Centering the children
+              mainAxisAlignment: MainAxisAlignment.center,
+          
+              // Making a list of child widgets in the Column
+              children: <Widget>[
+                // Logo and branding
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF0D5EAF), // Start color
+                        Color.fromARGB(255, 17, 24, 39), // End color
+                      ],
+                    ),
+                  ),
+                  child: Stack(
                     children: [
-                      const SizedBox(height: 60.0),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Align(
-                          alignment: const Alignment(-1.0, -1.0),
+                      // PNG gradient overlay
+                      Positioned.fill(
+                        child: Opacity(
+                          opacity: 0.3, // Adjust the opacity as needed
                           child: Image.asset(
-                            'assets/icons/team_shaikh_transparent.png',
-                            height: 100,
+                            'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 30.0),
+                      Column(
+                        children: [
+                          const SizedBox(height: 60.0),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Align(
+                              alignment: const Alignment(-1.0, -1.0),
+                              child: Image.asset(
+                                'assets/icons/team_shaikh_transparent.png',
+                                height: 100,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 40.0),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Text widget to display "Create An Account"
-                  const Text(
-                    'Create An Account',
-                    style: TextStyle(
-                      fontSize: 26,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
+                ),
+                
+                // Additional container with another gradient
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.fromARGB(255, 20, 33, 57), // End color
+                        Color.fromARGB(255, 17, 24, 39), // End color
+                      ],
                     ),
                   ),
-
-                  // Adding some space here
-                  const SizedBox(height: 25.0),
-
-                  // Client ID input field
-                  _buildClientIDField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 40.0),
-
-                  // Google Sign-Up button
-                  _buildGoogleSignUpButton(),
-
-                  // Adding some space here
-                  const SizedBox(height: 30.0),
-
-                  // OR divider
-                  _buildOrDivider(),
-
-                  // Adding some space here
-                  const SizedBox(height: 30.0),
-
-                  // Email input field
-                  _buildEmailField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 16.0),
-
-                  // Password input field
-                  _buildPasswordField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 12.0),
-
-                  // Password security indicator
-                  PasswordSecurityIndicator(
-                      strength: _passwordSecurityIndicator),
-
-                  // Adding some space here
-                  const SizedBox(height: 20.0),
-
-                  // Password validation checks
-                  PasswordValidation(password: _createAccountPasswordString),
-
-                  // Adding some space here
-                  const SizedBox(height: 16.0),
-
-                  // Confirm password input field
-                  _buildConfirmPasswordField(),
-
-                  // Adding some space here
-                  const SizedBox(height: 16.0),
-
-                  // Next button
-                  _buildNextButton(),
-
-                  // Adding some space here
-                  const SizedBox(height: 30.0),
-
-                  // Login option
-                  _buildLoginOption(),
-
-                  // Adding some space here
-                  const SizedBox(height: 20.0),
-                ],
+                  child: Stack(
+                    children: [
+                      Column(
+                        children: [
+                              const Text(
+                                'Create An Account',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titillium Web',
+                                ),
+                              ),
+                          const SizedBox(height: 20.0),
+                          Row(
+                            children: [
+                              Text(''),
+                              Spacer(),
+                              Text('')
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // Client ID input field
+                      _buildClientIDField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 40.0),
+          
+                      // Google Sign-Up button
+                      _buildGoogleSignUpButton(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 30.0),
+          
+                      // OR divider
+                      _buildOrDivider(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 30.0),
+          
+                      // Email input field
+                      _buildEmailField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 16.0),
+          
+                      // Password input field
+                      _buildPasswordField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 12.0),
+          
+                      // Password security indicator
+                      PasswordSecurityIndicator(
+                          strength: _passwordSecurityIndicator),
+          
+                      // Adding some space here
+                      const SizedBox(height: 20.0),
+          
+                      // Password validation checks
+                      PasswordValidation(password: _createAccountPasswordString),
+          
+                      // Adding some space here
+                      const SizedBox(height: 16.0),
+          
+                      // Confirm password input field
+                      _buildConfirmPasswordField(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 16.0),
+          
+                      // Next button
+                      _buildNextButton(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 30.0),
+          
+                      // Login option
+                      _buildLoginOption(),
+          
+                      // Adding some space here
+                      const SizedBox(height: 20.0),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isLoading)
+            Opacity(
+              opacity: 0.5,
+              child: ModalBarrier(
+                dismissible: false,
+                color: Colors.black,
               ),
             ),
-          ],
-        ),
+          if (isLoading)
+            Center(
+              child: CustomProgressIndicator(),
+            ),
+        ],
       ),
     );
-  }
 
   /// Builds the Client ID input field.
-  Widget _buildClientIDField() {
-    return Container(
+  Widget _buildClientIDField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -428,11 +522,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Google Sign-Up button.
-  Widget _buildGoogleSignUpButton() {
-    return GestureDetector(
+  Widget _buildGoogleSignUpButton() => GestureDetector(
       onTap: _isButtonEnabled
           ? () async {
               await GoogleAuthService().signUpWithGoogle(
@@ -477,11 +569,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ),
     );
-  }
 
   /// Builds the OR divider.
-  Widget _buildOrDivider() {
-    return Row(
+  Widget _buildOrDivider() => Row(
       children: [
         Expanded(
           child: Container(
@@ -508,11 +598,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ],
     );
-  }
 
   /// Builds the Email input field.
-  Widget _buildEmailField() {
-    return Container(
+  Widget _buildEmailField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -552,11 +640,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Password input field.
-  Widget _buildPasswordField() {
-    return Container(
+  Widget _buildPasswordField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -610,11 +696,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Confirm Password input field.
-  Widget _buildConfirmPasswordField() {
-    return Container(
+  Widget _buildConfirmPasswordField() => Container(
       padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -662,11 +746,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ],
       ),
     );
-  }
 
   /// Builds the Next button.
-  Widget _buildNextButton() {
-    return GestureDetector(
+  Widget _buildNextButton() => GestureDetector(
       onTap: _doPasswordsMatch() ? () => _signUserUp() : null,
       child: Container(
         height: 50,
@@ -694,11 +776,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ),
     );
-  }
 
   /// Builds the login option row.
-  Widget _buildLoginOption() {
-    return Row(
+  Widget _buildLoginOption() => Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -734,5 +814,4 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       ],
     );
-  }
 }

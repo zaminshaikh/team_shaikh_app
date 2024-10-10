@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
@@ -55,6 +56,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    emailController.clear();
+    passwordController.clear();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -69,6 +72,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         email: emailController.text,
         password: passwordController.text,
       );
+      await updateFirebaseMessagingToken(userCredential.user, context);
       log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
       log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
 
@@ -115,15 +119,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
     if (authenticated) {
       // ignore: unawaited_futures
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const DashboardPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              child,
-        ),
-      );
+      // Navigator.pushReplacement(
+      //   context,
+      //   PageRouteBuilder(
+      //     pageBuilder: (context, animation, secondaryAnimation) =>
+      //         const DashboardPage(),
+      //     transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+      //         child,
+      //   ),
+      // );
+
+      await Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } else {
       // Handle failed authentication
     }
@@ -137,54 +143,100 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               // Logo and branding
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.defaultBlue500, // Start color
-                      Color.fromARGB(255, 17, 24, 39), // End color
-                    ],
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        const SizedBox(height: 60.0),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Align(
-                            alignment: const Alignment(-1.0, -1.0),
-                            child: Image.asset(
-                              'assets/icons/team_shaikh_transparent.png',
-                              height: 100,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30.0),
-                      ],
-                    ),
+            // Logo and branding
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF0D5EAF), // Start color
+                    Color.fromARGB(255, 17, 24, 39), // End color
                   ],
                 ),
               ),
+              child: Stack(
+                children: [
+                  // PNG gradient overlay
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.3, // Adjust the opacity as needed
+                      child: Image.asset(
+                        'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      const SizedBox(height: 60.0),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Align(
+                          alignment: const Alignment(-1.0, -1.0),
+                          child: Image.asset(
+                            'assets/icons/team_shaikh_transparent.png',
+                            height: 100,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40.0),
+            
+                      // Text widget to display "Create An Account"
+
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Additional container with another gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.fromARGB(255, 20, 33, 57), // End color
+                    Color.fromARGB(255, 17, 24, 39), // End color
+                  ],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                          const Text(
+                            'Login to Your Account',
+                            style: TextStyle(
+                              fontSize: 26,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                      const SizedBox(height: 20.0),
+                      Row(
+                        children: [
+                          Text(''),
+                          Spacer(),
+                          Text('')
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+
+
+
 
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Column(
                   children: [
-                    // Title for the login section
-                    const Text(
-                      'Login to Your Account',
-                      style: TextStyle(
-                          fontSize: 26,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web'),
-                    ),
-                    // Spacing
-                    const SizedBox(height: 35.0),
 
                     // Email input field
                     Container(
@@ -377,7 +429,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             }
                             // Fetch CID using async constructor
                             DatabaseService? db =
-                                await DatabaseService.fetchCID(user!.uid);
+                                await DatabaseService.fetchCID(user!.uid, context);
 
                             if (db != null) {
                               try {

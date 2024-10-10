@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
 import 'dart:developer';
 
@@ -55,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Scaffold buildsettingsPage() {
     if (client == null) {
       return const Scaffold(
-        body: CustomProgressIndicator(),
+        body: CustomProgressIndicatorPage(),
       );
     }
     return Scaffold(

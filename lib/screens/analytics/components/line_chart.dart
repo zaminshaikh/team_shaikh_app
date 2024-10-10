@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/analytics_utilities.dart';
 
 /// A widget that displays the line chart section in the Analytics page.
@@ -328,7 +328,6 @@ class _LineChartSectionState extends State<LineChartSection> {
   /// This includes settings for how tooltips appear when the user interacts with the chart.
   LineTouchData _buildLineTouchData() => LineTouchData(
         touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: AppColors.defaultBlueGray100,
           tooltipRoundedRadius: 16.0,
           getTooltipItems: (List<LineBarSpot> touchedSpots) =>
               touchedSpots.map((barSpot) {

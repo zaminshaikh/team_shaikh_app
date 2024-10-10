@@ -1,4 +1,6 @@
 // Flutter and Dart packages
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,14 +13,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Third-party packages
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 
 // Local packages
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
-import 'package:team_shaikh_app/utils/push_notification.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
@@ -30,6 +31,8 @@ import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
+import 'package:team_shaikh_app/screens/utils/push_notification.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -94,13 +97,14 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   late final Stream<Client?> clientStream;
+  String? selectedTimeOption;
+  double selectedTimeInMinutes = 1.0; // Default value
+  Timer? _inactivityTimer;
+  bool _isAppLockEnabled = false;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize client stream
-    clientStream = getClientStream();
 
     // Add this widget as an observer to the WidgetsBinding instance
     WidgetsBinding.instance.addObserver(this);
@@ -110,196 +114,318 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       final appState = Provider.of<AuthState>(context, listen: false);
       appState.setHasNavigatedToFaceIDPage(false);
     });
+
+    // Load the selected time option and app lock state
+    _loadSelectedTimeOption();
+    _loadAppLockState();
+  }
+
+  Future<void> _loadSelectedTimeOption() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
+      selectedTimeInMinutes = _getTimeInMinutes(selectedTimeOption!);
+      print('Selected time option: $selectedTimeOption');
+      print('Timer duration in minutes: $selectedTimeInMinutes');
+    });
+  }
+
+  Future<void> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isAppLockEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+      print('Bruh Loaded app lock state: $_isAppLockEnabled');
+    });
+  
+    final appState = Provider.of<AuthState>(context, listen: false);
+    if (!_isAppLockEnabled) {
+      appState.setInitiallyAuthenticated(true);
+      print('App lock is disabled. Setting initiallyAuthenticated to true.');
+      print('initiallyAuthenticated: ${appState.initiallyAuthenticated}');
+    } else {
+      appState.setInitiallyAuthenticated(false);
+      print('App lock is enabled. Setting initiallyAuthenticated to false.');
+    }
+  }
+
+  double _getTimeInMinutes(String timeOption) {
+    switch (timeOption) {
+      case '1 minute':
+        return 1.0;
+      case '2 minute':
+        return 2.0;
+      case '5 minute':
+        return 5.0;
+      case '10 minute':
+        return 10.0;
+      default:
+        return 1.0;
+    }
   }
 
   @override
   void dispose() {
     // Remove this widget from the observer list
     WidgetsBinding.instance.removeObserver(this);
+    _inactivityTimer?.cancel();
+    print('Timer cancelled in dispose');
     super.dispose();
   }
 
   /// Stream that provides Client data based on authentication state
   Stream<Client?> getClientStream() => FirebaseAuth.instance
-        .authStateChanges()
+        .userChanges()
         .asyncExpand((User? user) async* {
       if (user == null) {
         // User is not authenticated
         yield null;
       } else {
         // Fetch DatabaseService for the authenticated user
-        DatabaseService? db = await DatabaseService.fetchCID(user.uid);
+        DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
         if (db == null) {
           // DatabaseService not found
           yield null;
         } else {
-          // Yield Client stream from DatabaseService
-          yield* db.getClientStream();
+          // Fetch DatabaseService for the authenticated user
+          DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
+          if (db == null) {
+            // DatabaseService not found
+            yield null;
+          } else {
+            // Yield Client stream from DatabaseService
+            yield* db.getClientStream();
+          }
         }
-      }
-    });
+      }});
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+    @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     final appState = Provider.of<AuthState>(context, listen: false);
-
-    if ((state == AppLifecycleState.paused ||
-            state == AppLifecycleState.inactive ||
-            state == AppLifecycleState.hidden) &&
-        !appState.hasNavigatedToFaceIDPage &&
-        isAuthenticated() &&
-        appState.initiallyAuthenticated) {
-      // Navigate to FaceIdPage when app goes into background, and user is authenticated
-      appState.setHasNavigatedToFaceIDPage(true);
-      navigatorKey.currentState?.pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const FaceIdPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              child,
-        ),
-      );
-    } else if (appState.justAuthenticated) {
+    print('AppLifecycleState changed: $state');
+  
+    if (state == AppLifecycleState.resumed) {
+      // Cancel the timer when the app is resumed
+      _inactivityTimer?.cancel();
+      print('Timer cancelled on app resume');
+    } else if ((state == AppLifecycleState.paused ||
+                state == AppLifecycleState.inactive ||
+                state == AppLifecycleState.hidden) &&
+            !appState.hasNavigatedToFaceIDPage &&
+            await isAuthenticated() &&
+            appState.initiallyAuthenticated &&
+            appState.isAppLockEnabled) {
+      // Print when all conditions are met
+      print('All conditions met: Navigating to FaceIdPage after timer');
+  
+      // Start a timer for the selected amount of time
+      _inactivityTimer?.cancel();
+      print('Timer cancelled');
+      _inactivityTimer = Timer(Duration(minutes: appState.selectedTimeInMinutes.toInt()), () {
+        // Navigate to FaceIdPage when the timer completes
+        appState.setHasNavigatedToFaceIDPage(true);
+        navigatorKey.currentState?.pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const FaceIdPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          ),
+        );
+      });
+      print('Timer started for ${appState.selectedTimeInMinutes} minutes');
+    } else {
+      if (state != AppLifecycleState.paused &&
+          state != AppLifecycleState.inactive &&
+          state != AppLifecycleState.hidden) {
+        print('Condition not met: AppLifecycleState is not paused, inactive, or hidden');
+      }
+      if (appState.hasNavigatedToFaceIDPage) {
+        print('Condition not met: hasNavigatedToFaceIDPage is true');
+      }
+      if (!(await isAuthenticated())) {
+        print('Condition not met: User is not authenticated');
+      }
+      if (!appState.initiallyAuthenticated) {
+        print('Condition not met: initiallyAuthenticated is false');
+      }
+      if (!appState.isAppLockEnabled) {
+        print('Condition not met: isAppLockEnabled is false');
+      }
+    }
+  
+    if (appState.justAuthenticated) {
       // Reset navigation flags when the user has just authenticated
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
+      print('Reset navigation flags after authentication');
+      print('Reset navigation flags after authentication');
     }
   }
 
-  /// Check if the user is authenticated
-  bool isAuthenticated() {
+  /// Check if the user is authenticated and linked
+  Future<bool> isAuthenticated() async {
     final user = FirebaseAuth.instance.currentUser;
-    return user != null;
+    if (user == null) { return false; }
+
+    String uid = user.uid;
+
+    DatabaseService db = DatabaseService(uid);
+
+    bool isLinked = await db.isUIDLinked(uid);
+
+    return isLinked;
   }
 
   @override
-  Widget build(BuildContext context) => StreamProvider<Client?>.value(
-      value: clientStream,
-      catchError: (context, error) {
-        log('Error: $error');
-        return null;
-      },
-      initialData: null,
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            boldText: false,
-            textScaler: const TextScaler.linear(1),
+  Widget build(BuildContext context) => StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      builder: (context, authSnapshot) {
+        final user = authSnapshot.data;
+        return StreamProvider<Client?>(
+          key: ValueKey(user?.uid),
+          create: (_) => getClientStream(),
+          catchError: (context, error) {
+            log('main.dart: Error in fetching client stream: $error');
+            return null;
+          },
+          initialData: null,
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                boldText: false,
+                textScaler: const TextScaler.linear(1),
+              ),
+              child: child!,
+            ),
+            title: 'Team Shaikh Investments',
+            theme: _buildAppTheme(),
+            // home: const AuthCheck(),
+            routes: {
+              '/': (context) => const AuthCheck(),
+              '/create_account': (context) => const CreateAccountPage(),
+              '/login': (context) => const LoginPage(),
+              '/forgot_password': (context) => const ForgotPasswordPage(),
+              '/dashboard': (context) => const DashboardPage(),
+              '/analytics': (context) => const AnalyticsPage(),
+              '/activity': (context) => const ActivityPage(),
+              '/profile': (context) => const ProfilePage(),
+              '/notification': (context) => const NotificationPage(),
+              '/onboarding': (context) => const OnboardingPage(),
+            },
           ),
-          child: child!,
-        ),
-        title: 'Team Shaikh Investments',
-        theme: _buildAppTheme(),
-        home: const AuthCheck(),
-        routes: {
-          '/create_account': (context) => const CreateAccountPage(),
-          '/login': (context) => const LoginPage(),
-          '/forgot_password': (context) => const ForgotPasswordPage(),
-          '/dashboard': (context) => const DashboardPage(),
-          '/analytics': (context) => const AnalyticsPage(),
-          '/activity': (context) => const ActivityPage(),
-          '/profile': (context) => const ProfilePage(),
-          '/notification': (context) => const NotificationPage(),
-          '/onboarding': (context) => const OnboardingPage(),
-        },
-      ),
-    );
+        );
+      });
 
   /// Build the application theme
   ThemeData _buildAppTheme() => ThemeData(
-      scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
-      textTheme: const TextTheme(
-        titleLarge: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold),
-        titleMedium: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold),
-        titleSmall: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold),
-        labelLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        labelMedium:
-            TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        labelSmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        displayLarge:
-            TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        displayMedium:
-            TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        displaySmall:
-            TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        headlineLarge: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold),
-        headlineMedium: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold),
-        headlineSmall: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-            fontWeight: FontWeight.bold),
-        bodyLarge: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        bodyMedium: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-        bodySmall: TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
-      ),
-    );
+        scaffoldBackgroundColor: const Color.fromARGB(255, 17, 24, 39),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          titleMedium: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          titleSmall: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          labelLarge:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          labelMedium:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          labelSmall:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displayLarge:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displayMedium:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          displaySmall:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          headlineLarge: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          headlineMedium: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          headlineSmall: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+              fontWeight: FontWeight.bold),
+          bodyLarge:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          bodyMedium:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+          bodySmall:
+              TextStyle(color: Colors.white, fontFamily: 'Titillium Web'),
+        ),
+      );
 }
+
+
+
+
+
+
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
 
-  /// Fetch DatabaseService for the given UID
-  Future<DatabaseService?> _fetchDatabaseService(String uid) async => await DatabaseService.fetchCID(uid);
+  Future<bool> _loadAppLockState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isAppLockEnabled') ?? false;
+  }
+
 
   @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
-      // Stream that listens for changes in the user's authentication state
-      stream: FirebaseAuth.instance.userChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show a loading indicator while waiting for the authentication state
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          // Log and display any errors
-          log('AuthCheck: StreamBuilder error: ${snapshot.error}');
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          // User is authenticated
-          final user = snapshot.data!;
-          log('AuthCheck: User is logged in as ${user.email}');
-          return FutureBuilder<DatabaseService?>(
-            // Fetch DatabaseService for the authenticated user
-            future: _fetchDatabaseService(user.uid),
-            builder: (context, serviceSnapshot) {
-              if (serviceSnapshot.connectionState == ConnectionState.waiting) {
-                // Show a loading indicator while waiting for the Firestore query
-                return const CustomProgressIndicatorPage();
-              } else if (serviceSnapshot.hasError) {
-                // Log and display any errors
-                log('AuthCheck: Firestore query error: ${serviceSnapshot.error}');
-                return Center(child: Text('Error: ${serviceSnapshot.error}'));
-              } else if (serviceSnapshot.hasData &&
-                  serviceSnapshot.data != null) {
-                // UID found in Firestore
-                log('AuthCheck: UID found in Firestore.');
-                return const InitialFaceIdPage();
-              } else {
-                // UID not found in Firestore
-                log('AuthCheck: UID: ${user.uid} not found in Firestore.');
-                return const OnboardingPage();
-              }
-            },
-          );
-        } else {
-          // User is not authenticated
-          log('AuthCheck: User is not logged in yet.');
-          return const OnboardingPage();
-        }
-      },
-    );
-}
+        // Stream that listens for changes in the user's authentication state
+        stream: FirebaseAuth.instance.userChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show a loading indicator while waiting for the authentication state
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            // Log and display any errors
+            log('AuthCheck: StreamBuilder error: ${snapshot.error}');
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            // User is authenticated
+            final user = snapshot.data!;
+            log('AuthCheck: User is logged in as ${user.email}');
+  
+            // Use FutureBuilder to load app lock state
+            return FutureBuilder<bool>(
+              future: _loadAppLockState(),
+              builder: (context, appLockSnapshot) {
+                if (appLockSnapshot.connectionState == ConnectionState.waiting) {
+                  // Show a loading indicator while waiting for the app lock state
+                  return const Center(child: CircularProgressIndicator());
+                } else if (appLockSnapshot.hasError) {
+                  // Log and display any errors
+                  log('AuthCheck: FutureBuilder error: ${appLockSnapshot.error}');
+                  return Center(child: Text('Error: ${appLockSnapshot.error}'));
+                } else if (appLockSnapshot.hasData) {
+                  // Check if app lock is enabled
+                  final isAppLockEnabled = appLockSnapshot.data!;
+                  if (!isAppLockEnabled) {
+                    return const DashboardPage();
+                  }
+                  return const InitialFaceIdPage();
+                } else {
+                  // Default case if no data is available
+                  return const InitialFaceIdPage();
+                }
+              },
+            );
+          } else {
+            // User is not authenticated
+            log('AuthCheck: User is not logged in yet.');
+            return const OnboardingPage();
+          }
+        },
+      );
+      
+  }

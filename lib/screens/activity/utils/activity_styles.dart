@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 // Get Activity Type Text
 String getActivityType(Activity activity) {
