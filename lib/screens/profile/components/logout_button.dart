@@ -64,8 +64,7 @@ class _LogoutButtonState extends State<LogoutButton> {
     showDialog(
       context: context,
       barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
+      builder: (BuildContext context) => AlertDialog(
           backgroundColor: AppColors.defaultBlueGray800,
           content: SingleChildScrollView(
             child: ListBody(
@@ -137,8 +136,7 @@ class _LogoutButtonState extends State<LogoutButton> {
               ),
             ),
           ],
-        );
-      },
+        ),
     );
   }
 
