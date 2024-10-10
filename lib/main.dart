@@ -174,7 +174,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   /// Stream that provides Client data based on authentication state
   Stream<Client?> getClientStream() => FirebaseAuth.instance
-        .authStateChanges()
+        .userChanges()
         .asyncExpand((User? user) async* {
       if (user == null) {
         // User is not authenticated
@@ -202,6 +202,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final appState = Provider.of<AuthState>(context, listen: false);
     print('AppLifecycleState changed: $state');
+
+    bool imright = isAuthenticated();
   
     if (state == AppLifecycleState.resumed) {
       // Cancel the timer when the app is resumed
@@ -263,19 +265,20 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// Check if the user is authenticated
   bool isAuthenticated() {
     final user = FirebaseAuth.instance.currentUser;
+    print(user);
     return user != null;
   }
 
   @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: FirebaseAuth.instance.userChanges(),
       builder: (context, authSnapshot) {
         final user = authSnapshot.data;
         return StreamProvider<Client?>(
           key: ValueKey(user?.uid),
           create: (_) => getClientStream(),
           catchError: (context, error) {
-            log('Error: $error');
+            log('main.dart: Error in fetching client stream: $error');
             return null;
           },
           initialData: null,
@@ -364,12 +367,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
-
-  /// Fetch DatabaseService for the given UID
-  Future<DatabaseService?> _fetchDatabaseService(String uid, BuildContext context) async {
-    return await DatabaseService.fetchCID(uid, context);
-  }
-
 
   Future<bool> _loadAppLockState() async {
     final prefs = await SharedPreferences.getInstance();

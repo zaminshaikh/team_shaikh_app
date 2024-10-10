@@ -79,8 +79,8 @@ class DatabaseService {
       setSubCollections(db);
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
-      log('database.dart: User signed out.');
-      await FirebaseAuth.instance.signOut();
+      // log('database.dart: User signed out.');
+      // await FirebaseAuth.instance.signOut();
       return null;
     }
   
