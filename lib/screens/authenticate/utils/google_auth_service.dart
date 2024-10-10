@@ -53,10 +53,6 @@ class GoogleAuthService {
 
           showAlert = true;
           await showGoogleFailAlert(context);
-          await Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-          );
           return null;
         }
       } else {
