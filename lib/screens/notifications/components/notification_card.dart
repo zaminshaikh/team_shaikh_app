@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
@@ -133,7 +134,21 @@ class NotificationCard extends StatelessWidget {
                         contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
                         dense: true,
                         onTap: () {
-                          // Handle tap if needed
+                          if (notification.type == 'activity') {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ActivityPage(),
+                              ),
+                            );
+                          } else {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DocumentsPage(),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ],
