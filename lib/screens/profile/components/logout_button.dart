@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +7,7 @@ import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class LogoutButton extends StatefulWidget {
   final Client client;
@@ -25,19 +25,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         child: Column(
           children: [
             GestureDetector(
-              onTap: () async {
-                DatabaseService? db = DatabaseService.withCID(
-                    FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
-                List<dynamic>? tokens =
-                    await db.getField('tokens') as List<dynamic>? ?? [];
-                // Get the current token
-                String currentToken =
-                    await FirebaseMessaging.instance.getToken() ?? '';
-                tokens.remove(currentToken);
-                // Update the list of tokens in the database for the user
-                await db.updateField('tokens', tokens);
-                signUserOut(context);
-              },
+              onTap: () => _showLogoutDialog(context),
               child: Container(
                 height: 45,
                 decoration: BoxDecoration(
@@ -73,6 +61,96 @@ class _LogoutButtonState extends State<LogoutButton> {
         ),
       );
 
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.defaultBlueGray800,
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        'Confirm Logout',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(width: 10),
+                      SvgPicture.asset(
+                        'assets/icons/logout.svg',
+                        width: 24,
+                        height: 24,
+                        color: Colors.white, // Set the color of the SVG icon
+                      ),
+                    ],
+                  ),
+                ),
+                const Text('Are you sure you want to log out?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Container(
+                width: double.infinity, // This will make the container take up the full width of the AlertDialog
+                padding: const EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
+                  borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                ),
+                child: const Text(
+                  'Cancel',
+                  textAlign: TextAlign.center, // This will center the text
+                ),
+              ),
+            ),
+            const SizedBox(height: 10), // Add some space between the buttons
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _logout(context); // Proceed with logout
+              },
+              child: Container(
+                width: double.infinity, // This will make the container take up the full width of the AlertDialog
+                padding: const EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 149, 28, 28), // Change this to the color you want
+                  borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                ),
+                child: const Text(
+                  'Yes, log me out',
+                  textAlign: TextAlign.center, // This will center the text
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void _logout(BuildContext context) async {
+    DatabaseService? db = DatabaseService.withCID(
+        FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
+    List<dynamic>? tokens =
+        await db.getField('tokens') as List<dynamic>? ?? [];
+    // Get the current token
+    String currentToken =
+        await FirebaseMessaging.instance.getToken() ?? '';
+    tokens.remove(currentToken);
+    // Update the list of tokens in the database for the user
+    await db.updateField('tokens', tokens);
+    signUserOut(context);
+  }
+
   void signUserOut(BuildContext context) async {
     log('Profiles.dart: Signing out...');
 
@@ -83,19 +161,9 @@ class _LogoutButtonState extends State<LogoutButton> {
     // Async gap mounted widget check
     if (mounted) {
       // Pop the current page and go to login
-      // await Navigator.pushAndRemoveUntil(
-      //   context,
-      //   PageRouteBuilder(
-      //     pageBuilder: (context, animation1, animation2) =>
-      //         const OnboardingPage(),
-      //     transitionDuration: Duration.zero,
-      //   ),
-      //   (route) => false,
-      // );
-
       await Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
     }
-
-
   }
 }
+
+
