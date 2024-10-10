@@ -61,7 +61,7 @@ class NotificationCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          padding: const EdgeInsets.fromLTRB(10, 5, 20, 5),
           child: Column(
             children: [
               Container(
@@ -71,17 +71,17 @@ class NotificationCard extends StatelessWidget {
                       BorderRadius.circular(15.0), // Set the border radius
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(0,0,0,0),
                   child: Column(
                     children: [
                       ListTile(
                         leading: !notification.isRead
                             ? const CircleAvatar(
-                                radius: 8,
+                                radius: 6,
                                 backgroundColor: AppColors.defaultBlue300,
                               )
                             : const CircleAvatar(
-                                radius: 8,
+                                radius: 6,
                                 backgroundColor: Colors.transparent,
                               ),
                         title: Row(
