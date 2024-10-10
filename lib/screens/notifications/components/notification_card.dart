@@ -61,7 +61,7 @@ class NotificationCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(10, 5, 20, 5),
+          padding: const EdgeInsets.fromLTRB(0, 5, 20, 5),
           child: Column(
             children: [
               Container(
@@ -133,7 +133,7 @@ class NotificationCard extends StatelessWidget {
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
                         dense: true,
-                        onTap: () {
+                        onTap: () async {
                           if (notification.type == 'activity') {
                             Navigator.pushReplacement(
                               context,
@@ -149,6 +149,8 @@ class NotificationCard extends StatelessWidget {
                               ),
                             );
                           }
+                          DatabaseService db = DatabaseService.withCID(client.uid, client.cid);
+                          await db.markNotificationAsRead(notification.id);
                         },
                       ),
                     ],
