@@ -407,29 +407,6 @@ class DatabaseService {
   /// This stream will emit a new [DocumentSnapshot] whenever the user document is updated.
   Stream<DocumentSnapshot> get getUser => usersCollection.doc(cid).snapshots();
 
-  /// Checks if a document with the given [cid] exists in the users collection.
-  ///
-  /// Returns a [Future] that completes with `true` if the document exists, `false` otherwise.
-  ///
-  /// Parameters:
-  /// - [cid]: The ID of the document to check.
-  Future<bool> docExists(String cid) async {
-    DocumentSnapshot doc = await usersCollection.doc(cid).get();
-    return doc.exists;
-  }
-
-  /// Checks if a document with the given [cid] is linked to a user.
-  ///
-  /// Returns a [Future] that completes with `true` if the document is linked, `false` otherwise.
-  ///
-  /// Parameters:
-  /// - [cid]: The ID of the document to check.
-  Future<bool> docLinked(String cid) async {
-    DocumentSnapshot doc = await usersCollection.doc(cid).get();
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return data['uid'] != '';
-  }
-
   /// Checks if a document exists in the Firestore 'users' collection.
   ///
   /// This function invokes a callable Cloud Function named 'checkDocumentExists' and passes it
