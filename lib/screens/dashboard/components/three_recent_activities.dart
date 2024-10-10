@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/activity_card_item.dart';
-import 'package:team_shaikh_app/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class ActivityTilesSection extends StatefulWidget {
   final List<Activity> activities;

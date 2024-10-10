@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
-import 'package:team_shaikh_app/utils/utilities.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 class ActivityCardItem extends StatelessWidget {
   final Activity activity;
