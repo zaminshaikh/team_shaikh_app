@@ -123,7 +123,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                   color: Colors.transparent, 
                   border: Border.all(
                     color: Colors.white, 
-                    width: 2, 
+                    width: 1, 
                   ),
                   borderRadius: BorderRadius.circular(20), 
                 ),
