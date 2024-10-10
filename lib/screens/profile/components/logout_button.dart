@@ -6,7 +6,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class LogoutButton extends StatefulWidget {
@@ -84,7 +83,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                         'assets/icons/logout.svg',
                         width: 24,
                         height: 24,
-                        color: Colors.white, // Set the color of the SVG icon
+                        color: Colors.white, 
                       ),
                     ],
                   ),
@@ -96,37 +95,44 @@ class _LogoutButtonState extends State<LogoutButton> {
           actions: <Widget>[
             GestureDetector(
               onTap: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop(); 
+                _logout(context); 
               },
               child: Container(
-                width: double.infinity, // This will make the container take up the full width of the AlertDialog
-                padding: const EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                width: double.infinity, 
+                padding: const EdgeInsets.symmetric(vertical: 10), 
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 30, 75, 137), // Change this to the color you want
-                  borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                  color: const Color.fromARGB(255, 149, 28, 28),
+                  borderRadius: BorderRadius.circular(20), 
                 ),
                 child: const Text(
-                  'Cancel',
-                  textAlign: TextAlign.center, // This will center the text
+                  'Logout',
+                  textAlign: TextAlign.center, 
                 ),
               ),
             ),
-            const SizedBox(height: 10), // Add some space between the buttons
+            const SizedBox(height: 10), 
             GestureDetector(
               onTap: () {
-                Navigator.of(context).pop(); // Close the dialog
-                _logout(context); // Proceed with logout
+                Navigator.of(context).pop(); 
               },
               child: Container(
-                width: double.infinity, // This will make the container take up the full width of the AlertDialog
-                padding: const EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                width: double.infinity, 
+                padding: const EdgeInsets.symmetric(vertical: 10), 
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 149, 28, 28), // Change this to the color you want
-                  borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                  color: Colors.transparent, 
+                  border: Border.all(
+                    color: Colors.grey, 
+                    width: 2, 
+                  ),
+                  borderRadius: BorderRadius.circular(20), 
                 ),
                 child: const Text(
-                  'Yes, log me out',
-                  textAlign: TextAlign.center, // This will center the text
+                  'Cancel',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey, 
+                  ),
                 ),
               ),
             ),
@@ -135,6 +141,8 @@ class _LogoutButtonState extends State<LogoutButton> {
       },
     );
   }
+
+
 
 
   void _logout(BuildContext context) async {
