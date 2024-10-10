@@ -57,89 +57,94 @@ class NotificationCard extends StatelessWidget {
     // Calculate the time ago string
     String timeAgo = timeago.format(notification.time, locale: 'en_short');
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: !notification.isRead ? color?.withOpacity(0.05) : null,
-              borderRadius:
-                  BorderRadius.circular(15.0), // Set the border radius
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: !notification.isRead
-                        ? const CircleAvatar(
-                            radius: 8,
-                            backgroundColor: AppColors.defaultBlue300,
-                          )
-                        : const CircleAvatar(
-                            radius: 8,
-                            backgroundColor: Colors.transparent,
-                          ),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Title and icons
-                        Row(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: null,
+                  borderRadius:
+                      BorderRadius.circular(15.0), // Set the border radius
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: !notification.isRead
+                            ? const CircleAvatar(
+                                radius: 8,
+                                backgroundColor: AppColors.defaultBlue300,
+                              )
+                            : const CircleAvatar(
+                                radius: 8,
+                                backgroundColor: Colors.transparent,
+                              ),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            // Title and icons
+                            Row(
+                              children: [
+                                Text(
+                                  title,
+                                  style: AppTextStyles.lBold(
+                                      color: AppColors.defaultWhite),
+                                ),
+                                const SizedBox(width: 12.0),
+                                if (containsAK1)
+                                  SvgPicture.asset(
+                                    'assets/icons/ak1_logo.svg',
+                                    height: 16.0,
+                                    width: 16.0,
+                                  ),
+                                if (containsAGQ)
+                                  SvgPicture.asset(
+                                    'assets/icons/agq_logo.svg',
+                                    height: 16.0,
+                                    width: 16.0,
+                                  ),
+                              ],
+                            ),
+                            // Time ago
                             Text(
-                              title,
-                              style: AppTextStyles.lBold(
+                              timeAgo,
+                              style: AppTextStyles.sRegular(
                                   color: AppColors.defaultWhite),
                             ),
-                            const SizedBox(width: 12.0),
-                            if (containsAK1)
-                              SvgPicture.asset(
-                                'assets/icons/ak1_logo.svg',
-                                height: 16.0,
-                                width: 16.0,
-                              ),
-                            if (containsAGQ)
-                              SvgPicture.asset(
-                                'assets/icons/agq_logo.svg',
-                                height: 16.0,
-                                width: 16.0,
-                              ),
                           ],
                         ),
-                        // Time ago
-                        Text(
-                          timeAgo,
-                          style: AppTextStyles.sRegular(
-                              color: AppColors.defaultWhite),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(
+                              notification.message,
+                              style: AppTextStyles.xsRegular(
+                                  color: AppColors.defaultWhite),
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          notification.message,
-                          style: AppTextStyles.xsRegular(
-                              color: AppColors.defaultWhite),
-                          softWrap: true,
-                          overflow: TextOverflow.visible,
-                        ),
-                      ],
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
-                    dense: true,
-                    onTap: () {
-                      // Handle tap if needed
-                    },
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+                        dense: true,
+                        onTap: () {
+                          // Handle tap if needed
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+        Divider(thickness: 0.5,),
+      ],
     );
   }
 }
