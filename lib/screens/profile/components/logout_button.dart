@@ -122,8 +122,8 @@ class _LogoutButtonState extends State<LogoutButton> {
                 decoration: BoxDecoration(
                   color: Colors.transparent, 
                   border: Border.all(
-                    color: Colors.grey, 
-                    width: 2, 
+                    color: Colors.white, 
+                    width: 1, 
                   ),
                   borderRadius: BorderRadius.circular(20), 
                 ),
@@ -131,7 +131,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                   'Cancel',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.grey, 
+                    color: Colors.white, 
                   ),
                 ),
               ),
