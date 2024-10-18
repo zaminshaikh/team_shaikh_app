@@ -64,17 +64,10 @@ class UserBreakdownSection extends StatelessWidget {
     logAssetTitles('assetTilesAK1', assetTilesAK1);
 
     // Sort tiles in order specified in _getAssetTileIndex
-    assetTilesAGQ.sort((a, b) => getAssetTileIndex((a.asset.displayTitle),
-            companyName: client.companyName)
-        .compareTo(getAssetTileIndex((b.asset.displayTitle),
-            companyName: client.companyName)));
-    assetTilesAK1.sort((a, b) => getAssetTileIndex((a.asset.displayTitle),
-            companyName: client.companyName)
-        .compareTo(getAssetTileIndex((b.asset.displayTitle),
-            companyName: client.companyName)));
-
-    
-
+    assetTilesAGQ.sort((a, b) => a.asset.index
+        .compareTo(b.asset.index));
+    assetTilesAK1.sort((a, b) => a.asset.index
+        .compareTo(b.asset.index));
 
 
     // Log the asset titles after sorting

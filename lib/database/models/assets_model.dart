@@ -11,10 +11,13 @@ class Asset {
   /// The date of the first deposit, if any.
   final DateTime? firstDepositDate;
 
+  final int index;
+
   /// Creates an [Asset] instance with the given parameters.
   Asset({
     required this.displayTitle,
     required this.amount,
+    required this.index,
     this.firstDepositDate,
   });
 
@@ -23,6 +26,7 @@ class Asset {
         displayTitle: data['displayTitle'] as String,
         amount: (data['amount'] as num).toDouble(),
         firstDepositDate: data['firstDepositDate'] as DateTime?,
+        index: (data['index'] ?? -1) as int,
       );
 
   /// Converts the [Asset] instance into a [Map] representation.
@@ -55,6 +59,7 @@ class Fund {
   ///
   /// This method parses each asset in the map and constructs [Asset] objects.
   factory Fund.fromMap(Map<String, dynamic> data) {
+    final d = data;
     final assets = <String, Asset>{};
     String name = '';
     double total = 0.0;
