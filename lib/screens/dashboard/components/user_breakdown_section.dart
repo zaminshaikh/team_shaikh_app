@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
@@ -46,16 +48,40 @@ class UserBreakdownSection extends StatelessWidget {
         }
       }
     }
+    
+    // Function to log the display titles of the assets in a list
+    void logAssetTitles(String listName, List<AssetTile> assetTiles) {
+      print('$listName before sorting:');
+      for (var tile in assetTiles) {
+        log('${tile.index}: ${tile.asset.displayTitle}');
+      }
+    }
+
+    // Log the asset titles before sorting
+    log('AGQ before sorting:');
+    logAssetTitles('assetTilesAGQ', assetTilesAGQ);
+    log('AK1 before sorting:');
+    logAssetTitles('assetTilesAK1', assetTilesAK1);
 
     // Sort tiles in order specified in _getAssetTileIndex
-    assetTilesAGQ.sort((a, b) => getAssetTileIndex(a.title,
+    assetTilesAGQ.sort((a, b) => getAssetTileIndex((a.asset.displayTitle),
             companyName: client.companyName)
-        .compareTo(getAssetTileIndex((b.title),
+        .compareTo(getAssetTileIndex((b.asset.displayTitle),
             companyName: client.companyName)));
-    assetTilesAK1.sort((a, b) => getAssetTileIndex((a.title),
+    assetTilesAK1.sort((a, b) => getAssetTileIndex((a.asset.displayTitle),
             companyName: client.companyName)
-        .compareTo(getAssetTileIndex((b.title),
+        .compareTo(getAssetTileIndex((b.asset.displayTitle),
             companyName: client.companyName)));
+
+    
+
+
+
+    // Log the asset titles after sorting
+    log('AGQ after sorting:');
+    logAssetTitles('assetTilesAGQ', assetTilesAGQ);
+    log('AK1 after sorting:');
+    logAssetTitles('assetTilesAK1', assetTilesAK1);
 
     return Theme(
       data: ThemeData(
