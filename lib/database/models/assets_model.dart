@@ -1,3 +1,84 @@
+/// Represents an individual asset within a fund.
+///
+/// Each asset has a display title, an amount, and an optional first deposit date.
+class Asset {
+  /// The display title of the asset.
+  final String displayTitle;
+
+  /// The amount associated with the asset.
+  final double amount;
+
+  /// The date of the first deposit, if any.
+  final DateTime? firstDepositDate;
+
+  /// Creates an [Asset] instance with the given parameters.
+  Asset({
+    required this.displayTitle,
+    required this.amount,
+    this.firstDepositDate,
+  });
+
+  /// Creates an [Asset] instance from a [Map] representation.
+  factory Asset.fromMap(Map<String, dynamic> data) => Asset(
+        displayTitle: data['displayTitle'] as String,
+        amount: (data['amount'] as num).toDouble(),
+        firstDepositDate: data['firstDepositDate'] as DateTime?,
+      );
+
+  /// Converts the [Asset] instance into a [Map] representation.
+  Map<String, dynamic> toMap() => {
+        'displayTitle': displayTitle,
+        'amount': amount,
+        'firstDepositDate': firstDepositDate,
+      };
+}
+
+/// Represents a fund containing multiple assets with variable properties.
+///
+/// The `Fund` class now contains a map of asset names to their corresponding [Asset] objects.
+class Fund {
+  /// A map of asset names to their corresponding [Asset] objects.
+  final Map<String, Asset> assets;
+
+  final double total;
+
+  final String name;
+
+  /// Creates a [Fund] instance with the given assets.
+  Fund({
+    required this.assets,
+    required this.total,
+    required this.name,
+  });
+
+  /// Creates a [Fund] instance from a [Map] representation.
+  ///
+  /// This method parses each asset in the map and constructs [Asset] objects.
+  factory Fund.fromMap(Map<String, dynamic> data) {
+    final assets = <String, Asset>{};
+    String name = '';
+    double total = 0.0;
+    data.forEach((key, value) {
+      if (key == 'total') {
+        total = (value as num).toDouble();
+      } else if (key == 'fund') {
+        name = value as String;
+      } else {
+        assets[key] = Asset.fromMap(value as Map<String, dynamic>);
+      }
+    });
+    return Fund(assets: assets, total: total, name: name);
+  }
+
+  /// Converts the [Fund] instance into a [Map] representation.
+  Map<String, dynamic> toMap() => assets.map(
+        (key, value) => MapEntry(key, value.toMap()),
+      );
+
+  /// Creates an empty [Fund] instance with no assets.
+  Fund.empty() : assets = {}, total = 0.0, name = '';
+}
+
 /// Represents the assets of a client, including various funds and totals.
 ///
 /// The `Assets` class aggregates all the financial assets of a client, including individual funds
@@ -27,17 +108,18 @@ class Assets {
 
   /// Creates an [Assets] instance from a [Map] representation.
   ///
-  /// [funds] is a map of fund names to [Fund] objects.
+  /// [fundsData] is a map of fund names to their data maps.
   /// [general] contains general information such as totals.
   factory Assets.fromMap(
-          Map<String, Fund> funds, Map<String, dynamic> general) =>
-      Assets(
-        totalYTD: (general['totalYTD'] as num?)?.toDouble(),
-        ytd: (general['ytd'] as num?)?.toDouble(),
-        totalAssets:
-            (general['totalAssets'] ?? general['total'] as num?)?.toDouble(),
-        funds: funds,
-      );
+    Map<String, Fund> funds,
+    Map<String, dynamic> general,
+  ) => Assets(
+      totalYTD: (general['totalYTD'] as num?)?.toDouble(),
+      ytd: (general['ytd'] as num?)?.toDouble(),
+      totalAssets:
+          (general['totalAssets'] ?? general['total'] as num?)?.toDouble(),
+      funds: funds,
+    );
 
   /// Creates an empty [Assets] instance with default values.
   Assets.empty()
@@ -48,88 +130,11 @@ class Assets {
 
   /// Converts the [Assets] instance into a [Map] representation.
   Map<String, dynamic> toMap() => {
-        'funds': funds.map((key, value) => MapEntry(key, value.toMap())),
+        'funds': funds.map(
+          (key, value) => MapEntry(key, value.toMap()),
+        ),
         'totalYTD': totalYTD,
         'ytd': ytd,
         'totalAssets': totalAssets,
-      };
-}
-
-/// Represents an individual fund with various account types.
-///
-/// The `Fund` class encapsulates the different account types within a fund, such as personal,
-/// company, traditional IRA, Roth IRA, SEP IRA, and NuView accounts.
-class Fund {
-  /// Personal account amount.
-  final double personal;
-
-  /// Company account amount.
-  final double company;
-
-  /// Traditional IRA account amount.
-  final double trad;
-
-  /// Roth IRA account amount.
-  final double roth;
-
-  /// SEP IRA account amount.
-  final double sep;
-
-  /// NuView Traditional IRA account amount.
-  final double nuviewTrad;
-
-  /// NuView Roth IRA account amount.
-  final double nuviewRoth;
-
-  /// Total amount across all accounts.
-  final double total;
-
-  /// Creates a [Fund] instance with the given parameters.
-  Fund({
-    required this.personal,
-    required this.company,
-    required this.trad,
-    required this.roth,
-    required this.sep,
-    required this.nuviewTrad,
-    required this.nuviewRoth,
-    required this.total,
-  });
-
-  /// Creates a [Fund] instance from a [Map] representation.
-  ///
-  /// Typically used when decoding data from Firestore.
-  factory Fund.fromMap(Map<String, dynamic> data) => Fund(
-        personal: (data['personal'] as num).toDouble(),
-        company: (data['company'] as num).toDouble(),
-        trad: (data['trad'] as num).toDouble(),
-        roth: (data['roth'] as num).toDouble(),
-        sep: (data['sep'] as num).toDouble(),
-        nuviewTrad: (data['nuviewTrad'] as num).toDouble(),
-        nuviewRoth: (data['nuviewRoth'] as num).toDouble(),
-        total: (data['total'] as num).toDouble(),
-      );
-
-  /// Creates an empty [Fund] instance with default values.
-  Fund.empty()
-      : personal = 0.0,
-        company = 0.0,
-        trad = 0.0,
-        roth = 0.0,
-        sep = 0.0,
-        nuviewTrad = 0.0,
-        nuviewRoth = 0.0,
-        total = 0.0;
-
-  /// Converts the [Fund] instance into a [Map] representation.
-  Map<String, dynamic> toMap() => {
-        'personal': personal,
-        'company': company,
-        'trad': trad,
-        'roth': roth,
-        'sep': sep,
-        'nuviewTrad': nuviewTrad,
-        'nuviewRoth': nuviewRoth,
-        'total': total,
       };
 }
