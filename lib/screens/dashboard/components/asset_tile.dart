@@ -3,6 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:team_shaikh_app/database/models/assets_model.dart';
+import 'package:team_shaikh_app/screens/dashboard/utils/dashboard_helper.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 // ignore: constant_identifier_names
@@ -11,25 +13,24 @@ enum FundName { AGQ, AK1 }
 // ignore: must_be_immutable
 class AssetTile extends StatelessWidget {
 
-  final String fieldName;
-  final double amount;
+  final Asset asset;
   final FundName fund;
   final String? companyName;
   String title = '';
 
-  AssetTile({super.key, required this.fieldName, required this.amount, required this.fund, this.companyName});
+  AssetTile({super.key, required this.asset, required this.fund, this.companyName});
 
   @override
   Widget build(BuildContext context) {
 
-    String sectionName = getSectionName(fieldName);
-    title = sectionName;
+    // String sectionName = getSectionName(fieldName, companyName: companyName);
+    // title = sectionName;
     Widget fundIcon = getFundIcon(fund);
 
     return ListTile(
       leading: fundIcon,
       title: Text(
-        sectionName,
+        asset.displayTitle,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
@@ -38,7 +39,7 @@ class AssetTile extends StatelessWidget {
         ),
       ),
       trailing: Text(
-        currencyFormat(amount),
+        currencyFormat(asset.amount),
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
@@ -47,35 +48,6 @@ class AssetTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-
-  String getSectionName(String fieldName) {
-    switch (fieldName) {
-      case 'nuviewTrad':
-        return 'Nuview Cash IRA';
-      case 'nuviewRoth':
-        return 'Nuview Cash Roth IRA';
-      case 'nuviewSepIRA':
-        return 'Nuview Cash SEP IRA';
-      case 'roth':
-        return 'Roth IRA';
-      case 'trad':
-        return 'Traditional IRA';
-      case 'sep':
-        return 'SEP IRA';
-      case 'personal':
-        return 'Personal';
-      case 'company':
-        try {
-          return companyName!;
-        } catch (e) {
-          log('dashboard.dart: Error building asset tile for company: $e');
-          return '';
-        }
-      default:
-        return fieldName;
-    }
   }
 
   Widget getFundIcon(FundName fund) {

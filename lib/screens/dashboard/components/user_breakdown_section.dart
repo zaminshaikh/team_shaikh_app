@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/asset_tile.dart';
+import 'package:team_shaikh_app/screens/dashboard/utils/dashboard_helper.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 // ignore: must_be_immutable
@@ -16,30 +17,6 @@ class UserBreakdownSection extends StatelessWidget {
   @override
   Widget build(BuildContext context)  {
 
-      int getAssetTileIndex(String name, {String? companyName}) {
-      if (name == companyName) {
-        return 1;
-      }
-      switch (name) {
-        case 'Personal':
-          return 0;
-        case 'Traditional IRA':
-          return 2;
-        case 'Nuview Cash IRA':
-          return 3;
-        case 'Roth IRA':
-          return 4;
-        case 'Nuview Cash Roth IRA':
-          return 5;
-        case 'SEP IRA':
-          return 6;
-        case 'Nuview Cash SEP IRA':
-          return 7;
-        default:
-          return -1;
-      }
-    }
-
     // Initialize empty lists for the tiles
     List<AssetTile> assetTilesAGQ = [];
     List<AssetTile> assetTilesAK1 = [];
@@ -47,32 +24,31 @@ class UserBreakdownSection extends StatelessWidget {
       String fundName = fundEntry.key;
       Fund fund = fundEntry.value;
 
-      // Iterate through each field in the fund
-      fund.toMap().forEach((fieldName, amount) {
-        if (fieldName == 'total' ) {
-          return;
-        }
-        if (amount != 0) {
+      for (var entry in fund.assets.entries) {
+        final key = entry.key;
+        final asset = entry.value;
+
+        if (asset.amount != 0) {
           switch (fundName.toUpperCase()) {
             case 'AGQ':
               assetTilesAGQ.add(AssetTile(
-                  fieldName: fieldName, amount: amount.toDouble(), fund: FundName.AGQ,
+                  asset: fund.assets[key]!, fund: FundName.AGQ,
                   companyName: client.companyName));
               break;
             case 'AK1':
               assetTilesAK1.add(AssetTile(
-                  fieldName: fieldName, amount: amount.toDouble(), fund: FundName.AK1,
+                  asset: fund.assets[key]!, fund: FundName.AK1,
                   companyName: client.companyName));
               break;
             default:
               break;
           }
         }
-      });
+      }
     }
 
     // Sort tiles in order specified in _getAssetTileIndex
-    assetTilesAGQ.sort((a, b) => getAssetTileIndex((a.title ),
+    assetTilesAGQ.sort((a, b) => getAssetTileIndex(a.title,
             companyName: client.companyName)
         .compareTo(getAssetTileIndex((b.title),
             companyName: client.companyName)));
