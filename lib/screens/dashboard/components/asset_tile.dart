@@ -16,7 +16,6 @@ class AssetTile extends StatelessWidget {
   final Asset asset;
   final FundName fund;
   final String? companyName;
-  int index = -1;
 
   AssetTile({super.key, required this.asset, required this.fund, this.companyName,});
 
@@ -26,7 +25,6 @@ class AssetTile extends StatelessWidget {
     // String sectionName = getSectionName(fieldName, companyName: companyName);
     // title = sectionName;
     Widget fundIcon = getFundIcon(fund);
-    index = getAssetTileIndex(asset.displayTitle, companyName: companyName);
 
     return ListTile(
       leading: fundIcon,

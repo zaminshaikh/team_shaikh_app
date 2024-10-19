@@ -48,33 +48,11 @@ class UserBreakdownSection extends StatelessWidget {
         }
       }
     }
-    
-    // Function to log the display titles of the assets in a list
-    void logAssetTitles(String listName, List<AssetTile> assetTiles) {
-      print('$listName before sorting:');
-      for (var tile in assetTiles) {
-        log('${tile.index}: ${tile.asset.displayTitle}');
-      }
-    }
-
-    // Log the asset titles before sorting
-    log('AGQ before sorting:');
-    logAssetTitles('assetTilesAGQ', assetTilesAGQ);
-    log('AK1 before sorting:');
-    logAssetTitles('assetTilesAK1', assetTilesAK1);
-
     // Sort tiles in order specified in _getAssetTileIndex
     assetTilesAGQ.sort((a, b) => a.asset.index
         .compareTo(b.asset.index));
     assetTilesAK1.sort((a, b) => a.asset.index
         .compareTo(b.asset.index));
-
-
-    // Log the asset titles after sorting
-    log('AGQ after sorting:');
-    logAssetTitles('assetTilesAGQ', assetTilesAGQ);
-    log('AK1 after sorting:');
-    logAssetTitles('assetTilesAK1', assetTilesAK1);
 
     return Theme(
       data: ThemeData(
