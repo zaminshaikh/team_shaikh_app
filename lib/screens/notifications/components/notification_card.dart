@@ -61,7 +61,7 @@ class NotificationCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(0, 5, 20, 5),
+          padding: const EdgeInsets.fromLTRB(10, 5, 20, 5),
           child: Column(
             children: [
               Container(
