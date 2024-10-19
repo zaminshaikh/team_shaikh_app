@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Represents an individual asset within a fund.
 ///
 /// Each asset has a display title, an amount, and an optional first deposit date.
@@ -25,7 +27,7 @@ class Asset {
   factory Asset.fromMap(Map<String, dynamic> data) => Asset(
         displayTitle: data['displayTitle'] as String,
         amount: (data['amount'] as num).toDouble(),
-        firstDepositDate: data['firstDepositDate'] as DateTime?,
+        firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
         index: (data['index'] ?? -1) as int,
       );
 

@@ -3,29 +3,29 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-int getAssetTileIndex(String name, {String? companyName}) {
-  if (name == companyName) {
-    return 1;
-  }
-  switch (name) {
-    case 'Personal':
-      return 0;
-    case 'Traditional IRA':
-      return 2;
-    case 'Nuview Cash IRA':
-      return 3;
-    case 'Roth IRA':
-      return 4;
-    case 'Nuview Cash Roth IRA':
-      return 5;
-    case 'SEP IRA':
-      return 6;
-    case 'Nuview Cash SEP IRA':
-      return 7;
-    default:
-      return -1;
-  }
-}
+// int getAssetTileIndex(String name, {String? companyName}) {
+//   if (name == companyName) {
+//     return 1;
+//   }
+//   switch (name) {
+//     case 'Personal':
+//       return 0;
+//     case 'Traditional IRA':
+//       return 2;
+//     case 'Nuview Cash IRA':
+//       return 3;
+//     case 'Roth IRA':
+//       return 4;
+//     case 'Nuview Cash Roth IRA':
+//       return 5;
+//     case 'SEP IRA':
+//       return 6;
+//     case 'Nuview Cash SEP IRA':
+//       return 7;
+//     default:
+//       return -1;
+//   }
+// }
 
 // String getSectionName(, {String? companyName}) {
 //   switch (fieldName) {
