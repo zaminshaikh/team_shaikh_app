@@ -50,7 +50,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
   @override
   Widget build(BuildContext context) {
     if (client == null) {
-      return const CustomProgressIndicator();
+      return const CustomProgressIndicatorPage();
     }
   
     return buildDocumentsPage();

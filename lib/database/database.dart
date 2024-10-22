@@ -79,8 +79,8 @@ class DatabaseService {
       setSubCollections(db);
     } else {
       log('database.dart: Document with UID $uid not found in Firestore.');
-      log('database.dart: User signed out.');
-      await FirebaseAuth.instance.signOut();
+      // log('database.dart: User signed out.');
+      // await FirebaseAuth.instance.signOut();
       return null;
     }
   
@@ -407,29 +407,6 @@ class DatabaseService {
   /// This stream will emit a new [DocumentSnapshot] whenever the user document is updated.
   Stream<DocumentSnapshot> get getUser => usersCollection.doc(cid).snapshots();
 
-  /// Checks if a document with the given [cid] exists in the users collection.
-  ///
-  /// Returns a [Future] that completes with `true` if the document exists, `false` otherwise.
-  ///
-  /// Parameters:
-  /// - [cid]: The ID of the document to check.
-  Future<bool> docExists(String cid) async {
-    DocumentSnapshot doc = await usersCollection.doc(cid).get();
-    return doc.exists;
-  }
-
-  /// Checks if a document with the given [cid] is linked to a user.
-  ///
-  /// Returns a [Future] that completes with `true` if the document is linked, `false` otherwise.
-  ///
-  /// Parameters:
-  /// - [cid]: The ID of the document to check.
-  Future<bool> docLinked(String cid) async {
-    DocumentSnapshot doc = await usersCollection.doc(cid).get();
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return data['uid'] != '';
-  }
-
   /// Checks if a document exists in the Firestore 'users' collection.
   ///
   /// This function invokes a callable Cloud Function named 'checkDocumentExists' and passes it
@@ -502,6 +479,39 @@ class DatabaseService {
 
       // Return true by default if an error occurs to handle the error gracefully
       return true;
+    }
+  }
+
+  /// Calls the Cloud Function `isUIDLinked` to check if a UID is linked.
+  Future<bool> isUIDLinked(String uid) async {
+    try {
+      // Initialize the callable function
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
+        'isUIDLinked',
+        options: HttpsCallableOptions(
+          timeout: const Duration(seconds: 30),
+        ),
+      );
+
+      // Call the function with the required parameters
+      final HttpsCallableResult result = await callable.call({
+        'uid': uid,
+        'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'),
+      });
+
+      // Extract the 'isLinked' value from the result
+      final data = result.data as Map<String, dynamic>;
+      final bool isLinked = data['isLinked'] as bool;
+
+      return isLinked;
+    } on FirebaseFunctionsException catch (e) {
+      // Handle Firebase Functions errors
+      print('Firebase Functions Exception: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      // Handle other errors
+      print('Unknown error occurred while calling isUIDLinked: $e');
+      return false;
     }
   }
 }

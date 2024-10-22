@@ -55,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Scaffold buildsettingsPage() {
     if (client == null) {
       return const Scaffold(
-        body: CustomProgressIndicator(),
+        body: CustomProgressIndicatorPage(),
       );
     }
     return Scaffold(

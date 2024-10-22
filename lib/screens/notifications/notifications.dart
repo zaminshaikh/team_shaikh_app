@@ -29,7 +29,7 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context){
     if (client == null) {
       return const Center(
-        child: CustomProgressIndicator(),
+        child: CustomProgressIndicatorPage(),
       );
     }
     notifications = List.from(client!.notifications!);
@@ -54,7 +54,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     // Get the previous notification date
                     DateTime previousNotificationDate = index > 0 ? (notifications[index - 1].time): DateTime(0);
                     // Check if the current notification is on a different day than the previous one
-                    return NotificationCard(notification: notification, client: client!, previousNotificationDate: previousNotificationDate);
+                    return NotificationCard(notification: notification, client: client!);
                   },
                   childCount: notifications.length,
                 ),
