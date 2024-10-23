@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "957281597606",
+    "project_id": "team-shaikh-app-52dc5",
+    "storage_bucket": "team-shaikh-app-52dc5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957281597606:android:c68e066ad43815b518dc67",
+        "android_client_info": {
+          "package_name": "com.example.team_shaikh_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "957281597606-m1i2fl9t519ukuqi0cgrtfs9idd7e27a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.team_shaikh_app",
+            "certificate_hash": "90cbb217ff73dd99a2d17615b922bffd4065c7d4"
+          }
+        },
+        {
+          "client_id": "957281597606-4ap3t1km8r8qfnno895e6fr2546iqfsr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp7hVIVaZdrv2N_ig68lCMh17jp1uisA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "957281597606-4ap3t1km8r8qfnno895e6fr2546iqfsr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "957281597606-0tohiirlcdrnucchq1hlr32r6o9lo8nl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.teamshaikh.investmentportfolio"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

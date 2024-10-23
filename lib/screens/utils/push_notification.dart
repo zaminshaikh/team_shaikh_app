@@ -17,7 +17,7 @@ class PushNotificationService {
     log('User granted permission: ${settings.authorizationStatus}');
 
     // Initialize local notifications
-    const notifications.AndroidInitializationSettings initializationSettingsAndroid = notifications.AndroidInitializationSettings('@mipmap/ic_launcher');
+    const notifications.AndroidInitializationSettings initializationSettingsAndroid = notifications.AndroidInitializationSettings('@mipmap/team_shaikh_app_icon');
     const notifications.DarwinInitializationSettings initializationSettingsIOS = notifications.DarwinInitializationSettings();
     const notifications.InitializationSettings initializationSettings = notifications.InitializationSettings(
       android: initializationSettingsAndroid,
