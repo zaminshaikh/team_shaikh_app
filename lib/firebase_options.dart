@@ -70,6 +70,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '957281597606',
     projectId: 'team-shaikh-app-52dc5',
     storageBucket: 'team-shaikh-app-52dc5.appspot.com',
-    iosBundleId: 'com.example.teamShaikhApp',
+    iosBundleId: 'com.teamshaikh.investmentportfolio',
   );
 }
