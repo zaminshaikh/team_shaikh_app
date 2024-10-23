@@ -194,7 +194,7 @@ class GoogleAuthService {
     } catch (e) {
       // If there is an error during the Google sign-up process, log the error and rethrow it
       debugPrint('GoogleAuthService: Error during Google sign-up: $e');
-      rethrow;
+    rethrow;
     }
   }
 

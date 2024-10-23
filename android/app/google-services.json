@@ -48,6 +48,50 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957281597606:android:7f2722f200dac53218dc67",
+        "android_client_info": {
+          "package_name": "com.teamshaikh.investmentportfolio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "957281597606-gtjocn2al7fvkfmni5ge7uoi0jckhieo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.teamshaikh.investmentportfolio",
+            "certificate_hash": "90cbb217ff73dd99a2d17615b922bffd4065c7d4"
+          }
+        },
+        {
+          "client_id": "957281597606-4ap3t1km8r8qfnno895e6fr2546iqfsr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp7hVIVaZdrv2N_ig68lCMh17jp1uisA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "957281597606-4ap3t1km8r8qfnno895e6fr2546iqfsr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "957281597606-0tohiirlcdrnucchq1hlr32r6o9lo8nl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.teamshaikh.investmentportfolio"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"
