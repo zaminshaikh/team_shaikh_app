@@ -30,7 +30,7 @@ class DashboardAppBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome Back, ${client.firstName} ${client.lastName}!',
+                    'Welcome, ${client.firstName} ${client.lastName}!',
                     style: const TextStyle(
                       fontSize: 23,
                       color: Colors.white,
