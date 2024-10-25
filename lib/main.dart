@@ -365,10 +365,19 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       );
 }
 
+/// Check if the user is authenticated and linked
+Future<bool> isAuthenticated() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) { return false; }
 
+  String uid = user.uid;
 
+  DatabaseService db = DatabaseService(uid);
 
+  bool isLinked = await db.isUIDLinked(uid);
 
+  return isLinked;
+}
 
 class AuthCheck extends StatelessWidget {
   const AuthCheck({Key? key}) : super(key: key);
@@ -378,6 +387,27 @@ class AuthCheck extends StatelessWidget {
     return prefs.getBool('isAppLockEnabled') ?? false;
   }
 
+  /// Check if the user is authenticated, email verified, and linked
+  Future<bool> isAuthenticatedAndVerified() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+
+    await user.reload(); // Ensure the latest user state
+
+    if (!user.emailVerified) {
+      return false;
+    }
+
+    String uid = user.uid;
+
+    DatabaseService db = DatabaseService(uid);
+
+    bool isLinked = await db.isUIDLinked(uid);
+
+    return isLinked;
+  }
 
   @override
   Widget build(BuildContext context) => StreamBuilder<User?>(
@@ -395,28 +425,50 @@ class AuthCheck extends StatelessWidget {
             // User is authenticated
             final user = snapshot.data!;
             log('AuthCheck: User is logged in as ${user.email}');
-  
-            // Use FutureBuilder to load app lock state
+
+            // Check email verification and client linking
             return FutureBuilder<bool>(
-              future: _loadAppLockState(),
-              builder: (context, appLockSnapshot) {
-                if (appLockSnapshot.connectionState == ConnectionState.waiting) {
-                  // Show a loading indicator while waiting for the app lock state
+              future: isAuthenticatedAndVerified(),
+              builder: (context, authSnapshot) {
+                if (authSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (appLockSnapshot.hasError) {
-                  // Log and display any errors
-                  log('AuthCheck: FutureBuilder error: ${appLockSnapshot.error}');
-                  return Center(child: Text('Error: ${appLockSnapshot.error}'));
-                } else if (appLockSnapshot.hasData) {
-                  // Check if app lock is enabled
-                  final isAppLockEnabled = appLockSnapshot.data!;
-                  if (!isAppLockEnabled) {
-                    return const DashboardPage();
-                  }
-                  return const InitialFaceIdPage();
+                } else if (authSnapshot.hasError) {
+                  log('AuthCheck: FutureBuilder error: ${authSnapshot.error}');
+                  return Center(child: Text('Error: ${authSnapshot.error}'));
+                } else if (authSnapshot.hasData && authSnapshot.data == true) {
+                  // User is authenticated, email verified, and client linked
+                  // Now proceed to check app lock state
+                  return FutureBuilder<bool>(
+                    future: _loadAppLockState(),
+                    builder: (context, appLockSnapshot) {
+                      if (appLockSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        // Show a loading indicator while waiting for the app lock state
+                        return const Center(
+                            child: CircularProgressIndicator());
+                      } else if (appLockSnapshot.hasError) {
+                        // Log and display any errors
+                        log('AuthCheck: FutureBuilder error: ${appLockSnapshot.error}');
+                        return Center(
+                            child: Text('Error: ${appLockSnapshot.error}'));
+                      } else if (appLockSnapshot.hasData) {
+                        // Check if app lock is enabled
+                        final isAppLockEnabled = appLockSnapshot.data!;
+                        if (!isAppLockEnabled) {
+                          return const DashboardPage();
+                        }
+                        return const InitialFaceIdPage();
+                      } else {
+                        // Default case if no data is available
+                        return const InitialFaceIdPage();
+                      }
+                    },
+                  );
                 } else {
-                  // Default case if no data is available
-                  return const InitialFaceIdPage();
+                  FirebaseAuth.instance.currentUser?.delete();
+                  // User is signed in but not email verified or client not linked
+                  // Show EmailVerificationPage
+                  return const OnboardingPage();
                 }
               },
             );
@@ -427,5 +479,4 @@ class AuthCheck extends StatelessWidget {
           }
         },
       );
-      
-  }
+}
