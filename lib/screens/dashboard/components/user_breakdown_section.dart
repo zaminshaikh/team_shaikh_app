@@ -30,7 +30,8 @@ class UserBreakdownSection extends StatelessWidget {
         final key = entry.key;
         final asset = entry.value;
 
-        if (asset.amount != 0) {
+        // NOTE: Uncomment the following line if you want to filter out assets with amount 0
+        // if (asset.amount != 0) {
           switch (fundName.toUpperCase()) {
             case 'AGQ':
               assetTilesAGQ.add(AssetTile(
@@ -45,7 +46,7 @@ class UserBreakdownSection extends StatelessWidget {
             default:
               break;
           }
-        }
+        // }
       }
     }
     // Sort tiles in order specified in _getAssetTileIndex
