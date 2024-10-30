@@ -128,7 +128,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
       // Send email verification.
       User? user = FirebaseAuth.instance.currentUser;
-
+      
       if (user == null) {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
