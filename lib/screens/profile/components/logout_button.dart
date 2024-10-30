@@ -146,17 +146,17 @@ class _LogoutButtonState extends State<LogoutButton> {
   void _logout(BuildContext context) async {
     DatabaseService? db = DatabaseService.withCID(
         FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
-    List<dynamic>? tokens =
-        await db.getField('tokens') as List<dynamic>? ?? [];
+    List<dynamic>? tokens = await db.getField('tokens') as List<dynamic>? ?? [];
     // Get the current token
-    String currentToken =
-        await FirebaseMessaging.instance.getToken() ?? '';
-    tokens.remove(currentToken);
-    // Update the list of tokens in the database for the user
-    await db.updateField('tokens', tokens);
+    String? currentToken = await FirebaseMessaging.instance.getToken();
+    if (currentToken != null && currentToken.isNotEmpty) {
+      tokens.remove(currentToken);
+      // Update the list of tokens in the database for the user
+      await db.updateField('tokens', tokens);
+    }
     signUserOut();
   }
-
+  
   void signUserOut() async {
     log('Profiles.dart: Signing out...');
 
