@@ -11,45 +11,51 @@ class PushNotificationService {
 
   // Initialize Firebase Messaging
   Future<void> initialize() async {
-    // Request permission for iOS
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(provisional: true);
+    try {
+      // Request permission for iOS
+      NotificationSettings settings = await _firebaseMessaging.requestPermission(provisional: true);
 
-    log('User granted permission: ${settings.authorizationStatus}');
+      log('User granted permission: ${settings.authorizationStatus}');
 
-    // Initialize local notifications
-    const notifications.AndroidInitializationSettings initializationSettingsAndroid = notifications.AndroidInitializationSettings('@mipmap/team_shaikh_app_icon');
-    const notifications.DarwinInitializationSettings initializationSettingsIOS = notifications.DarwinInitializationSettings();
-    const notifications.InitializationSettings initializationSettings = notifications.InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-    await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+      // Initialize local notifications
+      const notifications.AndroidInitializationSettings initializationSettingsAndroid = notifications.AndroidInitializationSettings('@mipmap/team_shaikh_app_icon');
+      const notifications.DarwinInitializationSettings initializationSettingsIOS = notifications.DarwinInitializationSettings();
+      const notifications.InitializationSettings initializationSettings = notifications.InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+      );
+      await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    // For apple platforms, ensure the APNS token is available before making any FCM plugin API calls
-    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    if (apnsToken != null) {
-      // APNS token is available, make FCM plugin API requests...
-      // Get the FCM token
-      String? token = await _firebaseMessaging.getToken();
-      log('database_messaging.dart: FCM Token: $token');
+      // For apple platforms, ensure the APNS token is available before making any FCM plugin API calls
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      if (apnsToken != null) {
+        // APNS token is available, make FCM plugin API requests...
+        // Get the FCM token
+        String? token = await _firebaseMessaging.getToken();
+        log('database_messaging.dart: FCM Token: $token');
 
-      // Handle background messages
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        // Handle background messages
+        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-      // Handle foreground messages
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        log('Received a message while in the foreground: ${message.messageId}');
-        if (message.notification != null) {
-          log('Notification Title: ${message.notification!.title}');
-          log('Notification Body: ${message.notification!.body}');
-          _showNotification(message.notification!);
-        }
-      });
+        // Handle foreground messages
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          log('Received a message while in the foreground: ${message.messageId}');
+          if (message.notification != null) {
+            log('Notification Title: ${message.notification!.title}');
+            log('Notification Body: ${message.notification!.body}');
+            _showNotification(message.notification!);
+          }
+        });
 
-      // Handle when the app is launched from a notification
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        log('Message clicked!');
-      });
+        // Handle when the app is launched from a notification
+        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+          log('Message clicked!');
+        });
+      } else {
+        log('APNS token is null');
+      }
+    } catch (e) {
+      log('Error initializing Firebase Messaging: $e');
     }
   }
 

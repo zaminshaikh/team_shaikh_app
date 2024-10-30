@@ -1,29 +1,99 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
 import 'dart:developer';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
+
   @override
-  // ignore: library_private_types_in_public_api
   _SettingsPageState createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
   Client? client;
-  bool activitySwitchValue = false;
-  bool statementsSwitchValue = false;
+  bool notifsSwitchValue = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotificationPermission();
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    // Fetch the current notification permission status
+    var status = await Permission.notification.status;
+    setState(() {
+      // Update the switch based on whether permission is granted
+      notifsSwitchValue = status.isGranted;
+    });
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    // Request the notification permission if it's not granted
+    var status = await Permission.notification.request();
+
+    if (status.isGranted) {
+      // Update the state if permission is granted
+      setState(() {
+        notifsSwitchValue = true;
+        _saveSwitchValue('notifsSwitchValue', notifsSwitchValue);
+      });
+      _showCupertinoDialog('Notifications enabled');
+    } else {
+      // If denied, show a message and provide an option to go to settings
+      _showCupertinoDialog('Notification permission denied. Please enable it in settings.');
+    }
+  }
+
+    void _showCupertinoDialog(String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text('Notification Permission'),
+          content: Text(message),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            if (message.contains('denied'))
+              CupertinoDialogAction(
+                child: Text('Settings'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _openAppSettings();
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  
+
+
+
+
+  Future<void> _openAppSettings() async {
+    // Open app settings to manually enable notifications
+    await openAppSettings();
+  }
 
   @override
   void didChangeDependencies() {
@@ -32,16 +102,12 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadSwitchValue();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return buildsettingsPage();
-  }
+  
 
   void _loadSwitchValue() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      statementsSwitchValue = prefs.getBool('statementsSwitchValue') ?? false;
-      activitySwitchValue = prefs.getBool('activitySwitchValue') ?? false;
+      notifsSwitchValue = prefs.getBool('notifsSwitchValue') ?? false;
     });
   }
 
@@ -50,14 +116,18 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setBool(key, value);
   }
 
-// This is the selected button, initially set to an empty string
-  // Assuming these fields are part of the `user.info` map
-  Scaffold buildsettingsPage() {
+  @override
+  Widget build(BuildContext context) {
+    return buildSettingsPage();
+  }
+
+  Scaffold buildSettingsPage() {
     if (client == null) {
       return const Scaffold(
         body: CustomProgressIndicatorPage(),
       );
     }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -81,7 +151,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // This is the settings section
   Column _settings() => Column(
         children: [
           Padding(
@@ -90,96 +159,56 @@ class _SettingsPageState extends State<SettingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-
-                Row(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Notifications',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titillium Web',
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              const Text(
+                                'Let me know about new activities and statements within my portfolio.',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                  fontFamily: 'Titillium Web',
+                                ),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Notifications',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Activity',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          'Let me know about new activity within my portfolio.',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CupertinoSwitch(
-                              // This bool value toggles the switch.
-                              value: activitySwitchValue,
-                              activeColor: CupertinoColors.activeBlue,
-                              onChanged: (bool? value) {
-                                // This is called when the user toggles the switch.
-                                setState(() {
-                                  activitySwitchValue = value ?? false;
-                                  _saveSwitchValue('activitySwitchValue',
-                                      activitySwitchValue);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        const Text(
-                          'Statement',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          'Let me know when I recieve a new statement.',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CupertinoSwitch(
-                              // This bool value toggles the switch.
-                              value: statementsSwitchValue,
-                              activeColor: CupertinoColors.activeBlue,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  statementsSwitchValue = value ?? false;
-                                  _saveSwitchValue('statementsSwitchValue',
-                                      statementsSwitchValue);
-                                });
-                              },
-                            ),
-                          ],
+                        CupertinoSwitch(
+                          value: notifsSwitchValue,
+                          activeColor: CupertinoColors.activeBlue,
+                          onChanged: (bool? value) async {
+                            if (value == true) {
+                              // When the switch is turned ON, request notification permission
+                              await _requestNotificationPermission();
+                            } else {
+                              // If the user turns it OFF, prompt them to go to app settings
+                              await _openAppSettings();
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -719,4 +748,5 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       );
+      
 }
