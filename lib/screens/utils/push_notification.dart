@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:developer';
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as notifications;
@@ -28,32 +29,44 @@ class PushNotificationService {
 
       // For apple platforms, ensure the APNS token is available before making any FCM plugin API calls
       final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-      if (apnsToken != null) {
-        // APNS token is available, make FCM plugin API requests...
-        // Get the FCM token
-        String? token = await _firebaseMessaging.getToken();
-        log('database_messaging.dart: FCM Token: $token');
+      if (Platform.isIOS) {
+        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        if (apnsToken != null) {
+          // APNs token is available, proceed to get FCM token
+          String? token = await FirebaseMessaging.instance.getToken();
+          log('FCM Token: $token');
 
-        // Handle background messages
-        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+          // Handle background messages
+          FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-        // Handle foreground messages
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-          log('Received a message while in the foreground: ${message.messageId}');
-          if (message.notification != null) {
-            log('Notification Title: ${message.notification!.title}');
-            log('Notification Body: ${message.notification!.body}');
-            _showNotification(message.notification!);
-          }
-        });
+          // Handle foreground messages
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+            log('Received a message while in the foreground: ${message.messageId}');
+            // Your message handling logic
+          });
 
-        // Handle when the app is launched from a notification
-        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-          log('Message clicked!');
-        });
+        } else {
+          log('Failed to get APNs token');
+        }
       } else {
-        log('APNS token is null');
-      }
+        // For Android, directly get the FCM token
+        String? token = await FirebaseMessaging.instance.getToken();
+        if (token != null) {
+          log('FCM Token: $token');
+
+          // Handle background messages
+          FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+          // Handle foreground messages
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+            log('Received a message while in the foreground: ${message.messageId}');
+            // Your message handling logic
+          });
+
+        } else {
+          log('Failed to get FCM token');
+        }
+      } 
     } catch (e) {
       log('Error initializing Firebase Messaging: $e');
     }
