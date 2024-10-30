@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  app_settings: ^5.1.1
   carousel_slider: ^5.0.0
   cloud_firestore: ^5.4.3
   cloud_functions: ^5.1.3

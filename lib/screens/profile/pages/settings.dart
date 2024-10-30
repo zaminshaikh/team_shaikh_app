@@ -1,6 +1,8 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
+import 'package:app_settings/app_settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
@@ -202,14 +204,51 @@ class _SettingsPageState extends State<SettingsPage> {
                           activeColor: CupertinoColors.activeBlue,
                           onChanged: (bool? value) async {
                             if (value == true) {
-                              // When the switch is turned ON, request notification permission
-                              await _requestNotificationPermission();
+                              // Check if notifications are allowed
+                              NotificationSettings settings = await FirebaseMessaging.instance.getNotificationSettings();
+                              if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+                                // Notifications are allowed, save the switch value
+                                setState(() {
+                                  notifsSwitchValue = true;
+                                });
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                await prefs.setBool('notifsSwitchValue', true);
+                              } else {
+                                // Notifications are not allowed, show a dialog before opening settings
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return CupertinoAlertDialog(
+                                      title: Text('Allow Notifications'),
+                                      content: Text('You need to allow notifications in settings.'),
+                                      actions: [
+                                        CupertinoDialogAction(
+                                          child: Text('Cancel'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                        CupertinoDialogAction(
+                                          child: Text('Open Settings'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            AppSettings.openAppSettings();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
                             } else {
-                              // If the user turns it OFF, prompt them to go to app settings
-                              await _openAppSettings();
+                              // Switch is turned OFF, save the value
+                              setState(() {
+                                notifsSwitchValue = false;
+                              });
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('notifsSwitchValue', false);
                             }
-                          },
-                        ),
+                          },                        ),
                       ],
                     ),
                   ],
