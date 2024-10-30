@@ -219,17 +219,23 @@ class _SettingsPageState extends State<SettingsPage> {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return CupertinoAlertDialog(
-                                      title: Text('Allow Notifications'),
-                                      content: Text('You need to allow notifications in settings.'),
+                                    title: Text('Allow Notifications'),
+                                    content: Text('You need to allow notifications in settings.'),
                                       actions: [
                                         CupertinoDialogAction(
-                                          child: Text('Cancel'),
+                                          child: Text(
+                                            'Cancel',
+                                            style: TextStyle(color: CupertinoColors.activeBlue),
+                                          ),
                                           onPressed: () {
                                             Navigator.of(context).pop();
                                           },
                                         ),
                                         CupertinoDialogAction(
-                                          child: Text('Open Settings'),
+                                          child: Text(
+                                            'Open Settings',
+                                            style: TextStyle(color: CupertinoColors.activeBlue),
+                                          ),
                                           onPressed: () {
                                             Navigator.of(context).pop();
                                             AppSettings.openAppSettings();
@@ -248,7 +254,8 @@ class _SettingsPageState extends State<SettingsPage> {
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setBool('notifsSwitchValue', false);
                             }
-                          },                        ),
+                          },
+                        ),
                       ],
                     ),
                   ],
