@@ -150,6 +150,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   double _getTimeInMinutes(String timeOption) {
     switch (timeOption) {
+      case 'Immediately':
+        return 0.0;
       case '1 minute':
         return 1.0;
       case '2 minute':
@@ -159,7 +161,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       case '10 minute':
         return 10.0;
       default:
-        return 1.0;
+        return 1.0; // Default to 1 minute if none match
     }
   }
 

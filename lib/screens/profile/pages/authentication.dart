@@ -12,15 +12,15 @@ import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class AuthenticationPage extends StatefulWidget {
   const AuthenticationPage({Key? key}) : super(key: key);
+  
   @override
   // ignore: library_private_types_in_public_api
   _AuthenticationPageState createState() => _AuthenticationPageState();
-}
-
+} 
 class _AuthenticationPageState extends State<AuthenticationPage> {
   final Future<void> _initializeWidgetFuture = Future.value();
 
-  // database service instance
+  // Database service instance
   DatabaseService? _databaseService;
 
   String? cid;
@@ -32,13 +32,15 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     _loadAppLockState();
   }
 
+  // Load the selected time option from SharedPreferences
   Future<void> _loadSelectedTimeOption() async {
     final prefs = await SharedPreferences.getInstance();
-    final timeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
+    final timeOption = prefs.getString('selectedTimeOption') ?? 'Immediately'; // Changed default to 'Immediately'
     context.read<AuthState>().setSelectedTimeOption(timeOption);
     print('Loaded selected time option: $timeOption');
   }
 
+  // Save the selected time option to SharedPreferences
   Future<void> _saveSelectedTimeOption(String timeOption) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTimeOption', timeOption);
@@ -46,6 +48,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     print('Saved selected time option: $timeOption');
   }
 
+  // Load the app lock state from SharedPreferences
   Future<void> _loadAppLockState() async {
     final prefs = await SharedPreferences.getInstance();
     final isEnabled = prefs.getBool('isAppLockEnabled') ?? false;
@@ -53,6 +56,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     print('Loaded app lock state: $isEnabled');
   }
 
+  // Save the app lock state to SharedPreferences
   Future<void> _saveAppLockState(bool isEnabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isAppLockEnabled', isEnabled);
@@ -62,42 +66,39 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
-      future: _initializeWidgetFuture, // Initialize the database service
-      builder: (context, snapshot) {
-            return buildAuthenticationPage(context);
-      }
-    );
+    future: _initializeWidgetFuture, // Initialize the database service
+    builder: (context, snapshot) {
+      return buildAuthenticationPage(context);
+    }
+  );
 
-  Scaffold buildAuthenticationPage(
-      BuildContext context,
-    ) {
-      final appState = Provider.of<AuthState>(context, listen: false);
+  Scaffold buildAuthenticationPage(BuildContext context) {
+    final appState = Provider.of<AuthState>(context, listen: false);
   
-      return Scaffold(
-        body: Stack(
-          children: [
-            CustomScrollView(
-              slivers: <Widget>[
-                _buildAppBar(context),
-                SliverPadding(
-                  padding: const EdgeInsets.all(0.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        _buildLockFeatureInfo(),
-                        if (appState.isAppLockEnabled) _buildSampleCupertinoListSection(),
-                      ],
-                    ),
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: <Widget>[
+              _buildAppBar(context),
+              SliverPadding(
+                padding: const EdgeInsets.all(0.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      _buildLockFeatureInfo(),
+                      if (appState.isAppLockEnabled) _buildSampleCupertinoListSection(),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-    
   SliverAppBar _buildAppBar(context) => SliverAppBar(
     backgroundColor: const Color.fromARGB(255, 30, 41, 59),
     automaticallyImplyLeading: false,
@@ -141,35 +142,35 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0),
           child: Row(
-                children: [
-                  SvgPicture.asset(
-                    'assets/icons/face_id.svg',
-                    color: Colors.white,
-                    height: 40,
-                    width: 40,
-                  ),
-                  const SizedBox(width: 15),
-                  Text(
-                    'App Lock',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Titillium Web',
-                      fontSize: 22,
-                    ),
-                  ),
-                  const Spacer(),
-                  CupertinoSwitch(
-                    value: context.watch<AuthState>().isAppLockEnabled,
-                    onChanged: (bool value) {
-                      context.read<AuthState>().setAppLockEnabled(value);
-                      _saveAppLockState(value);
-                      print('App lock enabled: $value');
-                    },
-                    activeColor: AppColors.defaultBlue300, // Set the active color
-                  )
-                ],
+            children: [
+              SvgPicture.asset(
+                'assets/icons/face_id.svg',
+                color: Colors.white,
+                height: 40,
+                width: 40,
               ),
-            ),
+              const SizedBox(width: 15),
+              Text(
+                'App Lock',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Titillium Web',
+                  fontSize: 22,
+                ),
+              ),
+              const Spacer(),
+              CupertinoSwitch(
+                value: context.watch<AuthState>().isAppLockEnabled,
+                onChanged: (bool value) {
+                  context.read<AuthState>().setAppLockEnabled(value);
+                  _saveAppLockState(value);
+                  print('App lock enabled: $value');
+                },
+                activeColor: AppColors.defaultBlue300, // Set the active color
+              )
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -200,6 +201,11 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         child: Column(
           children: [
             const SizedBox(height: 10),
+            _buildCupertinoListTile('Immediately'),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Divider(color: CupertinoColors.separator, thickness: 1.5),
+            ),
             _buildCupertinoListTile('1 minute'),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -244,6 +250,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
           context.read<AuthState>().setSelectedTimeOption(timeOption);
           _saveSelectedTimeOption(timeOption);
         });
+        print('Selected time option: $timeOption');
       },
       trailing: context.watch<AuthState>().selectedTimeOption == timeOption
           ? const Icon(Icons.check_rounded, color: AppColors.defaultBlueGray400)
@@ -251,4 +258,3 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     );
   }
 }
-
