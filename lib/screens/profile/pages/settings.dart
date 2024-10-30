@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
+import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
@@ -213,6 +214,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 });
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
                                 await prefs.setBool('notifsSwitchValue', true);
+                                await updateFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
                               } else {
                                 // Notifications are not allowed, show a dialog before opening settings
                                 await showDialog(
@@ -247,6 +249,9 @@ class _SettingsPageState extends State<SettingsPage> {
                               });
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setBool('notifsSwitchValue', false);
+                              await deleteFirebaseMessagingToken(
+                                  FirebaseAuth.instance.currentUser, context);
+
                             }
                           },                        ),
                       ],
