@@ -12,7 +12,19 @@ class DashboardAppBar extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => SliverAppBar(
+  Widget build(BuildContext context) {
+    String welcomeMessage;
+    String fullName = '${client.firstName} ${client.lastName}';
+    if (fullName.length > 20) {
+      String shorterName = client.firstName.length <= client.lastName.length
+          ? client.firstName
+          : client.lastName;
+      welcomeMessage = 'Welcome, $shorterName!';
+    } else {
+      welcomeMessage = 'Welcome, $fullName!';
+    }
+    
+    return SliverAppBar(
       backgroundColor: const Color.fromARGB(255, 30, 41, 59),
       automaticallyImplyLeading: false,
       toolbarHeight: 80,
@@ -30,7 +42,7 @@ class DashboardAppBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome, ${client.firstName} ${client.lastName}!',
+                    welcomeMessage,
                     style: const TextStyle(
                       fontSize: 23,
                       color: Colors.white,
@@ -127,4 +139,5 @@ class DashboardAppBar extends StatelessWidget {
         ),
       ],
     );
+  }
 }
