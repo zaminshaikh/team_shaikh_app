@@ -40,7 +40,7 @@ class _ActivityPageState extends State<ActivityPage> {
   List<String> _recipientsFilter = [];
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
-    end: DateTime.now(),
+    end: DateTime.now().add(Duration(days: 30)),
   );
 
   // Date formatter for day headers
