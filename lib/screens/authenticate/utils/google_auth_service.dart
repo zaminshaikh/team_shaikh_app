@@ -94,6 +94,19 @@ class GoogleAuthService {
     return true;
   }
 
+  Future<bool> showGoogleSignUpFailAlert(context, String message) async {
+    if (showAlert) {
+      await CustomAlertDialog.showAlertDialog(context, 'Google Sign-In Failed',
+          message,
+          icon: const Icon(
+            FontAwesomeIcons.google,
+            color: Colors.blue,
+          ));
+      return false;
+    }
+    return true;
+  }
+
   Future<bool> wrongCIDFailAlert(context) async {
     if (showAlert) {
       await CustomAlertDialog.showAlertDialog(context, 'Google Sign-Up Failed',
@@ -151,6 +164,27 @@ class GoogleAuthService {
         debugPrint('GoogleAuthService: User UID: ${user.uid}');
         // Check if the user exists in Firestore by fetching the CID
         final DatabaseService db = DatabaseService.withCID(user.uid, cid);
+
+        bool uidLinked = await db.isUIDLinked(user.uid);
+        bool docExists = await db.checkDocumentExists(cid);
+        bool docLinked = await db.checkDocumentLinked(cid);
+
+        // Check if CID exists and is not linked.
+        if (uidLinked && docExists && !docLinked) {
+          showAlert = true;
+          await showGoogleSignUpFailAlert(context,
+              'Email ${user.email} is already associated with a different account. Please log in instead.');
+          return null;
+        } else if (!docExists) {
+          showAlert = true;
+          await wrongCIDFailAlert(context);
+          return null;
+        } else if (docLinked) {
+          showAlert = true;
+          await showGoogleSignUpFailAlert(context,
+              'User already exists for given Client ID $cid. Please log in instead.');
+          return null;
+        }
         // If the user does not exist in Firestore, log it and create a new user
 
         try {
@@ -163,7 +197,7 @@ class GoogleAuthService {
           // If there is an error adding the new user to Firestore, log the error and show an alert
           debugPrint('Error adding new user to Firestore: $e');
           showAlert = true;
-          await wrongCIDFailAlert(context);
+          await showGoogleSignUpFailAlert(context, e.toString());
           return null;
         }
       } else {
@@ -194,7 +228,7 @@ class GoogleAuthService {
     } catch (e) {
       // If there is an error during the Google sign-up process, log the error and rethrow it
       debugPrint('GoogleAuthService: Error during Google sign-up: $e');
-      rethrow;
+    rethrow;
     }
   }
 

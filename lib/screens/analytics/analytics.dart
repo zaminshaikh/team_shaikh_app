@@ -46,6 +46,8 @@ class AnalyticsPageState extends State<AnalyticsPage> {
                       LineChartSection(client: client!),
                       // Pie chart section
                       AssetsStructureSection(client: client!),
+                      const SizedBox(height: 120),
+
                     ],
                   ),
                 ),
