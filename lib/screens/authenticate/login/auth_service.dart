@@ -1,5 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
@@ -70,4 +72,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) => const MaterialApp(
 	  home: DashboardPage(), // Your example page
 	);
+}
+
+Future<bool> isSimulator() async {
+  if (Platform.isIOS) {
+    var iosInfo = await DeviceInfoPlugin().iosInfo;
+    return !iosInfo.isPhysicalDevice;
+  } else if (Platform.isAndroid) {
+    var androidInfo = await DeviceInfoPlugin().androidInfo;
+    return !androidInfo.isPhysicalDevice;
+  } else {
+    return false;
+  }
 }

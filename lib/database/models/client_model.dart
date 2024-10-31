@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:team_shaikh_app/database/models/graph_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
@@ -64,7 +65,7 @@ class Client {
   List<Activity>? activities;
 
   /// List of graph points for displaying financial data over time.
-  List<GraphPoint>? graphPoints;
+  List<Graph>? graphs;
 
   /// Financial assets associated with the client.
   final Assets? assets;
@@ -88,7 +89,7 @@ class Client {
     this.connectedUsers,
     this.notifications,
     this.activities,
-    this.graphPoints,
+    this.graphs,
     this.assets,
     this.recipients,
   });
@@ -110,6 +111,23 @@ class Client {
       return Client.empty();
     }
 
+        // Group GraphPoints by account
+    Map<String, List<GraphPoint>> graphPointsByAccount = {};
+
+    if (graphPoints != null) {
+      for (var point in graphPoints) {
+        final accountKey = point.account ?? 'Unknown';
+        graphPointsByAccount.putIfAbsent(accountKey, () => []).add(point);
+      }
+    }
+
+    // Create Graph objects
+    List<Graph> graphs = graphPointsByAccount.entries.map((entry) {
+      // Sort graph points by time if necessary
+      entry.value.sort((a, b) => a.time.compareTo(b.time));
+      return Graph(account: entry.key, graphPoints: entry.value);
+    }).toList();
+
     return Client(
       cid: data['cid'] ?? cid ?? '',
       uid: data['uid'] ?? '',
@@ -128,7 +146,7 @@ class Client {
           activities?.map((activity) => activity.recipient).toSet().toList(),
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],
-      graphPoints: graphPoints ?? [],
+      graphs: graphs ?? [],
       assets: assets,
       notifications: notifications ?? [],
     );
@@ -154,7 +172,7 @@ class Client {
         recipients = [],
         notifications = [],
         activities = [],
-        graphPoints = [],
+        graphs = [],
         assets = Assets.empty();
 
   /// Converts the [Client] instance into a [Map] representation.
@@ -176,7 +194,7 @@ class Client {
         'connectedUsers': connectedUsers,
         'totalAssets': totalAssets,
         'activities': activities?.map((e) => e.toMap()).toList(),
-        'graphPoints': graphPoints?.map((e) => e.toMap()).toList(),
+        'graphPoints': graphs?.map((e) => e.toMap()).toList(),
         'assets': assets?.toMap(),
       };
 }

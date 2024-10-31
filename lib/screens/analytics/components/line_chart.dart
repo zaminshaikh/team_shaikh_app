@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
+import 'package:team_shaikh_app/database/models/graph_model.dart'; // Import Graph class
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/analytics/utils/analytics_utilities.dart';
 
@@ -31,16 +32,26 @@ class _LineChartSectionState extends State<LineChartSection> {
   double maxAmount = 0.0;
   String dropdownValue = 'last-week';
 
+  // New state variables for account selection
+  String? selectedAccount;
+  Graph? selectedGraph;
+
   @override
   void initState() {
     super.initState();
+    // Initialize selectedAccount and selectedGraph
+    if (widget.client.graphs != null && widget.client.graphs!.isNotEmpty) {
+      selectedGraph = widget.client.graphs!.first;
+      selectedAccount = selectedGraph!.account;
+    }
+
     // Prepare the data points when the widget is initialized
     _prepareGraphPoints();
   }
 
-   /// Prepares the data points for the line chart based on the client's graph points.
+  /// Prepares the data points for the line chart based on the selected graph's graph points.
   ///
-  /// This method processes the client's graph points, calculates the appropriate
+  /// This method processes the selected graph's graph points, calculates the appropriate
   /// x and y values, and populates the [spots] list with [FlSpot] instances.
   /// It also calculates the maximum amount for setting the y-axis limit.
   void _prepareGraphPoints() {
@@ -49,10 +60,9 @@ class _LineChartSectionState extends State<LineChartSection> {
 
     double yValue;
 
-    if (widget.client.graphPoints != null &&
-        widget.client.graphPoints!.isNotEmpty) {
+    if (selectedGraph != null && selectedGraph!.graphPoints.isNotEmpty) {
       // There are data points available
-      for (var point in widget.client.graphPoints!) {
+      for (var point in selectedGraph!.graphPoints) {
         DateTime dateTime = point.time;
         double amount = point.amount;
 
@@ -75,7 +85,7 @@ class _LineChartSectionState extends State<LineChartSection> {
         double startingY = 0;
 
         // Find the starting y-value from previous data points
-        for (var point in widget.client.graphPoints!.reversed) {
+        for (var point in selectedGraph!.graphPoints.reversed) {
           double xValue = calculateXValue(point.time, dropdownValue);
           if (xValue < firstXValue) {
             startingY = point.amount;
@@ -96,7 +106,7 @@ class _LineChartSectionState extends State<LineChartSection> {
         spots.add(extendedSpot);
       } else if (spots.isEmpty) {
         // No data points, add default spots
-        GraphPoint mostRecentSpot = widget.client.graphPoints!.last;
+        GraphPoint mostRecentSpot = selectedGraph!.graphPoints.last;
         spots.add(FlSpot(0, mostRecentSpot.amount));
         spots.add(FlSpot(maxXValue, mostRecentSpot.amount));
         maxAmount = (mostRecentSpot.amount) * 1.5;
@@ -118,7 +128,6 @@ class _LineChartSectionState extends State<LineChartSection> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 25),
@@ -130,12 +139,14 @@ class _LineChartSectionState extends State<LineChartSection> {
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start, // Align to start
             children: [
               const SizedBox(height: 10),
-              // Header section with title and dropdown (if needed)
+              // Header section with title and dropdowns
               Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Asset Timeline',
@@ -146,38 +157,89 @@ class _LineChartSectionState extends State<LineChartSection> {
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () {
-                        // Implement time period selection if needed
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Year-to-Date',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web',
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        // Dropdown for selecting time period
+                        DropdownButton<String>(
+                          value: dropdownValue,
+                          icon: const Icon(Icons.arrow_downward,
+                              color: Colors.white),
+                          iconSize: 24,
+                          elevation: 16,
+                          dropdownColor: Colors.black,
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.white,
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              dropdownValue = newValue!;
+                              _prepareGraphPoints();
+                            });
+                          },
+                          items: <String>[
+                            'last-week',
+                            'last-month',
+                            'last-year'
+                          ].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: const TextStyle(color: Colors.white),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            SvgPicture.asset(
-                              'assets/icons/YTD.svg',
-                              color: Colors.green,
-                              height: 20,
-                            ),
-                          ],
+                            );
+                          }).toList(),
                         ),
-                      ),
+                        const SizedBox(width: 20),
+                        // Dropdown for selecting account
+                        if (widget.client.graphs != null &&
+                            widget.client.graphs!.isNotEmpty)
+                          DropdownButton<String>(
+                            value: selectedAccount,
+                            icon: const Icon(Icons.arrow_downward,
+                                color: Colors.white),
+                            iconSize: 24,
+                            elevation: 16,
+                            dropdownColor: Colors.black,
+                            style: const TextStyle(color: Colors.white),
+                            underline: Container(
+                              height: 2,
+                              color: Colors.white,
+                            ),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedAccount = newValue!;
+                                selectedGraph = widget.client.graphs!
+                                    .firstWhere((graph) =>
+                                        graph.account == selectedAccount);
+                                _prepareGraphPoints();
+                              });
+                            },
+                            items: widget.client.graphs!
+                                .map<DropdownMenuItem<String>>((Graph graph) {
+                              return DropdownMenuItem<String>(
+                                value: graph.account,
+                                child: Text(
+                                  graph.account,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              );
+                            }).toList(),
+                          )
+                        else
+                          const Text(
+                            'No accounts',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               // Line chart container
               Container(
                 width: double.infinity,
@@ -290,8 +352,8 @@ class _LineChartSectionState extends State<LineChartSection> {
               );
             }
             // Show dots only if there are actual data points
-            if (widget.client.graphPoints != null &&
-                widget.client.graphPoints!.isNotEmpty) {
+            if (selectedGraph != null &&
+                selectedGraph!.graphPoints.isNotEmpty) {
               return FlDotCirclePainter(
                 radius: 4,
                 color: AppColors.defaultBlue300,

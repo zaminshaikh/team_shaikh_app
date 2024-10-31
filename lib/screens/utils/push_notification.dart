@@ -53,7 +53,14 @@ class PushNotificationService {
       final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
       if (apnsToken != null) {
         // APNs token is available, proceed to get FCM token
-        String? token = await FirebaseMessaging.instance.getToken();
+        
+        String? token;
+        if (Platform.isIOS) {
+          token = await FirebaseMessaging.instance.getAPNSToken();
+        } else {
+          token = await FirebaseMessaging.instance.getToken();
+        }
+        
         log('FCM Token: $token');
 
         // Handle background messages

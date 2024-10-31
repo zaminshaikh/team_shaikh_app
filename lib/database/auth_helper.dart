@@ -1,10 +1,12 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database/database.dart';
+import 'package:team_shaikh_app/screens/authenticate/login/auth_service.dart';
 
 /// Deletes any user currently in the Firebase Auth buffer.
 Future<void> deleteUserInBuffer() async {
@@ -56,7 +58,13 @@ Future<void> updateFirebaseMessagingToken(User? user, BuildContext context) asyn
     return;
   }
   
-  String? token = await FirebaseMessaging.instance.getToken();
+  String? token;
+  if (Platform.isIOS) {
+    token = await FirebaseMessaging.instance.getAPNSToken();
+  } else {
+    token = await FirebaseMessaging.instance.getToken();
+  }
+  
   if (token != null) {
     // Fetch CID using async constructor
     DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
@@ -83,9 +91,13 @@ Future<void> deleteFirebaseMessagingToken(User? user, BuildContext context) asyn
     log('auth_helper.dart: User is null.'); 
     return;
   }
-  // Retrieve the current FCM token
-  String? token = await FirebaseMessaging.instance.getToken();
-
+  String? token;
+  
+  if (Platform.isIOS) {
+    token = await FirebaseMessaging.instance.getAPNSToken();
+  } else {
+    token = await FirebaseMessaging.instance.getToken();
+  }
   if (token != null) {
     // Fetch the DatabaseService instance for the user
     DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -148,7 +149,12 @@ class _LogoutButtonState extends State<LogoutButton> {
         FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
     List<dynamic>? tokens = await db.getField('tokens') as List<dynamic>? ?? [];
     // Get the current token
-    String? currentToken = await FirebaseMessaging.instance.getToken();
+    String? currentToken;
+    if (Platform.isIOS) {
+      currentToken = await FirebaseMessaging.instance.getAPNSToken();
+    } else {
+      currentToken = await FirebaseMessaging.instance.getToken();
+    }
     if (currentToken != null && currentToken.isNotEmpty) {
       tokens.remove(currentToken);
       // Update the list of tokens in the database for the user
