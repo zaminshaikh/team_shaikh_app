@@ -244,7 +244,7 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                 _recipientsFilter = List.from(widget.allRecipients);
                 _selectedDates = DateTimeRange(
                   start: DateTime(1900),
-                  end: DateTime.now(),
+                  end: DateTime.now().add(Duration(days: 30)),
                 );
               });
               Navigator.pop(context);
