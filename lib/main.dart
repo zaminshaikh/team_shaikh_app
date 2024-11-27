@@ -475,7 +475,7 @@ class _AuthCheckState extends State<AuthCheck> {
                   },
                 );
               } else {
-                log('AuthCheck: User is not authenticated or linked. Deleting user and navigating to OnboardingPage.');
+                log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
                 // FirebaseAuth.instance.currentUser?.delete();
                 return const OnboardingPage();
               }
