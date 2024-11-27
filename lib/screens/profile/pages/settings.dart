@@ -31,6 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+    _loadSwitchValue();
     _checkNotificationPermission();
   }
 
