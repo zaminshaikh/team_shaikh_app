@@ -44,28 +44,53 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     void _showPermissionDeniedDialog() {
-        showCupertinoDialog(
-            context: context,
-            builder: (context) {
-            return CupertinoAlertDialog(
-                title: Text('Notifications Disabled'),
-                content: Text('Please enable notifications in settings to receive updates.'),
-                actions: [
-                CupertinoDialogAction(
-                    child: Text('Cancel'),
-                    onPressed: () => Navigator.of(context).pop(),
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text(
+              'Notifications Disabled',
+              style: TextStyle(
+                color: CupertinoColors.darkBackgroundGray, // Changed from default/purple to blue
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            content: Text(
+              'Please enable notifications in your device settings to receive updates.',
+              style: TextStyle(
+                color: CupertinoColors.black, // Changed from default/purple to blue
+                fontSize: 16,
+              ),
+            ),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: CupertinoColors.activeBlue, // Changed from default/purple to blue
+                  ),
                 ),
-                CupertinoDialogAction(
-                    child: Text('Settings'),
-                    onPressed: () {
-                    Navigator.of(context).pop();
-                    AppSettings.openAppSettings();
-                    },
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text(
+                  'Settings',
+                  style: TextStyle(
+                    color: CupertinoColors.activeBlue, // Changed from default/purple to blue
+                  ),
                 ),
-                ],
-            );
-            },
-        );
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  AppSettings.openAppSettings();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
 
     Future<void> _requestNotificationPermission() async {
