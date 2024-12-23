@@ -96,7 +96,7 @@ class _LogoutButtonState extends State<LogoutButton> {
             GestureDetector(
               onTap: () {
                 Navigator.of(context).pop(); 
-                _logout(context); 
+                _logout(); 
               },
               child: Container(
                 width: double.infinity, 
@@ -149,18 +149,16 @@ class _LogoutButtonState extends State<LogoutButton> {
 
 
 
-  void _logout(BuildContext context) async {
+  void _logout() async {
     log('Profiles.dart: Signing out...');
-
-    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
-    await FirebaseAuth.instance.signOut();
-    assert(FirebaseAuth.instance.currentUser == null);
-
-    // Async gap mounted widget check
+    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
     if (!mounted) {
       return;
     }
-    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
+    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
+    await FirebaseAuth.instance.signOut();
+    assert(FirebaseAuth.instance.currentUser == null);
+    return;
   }
 }
 
