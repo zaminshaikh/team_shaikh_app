@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:team_shaikh_app/components/progress_indicator.dart';
 
 /// A StatefulWidget representing the Email Verification dialog.
 class EmailVerificationDialog extends StatefulWidget {
@@ -115,11 +116,7 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.blue),
-                                  strokeWidth: 3,
-                                ),
+                                child: CustomProgressIndicator(),
                               )
                             : const Text(
                                 'Continue',

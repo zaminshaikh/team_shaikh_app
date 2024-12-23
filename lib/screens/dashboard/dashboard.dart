@@ -157,11 +157,11 @@ class _DashboardPageState extends State<DashboardPage>
                         position: _offsetAnimation,
                         child: TotalAssetsSection(client: client!),
                       ),
-                      const SizedBox(height: 22),
-                      SlideTransition(
-                        position: _offsetAnimation, 
-                        child: buildRecentTransactionsSection(context),
-                      ),
+                      // const SizedBox(height: 22),
+                      // SlideTransition(
+                      //   position: _offsetAnimation, 
+                      //   child: buildRecentTransactionsSection(context),
+                      // ),
                       // User breakdown section
                       const SizedBox(height: 32),
                       SlideTransition(

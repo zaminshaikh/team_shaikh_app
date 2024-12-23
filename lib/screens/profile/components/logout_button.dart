@@ -28,7 +28,8 @@ class _LogoutButtonState extends State<LogoutButton> {
               child: Container(
                 height: 45,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 149, 28, 28),
+                  color: Colors.transparent, // Changed from Color.fromARGB(255, 149, 28, 28)
+                  border: Border.all(color: Colors.red), // Added red border
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -38,7 +39,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                     children: [
                       SvgPicture.asset(
                         'assets/icons/logout.svg',
-                        color: Colors.white,
+                        color: Colors.red, // Changed from Colors.white
                         height: 20,
                       ),
                       const SizedBox(width: 10),
@@ -46,7 +47,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                         'Logout',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.white,
+                          color: Colors.red, // Changed from Colors.white
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Titillium Web',
                         ),
@@ -101,12 +102,17 @@ class _LogoutButtonState extends State<LogoutButton> {
                 width: double.infinity, 
                 padding: const EdgeInsets.symmetric(vertical: 10), 
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 149, 28, 28),
-                  borderRadius: BorderRadius.circular(20), 
+                  color: Colors.transparent, // Changed from Color.fromARGB(255, 149, 28, 28)
+                  border: Border.all(color: Colors.red, width: 1.5), // Added red border
+                  borderRadius: BorderRadius.circular(10), 
                 ),
                 child: const Text(
                   'Logout',
                   textAlign: TextAlign.center, 
+                  style: TextStyle(
+                    color: Colors.red, // Changed from default color
+                    fontWeight: FontWeight.bold
+                  ),
                 ),
               ),
             ),
@@ -124,7 +130,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                     color: Colors.white, 
                     width: 1, 
                   ),
-                  borderRadius: BorderRadius.circular(20), 
+                  borderRadius: BorderRadius.circular(10), 
                 ),
                 child: const Text(
                   'Cancel',

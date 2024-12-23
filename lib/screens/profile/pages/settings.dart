@@ -48,7 +48,7 @@ class _SettingsPageState extends State<SettingsPage> {
         context: context,
         builder: (context) {
           return CupertinoAlertDialog(
-            title: Text(
+            title: const Text(
               'Notifications Disabled',
               style: TextStyle(
                 color: CupertinoColors.darkBackgroundGray, // Changed from default/purple to blue
@@ -56,7 +56,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 fontSize: 18,
               ),
             ),
-            content: Text(
+            content: const Text(
               'Please enable notifications in your device settings to receive updates.',
               style: TextStyle(
                 color: CupertinoColors.black, // Changed from default/purple to blue
@@ -65,7 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             actions: [
               CupertinoDialogAction(
-                child: Text(
+                child: const Text(
                   'Cancel',
                   style: TextStyle(
                     color: CupertinoColors.activeBlue, // Changed from default/purple to blue
@@ -76,7 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               CupertinoDialogAction(
-                child: Text(
+                child: const Text(
                   'Settings',
                   style: TextStyle(
                     color: CupertinoColors.activeBlue, // Changed from default/purple to blue
@@ -115,18 +115,18 @@ class _SettingsPageState extends State<SettingsPage> {
             context: context,
             builder: (BuildContext context) {
                 return CupertinoAlertDialog(
-                title: Text('Notification Permission'),
+                title: const Text('Notification Permission'),
                 content: Text(message),
                 actions: <Widget>[
                     CupertinoDialogAction(
-                    child: Text('OK'),
+                    child: const Text('OK'),
                     onPressed: () {
                         Navigator.of(context).pop();
                     },
                     ),
                     if (message.contains('denied'))
                     CupertinoDialogAction(
-                        child: Text('Settings'),
+                        child: const Text('Settings'),
                         onPressed: () {
                         Navigator.of(context).pop();
                         _openAppSettings();
@@ -210,13 +210,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Notifications',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -225,8 +225,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                   fontFamily: 'Titillium Web',
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              const Text(
+                              SizedBox(height: 5),
+                              Text(
                                 'Let me know about new activities and statements within my portfolio.',
                                 style: TextStyle(
                                   fontSize: 15,

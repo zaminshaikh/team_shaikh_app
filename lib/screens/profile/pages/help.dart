@@ -118,8 +118,16 @@ class _HelpPageState extends State<HelpPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Image.asset(
-                          'assets/icons/sonny_headshot.png',
+                        Container(
+                          width: 50, // Set desired width
+                          height: 50, // Set desired height
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,// Circular border
+                            image: DecorationImage(
+                              image: AssetImage('assets/icons/sonny_headshot.png'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -260,8 +268,16 @@ class _HelpPageState extends State<HelpPage> {
                     // name and icon
                     Row(
                       children: [
-                        Image.asset(
-                          'assets/icons/kash_headshot.png',
+                        Container(
+                          width: 50, // Set desired width
+                          height: 50, // Set desired height
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,// Circular border
+                            image: DecorationImage(
+                              image: AssetImage('assets/icons/kash_headshot.png'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Column(
