@@ -40,7 +40,7 @@ class PushNotificationService {
         await _firebaseMessaging.requestPermission();
   
         // Open app notification settings
-        AppSettings.openAppSettings();
+        await AppSettings.openAppSettings();
       }
     } catch (e) {
       log('Error initializing Firebase Messaging: $e');

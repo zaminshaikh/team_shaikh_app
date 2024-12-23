@@ -48,8 +48,7 @@ class _CustomProgressIndicatorPageState
     showDialog(
       context: context,
       barrierDismissible: false, // User must tap the button to dismiss
-      builder: (BuildContext context) {
-        return AlertDialog(
+      builder: (BuildContext context) => AlertDialog(
           backgroundColor: AppColors.defaultBlueGray800,
           content: SingleChildScrollView(
             child: ListBody(
@@ -91,24 +90,42 @@ class _CustomProgressIndicatorPageState
                     '/login', (Route<dynamic> route) => false);
               },
               child: Container(
-                width: double.infinity, // This will make the container take up the full width of the AlertDialog
-                padding: const EdgeInsets.symmetric(vertical: 10), // Add some vertical padding
+                height: 45,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 149, 28, 28), // Change this to the color you want
-                  borderRadius: BorderRadius.circular(20), // This will make the corners rounded
+                  color: Colors.transparent, // Changed from Color.fromARGB(255, 149, 28, 28)
+                  border: Border.all(color: Colors.red), // Added red border
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  'Logout',
-                  textAlign: TextAlign.center, // This will center the text
+                child: Center(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/logout.svg',
+                        color: Colors.red, // Changed from Colors.white
+                        height: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red, // Changed from Colors.white
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
-        );
-      },
+        ),
     );
   }
 
   @override
-  Widget build(BuildContext context) => CustomProgressIndicator();
+  Widget build(BuildContext context) => Center(child: CustomProgressIndicator());
 }
