@@ -25,72 +25,118 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  Client? client;
-  bool notifsSwitchValue = false;
+    Client? client;
+    bool notifsSwitchValue = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkNotificationPermission();
-  }
-
-  Future<void> _checkNotificationPermission() async {
-    // Fetch the current notification permission status
-    var status = await Permission.notification.status;
-    setState(() {
-      // Update the switch based on whether permission is granted
-      notifsSwitchValue = status.isGranted;
-    });
-  }
-
-  Future<void> _requestNotificationPermission() async {
-    // Request the notification permission if it's not granted
-    var status = await Permission.notification.request();
-
-    if (status.isGranted) {
-      // Update the state if permission is granted
-      setState(() {
-        notifsSwitchValue = true;
-        _saveSwitchValue('notifsSwitchValue', notifsSwitchValue);
-      });
-      _showCupertinoDialog('Notifications enabled');
-    } else {
-      // If denied, show a message and provide an option to go to settings
-      _showCupertinoDialog('Notification permission denied. Please enable it in settings.');
+    @override
+    void initState() {
+        super.initState();
+        _loadSwitchValue();
     }
-  }
 
-    void _showCupertinoDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Notification Permission'),
-          content: Text(message),
-          actions: <Widget>[
-            CupertinoDialogAction(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+    Future<void> _checkNotificationPermission() async {
+        // Fetch the current notification permission status
+        var status = await Permission.notification.status;
+        setState(() {
+            // Update the switch based on whether permission is granted
+            notifsSwitchValue = status.isGranted;
+        });
+    }
+
+    void _showPermissionDeniedDialog() {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text(
+              'Notifications Disabled',
+              style: TextStyle(
+                color: CupertinoColors.darkBackgroundGray, // Changed from default/purple to blue
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
             ),
-            if (message.contains('denied'))
+            content: Text(
+              'Please enable notifications in your device settings to receive updates.',
+              style: TextStyle(
+                color: CupertinoColors.black, // Changed from default/purple to blue
+                fontSize: 16,
+              ),
+            ),
+            actions: [
               CupertinoDialogAction(
-                child: Text('Settings'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: CupertinoColors.activeBlue, // Changed from default/purple to blue
+                  ),
+                ),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  _openAppSettings();
                 },
               ),
-          ],
+              CupertinoDialogAction(
+                child: Text(
+                  'Settings',
+                  style: TextStyle(
+                    color: CupertinoColors.activeBlue, // Changed from default/purple to blue
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  AppSettings.openAppSettings();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Future<void> _requestNotificationPermission() async {
+        // Request the notification permission if it's not granted
+        var status = await Permission.notification.request();
+
+        if (status.isGranted) {
+            // Update the state if permission is granted
+            setState(() {
+            notifsSwitchValue = true;
+            _saveSwitchValue(notifsSwitchValue);
+            });
+            _showCupertinoDialog('Notifications enabled');
+        } else {
+            // If denied, show a message and provide an option to go to settings
+            _showCupertinoDialog('Notification permission denied. Please enable it in settings.');
+        }
+    }
+
+    void _showCupertinoDialog(String message) {
+        showCupertinoDialog(
+            context: context,
+            builder: (BuildContext context) {
+                return CupertinoAlertDialog(
+                title: Text('Notification Permission'),
+                content: Text(message),
+                actions: <Widget>[
+                    CupertinoDialogAction(
+                    child: Text('OK'),
+                    onPressed: () {
+                        Navigator.of(context).pop();
+                    },
+                    ),
+                    if (message.contains('denied'))
+                    CupertinoDialogAction(
+                        child: Text('Settings'),
+                        onPressed: () {
+                        Navigator.of(context).pop();
+                        _openAppSettings();
+                        },
+                    ),
+                ],
+                );
+            },
         );
-      },
-    );
-  }
-
-  
-
-
+    }
 
 
   Future<void> _openAppSettings() async {
@@ -105,19 +151,18 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadSwitchValue();
   }
 
-  
-
-  void _loadSwitchValue() async {
+    Future<void> _loadSwitchValue() async {
     final prefs = await SharedPreferences.getInstance();
+    bool savedValue = prefs.getBool('notifsSwitchValue') ?? false;
     setState(() {
-      notifsSwitchValue = prefs.getBool('notifsSwitchValue') ?? false;
+        notifsSwitchValue = savedValue;
     });
-  }
+    }
 
-  void _saveSwitchValue(String key, bool value) async {
+    Future<void> _saveSwitchValue(bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(key, value);
-  }
+    await prefs.setBool('notifsSwitchValue', value);
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -203,65 +248,42 @@ class _SettingsPageState extends State<SettingsPage> {
                         CupertinoSwitch(
                           value: notifsSwitchValue,
                           activeColor: CupertinoColors.activeBlue,
-                          onChanged: (bool? value) async {
-                            if (value == true) {
-                              // Check if notifications are allowed
-                              NotificationSettings settings = await FirebaseMessaging.instance.getNotificationSettings();
+                          onChanged: (bool value) async {
+                            if (value) {
+                              // Request notification permissions
+                              NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+                                alert: true,
+                                badge: true,
+                                sound: true,
+                              );
+                        
                               if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-                                // Notifications are allowed, save the switch value
+                                // Permissions granted
                                 setState(() {
                                   notifsSwitchValue = true;
                                 });
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                await prefs.setBool('notifsSwitchValue', true);
+                                await _saveSwitchValue(true);
+                                // Enable notifications
                                 await updateFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
                               } else {
-                                // Notifications are not allowed, show a dialog before opening settings
-                                await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CupertinoAlertDialog(
-                                    title: Text('Allow Notifications'),
-                                    content: Text('You need to allow notifications in settings.'),
-                                      actions: [
-                                        CupertinoDialogAction(
-                                          child: Text(
-                                            'Cancel',
-                                            style: TextStyle(color: CupertinoColors.activeBlue),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                        CupertinoDialogAction(
-                                          child: Text(
-                                            'Open Settings',
-                                            style: TextStyle(color: CupertinoColors.activeBlue),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            AppSettings.openAppSettings();
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                                // Permissions denied
+                                _showPermissionDeniedDialog();
+                                setState(() {
+                                  notifsSwitchValue = false;
+                                });
+                                await _saveSwitchValue(false);
                               }
                             } else {
-                              // Switch is turned OFF, save the value
+                              // Switch turned off
                               setState(() {
                                 notifsSwitchValue = false;
                               });
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
-                              await prefs.setBool('notifsSwitchValue', false);
-                              await deleteFirebaseMessagingToken(
-                                  FirebaseAuth.instance.currentUser, context);
-
+                              await _saveSwitchValue(false);
+                              // Disable notifications
+                              await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
                             }
                           },
-                        ),
-                      ],
+                        ),],
                     ),
                   ],
                 ),
