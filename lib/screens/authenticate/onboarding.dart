@@ -74,11 +74,11 @@ class _OnboardingPageState extends State<OnboardingPage>
                 SlideTransition(
                   position: _slideAnimation,
                   child: Image.asset(
-                    'assets/icons/team_shaikh_transparent.png',
-                    height: 150,
+                    'assets/icons/agq_logo.png',
+                    height: 80,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Column(

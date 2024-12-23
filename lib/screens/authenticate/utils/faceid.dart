@@ -153,9 +153,8 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
                     children: [
                       const SizedBox(height: 80.0),
                       Image.asset(
-                        'assets/icons/team_shaikh_transparent.png',
-                        height: 120,
-                        width: 120,
+                        'assets/icons/agq_logo.png',
+                        height: 70,
                       ),
                       const SizedBox(height: 8.0),
                       const Align(
