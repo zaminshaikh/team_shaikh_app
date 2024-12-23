@@ -110,19 +110,5 @@ class _CustomProgressIndicatorPageState
   }
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Container(
-          padding: const EdgeInsets.all(26.0),
-          margin: const EdgeInsets.symmetric(vertical: 50.0, horizontal: 50.0),
-          decoration: BoxDecoration(
-            color: AppColors.defaultBlue500,
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: const Stack(
-            children: [
-              CustomProgressIndicator(),
-            ],
-          ),
-        ),
-      );
+  Widget build(BuildContext context) => CustomProgressIndicator();
 }

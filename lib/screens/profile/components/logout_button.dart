@@ -28,7 +28,8 @@ class _LogoutButtonState extends State<LogoutButton> {
               child: Container(
                 height: 45,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 149, 28, 28),
+                  color: Colors.transparent, // Changed from Color.fromARGB(255, 149, 28, 28)
+                  border: Border.all(color: Colors.red), // Added red border
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -38,7 +39,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                     children: [
                       SvgPicture.asset(
                         'assets/icons/logout.svg',
-                        color: Colors.white,
+                        color: Colors.red, // Changed from Colors.white
                         height: 20,
                       ),
                       const SizedBox(width: 10),
@@ -46,7 +47,7 @@ class _LogoutButtonState extends State<LogoutButton> {
                         'Logout',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.white,
+                          color: Colors.red, // Changed from Colors.white
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Titillium Web',
                         ),
