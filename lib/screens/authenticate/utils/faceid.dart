@@ -137,7 +137,7 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
     }
   }
 
-  @override
+ @override
   Widget build(BuildContext context) => Scaffold(
         body: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -147,16 +147,16 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
               Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 80.0),
                       Image.asset(
                         'assets/icons/agq_logo.png',
-                        height: 70,
+                        height: 60,
                       ),
-                      const SizedBox(height: 8.0),
+                      const SizedBox(height: 20.0),
                       const Align(
                         alignment: Alignment.center,
                         child: Text(
