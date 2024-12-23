@@ -417,8 +417,14 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                       onTap: () async {
                         bool success = await signUserIn(context);
                         if (success) {
-                          String? token =
-                              await FirebaseMessaging.instance.getToken();
+                          String? token;
+                          try {
+                            token = await FirebaseMessaging.instance.getToken();
+                          } catch (e) {
+                            log('Error fetching token: $e');
+                            token = await FirebaseMessaging.instance.getAPNSToken();
+                            log('APNS Token found: $token');
+                          }
                           if (token != null) {
                             User? user = FirebaseAuth.instance.currentUser;
                             // If we do not have a user and the context is valid
