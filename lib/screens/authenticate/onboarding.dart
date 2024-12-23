@@ -84,7 +84,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      const Text('Welcome to Team Shaikh!',
+                      const Text('Welcome to AGQ!',
                           style: TextStyle(
                               fontSize: 24, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 10),

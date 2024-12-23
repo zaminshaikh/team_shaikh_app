@@ -88,7 +88,7 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage>
                       const Align(
                         alignment: Alignment.center,
                         child: Text(
-                          'Team Shaikh App Locked',
+                          'AGQ App Locked',
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
