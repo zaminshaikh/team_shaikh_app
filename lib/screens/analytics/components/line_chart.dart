@@ -356,10 +356,10 @@ class _LineChartSectionState extends State<LineChartSection> {
               ),
               // Footer with legend and alert icon
               _buildChartFooter(),
-              const SizedBox(height: 40),
-              // Date range text
-              _buildDateRangeText(),
-              const SizedBox(height: 20),
+              // const SizedBox(height: 40),
+              // // Date range text
+              // _buildDateRangeText(),
+              // const SizedBox(height: 20),
             ],
           ),
         ),
