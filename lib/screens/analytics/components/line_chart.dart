@@ -172,13 +172,35 @@ class _LineChartSectionState extends State<LineChartSection> {
                           // icon: const Icon(Icons.arrow_downward,
                           //     color: Colors.white),
                           // iconSize: 24,
-                          elevation: 16,
                           dropdownColor: Colors.black,
                           style: const TextStyle(color: Colors.white),
                           // underline: Container(
                           //   height: 2,
                           //   color: Colors.white,
                           // ),
+                          selectedItemBuilder: (BuildContext context) {
+                            return <String>['last-week', 'last-month', 'last-year'].map((String value) {
+                              String displayText;
+                              switch (value) {
+                                case 'last-week':
+                                  displayText = 'Last Week';
+                                  break;
+                                case 'last-month':
+                                  displayText = 'Last Month';
+                                  break;
+                                case 'last-year':
+                                  displayText = 'Last Year';
+                                  break;
+                                default:
+                                  displayText = value;
+                              }
+                              return Text(
+                                displayText.length > 10 ? '${displayText.substring(0, 10)}...' : displayText,
+                                style: const TextStyle(color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            }).toList();
+                          },
                           onChanged: (String? newValue) {
                             setState(() {
                               dropdownValue = newValue!;
@@ -223,6 +245,16 @@ class _LineChartSectionState extends State<LineChartSection> {
                         DropdownButton<Client>(
                           value: selectedClient,
                           dropdownColor: Colors.black,
+                          selectedItemBuilder: (BuildContext context) {
+                            return allClients.map((Client clientItem) {
+                              final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
+                              return Text(
+                                displayName.length > 15 ? '${displayName.substring(0, 15)}...' : displayName,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white),
+                              );
+                            }).toList();
+                          },
                           onChanged: (newClient) {
                             setState(() {
                               selectedClient = newClient;
@@ -239,7 +271,10 @@ class _LineChartSectionState extends State<LineChartSection> {
                             final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
                             return DropdownMenuItem<Client>(
                               value: clientItem,
-                              child: Text(displayName.isEmpty ? 'Unnamed Client' : displayName),
+                              child: Text(
+                                displayName,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             );
                           }).toList(),
                         ),
@@ -251,10 +286,15 @@ class _LineChartSectionState extends State<LineChartSection> {
                             elevation: 16,
                             dropdownColor: Colors.black,
                             style: const TextStyle(color: Colors.white),
-                            // underline: Container(
-                            //   height: 2,
-                            //   color: Colors.white,
-                            // ),
+                            selectedItemBuilder: (BuildContext context) {
+                              return selectedClient!.graphs!.map((Graph graph) {
+                                return Text(
+                                  graph.account.length > 12 ? '${graph.account.substring(0, 12)}...' : graph.account,
+                                  style: const TextStyle(color: Colors.white),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              }).toList();
+                            },
                             onChanged: (String? newValue) {
                               setState(() {
                                 selectedAccount = newValue!;
