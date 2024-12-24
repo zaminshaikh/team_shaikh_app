@@ -397,7 +397,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                         color: Colors.white,
                                         fontFamily: 'Titillium Web'),
                                     decoration: InputDecoration(
-                                      hintText: 'Enter your email',
+                                      hintText: 'Enter your new email',
                                       hintStyle: TextStyle(
                                           color: Colors.grey[400],
                                           fontFamily: 'Titillium Web'),
@@ -461,7 +461,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   foregroundColor: Colors.white, // Text color
                                   splashFactory: NoSplash.splashFactory,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 30, vertical: 15),
@@ -511,7 +511,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         height: 45,
                         decoration: BoxDecoration(
                           color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: Colors.blue,
                             width: 2,
@@ -665,7 +665,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                       Colors.white, // Updated from onPrimary
                                   splashFactory: NoSplash.splashFactory,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 30, vertical: 15),
@@ -716,7 +716,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         height: 45,
                         decoration: BoxDecoration(
                           color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: Colors.blue,
                             width: 2,
