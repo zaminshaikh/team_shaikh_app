@@ -36,16 +36,23 @@ class _LineChartSectionState extends State<LineChartSection> {
   String? selectedAccount;
   Graph? selectedGraph;
 
+  // New state variables for client selection
+  late final List<Client> allClients;
+  Client? selectedClient;
+
   @override
   void initState() {
     super.initState();
-    // Initialize selectedAccount and selectedGraph
-    if (widget.client.graphs != null && widget.client.graphs!.isNotEmpty) {
-      selectedGraph = widget.client.graphs!.first;
-      selectedAccount = selectedGraph!.account;
+    allClients = [widget.client, ...(widget.client.connectedUsers?.whereType<Client>() ?? [])];
+    selectedClient = allClients.isNotEmpty ? allClients.first : null;
+    // Default to the cumulative graph if available
+    if (selectedClient != null && (selectedClient!.graphs?.isNotEmpty ?? false)) {
+      selectedGraph = selectedClient!.graphs!.firstWhere(
+        (g) => g.account.toLowerCase() == 'cumulative',
+        orElse: () => selectedClient!.graphs!.first,
+      );
+      selectedAccount = selectedGraph?.account;
     }
-
-    // Prepare the data points when the widget is initialized
     _prepareGraphPoints();
   }
 
@@ -148,19 +155,18 @@ class _LineChartSectionState extends State<LineChartSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Asset Timeline',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontFamily: 'Titillium Web',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
                     Row(
                       children: [
-                        // Dropdown for selecting time period
+                        const Text(
+                          'Asset Timeline',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
+                        const Spacer(),
                         DropdownButton<String>(
                           value: dropdownValue,
                           icon: const Icon(Icons.arrow_downward,
@@ -184,19 +190,62 @@ class _LineChartSectionState extends State<LineChartSection> {
                             'last-month',
                             'last-year'
                           ].map<DropdownMenuItem<String>>((String value) {
+                            String displayText;
+                            switch (value) {
+                              case 'last-week':
+                                displayText = 'Last Week';
+                                break;
+                              case 'last-month':
+                                displayText = 'Last Month';
+                                break;
+                              case 'last-year':
+                                displayText = 'Last Year';
+                                break;
+                              default:
+                                displayText = value;
+                            }
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(
-                                value,
+                                displayText,
                                 style: const TextStyle(color: Colors.white),
                               ),
                             );
                           }).toList(),
                         ),
-                        const SizedBox(width: 20),
-                        // Dropdown for selecting account
-                        if (widget.client.graphs != null &&
-                            widget.client.graphs!.isNotEmpty)
+                        const SizedBox(width: 10),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        // New dropdown for clients
+                        DropdownButton<Client>(
+                          value: selectedClient,
+                          dropdownColor: Colors.black,
+                          onChanged: (newClient) {
+                            setState(() {
+                              selectedClient = newClient;
+                              final graphs = selectedClient?.graphs ?? [];
+                              selectedGraph = graphs.firstWhere(
+                                (g) => g.account.toLowerCase() == 'cumulative',
+                                orElse: () => graphs.first,
+                              );
+                              selectedAccount = selectedGraph?.account;
+                              _prepareGraphPoints();
+                            });
+                          },
+                          items: allClients.map((clientItem) {
+                            final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
+                            return DropdownMenuItem<Client>(
+                              value: clientItem,
+                              child: Text(displayName.isEmpty ? 'Unnamed Client' : displayName),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(width: 10),
+                        // Update the account dropdown section
+                        if (selectedClient?.graphs != null && selectedClient!.graphs!.isNotEmpty)
                           DropdownButton<String>(
                             value: selectedAccount,
                             icon: const Icon(Icons.arrow_downward,
@@ -212,13 +261,13 @@ class _LineChartSectionState extends State<LineChartSection> {
                             onChanged: (String? newValue) {
                               setState(() {
                                 selectedAccount = newValue!;
-                                selectedGraph = widget.client.graphs!
+                                selectedGraph = selectedClient!.graphs!
                                     .firstWhere((graph) =>
                                         graph.account == selectedAccount);
                                 _prepareGraphPoints();
                               });
                             },
-                            items: widget.client.graphs!
+                            items: selectedClient!.graphs!
                                 .map<DropdownMenuItem<String>>((Graph graph) {
                               return DropdownMenuItem<String>(
                                 value: graph.account,
