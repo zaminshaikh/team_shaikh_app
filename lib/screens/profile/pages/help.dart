@@ -118,8 +118,16 @@ class _HelpPageState extends State<HelpPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Image.asset(
-                          'assets/icons/sonny_headshot.png',
+                        Container(
+                          width: 50, // Set desired width
+                          height: 50, // Set desired height
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,// Circular border
+                            image: DecorationImage(
+                              image: AssetImage('assets/icons/sonny_headshot.png'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -260,8 +268,16 @@ class _HelpPageState extends State<HelpPage> {
                     // name and icon
                     Row(
                       children: [
-                        Image.asset(
-                          'assets/icons/kash_headshot.png',
+                        Container(
+                          width: 50, // Set desired width
+                          height: 50, // Set desired height
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,// Circular border
+                            image: DecorationImage(
+                              image: AssetImage('assets/icons/kash_headshot.png'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -417,7 +433,7 @@ class _HelpPageState extends State<HelpPage> {
 
             CustomExpansionTile(
               title: 'Is the app secure?',
-              content: 'Absolutely. The Team Shaikh app employs cutting-edge security measures to safeguard your data and ensure your privacy is fully protected. Your security is our top priority, and we are committed to maintaining the highest standards of data protection.',
+              content: 'Absolutely. The AGQ app employs cutting-edge security measures to safeguard your data and ensure your privacy is fully protected. Your security is our top priority, and we are committed to maintaining the highest standards of data protection.',
             ),
             CustomExpansionTile(
               title: 'How do I contact customer support?',

@@ -40,7 +40,7 @@ class PushNotificationService {
         await _firebaseMessaging.requestPermission();
   
         // Open app notification settings
-        AppSettings.openAppSettings();
+        await AppSettings.openAppSettings();
       }
     } catch (e) {
       log('Error initializing Firebase Messaging: $e');
@@ -53,14 +53,14 @@ class PushNotificationService {
       final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
       if (apnsToken != null) {
         // APNs token is available, proceed to get FCM token
-        
         String? token;
-        if (Platform.isIOS) {
-          token = await FirebaseMessaging.instance.getAPNSToken();
-        } else {
+        try {
           token = await FirebaseMessaging.instance.getToken();
+        } catch (e) {
+          log('Error fetching token: $e');
+          token = await FirebaseMessaging.instance.getAPNSToken();
+          log('APNS Token found: $token');
         }
-        
         log('FCM Token: $token');
 
         // Handle background messages
@@ -76,7 +76,14 @@ class PushNotificationService {
       }
     } else {
       // For Android, directly get the FCM token
-      String? token = await FirebaseMessaging.instance.getToken();
+      String? token;
+      try {
+        token = await FirebaseMessaging.instance.getToken();
+      } catch (e) {
+        log('Error fetching token: $e');
+        token = await FirebaseMessaging.instance.getAPNSToken();
+        log('APNS Token found: $token');
+      }
       if (token != null) {
         log('FCM Token: $token');
 

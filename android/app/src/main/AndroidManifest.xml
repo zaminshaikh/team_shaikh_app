@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="TS Portfolio"
+        android:label="AGQ"
         android:name="${applicationName}"
         android:icon="@mipmap/team_shaikh_app_icon">
         <activity

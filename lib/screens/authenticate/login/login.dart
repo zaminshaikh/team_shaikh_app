@@ -173,12 +173,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                     children: [
                       const SizedBox(height: 60.0),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
                         child: Align(
                           alignment: const Alignment(-1.0, -1.0),
                           child: Image.asset(
-                            'assets/icons/team_shaikh_transparent.png',
-                            height: 100,
+                            'assets/icons/agq_logo.png',
+                            height: 50,
                           ),
                         ),
                       ),
@@ -419,14 +419,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                       onTap: () async {
                         bool success = await signUserIn(context);
                         if (success) {
-
                           String? token;
-                          if (Platform.isIOS) {
-                            token =
-                                await FirebaseMessaging.instance.getAPNSToken();
-                          } else {
-                            token =
-                                await FirebaseMessaging.instance.getToken();
+                          try {
+                            token = await FirebaseMessaging.instance.getToken();
+                          } catch (e) {
+                            log('Error fetching token: $e');
+                            token = await FirebaseMessaging.instance.getAPNSToken();
+                            log('APNS Token found: $token');
                           }
                           if (token != null) {
                             User? user = FirebaseAuth.instance.currentUser;

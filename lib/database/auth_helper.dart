@@ -57,14 +57,14 @@ Future<void> updateFirebaseMessagingToken(User? user, BuildContext context) asyn
   if (user == null) {
     return;
   }
-  
   String? token;
-  if (Platform.isIOS) {
-    token = await FirebaseMessaging.instance.getAPNSToken();
-  } else {
+  try {
     token = await FirebaseMessaging.instance.getToken();
+  } catch (e) {
+    log('Error fetching token: $e');
+    token = await FirebaseMessaging.instance.getAPNSToken();
+    log('APNS Token found: $token');
   }
-  
   if (token != null) {
     // Fetch CID using async constructor
     DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
@@ -91,13 +91,16 @@ Future<void> deleteFirebaseMessagingToken(User? user, BuildContext context) asyn
     log('auth_helper.dart: User is null.'); 
     return;
   }
+  // Retrieve the current FCM token
   String? token;
-  
-  if (Platform.isIOS) {
-    token = await FirebaseMessaging.instance.getAPNSToken();
-  } else {
+  try {
     token = await FirebaseMessaging.instance.getToken();
+  } catch (e) {
+    log('Error fetching token: $e');
+    token = await FirebaseMessaging.instance.getAPNSToken();
+    log('APNS Token found: $token');
   }
+
   if (token != null) {
     // Fetch the DatabaseService instance for the user
     DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);

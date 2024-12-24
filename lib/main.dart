@@ -298,7 +298,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ),
               child: child!,
             ),
-            title: 'Team Shaikh Investments',
+            title: 'AGQ Investments',
             theme: _buildAppTheme(),
             // home: const AuthCheck(),
             routes: {
@@ -431,7 +431,7 @@ class _AuthCheckState extends State<AuthCheck> {
       stream: FirebaseAuth.instance.userChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CustomProgressIndicator());
         } else if (snapshot.hasError) {
           log('AuthCheck: StreamBuilder error: ${snapshot.error}');
           return Center(child: Text('Error: ${snapshot.error}'));
@@ -456,7 +456,7 @@ class _AuthCheckState extends State<AuthCheck> {
                   builder: (context, appLockSnapshot) {
                     if (appLockSnapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(child: CustomProgressIndicator());
                     } else if (appLockSnapshot.hasError) {
                       log('AuthCheck: FutureBuilder error: ${appLockSnapshot.error}');
                       return Center(

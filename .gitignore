@@ -55,3 +55,7 @@ android/.gradle/7.5/fileHashes/fileHashes.lock
 android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
 android/.gradle/7.5/fileHashes/fileHashes.lock
 .gitignore
+android/app/upload-key-output.zip
+android/app/ts-public-key.pem
+android/app/ts-key-cert.pem
+android/app/pepk.jar
