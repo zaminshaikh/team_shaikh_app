@@ -169,16 +169,16 @@ class _LineChartSectionState extends State<LineChartSection> {
                         const Spacer(),
                         DropdownButton<String>(
                           value: dropdownValue,
-                          icon: const Icon(Icons.arrow_downward,
-                              color: Colors.white),
-                          iconSize: 24,
+                          // icon: const Icon(Icons.arrow_downward,
+                          //     color: Colors.white),
+                          // iconSize: 24,
                           elevation: 16,
                           dropdownColor: Colors.black,
                           style: const TextStyle(color: Colors.white),
-                          underline: Container(
-                            height: 2,
-                            color: Colors.white,
-                          ),
+                          // underline: Container(
+                          //   height: 2,
+                          //   color: Colors.white,
+                          // ),
                           onChanged: (String? newValue) {
                             setState(() {
                               dropdownValue = newValue!;
@@ -248,16 +248,13 @@ class _LineChartSectionState extends State<LineChartSection> {
                         if (selectedClient?.graphs != null && selectedClient!.graphs!.isNotEmpty)
                           DropdownButton<String>(
                             value: selectedAccount,
-                            icon: const Icon(Icons.arrow_downward,
-                                color: Colors.white),
-                            iconSize: 24,
                             elevation: 16,
                             dropdownColor: Colors.black,
                             style: const TextStyle(color: Colors.white),
-                            underline: Container(
-                              height: 2,
-                              color: Colors.white,
-                            ),
+                            // underline: Container(
+                            //   height: 2,
+                            //   color: Colors.white,
+                            // ),
                             onChanged: (String? newValue) {
                               setState(() {
                                 selectedAccount = newValue!;
