@@ -583,23 +583,23 @@ class _LineChartSectionState extends State<LineChartSection> {
             ),
             const Spacer(),
             // Alert icon that shows an important note when tapped
-            GestureDetector(
-              onTap: () {
-                CustomAlertDialog.showAlertDialog(
-                  context,
-                  'Important Note',
-                  'The graph is still being developed and currently only shows your current balance. '
-                      'It displays the asset balance for the selected time frame with markers indicating the balance at the start and end of the period.',
-                  svgIconPath: 'assets/icons/warning.svg',
-                  svgIconColor: AppColors.defaultYellow400,
-                );
-              },
-              child: SvgPicture.asset(
-                'assets/icons/warning.svg',
-                color: AppColors.defaultYellow400,
-                height: 25,
-              ),
-            ),
+            // GestureDetector(
+            //   onTap: () {
+            //     CustomAlertDialog.showAlertDialog(
+            //       context,
+            //       'Important Note',
+            //       'The graph is still being developed and currently only shows your current balance. '
+            //           'It displays the asset balance for the selected time frame with markers indicating the balance at the start and end of the period.',
+            //       svgIconPath: 'assets/icons/warning.svg',
+            //       svgIconColor: AppColors.defaultYellow400,
+            //     );
+            //   },
+            //   child: SvgPicture.asset(
+            //     'assets/icons/warning.svg',
+            //     color: AppColors.defaultYellow400,
+            //     height: 25,
+            //   ),
+            // ),
           ],
         ),
       );
