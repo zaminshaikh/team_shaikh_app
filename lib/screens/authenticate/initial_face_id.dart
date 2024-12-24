@@ -75,21 +75,20 @@ class _InitialFaceIdPageState extends State<InitialFaceIdPage>
               Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 80.0),
                       Image.asset(
-                        'assets/icons/team_shaikh_transparent.png',
-                        height: 120,
-                        width: 120,
+                        'assets/icons/agq_logo.png',
+                        height: 60,
                       ),
-                      const SizedBox(height: 8.0),
+                      const SizedBox(height: 20.0),
                       const Align(
                         alignment: Alignment.center,
                         child: Text(
-                          'Team Shaikh App Locked',
+                          'AGQ App Locked',
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,

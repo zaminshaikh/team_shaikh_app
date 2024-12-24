@@ -298,7 +298,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ),
               child: child!,
             ),
-            title: 'Team Shaikh Investments',
+            title: 'AGQ Investments',
             theme: _buildAppTheme(),
             // home: const AuthCheck(),
             routes: {

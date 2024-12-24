@@ -60,14 +60,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   children: [
                     const SizedBox(height: 60.0),
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Align(
-                        alignment: const Alignment(-1.0, -1.0),
-                        child: Image.asset(
-                          'assets/icons/team_shaikh_transparent.png',
-                          height: 100,
+                        padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+                        child: Align(
+                          alignment: const Alignment(-1.0, -1.0),
+                          child: Image.asset(
+                            'assets/icons/agq_logo.png',
+                            height: 50,
+                          ),
                         ),
-                      ),
                     ),
                     const SizedBox(height: 30.0),
                   ],

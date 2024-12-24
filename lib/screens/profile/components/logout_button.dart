@@ -96,7 +96,7 @@ class _LogoutButtonState extends State<LogoutButton> {
             GestureDetector(
               onTap: () {
                 Navigator.of(context).pop(); 
-                _logout(context); 
+                _logout(); 
               },
               child: Container(
                 width: double.infinity, 
@@ -149,32 +149,16 @@ class _LogoutButtonState extends State<LogoutButton> {
 
 
 
-  void _logout(BuildContext context) async {
-    DatabaseService? db = DatabaseService.withCID(
-        FirebaseAuth.instance.currentUser!.uid, widget.client.cid);
-    List<dynamic>? tokens = await db.getField('tokens') as List<dynamic>? ?? [];
-    // Get the current token
-    String? currentToken = await FirebaseMessaging.instance.getToken();
-    if (currentToken != null && currentToken.isNotEmpty) {
-      tokens.remove(currentToken);
-      // Update the list of tokens in the database for the user
-      await db.updateField('tokens', tokens);
-    }
-    signUserOut();
-  }
-  
-  void signUserOut() async {
+  void _logout() async {
     log('Profiles.dart: Signing out...');
-
-    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
-    await FirebaseAuth.instance.signOut();
-    assert(FirebaseAuth.instance.currentUser == null);
-
-    // Async gap mounted widget check
+    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
     if (!mounted) {
       return;
     }
-    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
+    await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
+    await FirebaseAuth.instance.signOut();
+    assert(FirebaseAuth.instance.currentUser == null);
+    return;
   }
 }
 
