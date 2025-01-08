@@ -259,10 +259,10 @@ class _LineChartSectionState extends State<LineChartSection> {
                             setState(() {
                               selectedClient = newClient;
                               final graphs = selectedClient?.graphs ?? [];
-                              selectedGraph = graphs.firstWhere(
+                              selectedGraph = !graphs.isEmpty ? graphs.firstWhere(
                                 (g) => g.account.toLowerCase() == 'cumulative',
                                 orElse: () => graphs.first,
-                              );
+                              ) : null;
                               selectedAccount = selectedGraph?.account;
                               _prepareGraphPoints();
                             });
