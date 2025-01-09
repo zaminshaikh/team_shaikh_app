@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 
 void downloadToFiles(String documentName) async {
@@ -24,7 +25,7 @@ Future<String> downloadFile(context, clientId, documentName) async {
 
     filePath = '${directory.path}/$documentName';
 
-    final ref = FirebaseStorage.instance.ref().child('testUsersStatements').child(clientId).child(documentName);
+    final ref = FirebaseStorage.instance.ref().child(Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')).child(clientId).child(documentName);
 
     final bytes = await ref.getData();
     if (bytes != null) {
