@@ -133,23 +133,51 @@ class NotificationCard extends StatelessWidget {
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
                         dense: true,
+                        
+                        
+                        // ...existing code...
                         onTap: () async {
-                          if (notification.type == 'activity') {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ActivityPage(),
-                              ),
-                            );
+                          final targetPage = (notification.type == 'activity')
+                              ? const ActivityPage()
+                              : const DocumentsPage();
+                        
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => targetPage,
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+                            ),
+                          );
+                        
+                          final notificationCID = notification.parentCID;
+                          final myCID = client.cid;
+                        
+                          DatabaseService db;
+
+                          if (notificationCID == myCID) {
+                            // The notification belongs to the main client
+                            db = DatabaseService.withCID(client.uid, client.cid);
                           } else {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const DocumentsPage(),
-                              ),
-                            );
+                            // Loop through connectedUsers to find a matching CID
+                            Client? connectedUser;
+                            for (var c in client.connectedUsers ?? []) {
+                              if (c != null && c.cid == notificationCID) {
+                                connectedUser = c;
+                                break;
+                              }
+                            }
+
+                            if (connectedUser != null) {
+                              // Found a matching connected user
+                              db = DatabaseService.withCID(connectedUser.uid, connectedUser.cid);
+                            } else {
+                              // If not found, fallback to current client
+                              db = DatabaseService.withCID(client.uid, client.cid);
+                            }
                           }
-                          DatabaseService db = DatabaseService.withCID(client.uid, client.cid);
+
                           await db.markNotificationAsRead(notification.id);
                         },
                       ),
