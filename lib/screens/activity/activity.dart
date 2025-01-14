@@ -140,12 +140,10 @@ class _ActivityPageState extends State<ActivityPage> {
   Widget? _buildListContent(BuildContext context, int index) {
     if (index == 0) {
       return _buildFilterAndSort();
-    } else if (index == 1) {
-      return _buildSelectedOptionsDisplay();
-    } else if (activities.isEmpty && index == 2) {
+    } else if (activities.isEmpty && index == 1) {
       return buildNoActivityMessage();
     } else {
-      int activityIndex = index - 2;
+      int activityIndex = index - 1; // Adjust the index to account for the removed method
       if (activityIndex < activities.length) {
         final activity = activities[activityIndex];
         return _buildActivityWithDayHeader(activity, activityIndex);
@@ -154,7 +152,7 @@ class _ActivityPageState extends State<ActivityPage> {
       }
     }
   }
-
+  
   /// Builds the filter and sort buttons.
   Widget _buildFilterAndSort() => Padding(
       padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
@@ -346,120 +344,6 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  /// Builds the display of selected filters and sort options.
-  Widget _buildSelectedOptionsDisplay() {
-    String dateButtonText =
-        getDateButtonText(selectedDates.start, selectedDates.end);
-    String typeButtonText = getTypeButtonText(_typeFilter);
-    String recipientsButtonText =
-        getRecipientsButtonText(_recipientsFilter, allRecipients);
-    List<String> buttons = [
-      dateButtonText,
-      typeButtonText,
-      recipientsButtonText
-    ];
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: Column(
-            children: [
-              _buildSortDisplay(),
-              _buildFilterDisplay(buttons),
-            ],
-          ),
-        ),
-        const Divider(
-          color: Color.fromARGB(255, 126, 123, 123),
-          thickness: 0.5,
-        ),
-      ],
-    );
-  }
-
-  /// Builds the sort display with the current sort option.
-  Widget _buildSortDisplay() => Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: GestureDetector(
-        onTap: () {
-          _showSortModal(context);
-        },
-        child: Container(
-          color: Colors.transparent,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                const Text(
-                  'Sort: ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        getSortOrderText(_order),
-                        style: const TextStyle(
-                          color: AppColors.defaultBlue300,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      SvgPicture.asset(
-                        'assets/icons/sort.svg',
-                        colorFilter: const ColorFilter.mode(
-                            AppColors.defaultBlue300, BlendMode.srcIn),
-                        height: 18,
-                        width: 18,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-  /// Builds the filter display showing the selected filters.
-  Widget _buildFilterDisplay(List<String> buttonTexts) => Row(
-      children: [
-        const Text(
-          'Filters: ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children:
-                  buttonTexts.map((text) => _buildFilterChip(text)).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
 
   /// Builds an individual filter chip.
   Widget _buildFilterChip(String label) => Padding(
