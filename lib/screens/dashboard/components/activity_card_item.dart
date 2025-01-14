@@ -21,7 +21,7 @@ class ActivityCardItem extends StatelessWidget {
     String date = dateFormat.format(activity.time);
 
     return Container(
-      width: MediaQuery.of(context).size.width * 0.55, // Set a fixed width
+      width: MediaQuery.of(context).size.width * 0.6, // Set a fixed width
       child: Container(
         padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(

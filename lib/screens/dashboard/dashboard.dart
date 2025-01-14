@@ -169,13 +169,13 @@ class _DashboardPageState extends State<DashboardPage>
                           position: _offsetAnimation,
                           child: _buildConnectedUsersSection(),
                         ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 12),
                       // Recent transactions section
                       SlideTransition(
                         position: _offsetAnimation,
                         child: buildRecentTransactionsSection(context),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 42),
                       // Assets structure section (pie chart)
                       SlideTransition(
                         position: _offsetAnimation,
