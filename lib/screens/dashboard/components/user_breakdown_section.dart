@@ -55,6 +55,20 @@ class UserBreakdownSection extends StatelessWidget {
     assetTilesAK1.sort((a, b) => a.asset.index
         .compareTo(b.asset.index));
 
+    // Helper function to get the display name
+    String getDisplayName(String firstName, String lastName) {
+      final fullName = '$firstName $lastName';
+      if (fullName.length > 20) {
+        if (firstName.length <= lastName.length) {
+          return '$firstName ${lastName.substring(0, 1)}.';
+        } else {
+          return '${firstName.substring(0, 1)}. $lastName';
+        }
+      } else {
+        return fullName;
+      }
+    }
+    
     return Theme(
       data: ThemeData(
         splashColor: Colors.transparent, // removes splash effect
@@ -65,7 +79,7 @@ class UserBreakdownSection extends StatelessWidget {
           title: Row(
             children: [
               Text(
-                '${client.firstName} ${client.lastName}',
+                getDisplayName(client.firstName, client.lastName),
                 style: const TextStyle(
                   fontSize: 18,
                   color: Colors.white,
@@ -128,6 +142,8 @@ class UserBreakdownSection extends StatelessWidget {
         ),
       ),
     );
+    
+    
   }
 
 
