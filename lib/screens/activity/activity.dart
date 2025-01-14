@@ -92,13 +92,17 @@ class _ActivityPageState extends State<ActivityPage> {
         children: [
           CustomScrollView(
             slivers: <Widget>[
-              ActivityAppBar(client: client!),
+              ActivityAppBar(
+                client: client!,
+                onFilterPressed: () => _showFilterModal(context),
+                onSortPressed: () => _showSortModal(context),
+              ),
               SliverPadding(
                 padding: const EdgeInsets.only(top: 20.0),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => _buildListContent(context, index),
-                    childCount: activities.isEmpty ? 3 : activities.length + 2,
+                    childCount: activities.isEmpty ? 2 : activities.length + 1,
                   ),
                 ),
               ),
@@ -138,12 +142,10 @@ class _ActivityPageState extends State<ActivityPage> {
 
   /// Builds the content of the list based on the index.
   Widget? _buildListContent(BuildContext context, int index) {
-    if (index == 0) {
-      return _buildFilterAndSort();
-    } else if (activities.isEmpty && index == 1) {
+    if (activities.isEmpty) {
       return buildNoActivityMessage();
     } else {
-      int activityIndex = index - 1; // Adjust the index to account for the removed method
+      int activityIndex = index; // No need to adjust the index
       if (activityIndex < activities.length) {
         final activity = activities[activityIndex];
         return _buildActivityWithDayHeader(activity, activityIndex);
@@ -152,82 +154,6 @@ class _ActivityPageState extends State<ActivityPage> {
       }
     }
   }
-  
-  /// Builds the filter and sort buttons.
-  Widget _buildFilterAndSort() => Padding(
-      padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
-      child: Row(
-        children: [
-          _buildFilterButton(),
-          const SizedBox(width: 10),
-          _buildSortButton(),
-        ],
-      ),
-    );
-
-  /// Builds the filter button.
-  Widget _buildFilterButton() => Expanded(
-      child: ElevatedButton.icon(
-        icon: SvgPicture.asset(
-          'assets/icons/filter.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.defaultGray200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          elevation: 0,
-        ),
-        label: const Text(
-          'Filter',
-          style: TextStyle(
-            color: AppColors.defaultGray200,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        onPressed: () {
-          _showFilterModal(context);
-        },
-      ),
-    );
-
-  /// Builds the sort button.
-  Widget _buildSortButton() => Expanded(
-      child: ElevatedButton.icon(
-        icon: SvgPicture.asset(
-          'assets/icons/sort.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.defaultGray200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          elevation: 0,
-        ),
-        label: const Text(
-          'Sort',
-          style: TextStyle(
-            color: AppColors.defaultGray200,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        onPressed: () {
-          _showSortModal(context);
-        },
-      ),
-    );
 
   /// Builds an activity item with a day header if necessary.
   Widget _buildActivityWithDayHeader(Activity activity, int index) {
@@ -273,21 +199,21 @@ class _ActivityPageState extends State<ActivityPage> {
 
   /// Builds an individual activity item.
   Widget _buildActivity(Activity activity, bool showDivider) => Column(
-      children: [
-        ActivityListItem(
-          activity: activity,
-          onTap: () => _showActivityDetailsModal(context, activity),
-        ),
-        if (showDivider)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-            child: Divider(
-              color: Color.fromARGB(255, 132, 132, 132),
-              thickness: 0.2,
-            ),
-          )
-      ],
-    );
+        children: [
+          ActivityListItem(
+            activity: activity,
+            onTap: () => _showActivityDetailsModal(context, activity),
+          ),
+          if (showDivider)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+              child: Divider(
+                color: Color.fromARGB(255, 132, 132, 132),
+                thickness: 0.2,
+              ),
+            )
+        ],
+      );
 
   /// Shows the activity details modal.
   void _showActivityDetailsModal(BuildContext context, Activity activity) {
@@ -343,26 +269,5 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
-
-
-  /// Builds an individual filter chip.
-  Widget _buildFilterChip(String label) => Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.defaultBlueGray700,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.defaultBlueGray100,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ),
-    );
+  
 }
