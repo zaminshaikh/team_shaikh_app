@@ -1,5 +1,3 @@
-// activity_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +21,7 @@ import 'package:team_shaikh_app/screens/utils/utilities.dart';
 import 'dart:developer';
 
 class ActivityPage extends StatefulWidget {
-  const ActivityPage({Key? key}) : super(key: key);
+  const ActivityPage({super.key});
 
   @override
   _ActivityPageState createState() => _ActivityPageState();
@@ -40,7 +38,7 @@ class _ActivityPageState extends State<ActivityPage> {
   List<String> _recipientsFilter = [];
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
-    end: DateTime.now().add(Duration(days: 30)),
+    end: DateTime.now().add(const Duration(days: 30)),
   );
 
   // Date formatter for day headers
@@ -77,7 +75,7 @@ class _ActivityPageState extends State<ActivityPage> {
   @override
   Widget build(BuildContext context) {
     if (client == null) {
-      return CustomProgressIndicatorPage();
+      return const CustomProgressIndicatorPage();
     }
 
     // Retrieve activities and recipients
@@ -92,18 +90,18 @@ class _ActivityPageState extends State<ActivityPage> {
         children: [
           CustomScrollView(
             slivers: <Widget>[
+              // Pass the callbacks for Filter & Sort to the AppBar
               ActivityAppBar(
                 client: client!,
                 onFilterPressed: () => _showFilterModal(context),
                 onSortPressed: () => _showSortModal(context),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.only(top: 20.0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _buildListContent(context, index),
-                    childCount: activities.isEmpty ? 2 : activities.length + 1,
-                  ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _buildListContent(context, index),
+                  // Notice we no longer build the filter/sort row in the list:
+                  // the childCount changes accordingly
+                  childCount: activities.isEmpty ? 2 : activities.length + 1,
                 ),
               ),
               const SliverToBoxAdapter(
@@ -142,16 +140,17 @@ class _ActivityPageState extends State<ActivityPage> {
 
   /// Builds the content of the list based on the index.
   Widget? _buildListContent(BuildContext context, int index) {
-    if (activities.isEmpty) {
+    // We removed the index == 0 filter/sort row check 
+    // because it is now in the AppBar
+    if (activities.isEmpty && index == 0) {
       return buildNoActivityMessage();
     } else {
-      int activityIndex = index; // No need to adjust the index
-      if (activityIndex < activities.length) {
-        final activity = activities[activityIndex];
-        return _buildActivityWithDayHeader(activity, activityIndex);
-      } else {
+      int activityIndex = activities.isEmpty ? index - 1 : index;
+      if (activityIndex < 0 || activityIndex >= activities.length) {
         return null;
       }
+      final activity = activities[activityIndex];
+      return _buildActivityWithDayHeader(activity, activityIndex);
     }
   }
 
@@ -269,5 +268,4 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
-  
 }
