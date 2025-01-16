@@ -31,7 +31,7 @@ class _ActivityPageState extends State<ActivityPage> {
   Client? client;
   List<Activity> activities = [];
   List<String> allRecipients = [];
-  List<String> allParents = [];
+  List<String> allClients = [];
 
   bool _allSelected = true;
 
@@ -39,7 +39,7 @@ class _ActivityPageState extends State<ActivityPage> {
   SortOrder _order = SortOrder.newToOld;
   List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
   List<String> _recipientsFilter = [];
-  List<String> _parentsFilter = [];
+  List<String> _clientsFilter = [];
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
     end: DateTime.now().add(const Duration(days: 30)),
@@ -52,7 +52,7 @@ class _ActivityPageState extends State<ActivityPage> {
   void initState() {
     super.initState();
     _validateAuth();
-    _parentsFilter = [];
+    _clientsFilter = [];
 
     // Initialize recipients filter after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,7 +87,7 @@ class _ActivityPageState extends State<ActivityPage> {
     _retrieveActivitiesAndRecipients();
 
     // Filter and sort activities
-    filterActivities(activities, _typeFilter, _recipientsFilter, _parentsFilter,
+    filterActivities(activities, _typeFilter, _recipientsFilter, _clientsFilter,
         selectedDates);
     sortActivities(activities, _order);
 
@@ -145,7 +145,7 @@ class _ActivityPageState extends State<ActivityPage> {
       activities.addAll(connectedUserActivities);
       allRecipients.addAll(connectedUserRecipients);
     }
-    allParents = activities
+    allClients = activities
         // map each activity to its parentName (some could be null or empty)
         .map((activity) => activity.parentName ?? '')
         // filter out empty parent names
@@ -175,7 +175,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   /// Builds a horizontal scrollable row of buttons for each parent name.
   Widget _buildParentNameButtons() {
-    if (allParents.isEmpty) {
+    if (allClients.isEmpty) {
       return const SizedBox();
     }
 
@@ -222,15 +222,15 @@ class _ActivityPageState extends State<ActivityPage> {
                 onPressed: () {
                   setState(() {
                     _allSelected = true;
-                    _parentsFilter.clear();
+                    _clientsFilter.clear();
                   });
                 },
               ),
             ),
 
             // Individual Parent Buttons
-            ...allParents.map((parentName) {
-              bool isSelected = _parentsFilter.contains(parentName);
+            ...allClients.map((parentName) {
+              bool isSelected = _clientsFilter.contains(parentName);
 
               final rowChildren = <Widget>[
                 SvgPicture.asset(
@@ -286,15 +286,15 @@ class _ActivityPageState extends State<ActivityPage> {
                   onPressed: () {
                     setState(() {
                       if (isSelected) {
-                        _parentsFilter.remove(parentName);
-                        if (_parentsFilter.isEmpty) {
+                        _clientsFilter.remove(parentName);
+                        if (_clientsFilter.isEmpty) {
                           _allSelected = true;
                         }
                       } else {
-                        _parentsFilter.add(parentName);
-                        if (_parentsFilter.length == allParents.length) {
+                        _clientsFilter.add(parentName);
+                        if (_clientsFilter.length == allClients.length) {
                           _allSelected = true;
-                          _parentsFilter.clear();
+                          _clientsFilter.clear();
                         } else {
                           _allSelected = false;
                         }
@@ -401,8 +401,8 @@ class _ActivityPageState extends State<ActivityPage> {
         recipientsFilter: _recipientsFilter,
         allRecipients: allRecipients,
         // Pass allParents if _allSelected is true to reflect all checkboxes as selected
-        parentsFilter: _allSelected ? List.from(allParents) : List.from(_parentsFilter),
-        allParents: allParents,
+        clientsFilter: _allSelected ? List.from(allClients) : List.from(_clientsFilter),
+        allClients: allClients,
         selectedDates: selectedDates,
         onApply: (
           List<String> typeFilter,
@@ -415,18 +415,18 @@ class _ActivityPageState extends State<ActivityPage> {
             _recipientsFilter = recipientsFilter;
             selectedDates = updatedDates;
 
-            if (parentsFilter.length == allParents.length) {
+            if (parentsFilter.length == allClients.length) {
               _allSelected = true;
-              _parentsFilter.clear();
+              _clientsFilter.clear();
             } else {
-              _parentsFilter = parentsFilter;
-              _allSelected = _parentsFilter.isEmpty;
+              _clientsFilter = parentsFilter;
+              _allSelected = _clientsFilter.isEmpty;
             }
           });
           
           // Re-apply filtering as needed
           filterActivities(activities, _typeFilter, _recipientsFilter,
-              _parentsFilter, selectedDates);
+              _clientsFilter, selectedDates);
         },
       ),
     );

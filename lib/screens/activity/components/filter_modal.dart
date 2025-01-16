@@ -11,16 +11,16 @@ class ActivityFilterModal extends StatefulWidget {
   final List<String> allRecipients;
 
   // NEW: for Parent Name filter
-  final List<String> parentsFilter;
-  final List<String> allParents;
+  final List<String> clientsFilter;
+  final List<String> allClients;
 
   final DateTimeRange selectedDates;
 
-  // Updated: onApply now must return parentsFilter as well
+  // Updated: onApply now must return clientsFilter as well
   final Function(
     List<String> typeFilter,
     List<String> recipientsFilter,
-    List<String> parentsFilter,
+    List<String> clientsFilter,
     DateTimeRange selectedDates,
   ) onApply;
 
@@ -31,8 +31,8 @@ class ActivityFilterModal extends StatefulWidget {
     required this.allRecipients,
 
     // NEW
-    required this.parentsFilter,
-    required this.allParents,
+    required this.clientsFilter,
+    required this.allClients,
 
     required this.selectedDates,
     required this.onApply,
@@ -47,7 +47,7 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
   late List<String> _recipientsFilter;
 
   // NEW
-  late List<String> _parentsFilter;
+  late List<String> _clientsFilter;
 
   late DateTimeRange _selectedDates;
 
@@ -56,10 +56,10 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
     super.initState();
     _typeFilter = List.from(widget.typeFilter);
     _recipientsFilter = List.from(widget.recipientsFilter);
-    // Initialize parentsFilter with allParents if 'All' is selected
-    _parentsFilter = widget.parentsFilter.isEmpty
-        ? List.from(widget.allParents)
-        : List.from(widget.parentsFilter);
+    // Initialize clientsFilter with allclients if 'All' is selected
+    _clientsFilter = widget.clientsFilter.isEmpty
+        ? List.from(widget.allClients)
+        : List.from(widget.clientsFilter);
     _selectedDates = widget.selectedDates;
   }
 
@@ -117,9 +117,9 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                           ),
                           // NEW: Parent Name Filter Section
                           _buildFilter(
-                            'Parents',
-                            widget.allParents,
-                            _parentsFilter,
+                            'Clients',
+                            widget.allClients,
+                            _clientsFilter,
                           ),
                         ],
                       ),
@@ -251,13 +251,13 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
               filterList.remove(filterKey);
             }
 
-            // Update _allSelected if all parents are selected or none
-            if (widget.allParents.length == filterList.length) {
+            // Update _allSelected if all clients are selected or none
+            if (widget.allClients.length == filterList.length) {
               _allSelected = true;
-              _parentsFilter = [];
+              _clientsFilter = [];
             } else if (filterList.isEmpty) {
               _allSelected = true;
-              _parentsFilter = List.from(widget.allParents);
+              _clientsFilter = List.from(widget.allClients);
             } else {
               _allSelected = false;
             }
@@ -289,15 +289,15 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                   ),
                 ),
                 onPressed: () {
-                  // If all parents are selected, clear _parentsFilter to indicate "All" is selected
-                  if (_parentsFilter.length == widget.allParents.length) {
-                    _parentsFilter.clear();
+                  // If all clients are selected, clear _clientsFilter to indicate "All" is selected
+                  if (_clientsFilter.length == widget.allClients.length) {
+                    _clientsFilter.clear();
                   }
                   Navigator.pop(context);
                   widget.onApply(
                     _typeFilter,
                     _recipientsFilter,
-                    _parentsFilter,  // NEW
+                    _clientsFilter,  // NEW
                     _selectedDates,
                   );
                 },
@@ -333,8 +333,8 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                 _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
                 _recipientsFilter = List.from(widget.allRecipients);
 
-                // NEW: reset the parents filter to all
-                _parentsFilter = List.from(widget.allParents);
+                // NEW: reset the clients filter to all
+                _clientsFilter = List.from(widget.allClients);
                 _allSelected = true;
 
                 _selectedDates = DateTimeRange(
@@ -346,7 +346,7 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
               widget.onApply(
                 _typeFilter,
                 _recipientsFilter,
-                _parentsFilter, 
+                _clientsFilter, 
                 _selectedDates,
               );
             },
