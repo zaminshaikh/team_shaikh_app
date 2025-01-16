@@ -33,6 +33,8 @@ class _ActivityPageState extends State<ActivityPage> {
   List<String> allRecipients = [];
   List<String> allParents = [];
 
+  bool _allSelected = true;
+
   // Initialize filters and sort order
   SortOrder _order = SortOrder.newToOld;
   List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
@@ -50,12 +52,12 @@ class _ActivityPageState extends State<ActivityPage> {
   void initState() {
     super.initState();
     _validateAuth();
+    _parentsFilter = [];
 
     // Initialize recipients filter after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _recipientsFilter = List.from(allRecipients);
-        _parentsFilter = List.from(allParents);
       });
     });
   }
@@ -100,6 +102,8 @@ class _ActivityPageState extends State<ActivityPage> {
                 onFilterPressed: () => _showFilterModal(context),
                 onSortPressed: () => _showSortModal(context),
               ),
+              const SliverToBoxAdapter(child: SizedBox(height: 10)),
+              _buildParentNameButtons(),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => _buildListContent(context, index),
@@ -168,6 +172,149 @@ class _ActivityPageState extends State<ActivityPage> {
       return _buildActivityWithDayHeader(activity, activityIndex);
     }
   }
+
+  /// Builds a horizontal scrollable row of buttons for each parent name.
+  Widget _buildParentNameButtons() {
+    if (allParents.isEmpty) {
+      return const SizedBox();
+    }
+
+    return SliverToBoxAdapter(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            const SizedBox(width: 20),
+            // "All" Button
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ElevatedButton.icon(
+                icon: SvgPicture.asset(
+                  'assets/icons/group_people.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                  height: 18,
+                  width: 18,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _allSelected
+                      ? AppColors.defaultBlue500
+                      : const Color.fromARGB(255, 17, 24, 39),
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: AppColors.defaultBlueGray100,
+                      width: _allSelected ? 0 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                ),
+                label: const Text(
+                  'All',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontFamily: 'Titillium Web',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _allSelected = true;
+                    _parentsFilter.clear();
+                  });
+                },
+              ),
+            ),
+
+            // Individual Parent Buttons
+            ...allParents.map((parentName) {
+              bool isSelected = _parentsFilter.contains(parentName);
+
+              final rowChildren = <Widget>[
+                SvgPicture.asset(
+                  'assets/icons/single_person.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                  height: 18,
+                  width: 18,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  parentName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                if (isSelected) ...[
+                  const SizedBox(width: 15),
+                  SvgPicture.asset(
+                    'assets/icons/x_icon.svg',
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                    height: 28,
+                    width: 28,
+                  ),
+                ],
+              ];
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected
+                        ? AppColors.defaultBlue500
+                        : const Color.fromARGB(255, 17, 24, 39),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.defaultBlue500
+                            : AppColors.defaultBlueGray100,
+                        width: isSelected ? 0 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (isSelected) {
+                        _parentsFilter.remove(parentName);
+                        if (_parentsFilter.isEmpty) {
+                          _allSelected = true;
+                        }
+                      } else {
+                        _parentsFilter.add(parentName);
+                        if (_parentsFilter.length == allParents.length) {
+                          _allSelected = true;
+                          _parentsFilter.clear();
+                        } else {
+                          _allSelected = false;
+                        }
+                      }
+                    });
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: rowChildren,
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+
 
   /// Builds an activity item with a day header if necessary.
   Widget _buildActivityWithDayHeader(Activity activity, int index) {
@@ -240,6 +387,7 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
+  
   /// Shows the filter modal.
   void _showFilterModal(BuildContext context) {
     showModalBottomSheet(
@@ -252,10 +400,9 @@ class _ActivityPageState extends State<ActivityPage> {
         typeFilter: _typeFilter,
         recipientsFilter: _recipientsFilter,
         allRecipients: allRecipients,
-        // NEW: pass the parent filter & allParents
-        parentsFilter: _parentsFilter,
+        // Pass allParents if _allSelected is true to reflect all checkboxes as selected
+        parentsFilter: _allSelected ? List.from(allParents) : List.from(_parentsFilter),
         allParents: allParents,
-
         selectedDates: selectedDates,
         onApply: (
           List<String> typeFilter,
@@ -266,8 +413,15 @@ class _ActivityPageState extends State<ActivityPage> {
           setState(() {
             _typeFilter = typeFilter;
             _recipientsFilter = recipientsFilter;
-            _parentsFilter = parentsFilter; // NEW
             selectedDates = updatedDates;
+
+            if (parentsFilter.length == allParents.length) {
+              _allSelected = true;
+              _parentsFilter.clear();
+            } else {
+              _parentsFilter = parentsFilter;
+              _allSelected = _parentsFilter.isEmpty;
+            }
           });
           
           // Re-apply filtering as needed
@@ -277,8 +431,6 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
-
-
 
   /// Shows the sort modal.
   void _showSortModal(BuildContext context) {

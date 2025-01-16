@@ -56,7 +56,10 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
     super.initState();
     _typeFilter = List.from(widget.typeFilter);
     _recipientsFilter = List.from(widget.recipientsFilter);
-    _parentsFilter = List.from(widget.parentsFilter); // NEW
+    // Initialize parentsFilter with allParents if 'All' is selected
+    _parentsFilter = widget.parentsFilter.isEmpty
+        ? List.from(widget.allParents)
+        : List.from(widget.parentsFilter);
     _selectedDates = widget.selectedDates;
   }
 
@@ -89,9 +92,9 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                         child: Text(
                           'Filter Activity',
                           style: TextStyle(
-                            fontSize: 22.0,
-                            fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                             fontFamily: 'Titillium Web',
                           ),
                         ),
@@ -103,19 +106,18 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                         children: [
                           _buildTimePeriodFilter(),
                           _buildFilter(
-                            'By Type of Activity',
-                            ['profit', 'withdrawal', 'deposit'],
+                            'Type',
+                            widget.typeFilter,
                             _typeFilter,
                           ),
                           _buildFilter(
-                            'By Recipients',
+                            'Recipients',
                             widget.allRecipients,
                             _recipientsFilter,
                           ),
-                          
-                          // NEW: Parent Name filter
+                          // NEW: Parent Name Filter Section
                           _buildFilter(
-                            'By Parent Name',
+                            'Parents',
                             widget.allParents,
                             _parentsFilter,
                           ),
@@ -235,14 +237,29 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
             if (isChecked) {
               // Special case if filterKey is 'profit'
               if (filterKey == 'profit') {
-                filterList.add('income');
+                if (!filterList.contains('income')) {
+                  filterList.add('income');
+                }
               }
-              filterList.add(filterKey);
+              if (!filterList.contains(filterKey)) {
+                filterList.add(filterKey);
+              }
             } else {
               if (filterKey == 'profit') {
                 filterList.remove('income');
               }
               filterList.remove(filterKey);
+            }
+
+            // Update _allSelected if all parents are selected or none
+            if (widget.allParents.length == filterList.length) {
+              _allSelected = true;
+              _parentsFilter = [];
+            } else if (filterList.isEmpty) {
+              _allSelected = true;
+              _parentsFilter = List.from(widget.allParents);
+            } else {
+              _allSelected = false;
             }
           });
         },
@@ -272,6 +289,10 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                   ),
                 ),
                 onPressed: () {
+                  // If all parents are selected, clear _parentsFilter to indicate "All" is selected
+                  if (_parentsFilter.length == widget.allParents.length) {
+                    _parentsFilter.clear();
+                  }
                   Navigator.pop(context);
                   widget.onApply(
                     _typeFilter,
@@ -312,8 +333,9 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                 _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
                 _recipientsFilter = List.from(widget.allRecipients);
 
-                // NEW: reset the parents filter
+                // NEW: reset the parents filter to all
                 _parentsFilter = List.from(widget.allParents);
+                _allSelected = true;
 
                 _selectedDates = DateTimeRange(
                   start: DateTime(1900),
@@ -324,11 +346,13 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
               widget.onApply(
                 _typeFilter,
                 _recipientsFilter,
-                _parentsFilter, // NEW
+                _parentsFilter, 
                 _selectedDates,
               );
             },
           ),
         ],
       );
+
+  bool _allSelected = false; // Add this state variable
 }
