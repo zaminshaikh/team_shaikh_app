@@ -31,11 +31,13 @@ class _ActivityPageState extends State<ActivityPage> {
   Client? client;
   List<Activity> activities = [];
   List<String> allRecipients = [];
+  List<String> allParents = [];
 
   // Initialize filters and sort order
   SortOrder _order = SortOrder.newToOld;
   List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
   List<String> _recipientsFilter = [];
+  List<String> _parentsFilter = [];
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
     end: DateTime.now().add(const Duration(days: 30)),
@@ -53,6 +55,7 @@ class _ActivityPageState extends State<ActivityPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _recipientsFilter = List.from(allRecipients);
+        _parentsFilter = List.from(allParents);
       });
     });
   }
@@ -82,7 +85,8 @@ class _ActivityPageState extends State<ActivityPage> {
     _retrieveActivitiesAndRecipients();
 
     // Filter and sort activities
-    filterActivities(activities, _typeFilter, _recipientsFilter, selectedDates);
+    filterActivities(activities, _typeFilter, _recipientsFilter, _parentsFilter,
+        selectedDates);
     sortActivities(activities, _order);
 
     return Scaffold(
@@ -120,6 +124,7 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
+  
 
   /// Retrieves activities and recipients from the client and connected users.
   void _retrieveActivitiesAndRecipients() {
@@ -136,6 +141,16 @@ class _ActivityPageState extends State<ActivityPage> {
       activities.addAll(connectedUserActivities);
       allRecipients.addAll(connectedUserRecipients);
     }
+    allParents = activities
+        // map each activity to its parentName (some could be null or empty)
+        .map((activity) => activity.parentName ?? '')
+        // filter out empty parent names
+        .where((parentName) => parentName.isNotEmpty)
+        // convert to a set to get only unique values
+        .toSet()
+        // convert back to a list
+        .toList();
+
   }
 
   /// Builds the content of the list based on the index.
@@ -237,19 +252,33 @@ class _ActivityPageState extends State<ActivityPage> {
         typeFilter: _typeFilter,
         recipientsFilter: _recipientsFilter,
         allRecipients: allRecipients,
+        // NEW: pass the parent filter & allParents
+        parentsFilter: _parentsFilter,
+        allParents: allParents,
+
         selectedDates: selectedDates,
-        onApply: (typeFilter, recipientsFilter, selectedDates) {
+        onApply: (
+          List<String> typeFilter,
+          List<String> recipientsFilter,
+          List<String> parentsFilter,
+          DateTimeRange updatedDates,
+        ) {
           setState(() {
             _typeFilter = typeFilter;
             _recipientsFilter = recipientsFilter;
-            this.selectedDates = selectedDates;
-            filterActivities(
-                activities, _typeFilter, _recipientsFilter, selectedDates);
+            _parentsFilter = parentsFilter; // NEW
+            selectedDates = updatedDates;
           });
+          
+          // Re-apply filtering as needed
+          filterActivities(activities, _typeFilter, _recipientsFilter,
+              _parentsFilter, selectedDates);
         },
       ),
     );
   }
+
+
 
   /// Shows the sort modal.
   void _showSortModal(BuildContext context) {
