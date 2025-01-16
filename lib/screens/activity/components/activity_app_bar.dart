@@ -164,8 +164,8 @@ class _ActivityAppBarState extends State<ActivityAppBar> {
         icon: SvgPicture.asset(
           'assets/icons/sort.svg',
           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 21,
-          width: 21,
+          height: 22,
+          width: 22,
         ),
         style: ElevatedButton.styleFrom(
           splashFactory: NoSplash.splashFactory,
