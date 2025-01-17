@@ -220,7 +220,11 @@ class _LineChartSectionState extends State<LineChartSection> {
   Widget _buildUnifiedDropdownButton() {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueGrey, // or any color you like
+        backgroundColor: const Color.fromARGB(255, 17, 24, 39), // or any color you like
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Colors.white), // Set border color to white
+        ),
       ),
       onPressed: () => _showBlurredDropdownModal(context),
       child: Row(
@@ -230,7 +234,11 @@ class _LineChartSectionState extends State<LineChartSection> {
           SizedBox(width: 8),
           Text(
             'Open Filters',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+
+            ),
           ),
         ],
       ),
@@ -317,7 +325,7 @@ Widget _buildModalTitle(String title) {
     child: Text(
       title,
       style: const TextStyle(
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
@@ -335,34 +343,46 @@ Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
       final isSelected = (dropdownValue == option);
 
       return ListTile(
-        leading: Checkbox(
-          value: isSelected,
-          onChanged: (bool? value) {
-            modalSetState(() {
-              setState(() {
-                dropdownValue = option;
-                _prepareGraphPoints();
-              });
-            });
-          },
-        ),
-        title: Text(
-          displayText,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        title: isSelected 
+          ? Container(
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Text(
+                    displayText, 
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.check_rounded, color: Colors.white),
+                ],
+              ),
+            )
+          : Text(
+              displayText, // or displayName, graph.account based on the method
+              style: TextStyle(color: Colors.white),
+            ),
         splashColor: Colors.transparent,
         selectedTileColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         onTap: () {
           modalSetState(() {
             setState(() {
               dropdownValue = option;
+              // ...existing state changes...
               _prepareGraphPoints();
             });
           });
         },
       );
+      
     }).toList(),
   );
 }
@@ -382,36 +402,45 @@ Widget _buildClientOptions(void Function(void Function()) modalSetState) {
       final isSelected = (selectedClient == clientItem);
 
       return ListTile(
-        leading: Checkbox(
-          value: isSelected,
-          onChanged: (bool? value) {
-            modalSetState(() {
-              setState(() {
-                selectedClient = clientItem;
-                // ...existing code...
-                _prepareGraphPoints();
-              });
-            });
-          },
-        ),
-        title: Text(
-          displayName,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        title: isSelected 
+          ? Container(
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Text(
+                    displayName.length > 20 ? _getInitials(displayName) : displayName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.check_rounded, color: Colors.white),
+                ],
+              ),
+            )
+          : Text(
+              displayName, 
+              style: TextStyle(color: Colors.white),
+            ),
         splashColor: Colors.transparent,
         selectedTileColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         onTap: () {
           modalSetState(() {
             setState(() {
               selectedClient = clientItem;
-              // ...existing code...
               _prepareGraphPoints();
             });
           });
         },
       );
+
     }).toList(),
   );
 }
@@ -430,26 +459,35 @@ Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
       final isSelected = (selectedAccount == graph.account);
 
       return ListTile(
-        leading: Checkbox(
-          value: isSelected,
-          onChanged: (bool? value) {
-            modalSetState(() {
-              setState(() {
-                selectedAccount = graph.account;
-                selectedGraph = graph;
-                _prepareGraphPoints();
-              });
-            });
-          },
-        ),
-        title: Text(
-          graph.account,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
+        title: isSelected 
+          ? Container(
+              decoration: BoxDecoration(
+                color: AppColors.defaultBlue500,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Text(
+                    graph.account.length > 20 ? _getInitials(graph.account) : graph.account,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.check_rounded, color: Colors.white),
+                ],
+              ),
+            )
+          : Text(
+              graph.account, 
+              style: TextStyle(color: Colors.white),
+            ),
         splashColor: Colors.transparent,
         selectedTileColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         onTap: () {
           modalSetState(() {
             setState(() {
@@ -460,8 +498,20 @@ Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
           });
         },
       );
+
+
     }).toList(),
   );
+}
+
+String _getInitials(String name) {
+  List<String> names = name.split(' ');
+  if (names.length == 1) {
+    return names[0];
+  }
+  String firstName = names.first;
+  String lastInitial = names.length > 1 ? '${names.last[0].toUpperCase()}.' : '';
+  return '$firstName $lastInitial';
 }
 
 
