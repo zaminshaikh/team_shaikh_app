@@ -144,18 +144,17 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
               lastDate: DateTime(3000),
               builder: (BuildContext context, Widget? child) => Theme(
                 data: Theme.of(context).copyWith(
-                  scaffoldBackgroundColor: AppColors.defaultGray500,
-                  textTheme: const TextTheme(
-                    headlineMedium: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                      fontSize: 20,
-                    ),
-                    bodyMedium: TextStyle(
-                      color: Colors.black,
-                      fontFamily: 'Titillium Web',
-                      fontSize: 16,
-                    ),
+                  scaffoldBackgroundColor: AppColors.defaultBlueGray800,
+                  colorScheme: ColorScheme.dark().copyWith(
+                    brightness: Brightness.dark,
+                    primary: Colors.white,
+                    onPrimary: AppColors.altBlueGray800,
+                    secondary: AppColors.altBlueGray800,
+                    onSecondary: AppColors.altBlueGray800,
+                    secondaryContainer: AppColors.altBlueGray800,
+                    onSecondaryContainer: AppColors.altBlueGray800,
+                    secondaryFixed: AppColors.altBlueGray800,
+                    secondaryFixedDim: AppColors.altBlueGray800,
                   ),
                 ),
                 child: child!,
@@ -180,6 +179,11 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
           ),
         ),
       );
+
+
+
+
+
 
   /// Builds a filter section with checkboxes.
   Widget _buildFilter(
