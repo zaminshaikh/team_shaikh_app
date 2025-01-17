@@ -1,5 +1,7 @@
 // line_chart_section.dart
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/svg.dart';
@@ -167,161 +169,11 @@ class _LineChartSectionState extends State<LineChartSection> {
                           ),
                         ),
                         const Spacer(),
-                        DropdownButton<String>(
-                          value: dropdownValue,
-                          // icon: const Icon(Icons.arrow_downward,
-                          //     color: Colors.white),
-                          // iconSize: 24,
-                          dropdownColor: Colors.black,
-                          style: const TextStyle(color: Colors.white),
-                          // underline: Container(
-                          //   height: 2,
-                          //   color: Colors.white,
-                          // ),
-                          selectedItemBuilder: (BuildContext context) {
-                            return <String>['last-week', 'last-month', 'last-year'].map((String value) {
-                              String displayText;
-                              switch (value) {
-                                case 'last-week':
-                                  displayText = 'Last Week';
-                                  break;
-                                case 'last-month':
-                                  displayText = 'Last Month';
-                                  break;
-                                case 'last-year':
-                                  displayText = 'Last Year';
-                                  break;
-                                default:
-                                  displayText = value;
-                              }
-                              return Text(
-                                displayText.length > 10 ? '${displayText.substring(0, 10)}...' : displayText,
-                                style: const TextStyle(color: Colors.white),
-                                overflow: TextOverflow.ellipsis,
-                              );
-                            }).toList();
-                          },
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownValue = newValue!;
-                              _prepareGraphPoints();
-                            });
-                          },
-                          items: <String>[
-                            'last-week',
-                            'last-month',
-                            'last-year'
-                          ].map<DropdownMenuItem<String>>((String value) {
-                            String displayText;
-                            switch (value) {
-                              case 'last-week':
-                                displayText = 'Last Week';
-                                break;
-                              case 'last-month':
-                                displayText = 'Last Month';
-                                break;
-                              case 'last-year':
-                                displayText = 'Last Year';
-                                break;
-                              default:
-                                displayText = value;
-                            }
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                displayText,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                        _buildUnifiedDropdownButton(),
                         const SizedBox(width: 10),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        // New dropdown for clients
-                        DropdownButton<Client>(
-                          value: selectedClient,
-                          dropdownColor: Colors.black,
-                          selectedItemBuilder: (BuildContext context) {
-                            return allClients.map((Client clientItem) {
-                              final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
-                              return Text(
-                                displayName.length > 15 ? '${displayName.substring(0, 15)}...' : displayName,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white),
-                              );
-                            }).toList();
-                          },
-                          onChanged: (newClient) {
-                            setState(() {
-                              selectedClient = newClient;
-                              final graphs = selectedClient?.graphs ?? [];
-                              selectedGraph = !graphs.isEmpty ? graphs.firstWhere(
-                                (g) => g.account.toLowerCase() == 'cumulative',
-                                orElse: () => graphs.first,
-                              ) : null;
-                              selectedAccount = selectedGraph?.account;
-                              _prepareGraphPoints();
-                            });
-                          },
-                          items: allClients.map((clientItem) {
-                            final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
-                            return DropdownMenuItem<Client>(
-                              value: clientItem,
-                              child: Text(
-                                displayName,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(width: 10),
-                        // Update the account dropdown section
-                        if (selectedClient?.graphs != null && selectedClient!.graphs!.isNotEmpty)
-                          DropdownButton<String>(
-                            value: selectedAccount,
-                            elevation: 16,
-                            dropdownColor: Colors.black,
-                            style: const TextStyle(color: Colors.white),
-                            selectedItemBuilder: (BuildContext context) {
-                              return selectedClient!.graphs!.map((Graph graph) {
-                                return Text(
-                                  graph.account.length > 12 ? '${graph.account.substring(0, 12)}...' : graph.account,
-                                  style: const TextStyle(color: Colors.white),
-                                  overflow: TextOverflow.ellipsis,
-                                );
-                              }).toList();
-                            },
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedAccount = newValue!;
-                                selectedGraph = selectedClient!.graphs!
-                                    .firstWhere((graph) =>
-                                        graph.account == selectedAccount);
-                                _prepareGraphPoints();
-                              });
-                            },
-                            items: selectedClient!.graphs!
-                                .map<DropdownMenuItem<String>>((Graph graph) {
-                              return DropdownMenuItem<String>(
-                                value: graph.account,
-                                child: Text(
-                                  graph.account,
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              );
-                            }).toList(),
-                          )
-                        else
-                          const Text(
-                            'No accounts',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -364,6 +216,268 @@ class _LineChartSectionState extends State<LineChartSection> {
           ),
         ),
       );
+
+  Widget _buildUnifiedDropdownButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blueGrey, // or any color you like
+      ),
+      onPressed: () => _showBlurredDropdownModal(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(Icons.filter_list, color: Colors.white),
+          SizedBox(width: 8),
+          Text(
+            'Open Filters',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// When tapped, this function shows a modal with a blurred background.
+  /// Inside, you'll see three sections: Time Period, By Client, By Account.
+  /// There's also a floating X button at the bottom that closes the modal.
+  void _showBlurredDropdownModal(BuildContext context) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,    // Disables closing by tapping outside
+        builder: (BuildContext dialogContext) {
+        return Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    color: const Color.fromARGB(255, 93, 93, 93).withOpacity(0.6),
+                  ),
+                ),
+              ),
+              StatefulBuilder(
+                builder: (ctx, setState) => Stack(
+                  children: [
+                    // 2) Actual content
+                    Center(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 30),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildModalTitle('Time Period'),
+                              _buildTimeOptions(setState),
+                              const SizedBox(height: 30),
+                              _buildModalTitle('By Client'),
+                              _buildClientOptions(setState),
+                              const SizedBox(height: 30),
+                              _buildModalTitle('By Account'),
+                              _buildAccountOptions(setState),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+  
+                    // 3) Floating X Button at bottom center
+                    Positioned(
+                      bottom: 20,
+                      left: 0,
+                      right: 0,
+                        child: Center(
+                        child: FloatingActionButton(
+                          shape: const CircleBorder(),
+                          backgroundColor: AppColors.defaultBlueGray100,
+                          child: const Icon(
+                            Icons.close,
+                            color: Color.fromARGB(255, 65, 65, 65),
+                          ),
+                          onPressed: () => Navigator.pop(dialogContext),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+Widget _buildModalTitle(String title) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 4.0),
+    child: Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    ),
+  );
+}
+
+
+Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
+  const timeOptions = ['last-week', 'last-month', 'last-year'];
+  
+  return Column(
+    children: timeOptions.map((option) {
+      final displayText = _getTimeLabel(option); // e.g. 'Last Week' etc.
+      final isSelected = (dropdownValue == option);
+
+      return ListTile(
+        leading: Checkbox(
+          value: isSelected,
+          onChanged: (bool? value) {
+            modalSetState(() {
+              setState(() {
+                dropdownValue = option;
+                _prepareGraphPoints();
+              });
+            });
+          },
+        ),
+        title: Text(
+          displayText,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        splashColor: Colors.transparent,
+        selectedTileColor: Colors.transparent,
+        onTap: () {
+          modalSetState(() {
+            setState(() {
+              dropdownValue = option;
+              _prepareGraphPoints();
+            });
+          });
+        },
+      );
+    }).toList(),
+  );
+}
+
+Widget _buildClientOptions(void Function(void Function()) modalSetState) {
+  if (allClients.isEmpty) {
+    return const Text(
+      'No clients available',
+      style: TextStyle(color: Colors.white),
+    );
+  }
+
+  return Column(
+    children: allClients.map((clientItem) {
+      final displayName =
+          '${clientItem.firstName} ${clientItem.lastName}'.trim();
+      final isSelected = (selectedClient == clientItem);
+
+      return ListTile(
+        leading: Checkbox(
+          value: isSelected,
+          onChanged: (bool? value) {
+            modalSetState(() {
+              setState(() {
+                selectedClient = clientItem;
+                // ...existing code...
+                _prepareGraphPoints();
+              });
+            });
+          },
+        ),
+        title: Text(
+          displayName,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        splashColor: Colors.transparent,
+        selectedTileColor: Colors.transparent,
+        onTap: () {
+          modalSetState(() {
+            setState(() {
+              selectedClient = clientItem;
+              // ...existing code...
+              _prepareGraphPoints();
+            });
+          });
+        },
+      );
+    }).toList(),
+  );
+}
+
+Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
+  if (selectedClient == null || selectedClient!.graphs == null || selectedClient!.graphs!.isEmpty) {
+    return const Text(
+      'No accounts',
+      style: TextStyle(color: Colors.white),
+    );
+  }
+
+  final graphs = selectedClient!.graphs!;
+  return Column(
+    children: graphs.map((graph) {
+      final isSelected = (selectedAccount == graph.account);
+
+      return ListTile(
+        leading: Checkbox(
+          value: isSelected,
+          onChanged: (bool? value) {
+            modalSetState(() {
+              setState(() {
+                selectedAccount = graph.account;
+                selectedGraph = graph;
+                _prepareGraphPoints();
+              });
+            });
+          },
+        ),
+        title: Text(
+          graph.account,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        splashColor: Colors.transparent,
+        selectedTileColor: Colors.transparent,
+        onTap: () {
+          modalSetState(() {
+            setState(() {
+              selectedAccount = graph.account;
+              selectedGraph = graph;
+              _prepareGraphPoints();
+            });
+          });
+        },
+      );
+    }).toList(),
+  );
+}
+
+
+String _getTimeLabel(String value) {
+  switch (value) {
+    case 'last-week':
+      return 'Last Week';
+    case 'last-month':
+      return 'Last Month';
+    case 'last-year':
+      return 'Last Year';
+    default:
+      return value;
+  }
+}
+
 
   /// Builds the grid data for the line chart.
   ///
