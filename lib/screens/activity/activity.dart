@@ -14,7 +14,6 @@ import 'package:team_shaikh_app/screens/activity/components/activity_list_item.d
 import 'package:team_shaikh_app/screens/activity/components/filter_modal.dart';
 import 'package:team_shaikh_app/screens/activity/components/no_activities_body.dart';
 import 'package:team_shaikh_app/screens/activity/components/sort_modal.dart';
-import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
 import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
@@ -175,8 +174,8 @@ class _ActivityPageState extends State<ActivityPage> {
 
   /// Builds a horizontal scrollable row of buttons for each parent name.
   Widget _buildParentNameButtons() {
-    if (allClients.isEmpty) {
-      return const SizedBox();
+    if (allClients.length == 1) {
+      return const SliverToBoxAdapter(child: SizedBox(height: 0));
     }
 
     return SliverToBoxAdapter(
