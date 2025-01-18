@@ -218,26 +218,37 @@ class _LineChartSectionState extends State<LineChartSection> {
       );
 
   Widget _buildUnifiedDropdownButton() {
+    // Pick a base blue color for icon/text:
+    const baseBlue = Color.fromARGB(255, 0, 121, 220);
+
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromARGB(255, 17, 24, 39), // or any color you like
+        // Make the background a semi‑transparent blue
+        backgroundColor: baseBlue.withOpacity(0.15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: Colors.white), // Set border color to white
+          side: BorderSide.none,
         ),
+        elevation: 0, // Keep it flat if you like
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       ),
       onPressed: () => _showBlurredDropdownModal(context),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.filter_list, color: Colors.white),
+        children: [
+          SvgPicture.asset(
+            'assets/icons/filter.svg',
+            colorFilter: const ColorFilter.mode(baseBlue, BlendMode.srcIn),
+            height: 18,
+            width: 18,
+          ),
           SizedBox(width: 8),
           Text(
-            'Open Filters',
+            'Filters',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-
+              fontWeight: FontWeight.bold,
+              color: baseBlue,
+              fontSize: 14,
             ),
           ),
         ],
@@ -277,14 +288,15 @@ class _LineChartSectionState extends State<LineChartSection> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildModalTitle('Time Period'),
-                              _buildTimeOptions(setState),
-                              const SizedBox(height: 30),
-                              _buildModalTitle('By Client'),
+
+                              _buildModalTitle('Client'),
                               _buildClientOptions(setState),
                               const SizedBox(height: 30),
-                              _buildModalTitle('By Account'),
+                              _buildModalTitle('Account'),
                               _buildAccountOptions(setState),
+                              const SizedBox(height: 30),
+                              _buildModalTitle('Time Period'),
+                              _buildTimeOptions(setState),
                             ],
                           ),
                         ),
@@ -349,25 +361,25 @@ Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
                 color: AppColors.defaultBlue500,
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
                   Text(
                     displayText, 
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.check_rounded, color: Colors.white),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.check_rounded, color: Colors.white),
                 ],
               ),
             )
           : Text(
               displayText, // or displayName, graph.account based on the method
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
         splashColor: Colors.transparent,
         selectedTileColor: Colors.transparent,
@@ -408,25 +420,25 @@ Widget _buildClientOptions(void Function(void Function()) modalSetState) {
                 color: AppColors.defaultBlue500,
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
                   Text(
                     displayName.length > 20 ? _getInitials(displayName) : displayName,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.check_rounded, color: Colors.white),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.check_rounded, color: Colors.white),
                 ],
               ),
             )
           : Text(
               displayName, 
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
         splashColor: Colors.transparent,
         selectedTileColor: Colors.transparent,
@@ -465,25 +477,25 @@ Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
                 color: AppColors.defaultBlue500,
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
                   Text(
                     graph.account.length > 20 ? _getInitials(graph.account) : graph.account,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.check_rounded, color: Colors.white),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.check_rounded, color: Colors.white),
                 ],
               ),
             )
           : Text(
               graph.account, 
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
         splashColor: Colors.transparent,
         selectedTileColor: Colors.transparent,
