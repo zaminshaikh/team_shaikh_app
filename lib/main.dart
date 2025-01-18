@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:developer';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Firebase packages
 import 'package:firebase_core/firebase_core.dart';
@@ -277,45 +278,59 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.userChanges(),
-      builder: (context, authSnapshot) {
-        final user = authSnapshot.data;
-        return StreamProvider<Client?>(
-          key: ValueKey(user?.uid),
-          create: (_) => getClientStream(),
-          catchError: (context, error) {
-            log('main.dart: Error in fetching client stream: $error');
-            return null;
-          },
-          initialData: null,
-          child: MaterialApp(
-            navigatorKey: navigatorKey,
-            builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                boldText: false,
-                textScaler: const TextScaler.linear(1),
+  Widget build(BuildContext context) {
+    return StreamBuilder<ConnectivityResult>(
+      stream: Connectivity().onConnectivityChanged.map((result) => result.first),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.active &&
+            snapshot.data == ConnectivityResult.none) {
+          return const NoInternetScreen();
+        }
+  
+        return StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.userChanges(),
+          builder: (context, authSnapshot) {
+            final user = authSnapshot.data;
+            return StreamProvider<Client?>(
+              key: ValueKey(user?.uid),
+              create: (_) => getClientStream(),
+              catchError: (context, error) {
+                log('main.dart: Error in fetching client stream: $error');
+                return null;
+              },
+              initialData: null,
+              child: MaterialApp(
+                navigatorKey: navigatorKey,
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    boldText: false,
+                    textScaler: const TextScaler.linear(1),
+                  ),
+                  child: child!,
+                ),
+                title: 'AGQ Investments',
+                theme: _buildAppTheme(),
+                // home: const AuthCheck(),
+                routes: {
+                  '/': (context) => const AuthCheck(),
+                  '/create_account': (context) => const CreateAccountPage(),
+                  '/login': (context) => const LoginPage(),
+                  '/forgot_password': (context) => const ForgotPasswordPage(),
+                  '/dashboard': (context) => const DashboardPage(),
+                  '/analytics': (context) => const AnalyticsPage(),
+                  '/activity': (context) => const ActivityPage(),
+                  '/profile': (context) => const ProfilePage(),
+                  '/notification': (context) => const NotificationPage(),
+                  '/onboarding': (context) => const OnboardingPage(),
+                },
               ),
-              child: child!,
-            ),
-            title: 'AGQ Investments',
-            theme: _buildAppTheme(),
-            // home: const AuthCheck(),
-            routes: {
-              '/': (context) => const AuthCheck(),
-              '/create_account': (context) => const CreateAccountPage(),
-              '/login': (context) => const LoginPage(),
-              '/forgot_password': (context) => const ForgotPasswordPage(),
-              '/dashboard': (context) => const DashboardPage(),
-              '/analytics': (context) => const AnalyticsPage(),
-              '/activity': (context) => const ActivityPage(),
-              '/profile': (context) => const ProfilePage(),
-              '/notification': (context) => const NotificationPage(),
-              '/onboarding': (context) => const OnboardingPage(),
-            },
-          ),
+            );
+          },
         );
-      });
+      },
+    );
+  }
+
 
   /// Build the application theme
   ThemeData _buildAppTheme() => ThemeData(
@@ -487,4 +502,33 @@ class _AuthCheckState extends State<AuthCheck> {
         }
       },
     );
+}
+
+class NoInternetScreen extends StatelessWidget {
+  const NoInternetScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 17, 24, 39),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off, size: 80, color: Colors.white),
+            const SizedBox(height: 20),
+            const Text(
+              'No Internet Connection',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Please connect to Wi-Fi first',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
