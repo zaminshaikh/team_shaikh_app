@@ -42,24 +42,34 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       // Making a list of child widgets in the Column
           children: <Widget>[
       
-          // Logo and branding
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.defaultBlue500, // Start color
-                  Color.fromARGB(255, 17, 24, 39), // End color
-                ],
+            // Logo and branding
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF0D5EAF), // Start color
+                    Color.fromARGB(255, 17, 24, 39), // End color
+                  ],
+                ),
               ),
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    const SizedBox(height: 60.0),
-                    Padding(
+              child: Stack(
+                children: [
+                  // PNG gradient overlay
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.3, // Adjust the opacity as needed
+                      child: Image.asset(
+                        'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      const SizedBox(height: 60.0),
+                      Padding(
                         padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
                         child: Align(
                           alignment: const Alignment(-1.0, -1.0),
@@ -68,37 +78,59 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             height: 50,
                           ),
                         ),
-                    ),
-                    const SizedBox(height: 30.0),
+                      ),
+                      const SizedBox(height: 40.0),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+
+            // Additional container with another gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.fromARGB(255, 20, 33, 57), // End color
+                    Color.fromARGB(255, 17, 24, 39), // End color
                   ],
                 ),
-              ],
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                          const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              fontSize: 26,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                      const SizedBox(height: 20.0),
+                      Row(
+                        children: [
+                          Text(''),
+                          Spacer(),
+                          Text('')
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
       
       // Text widget to display 'Forgot Password?'
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const Column(
-                    children: [
-                  
-                      Text(
-                        'Forgot Password?',
-                            // TextStyle to define text appearance
-                        style: TextStyle(
-                          fontSize: 26, 
-                          color: Colors.white, 
-                          fontWeight: FontWeight.bold, 
-                          fontFamily: 'Titillium Web'
-                        ),
-                      ),
-                    ],
-                  ),
-            
-      // Adding some space here
-            const SizedBox(height: 25.0),
       
       // Text widget to display instructions for the user
             const Text(

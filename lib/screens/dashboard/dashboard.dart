@@ -207,7 +207,7 @@ class _DashboardPageState extends State<DashboardPage>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: Text(
-            '3 Recent Transactions',
+            'Recent Transactions',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
