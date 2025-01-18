@@ -108,7 +108,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     print('User folder: $userFolder');
   
     // List all files in the user's document folder
-    final ListResult result = await storage.ref('${Config.get('DOCUMENTS_PATH')}/$userFolder').listAll();
+    final ListResult result = await storage.ref('${Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')}/$userFolder').listAll();
     print('Files listed in user folder.');
   
     // Filter the list to include only PDF files
@@ -138,7 +138,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     for (String folder in client!.connectedUsers!.whereType<Client>().map((client) => client.cid)) {
       print('Listing files in connected user folder: $folder');
       // List all files in the connected user's document folder
-      final ListResult result = await storage.ref('${Config.get('DOCUMENTS_PATH')}/$folder').listAll();
+      final ListResult result = await storage.ref('${Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')}/$folder').listAll();
       print('Files listed in connected user folder.');
   
       // Filter the list to include only PDF files
