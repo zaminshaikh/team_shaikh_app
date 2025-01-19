@@ -32,6 +32,8 @@ class Activity {
   /// Indicates if a notification should be sent for this activity.
   final bool? sendNotif;
 
+  final String? parentName;
+
   /// Creates an [Activity] instance with the given parameters.
   ///
   /// The [amount], [fund], [recipient], [time], and [type] parameters are required.
@@ -43,6 +45,7 @@ class Activity {
     required this.recipient,
     required this.time,
     required this.type,
+    this.parentName,
     this.isDividend,
     this.sendNotif,
   });
@@ -60,6 +63,7 @@ class Activity {
         type: data['type'],
         isDividend: data['isDividend'],
         sendNotif: data['sendNotif'],
+        parentName: data['parentName'],
       );
 
   /// Converts the [Activity] instance into a [Map] representation.
@@ -75,5 +79,6 @@ class Activity {
         'type': type,
         'isDividend': isDividend,
         'sendNotif': sendNotif,
+        'parentName': parentName,
       };
 }

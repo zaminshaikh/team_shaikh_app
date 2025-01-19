@@ -1,5 +1,3 @@
-// activity_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -16,14 +14,13 @@ import 'package:team_shaikh_app/screens/activity/components/activity_list_item.d
 import 'package:team_shaikh_app/screens/activity/components/filter_modal.dart';
 import 'package:team_shaikh_app/screens/activity/components/no_activities_body.dart';
 import 'package:team_shaikh_app/screens/activity/components/sort_modal.dart';
-import 'package:team_shaikh_app/screens/activity/utils/activity_styles.dart';
 import 'package:team_shaikh_app/screens/activity/utils/filter_activities.dart';
 import 'package:team_shaikh_app/screens/activity/utils/sort_activities.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 import 'dart:developer';
 
 class ActivityPage extends StatefulWidget {
-  const ActivityPage({Key? key}) : super(key: key);
+  const ActivityPage({super.key});
 
   @override
   _ActivityPageState createState() => _ActivityPageState();
@@ -33,14 +30,18 @@ class _ActivityPageState extends State<ActivityPage> {
   Client? client;
   List<Activity> activities = [];
   List<String> allRecipients = [];
+  List<String> allClients = [];
+
+  bool _allSelected = true;
 
   // Initialize filters and sort order
   SortOrder _order = SortOrder.newToOld;
   List<String> _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
   List<String> _recipientsFilter = [];
+  List<String> _clientsFilter = [];
   DateTimeRange selectedDates = DateTimeRange(
     start: DateTime(1900),
-    end: DateTime.now().add(Duration(days: 30)),
+    end: DateTime.now().add(const Duration(days: 30)),
   );
 
   // Date formatter for day headers
@@ -50,6 +51,7 @@ class _ActivityPageState extends State<ActivityPage> {
   void initState() {
     super.initState();
     _validateAuth();
+    _clientsFilter = [];
 
     // Initialize recipients filter after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -77,14 +79,15 @@ class _ActivityPageState extends State<ActivityPage> {
   @override
   Widget build(BuildContext context) {
     if (client == null) {
-      return CustomProgressIndicatorPage();
+      return const CustomProgressIndicatorPage();
     }
 
     // Retrieve activities and recipients
     _retrieveActivitiesAndRecipients();
 
     // Filter and sort activities
-    filterActivities(activities, _typeFilter, _recipientsFilter, selectedDates);
+    filterActivities(activities, _typeFilter, _recipientsFilter, _clientsFilter,
+        selectedDates);
     sortActivities(activities, _order);
 
     return Scaffold(
@@ -92,14 +95,20 @@ class _ActivityPageState extends State<ActivityPage> {
         children: [
           CustomScrollView(
             slivers: <Widget>[
-              ActivityAppBar(client: client!),
-              SliverPadding(
-                padding: const EdgeInsets.only(top: 20.0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _buildListContent(context, index),
-                    childCount: activities.isEmpty ? 3 : activities.length + 2,
-                  ),
+              // Pass the callbacks for Filter & Sort to the AppBar
+              ActivityAppBar(
+                client: client!,
+                onFilterPressed: () => _showFilterModal(context),
+                onSortPressed: () => _showSortModal(context),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 10)),
+              _buildParentNameButtons(),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _buildListContent(context, index),
+                  // Notice we no longer build the filter/sort row in the list:
+                  // the childCount changes accordingly
+                  childCount: activities.isEmpty ? 2 : activities.length + 1,
                 ),
               ),
               const SliverToBoxAdapter(
@@ -118,6 +127,7 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
+  
 
   /// Retrieves activities and recipients from the client and connected users.
   void _retrieveActivitiesAndRecipients() {
@@ -134,102 +144,176 @@ class _ActivityPageState extends State<ActivityPage> {
       activities.addAll(connectedUserActivities);
       allRecipients.addAll(connectedUserRecipients);
     }
+    allClients = activities
+        // map each activity to its parentName (some could be null or empty)
+        .map((activity) => activity.parentName ?? '')
+        // filter out empty parent names
+        .where((parentName) => parentName.isNotEmpty)
+        // convert to a set to get only unique values
+        .toSet()
+        // convert back to a list
+        .toList();
+
   }
 
   /// Builds the content of the list based on the index.
   Widget? _buildListContent(BuildContext context, int index) {
-    if (index == 0) {
-      return _buildFilterAndSort();
-    } else if (index == 1) {
-      return _buildSelectedOptionsDisplay();
-    } else if (activities.isEmpty && index == 2) {
+    // We removed the index == 0 filter/sort row check 
+    // because it is now in the AppBar
+    if (activities.isEmpty && index == 0) {
       return buildNoActivityMessage();
     } else {
-      int activityIndex = index - 2;
-      if (activityIndex < activities.length) {
-        final activity = activities[activityIndex];
-        return _buildActivityWithDayHeader(activity, activityIndex);
-      } else {
+      int activityIndex = activities.isEmpty ? index - 1 : index;
+      if (activityIndex < 0 || activityIndex >= activities.length) {
         return null;
       }
+      final activity = activities[activityIndex];
+      return _buildActivityWithDayHeader(activity, activityIndex);
     }
   }
 
-  /// Builds the filter and sort buttons.
-  Widget _buildFilterAndSort() => Padding(
-      padding: const EdgeInsets.fromLTRB(20.0, 10, 20, 10),
-      child: Row(
-        children: [
-          _buildFilterButton(),
-          const SizedBox(width: 10),
-          _buildSortButton(),
-        ],
-      ),
-    );
+  /// Builds a horizontal scrollable row of buttons for each parent name.
+  Widget _buildParentNameButtons() {
+    if (allClients.length == 1) {
+      return const SliverToBoxAdapter(child: SizedBox(height: 0));
+    }
 
-  /// Builds the filter button.
-  Widget _buildFilterButton() => Expanded(
-      child: ElevatedButton.icon(
-        icon: SvgPicture.asset(
-          'assets/icons/filter.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.defaultGray200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          elevation: 0,
-        ),
-        label: const Text(
-          'Filter',
-          style: TextStyle(
-            color: AppColors.defaultGray200,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        onPressed: () {
-          _showFilterModal(context);
-        },
-      ),
-    );
+    return SliverToBoxAdapter(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            const SizedBox(width: 20),
+            // "All" Button
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ElevatedButton.icon(
+                icon: SvgPicture.asset(
+                  'assets/icons/group_people.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                  height: 18,
+                  width: 18,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _allSelected
+                      ? AppColors.defaultBlue500
+                      : const Color.fromARGB(255, 17, 24, 39),
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: AppColors.defaultBlueGray100,
+                      width: _allSelected ? 0 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                ),
+                label: const Text(
+                  'All',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontFamily: 'Titillium Web',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _allSelected = true;
+                    _clientsFilter.clear();
+                  });
+                },
+              ),
+            ),
 
-  /// Builds the sort button.
-  Widget _buildSortButton() => Expanded(
-      child: ElevatedButton.icon(
-        icon: SvgPicture.asset(
-          'assets/icons/sort.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
+            // Individual Parent Buttons
+            ...allClients.map((parentName) {
+              bool isSelected = _clientsFilter.contains(parentName);
+
+              final rowChildren = <Widget>[
+                SvgPicture.asset(
+                  'assets/icons/single_person.svg',
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                  height: 18,
+                  width: 18,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  parentName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                if (isSelected) ...[
+                  const SizedBox(width: 15),
+                  SvgPicture.asset(
+                    'assets/icons/x_icon.svg',
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                    height: 28,
+                    width: 28,
+                  ),
+                ],
+              ];
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected
+                        ? AppColors.defaultBlue500
+                        : const Color.fromARGB(255, 17, 24, 39),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.defaultBlue500
+                            : AppColors.defaultBlueGray100,
+                        width: isSelected ? 0 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (isSelected) {
+                        _clientsFilter.remove(parentName);
+                        if (_clientsFilter.isEmpty) {
+                          _allSelected = true;
+                        }
+                      } else {
+                        _clientsFilter.add(parentName);
+                        if (_clientsFilter.length == allClients.length) {
+                          _allSelected = true;
+                          _clientsFilter.clear();
+                        } else {
+                          _allSelected = false;
+                        }
+                      }
+                    });
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: rowChildren,
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.defaultGray200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          elevation: 0,
-        ),
-        label: const Text(
-          'Sort',
-          style: TextStyle(
-            color: AppColors.defaultGray200,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        onPressed: () {
-          _showSortModal(context);
-        },
       ),
     );
+  }
+
+
 
   /// Builds an activity item with a day header if necessary.
   Widget _buildActivityWithDayHeader(Activity activity, int index) {
@@ -275,21 +359,21 @@ class _ActivityPageState extends State<ActivityPage> {
 
   /// Builds an individual activity item.
   Widget _buildActivity(Activity activity, bool showDivider) => Column(
-      children: [
-        ActivityListItem(
-          activity: activity,
-          onTap: () => _showActivityDetailsModal(context, activity),
-        ),
-        if (showDivider)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-            child: Divider(
-              color: Color.fromARGB(255, 132, 132, 132),
-              thickness: 0.2,
-            ),
-          )
-      ],
-    );
+        children: [
+          ActivityListItem(
+            activity: activity,
+            onTap: () => _showActivityDetailsModal(context, activity),
+          ),
+          if (showDivider)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+              child: Divider(
+                color: Color.fromARGB(255, 132, 132, 132),
+                thickness: 0.2,
+              ),
+            )
+        ],
+      );
 
   /// Shows the activity details modal.
   void _showActivityDetailsModal(BuildContext context, Activity activity) {
@@ -302,6 +386,7 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
+  
   /// Shows the filter modal.
   void _showFilterModal(BuildContext context) {
     showModalBottomSheet(
@@ -314,15 +399,33 @@ class _ActivityPageState extends State<ActivityPage> {
         typeFilter: _typeFilter,
         recipientsFilter: _recipientsFilter,
         allRecipients: allRecipients,
+        // Pass allParents if _allSelected is true to reflect all checkboxes as selected
+        clientsFilter: _allSelected ? List.from(allClients) : List.from(_clientsFilter),
+        allClients: allClients,
         selectedDates: selectedDates,
-        onApply: (typeFilter, recipientsFilter, selectedDates) {
+        onApply: (
+          List<String> typeFilter,
+          List<String> recipientsFilter,
+          List<String> parentsFilter,
+          DateTimeRange updatedDates,
+        ) {
           setState(() {
             _typeFilter = typeFilter;
             _recipientsFilter = recipientsFilter;
-            this.selectedDates = selectedDates;
-            filterActivities(
-                activities, _typeFilter, _recipientsFilter, selectedDates);
+            selectedDates = updatedDates;
+
+            if (parentsFilter.length == allClients.length) {
+              _allSelected = true;
+              _clientsFilter.clear();
+            } else {
+              _clientsFilter = parentsFilter;
+              _allSelected = _clientsFilter.isEmpty;
+            }
           });
+          
+          // Re-apply filtering as needed
+          filterActivities(activities, _typeFilter, _recipientsFilter,
+              _clientsFilter, selectedDates);
         },
       ),
     );
@@ -345,140 +448,4 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
     );
   }
-
-  /// Builds the display of selected filters and sort options.
-  Widget _buildSelectedOptionsDisplay() {
-    String dateButtonText =
-        getDateButtonText(selectedDates.start, selectedDates.end);
-    String typeButtonText = getTypeButtonText(_typeFilter);
-    String recipientsButtonText =
-        getRecipientsButtonText(_recipientsFilter, allRecipients);
-    List<String> buttons = [
-      dateButtonText,
-      typeButtonText,
-      recipientsButtonText
-    ];
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: Column(
-            children: [
-              _buildSortDisplay(),
-              _buildFilterDisplay(buttons),
-            ],
-          ),
-        ),
-        const Divider(
-          color: Color.fromARGB(255, 126, 123, 123),
-          thickness: 0.5,
-        ),
-      ],
-    );
-  }
-
-  /// Builds the sort display with the current sort option.
-  Widget _buildSortDisplay() => Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: GestureDetector(
-        onTap: () {
-          _showSortModal(context);
-        },
-        child: Container(
-          color: Colors.transparent,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                const Text(
-                  'Sort: ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Titillium Web',
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        getSortOrderText(_order),
-                        style: const TextStyle(
-                          color: AppColors.defaultBlue300,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      SvgPicture.asset(
-                        'assets/icons/sort.svg',
-                        colorFilter: const ColorFilter.mode(
-                            AppColors.defaultBlue300, BlendMode.srcIn),
-                        height: 18,
-                        width: 18,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-  /// Builds the filter display showing the selected filters.
-  Widget _buildFilterDisplay(List<String> buttonTexts) => Row(
-      children: [
-        const Text(
-          'Filters: ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children:
-                  buttonTexts.map((text) => _buildFilterChip(text)).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-
-  /// Builds an individual filter chip.
-  Widget _buildFilterChip(String label) => Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.defaultBlueGray700,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.defaultBlueGray100,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ),
-    );
 }
