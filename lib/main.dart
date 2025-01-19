@@ -15,6 +15,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Third-party packages
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:team_shaikh_app/components/no-connection.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 
 // Local packages
@@ -278,13 +279,14 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<ConnectivityResult>(
+  Widget build(BuildContext context) => StreamBuilder<ConnectivityResult>(
       stream: Connectivity().onConnectivityChanged.map((result) => result.first),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active &&
             snapshot.data == ConnectivityResult.none) {
-          return const NoInternetScreen();
+          return MaterialApp(
+            home: const NoInternetScreen(),
+          );
         }
   
         return StreamBuilder<User?>(
@@ -329,7 +331,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         );
       },
     );
-  }
 
 
   /// Build the application theme
@@ -504,31 +505,3 @@ class _AuthCheckState extends State<AuthCheck> {
     );
 }
 
-class NoInternetScreen extends StatelessWidget {
-  const NoInternetScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 17, 24, 39),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.wifi_off, size: 80, color: Colors.white),
-            const SizedBox(height: 20),
-            const Text(
-              'No Internet Connection',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Please connect to Wi-Fi first',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
