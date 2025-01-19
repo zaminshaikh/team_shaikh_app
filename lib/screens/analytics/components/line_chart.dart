@@ -345,11 +345,18 @@ Widget _buildModalTitle(String title) {
 
 
 Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
-  const timeOptions = ['last-week', 'last-month', 'last-year'];
-  
+  // Added 'year-to-date' and 'last-2-years'
+  const timeOptions = [
+    'last-week',
+    'last-month',
+    'last-year',
+    'year-to-date',
+    'last-2-years'
+  ];
+
   return Column(
     children: timeOptions.map((option) {
-      final displayText = _getTimeLabel(option); // e.g. 'Last Week' etc.
+      final displayText = _getTimeLabel(option); // e.g. 'Last Week', 'Year to Date', etc.
       final isSelected = (dropdownValue == option);
 
       return ListTile(
@@ -363,7 +370,7 @@ Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
               child: Row(
                 children: [
                   Text(
-                    displayText, 
+                    displayText,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -376,7 +383,7 @@ Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
               ),
             )
           : Text(
-              displayText, // or displayName, graph.account based on the method
+              displayText,
               style: const TextStyle(color: Colors.white),
             ),
         splashColor: Colors.transparent,
@@ -392,11 +399,21 @@ Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
           });
         },
       );
-      
     }).toList(),
   );
 }
 
+// You’ll also need to update your _getTimeLabel method to include label strings for the new filters, for example:
+String _getTimeLabel(String option) {
+  switch (option) {
+    case 'last-week': return 'Last Week';
+    case 'last-month': return 'Last Month';
+    case 'last-year': return 'Last Year';
+    case 'year-to-date': return 'Year to Date';
+    case 'last-2-years': return 'Last 2 Years';
+    default: return 'Unknown';
+  }
+}
 
 // Called when the user taps a client in the client list
 Widget _buildClientOptions(void Function(void Function()) modalSetState) {
@@ -552,19 +569,6 @@ String _getInitials(String name) {
   return '$firstName $lastInitial';
 }
 
-
-String _getTimeLabel(String value) {
-  switch (value) {
-    case 'last-week':
-      return 'Last Week';
-    case 'last-month':
-      return 'Last Month';
-    case 'last-year':
-      return 'Last Year';
-    default:
-      return value;
-  }
-}
 
   /// Builds the grid data for the line chart.
   ///
@@ -726,65 +730,48 @@ String _getTimeLabel(String value) {
   Widget bottomTitlesWidget(double value, TitleMeta meta) {
     DateTime dateTime = calculateDateTimeFromXValue(value, dropdownValue);
     String text = '';
-
+  
     if (dropdownValue == 'last-year') {
       if (value == 0) {
-        text = DateFormat('MMM yyyy').format(dateTime); // Start date
+        text = DateFormat('MMM yyyy').format(dateTime);
       } else if (value == maxX(dropdownValue) / 2) {
-        text = DateFormat('MMM yyyy').format(calculateDateTimeFromXValue(
-            maxX(dropdownValue) / 2, dropdownValue)); // Middle date
+        text = DateFormat('MMM yyyy')
+            .format(calculateDateTimeFromXValue(maxX(dropdownValue) / 2, dropdownValue));
       } else if (value == maxX(dropdownValue)) {
-        text = DateFormat('MMM yyyy').format(calculateDateTimeFromXValue(
-            maxX(dropdownValue), dropdownValue)); // End date
+        text = DateFormat('MMM yyyy')
+            .format(calculateDateTimeFromXValue(maxX(dropdownValue), dropdownValue));
+      }
+    } else if (dropdownValue == 'year-to-date') {
+      if (value == 0) {
+        text = DateFormat('MMM dd').format(dateTime);
+      } else if (value == maxX(dropdownValue)) {
+        text = DateFormat('MMM dd').format(calculateDateTimeFromXValue(maxX(dropdownValue), dropdownValue));
+      }
+    } else if (dropdownValue == 'last-2-years') {
+      if (value == 0) {
+        text = DateFormat('MMM yyyy').format(dateTime);
+      } else if (value == maxX(dropdownValue) / 2) {
+        text = DateFormat('MMM yyyy')
+            .format(calculateDateTimeFromXValue(maxX(dropdownValue) / 2, dropdownValue));
+      } else if (value == maxX(dropdownValue)) {
+        text = DateFormat('MMM yyyy')
+            .format(calculateDateTimeFromXValue(maxX(dropdownValue), dropdownValue));
       }
     } else {
-      // Handle other cases similarly
+      // Default weekly/daily
       text = DateFormat('MMM dd').format(dateTime);
     }
-
+  
     if (text.isEmpty) return const SizedBox();
-
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 3,
       child: Text(
         text,
-        style: const TextStyle(
-            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
-
-  /// Builds the footer for the line chart section, including the legend and alert icon.
-  ///
-  /// This method creates a row containing a colored indicator, a description, and an alert icon.
-  Widget _buildChartFooter() => Padding(
-        padding: const EdgeInsets.only(left: 10.0, right: 30.0),
-        child: Row(
-          children: [
-            // Colored indicator for the line chart
-            Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue300,
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-            const SizedBox(width: 20),
-            // Description text
-            const Text(
-              'Total assets timeline',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Titillium Web',
-              ),
-            ),
-          ],
-        ),
-      );
 
   /// Builds the date range text displayed below the chart.
   ///
@@ -796,19 +783,38 @@ String _getTimeLabel(String value) {
   
     switch (dropdownValue) {
       case 'last-week':
-        DateTime startOfWeek = now.subtract(Duration(days: now.weekday));
-        DateTime endOfWeek = startOfWeek.add(Duration(days: 6));
-        displayText = '${dateFormat.format(startOfWeek)} - ${dateFormat.format(endOfWeek)}';
+        {
+          DateTime startOfWeek = now.subtract(Duration(days: now.weekday));
+          DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
+          displayText = '${dateFormat.format(startOfWeek)} - ${dateFormat.format(endOfWeek)}';
+        }
         break;
       case 'last-month':
-        DateTime startOfLast30Days = now.subtract(Duration(days: 29));
-        DateTime endOfLast30Days = now;
-        displayText = '${dateFormat.format(startOfLast30Days)} - ${dateFormat.format(endOfLast30Days)}';
+        {
+          DateTime startOfLast30Days = now.subtract(const Duration(days: 29));
+          DateTime endOfLast30Days = now;
+          displayText = '${dateFormat.format(startOfLast30Days)} - ${dateFormat.format(endOfLast30Days)}';
+        }
         break;
       case 'last-year':
-        DateTime startOfYear = DateTime(now.year - 1, 1, 1);
-        DateTime endOfYear = DateTime(now.year, 1, 1);
-        displayText = '${dateFormat.format(startOfYear)} - ${dateFormat.format(endOfYear)}';
+        {
+          DateTime startOfLastYear = DateTime(now.year - 1, 1, 1);
+          DateTime endOfLastYear = DateTime(now.year, 1, 1);
+          displayText = '${dateFormat.format(startOfLastYear)} - ${dateFormat.format(endOfLastYear)}';
+        }
+        break;
+      case 'year-to-date':
+        {
+          DateTime startOfThisYear = DateTime(now.year, 1, 1);
+          displayText = '${dateFormat.format(startOfThisYear)} - ${dateFormat.format(now)}';
+        }
+        break;
+      case 'last-2-years':
+        {
+          DateTime startOfTwoYearsAgo = DateTime(now.year - 2, 1, 1);
+          DateTime endOfTwoYearsAgo = DateTime(now.year, 1, 1);
+          displayText = '${dateFormat.format(startOfTwoYearsAgo)} - ${dateFormat.format(endOfTwoYearsAgo)}';
+        }
         break;
       default:
         displayText = 'Unknown';
@@ -865,8 +871,6 @@ String _getTimeLabel(String value) {
       ),
     );
   }
-
-
 
 }
 
