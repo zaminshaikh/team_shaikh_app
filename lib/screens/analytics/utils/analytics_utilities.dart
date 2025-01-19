@@ -28,8 +28,16 @@ double calculateXValue(DateTime dateTime, String dropdownValue) {
       totalPeriod = 180;
       break;
     case 'last-year':
+      startDate = DateTime(now.year - 1, now.month, now.day);
+      totalPeriod = now.difference(startDate).inDays.toDouble();
+      break;
+    case 'year-to-date':
       startDate = DateTime(now.year, 1, 1);
-      totalPeriod = 365;
+      totalPeriod = now.difference(startDate).inDays.toDouble();
+      break;
+    case 'last-2-years':
+      startDate = DateTime(now.year - 2, now.month, now.day);
+      totalPeriod = now.difference(startDate).inDays.toDouble();
       break;
     default:
       return -1.0;  // Return -1.0 if the range is not recognized.
@@ -74,8 +82,16 @@ DateTime calculateDateTimeFromXValue(double xValue, String dropdownValue) {
       endDate = now;
       break;
     case 'last-year':
+      startDate = DateTime(now.year - 1, now.month, now.day);
+      endDate = now;
+      break;
+    case 'year-to-date':
       startDate = DateTime(now.year, 1, 1);
-      endDate = DateTime(now.year, 12, 31);
+      endDate = now;
+      break;
+    case 'last-2-years':
+      startDate = DateTime(now.year - 2, now.month, now.day);
+      endDate = now;
       break;
     default:
       return DateTime.now();
@@ -140,9 +156,7 @@ String abbreviateNumber(double value) {
 ///   - The adjusted maximum Y value for the chart.
 double calculateMaxY(double value) {
   double increment = 1.0;
-  if (value >= 100000000) {
-    increment = 10000000;
-  } else if (value >= 10000000) {
+  if (value >= 10000000) {
     increment = 1000000;
   } else if (value >= 1000000) {
     increment = 100000;
@@ -155,6 +169,7 @@ double calculateMaxY(double value) {
   } else if (value >= 500) {
     increment = 50;
   }
+
   return ((value / increment).ceil() * increment).toDouble();
 }
 

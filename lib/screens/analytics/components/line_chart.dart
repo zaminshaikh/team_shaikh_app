@@ -79,8 +79,8 @@ class _LineChartSectionState extends State<LineChartSection> {
         double xValue = calculateXValue(dateTime, dropdownValue);
         if (xValue >= 0) {
           spots.add(FlSpot(xValue, amount));
-          if ((amount * 2) > maxAmount) {
-            maxAmount = amount * 2;
+          if ((amount * 1.2) > maxAmount) {
+            maxAmount = amount * 1.2;
           }
         }
       }
@@ -261,8 +261,7 @@ class _LineChartSectionState extends State<LineChartSection> {
       showDialog(
         context: context,
         barrierDismissible: false,    // Disables closing by tapping outside
-        builder: (BuildContext dialogContext) {
-        return Material(
+        builder: (BuildContext dialogContext) => Material(
           color: Colors.transparent,
           child: Stack(
             children: [
@@ -323,14 +322,12 @@ class _LineChartSectionState extends State<LineChartSection> {
               ),
             ],
           ),
-        );
-      },
+        ),
     );
   }
 
 
-Widget _buildModalTitle(String title) {
-  return Padding(
+Widget _buildModalTitle(String title) => Padding(
     padding: const EdgeInsets.only(bottom: 4.0),
     child: Text(
       title,
@@ -341,7 +338,6 @@ Widget _buildModalTitle(String title) {
       ),
     ),
   );
-}
 
 
 Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
@@ -545,11 +541,6 @@ Widget _buildClientAccountInfo() {
           fontWeight: FontWeight.w400,
           fontFamily: 'Titillium Web',
         ),
-      ),
-      const SizedBox(height: 15),
-      Divider(
-        color: AppColors.defaultGray200,
-        thickness: 0.4
       ),
     ],
   );
@@ -798,9 +789,8 @@ String _getInitials(String name) {
         break;
       case 'last-year':
         {
-          DateTime startOfLastYear = DateTime(now.year - 1, 1, 1);
-          DateTime endOfLastYear = DateTime(now.year, 1, 1);
-          displayText = '${dateFormat.format(startOfLastYear)} - ${dateFormat.format(endOfLastYear)}';
+          DateTime startOfLastYear = DateTime(now.year - 1, now.month, now.day);
+          displayText = '${dateFormat.format(startOfLastYear)} - ${dateFormat.format(now)}';
         }
         break;
       case 'year-to-date':
@@ -811,9 +801,8 @@ String _getInitials(String name) {
         break;
       case 'last-2-years':
         {
-          DateTime startOfTwoYearsAgo = DateTime(now.year - 2, 1, 1);
-          DateTime endOfTwoYearsAgo = DateTime(now.year, 1, 1);
-          displayText = '${dateFormat.format(startOfTwoYearsAgo)} - ${dateFormat.format(endOfTwoYearsAgo)}';
+          DateTime startOfTwoYearsAgo = DateTime(now.year - 2, now.month, now.day);
+          displayText = '${dateFormat.format(startOfTwoYearsAgo)} - ${dateFormat.format(now)}';
         }
         break;
       default:
@@ -837,7 +826,6 @@ String _getInitials(String name) {
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Titillium Web',
-                  fontStyle: FontStyle.italic,
                 ),
               ),
               // Show a message if no data is available
@@ -858,7 +846,7 @@ String _getInitials(String name) {
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w300,
                           fontFamily: 'Titillium Web',
                         ),
                       ),
