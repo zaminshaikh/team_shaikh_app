@@ -170,9 +170,9 @@ class _LineChartSectionState extends State<LineChartSection> {
                         ),
                         const Spacer(),
                         _buildUnifiedDropdownButton(),
-                        const SizedBox(width: 10),
                       ],
                     ),
+                    _buildClientAccountInfo(),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -206,12 +206,10 @@ class _LineChartSectionState extends State<LineChartSection> {
                   ),
                 ),
               ),
-              // Footer with legend and alert icon
-              _buildChartFooter(),
-              // const SizedBox(height: 40),
-              // // Date range text
-              // _buildDateRangeText(),
-              // const SizedBox(height: 20),
+              const SizedBox(height: 20),
+              // Date range text
+              _buildDateRangeText(),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -248,7 +246,7 @@ class _LineChartSectionState extends State<LineChartSection> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: baseBlue,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
         ],
@@ -399,6 +397,8 @@ Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
   );
 }
 
+
+// Called when the user taps a client in the client list
 Widget _buildClientOptions(void Function(void Function()) modalSetState) {
   if (allClients.isEmpty) {
     return const Text(
@@ -409,8 +409,7 @@ Widget _buildClientOptions(void Function(void Function()) modalSetState) {
 
   return Column(
     children: allClients.map((clientItem) {
-      final displayName =
-          '${clientItem.firstName} ${clientItem.lastName}'.trim();
+      final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
       final isSelected = (selectedClient == clientItem);
 
       return ListTile(
@@ -440,23 +439,24 @@ Widget _buildClientOptions(void Function(void Function()) modalSetState) {
               displayName, 
               style: const TextStyle(color: Colors.white),
             ),
-        splashColor: Colors.transparent,
-        selectedTileColor: Colors.transparent,
-        hoverColor: Colors.transparent,
         onTap: () {
           modalSetState(() {
             setState(() {
-              selectedClient = clientItem;
+              selectedClient = clientItem;  // Update selected client
+              // Clear out any previously selected account or graph
+              selectedAccount = null;
+              selectedGraph = null;
+              // Refresh the chart or data points as needed
               _prepareGraphPoints();
             });
           });
         },
       );
-
     }).toList(),
   );
 }
 
+// Called when the user taps an account in the account list
 Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
   if (selectedClient == null || selectedClient!.graphs == null || selectedClient!.graphs!.isEmpty) {
     return const Text(
@@ -497,24 +497,50 @@ Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
               graph.account, 
               style: const TextStyle(color: Colors.white),
             ),
-        splashColor: Colors.transparent,
-        selectedTileColor: Colors.transparent,
-        hoverColor: Colors.transparent,
         onTap: () {
           modalSetState(() {
             setState(() {
-              selectedAccount = graph.account;
-              selectedGraph = graph;
+              selectedAccount = graph.account;  // Update selected account
+              selectedGraph = graph;            // Update selected graph
               _prepareGraphPoints();
             });
           });
         },
       );
-
-
     }).toList(),
   );
 }
+
+// Use selectedClient and selectedGraph to display the current selection
+Widget _buildClientAccountInfo() {
+  final clientName = selectedClient?.firstName ?? 'Unknown Client';
+  final accountName = selectedGraph?.account ?? 'No Account Selected';
+
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$clientName – $accountName',
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          fontFamily: 'Titillium Web',
+        ),
+      ),
+      const SizedBox(height: 15),
+      Divider(
+        color: AppColors.defaultGray200,
+        thickness: 0.4
+      ),
+    ],
+  );
+}
+
+// ...rest of your line_chart.dart file...
+
+
 
 String _getInitials(String name) {
   List<String> names = name.split(' ');
@@ -539,7 +565,6 @@ String _getTimeLabel(String value) {
       return value;
   }
 }
-
 
   /// Builds the grid data for the line chart.
   ///
@@ -757,25 +782,6 @@ String _getTimeLabel(String value) {
                 fontFamily: 'Titillium Web',
               ),
             ),
-            const Spacer(),
-            // Alert icon that shows an important note when tapped
-            // GestureDetector(
-            //   onTap: () {
-            //     CustomAlertDialog.showAlertDialog(
-            //       context,
-            //       'Important Note',
-            //       'The graph is still being developed and currently only shows your current balance. '
-            //           'It displays the asset balance for the selected time frame with markers indicating the balance at the start and end of the period.',
-            //       svgIconPath: 'assets/icons/warning.svg',
-            //       svgIconColor: AppColors.defaultYellow400,
-            //     );
-            //   },
-            //   child: SvgPicture.asset(
-            //     'assets/icons/warning.svg',
-            //     color: AppColors.defaultYellow400,
-            //     height: 25,
-            //   ),
-            // ),
           ],
         ),
       );
@@ -784,9 +790,31 @@ String _getTimeLabel(String value) {
   ///
   /// This method shows the selected date range and handles the case where no data is available.
   Widget _buildDateRangeText() {
-    // TODO: Implement logic to display the correct date range based on dropdownValue
-    String displayText = ''; // Placeholder for date range text
-
+    String displayText = '';
+    DateTime now = DateTime.now();
+    DateFormat dateFormat = DateFormat('MMM. dd, yyyy');
+  
+    switch (dropdownValue) {
+      case 'last-week':
+        DateTime startOfWeek = now.subtract(Duration(days: now.weekday));
+        DateTime endOfWeek = startOfWeek.add(Duration(days: 6));
+        displayText = '${dateFormat.format(startOfWeek)} - ${dateFormat.format(endOfWeek)}';
+        break;
+      case 'last-month':
+        DateTime startOfLast30Days = now.subtract(Duration(days: 29));
+        DateTime endOfLast30Days = now;
+        displayText = '${dateFormat.format(startOfLast30Days)} - ${dateFormat.format(endOfLast30Days)}';
+        break;
+      case 'last-year':
+        DateTime startOfYear = DateTime(now.year - 1, 1, 1);
+        DateTime endOfYear = DateTime(now.year, 1, 1);
+        displayText = '${dateFormat.format(startOfYear)} - ${dateFormat.format(endOfYear)}';
+        break;
+      default:
+        displayText = 'Unknown';
+        break;
+    }
+  
     return Container(
       color: Colors.transparent,
       child: Align(
@@ -837,4 +865,9 @@ String _getTimeLabel(String value) {
       ),
     );
   }
+
+
+
 }
+
+
