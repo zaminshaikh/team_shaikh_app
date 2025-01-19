@@ -405,7 +405,7 @@ String _getTimeLabel(String option) {
     case 'last-week': return 'Last Week';
     case 'last-month': return 'Last Month';
     case 'last-year': return 'Last Year';
-    case 'year-to-date': return 'Year to Date';
+    case 'year-to-date': return 'Year-to-Date';
     case 'last-2-years': return 'Last 2 Years';
     default: return 'Unknown';
   }

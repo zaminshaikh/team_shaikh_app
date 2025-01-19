@@ -9,14 +9,31 @@ class ActivityFilterModal extends StatefulWidget {
   final List<String> typeFilter;
   final List<String> recipientsFilter;
   final List<String> allRecipients;
+
+  // NEW: for Parent Name filter
+  final List<String> clientsFilter;
+  final List<String> allClients;
+
   final DateTimeRange selectedDates;
-  final Function(List<String>, List<String>, DateTimeRange) onApply;
+
+  // Updated: onApply now must return clientsFilter as well
+  final Function(
+    List<String> typeFilter,
+    List<String> recipientsFilter,
+    List<String> clientsFilter,
+    DateTimeRange selectedDates,
+  ) onApply;
 
   const ActivityFilterModal({
     Key? key,
     required this.typeFilter,
     required this.recipientsFilter,
     required this.allRecipients,
+
+    // NEW
+    required this.clientsFilter,
+    required this.allClients,
+
     required this.selectedDates,
     required this.onApply,
   }) : super(key: key);
@@ -28,6 +45,10 @@ class ActivityFilterModal extends StatefulWidget {
 class _ActivityFilterModalState extends State<ActivityFilterModal> {
   late List<String> _typeFilter;
   late List<String> _recipientsFilter;
+
+  // NEW
+  late List<String> _clientsFilter;
+
   late DateTimeRange _selectedDates;
 
   @override
@@ -35,66 +56,83 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
     super.initState();
     _typeFilter = List.from(widget.typeFilter);
     _recipientsFilter = List.from(widget.recipientsFilter);
+    // Initialize clientsFilter with allclients if 'All' is selected
+    _clientsFilter = widget.clientsFilter.isEmpty
+        ? List.from(widget.allClients)
+        : List.from(widget.clientsFilter);
     _selectedDates = widget.selectedDates;
   }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      child: Container(
-        color: const Color.fromRGBO(0, 0, 0, 0.001),
-        child: GestureDetector(
-          onTap: () {},
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.8,
-            minChildSize: 0.8,
-            maxChildSize: 0.8,
-            builder: (_, controller) => Container(
-              decoration: const BoxDecoration(
-                color: AppColors.defaultBlueGray800,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(25.0),
-                  topRight: Radius.circular(25.0),
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          color: const Color.fromRGBO(0, 0, 0, 0.001),
+          child: GestureDetector(
+            onTap: () {},
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              minChildSize: 0.8,
+              maxChildSize: 0.8,
+              builder: (_, controller) => Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.defaultBlueGray800,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(25.0),
+                    topRight: Radius.circular(25.0),
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 5),
-                  const Icon(Icons.remove, color: Colors.transparent),
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(25.0),
-                      child: Text(
-                        'Filter Activity',
-                        style: TextStyle(
-                            fontSize: 22.0,
-                            fontWeight: FontWeight.bold,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    const Icon(Icons.remove, color: Colors.transparent),
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(25.0),
+                        child: Text(
+                          'Filter Activity',
+                          style: TextStyle(
                             color: Colors.white,
-                            fontFamily: 'Titillium Web'),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Titillium Web',
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      controller: controller,
-                      children: [
-                        _buildTimePeriodFilter(),
-                        _buildFilter('By Type of Activity',
-                            ['profit', 'withdrawal', 'deposit'], _typeFilter),
-                        _buildFilter('By Recipients', widget.allRecipients,
-                            _recipientsFilter),
-                      ],
+                    Expanded(
+                      child: ListView(
+                        controller: controller,
+                        children: [
+                          _buildTimePeriodFilter(),
+                          _buildFilter(
+                            'Type',
+                            widget.typeFilter,
+                            _typeFilter,
+                          ),
+                          _buildFilter(
+                            'Recipients',
+                            widget.allRecipients,
+                            _recipientsFilter,
+                          ),
+                          // NEW: Parent Name Filter Section
+                          _buildFilter(
+                            'Clients',
+                            widget.allClients,
+                            _clientsFilter,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  _buildFilterApplyClearButtons(),
-                  const SizedBox(height: 40),
-                ],
+                    _buildFilterApplyClearButtons(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
   /// Builds the time period filter option.
   Widget _buildTimePeriodFilter() => ListTile(
@@ -106,18 +144,17 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
               lastDate: DateTime(3000),
               builder: (BuildContext context, Widget? child) => Theme(
                 data: Theme.of(context).copyWith(
-                  scaffoldBackgroundColor: AppColors.defaultGray500,
-                  textTheme: const TextTheme(
-                    headlineMedium: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Titillium Web',
-                      fontSize: 20,
-                    ),
-                    bodyMedium: TextStyle(
-                      color: Colors.black,
-                      fontFamily: 'Titillium Web',
-                      fontSize: 16,
-                    ),
+                  scaffoldBackgroundColor: AppColors.defaultBlueGray800,
+                  colorScheme: ColorScheme.dark().copyWith(
+                    brightness: Brightness.dark,
+                    primary: Colors.white,
+                    onPrimary: AppColors.altBlueGray800,
+                    secondary: AppColors.altBlueGray800,
+                    onSecondary: AppColors.altBlueGray800,
+                    secondaryContainer: AppColors.altBlueGray800,
+                    onSecondaryContainer: AppColors.altBlueGray800,
+                    secondaryFixed: AppColors.altBlueGray800,
+                    secondaryFixedDim: AppColors.altBlueGray800,
                   ),
                 ),
                 child: child!,
@@ -131,65 +168,106 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
           },
           child: Container(
             color: Colors.transparent,
-            child: const Text('By Time Period',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Titillium Web')),
+            child: const Text(
+              'By Time Period',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
           ),
         ),
       );
 
+
+
+
+
+
   /// Builds a filter section with checkboxes.
   Widget _buildFilter(
-      String title, List<String> items, List<String> filterList) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: ExpansionTile(
-        title: Text(title,
-            style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Titillium Web')),
-        iconColor: Colors.white,
-        collapsedIconColor: Colors.white,
-        children: items
-            .map((item) => _buildCheckbox(toTitleCase(item), item, filterList))
-            .toList(),
-      ),
-    );
-
-  /// Builds an individual checkbox for the filter.
-  Widget _buildCheckbox(
-      String title, String filterKey, List<String> filterList) {
-    bool isChecked = filterList.contains(filterKey);
-    return StatefulBuilder(
-      builder: (BuildContext context, StateSetter setState) => CheckboxListTile(
+    String title,
+    List<String> items,
+    List<String> filterList,
+  ) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
+        child: ExpansionTile(
           title: Text(
             title,
             style: const TextStyle(
-                fontSize: 16.0,
-                color: Colors.white,
-                fontFamily: 'Titillium Web'),
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Titillium Web',
+            ),
           ),
-          activeColor: AppColors.defaultBlue500,
-          value: isChecked,
-          onChanged: (bool? value) {
-            setState(() {
-              isChecked = value!;
-              if (value == true) {
-                if (filterKey == 'profit') {
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          children: items
+              .map(
+                (item) => _buildCheckbox(
+                  toTitleCase(item),
+                  item,
+                  filterList,
+                ),
+              )
+              .toList(),
+        ),
+      );
+
+  /// Builds an individual checkbox for the filter.
+  Widget _buildCheckbox(
+    String title,
+    String filterKey,
+    List<String> filterList,
+  ) {
+    bool isChecked = filterList.contains(filterKey);
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) => CheckboxListTile(
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16.0,
+            color: Colors.white,
+            fontFamily: 'Titillium Web',
+          ),
+        ),
+        activeColor: AppColors.defaultBlue500,
+        value: isChecked,
+        onChanged: (bool? value) {
+          setState(() {
+            isChecked = value ?? false;
+            if (isChecked) {
+              // Special case if filterKey is 'profit'
+              if (filterKey == 'profit') {
+                if (!filterList.contains('income')) {
                   filterList.add('income');
                 }
-                filterList.add(filterKey);
-              } else {
-                if (filterKey == 'profit') {
-                  filterList.remove('income');
-                }
-                filterList.remove(filterKey);
               }
-            });
-          },
-        ),
+              if (!filterList.contains(filterKey)) {
+                filterList.add(filterKey);
+              }
+            } else {
+              if (filterKey == 'profit') {
+                filterList.remove('income');
+              }
+              filterList.remove(filterKey);
+            }
+
+            // Update _allSelected if all clients are selected or none
+            if (widget.allClients.length == filterList.length) {
+              _allSelected = true;
+              _clientsFilter = [];
+            } else if (filterList.isEmpty) {
+              _allSelected = true;
+              _clientsFilter = List.from(widget.allClients);
+            } else {
+              _allSelected = false;
+            }
+          });
+        },
+      ),
     );
   }
 
@@ -205,16 +283,27 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.defaultBlue500,
                 ),
-                child: const Text('Apply',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web')),
+                child: const Text(
+                  'Apply',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
                 onPressed: () {
+                  // If all clients are selected, clear _clientsFilter to indicate "All" is selected
+                  if (_clientsFilter.length == widget.allClients.length) {
+                    _clientsFilter.clear();
+                  }
                   Navigator.pop(context);
                   widget.onApply(
-                      _typeFilter, _recipientsFilter, _selectedDates);
+                    _typeFilter,
+                    _recipientsFilter,
+                    _clientsFilter,  // NEW
+                    _selectedDates,
+                  );
                 },
               ),
             ),
@@ -228,29 +317,46 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Icon(Icons.close, color: Colors.white),
-                    Text('Clear',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Titillium Web')),
+                    SizedBox(width: 5),
+                    Text(
+                      'Clear',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             onTap: () {
               setState(() {
+                // Reset everything to defaults
                 _typeFilter = ['income', 'profit', 'deposit', 'withdrawal'];
                 _recipientsFilter = List.from(widget.allRecipients);
+
+                // NEW: reset the clients filter to all
+                _clientsFilter = List.from(widget.allClients);
+                _allSelected = true;
+
                 _selectedDates = DateTimeRange(
                   start: DateTime(1900),
-                  end: DateTime.now().add(Duration(days: 30)),
+                  end: DateTime.now().add(const Duration(days: 30)),
                 );
               });
               Navigator.pop(context);
-              widget.onApply(_typeFilter, _recipientsFilter, _selectedDates);
+              widget.onApply(
+                _typeFilter,
+                _recipientsFilter,
+                _clientsFilter, 
+                _selectedDates,
+              );
             },
           ),
         ],
       );
+
+  bool _allSelected = false; // Add this state variable
 }

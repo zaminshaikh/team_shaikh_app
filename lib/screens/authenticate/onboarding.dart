@@ -78,7 +78,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                     height: 80,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Column(

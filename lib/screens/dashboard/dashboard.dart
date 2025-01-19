@@ -140,7 +140,7 @@ class _DashboardPageState extends State<DashboardPage>
     if (client == null) {
       return const CustomProgressIndicatorPage();
     }
-
+  
     return Scaffold(
       body: Stack(
         children: [
@@ -157,27 +157,26 @@ class _DashboardPageState extends State<DashboardPage>
                         position: _offsetAnimation,
                         child: TotalAssetsSection(client: client!),
                       ),
-                      // const SizedBox(height: 22),
-                      // SlideTransition(
-                      //   position: _offsetAnimation, 
-                      //   child: buildRecentTransactionsSection(context),
-                      // ),
-                      // User breakdown section
                       const SizedBox(height: 32),
+                      // User breakdown section
                       SlideTransition(
                         position: _offsetAnimation,
                         child: UserBreakdownSection(client: client!),
                       ),
-
                       if (client!.connectedUsers != null &&
                           client!.connectedUsers!.isNotEmpty)
                         SlideTransition(
                           position: _offsetAnimation,
                           child: _buildConnectedUsersSection(),
                         ),
-                      // Activity tiles section
-                      const SizedBox(height: 32),
-                      // Assets structure section
+                      const SizedBox(height: 12),
+                      // Recent transactions section
+                      SlideTransition(
+                        position: _offsetAnimation,
+                        child: buildRecentTransactionsSection(context),
+                      ),
+                      const SizedBox(height: 42),
+                      // Assets structure section (pie chart)
                       SlideTransition(
                         position: _offsetAnimation,
                         child: AssetsStructureSection(client: client!),
@@ -200,15 +199,15 @@ class _DashboardPageState extends State<DashboardPage>
       ),
     );
   }
-
-    Widget buildRecentTransactionsSection(BuildContext context) {
+  
+  Widget buildRecentTransactionsSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: Text(
-            '3 Recent Transactions',
+            'Recent Transactions',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -222,8 +221,7 @@ class _DashboardPageState extends State<DashboardPage>
       ],
     );
   }
-
-
+  
   Widget _buildConnectedUsersSection() => Column(
         children: [
           const SizedBox(height: 40),

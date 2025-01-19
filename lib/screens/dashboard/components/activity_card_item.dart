@@ -21,7 +21,7 @@ class ActivityCardItem extends StatelessWidget {
     String date = dateFormat.format(activity.time);
 
     return Container(
-      width: MediaQuery.of(context).size.width * 0.55, // Set a fixed width
+      width: MediaQuery.of(context).size.width * 0.6, // Set a fixed width
       child: Container(
         padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(
@@ -134,7 +134,7 @@ class ActivityCardItem extends StatelessWidget {
           Row(
             children: [
               Text(
-                activity.recipient,
+                _getShortenedName(activity.recipient),
                 style: const TextStyle(
                   fontSize: 13,
                   color: Colors.white,
@@ -146,4 +146,21 @@ class ActivityCardItem extends StatelessWidget {
           ),
         ],
       );
+
+  // Helper function to get the shortened name
+  String _getShortenedName(String name) {
+    final parts = name.split(' ');
+    if (parts.length > 1) {
+      final firstName = parts[0];
+      final lastName = parts[1];
+      final fullName = '$firstName $lastName';
+      if (fullName.length > 20) {
+        return '${firstName.substring(0, 1)}. ${lastName.substring(0, 1)}.';
+      } else {
+        return fullName;
+      }
+    } else {
+      return name.length > 20 ? '${name.substring(0, 1)}.' : name;
+    }
+  }
 }

@@ -128,6 +128,16 @@ class Client {
       return Graph(account: entry.key, graphPoints: entry.value);
     }).toList();
 
+    final unreadOwn = (notifications ?? [])
+        .where((notif) => !notif.isRead)
+        .length;
+
+    final unreadConnected = (connectedUsers ?? []).fold<int>(0, (sum, c) {
+      return sum + ((c?.notifications ?? [])
+          .where((notif) => !notif.isRead)
+          .length);
+    });
+
     return Client(
       cid: data['cid'] ?? cid ?? '',
       uid: data['uid'] ?? '',
@@ -141,9 +151,11 @@ class Client {
       initEmail: data['initEmail'] ?? '',
       firstDepositDate: (data['firstDepositDate'] as Timestamp?)?.toDate(),
       beneficiaries: List<String>.from(data['beneficiaries'] ?? []),
-      numNotifsUnread: notifications?.where((notif) => !notif.isRead).length,
-      recipients:
-          activities?.map((activity) => activity.recipient).toSet().toList(),
+      numNotifsUnread: unreadOwn + unreadConnected,
+      recipients: activities
+          ?.map((activity) => activity.recipient)
+          .toSet()
+          .toList(),
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],
       graphs: graphs ?? [],

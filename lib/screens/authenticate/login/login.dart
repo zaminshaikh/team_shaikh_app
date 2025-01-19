@@ -144,7 +144,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Logo and branding
             // Logo and branding
             Container(
               decoration: const BoxDecoration(
@@ -183,9 +182,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         ),
                       ),
                       const SizedBox(height: 40.0),
-            
-                      // Text widget to display "Create An Account"
-
                     ],
                   ),
                 ],

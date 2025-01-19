@@ -387,8 +387,23 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       );
-
+  
   Widget _buildClientNameAndID() {
+    // Compute a display name without overflowing
+    final fullName = '${client!.firstName} ${client!.lastName}';
+    String displayName;
+  
+    if (fullName.length > 20) {
+      // Use an initial for the longer name
+      if (client!.firstName.length <= client!.lastName.length) {
+        displayName = '${client!.firstName} ${client!.lastName.substring(0, 1)}.';
+      } else {
+        displayName = '${client!.firstName.substring(0, 1)}. ${client!.lastName}';
+      }
+    } else {
+      displayName = fullName;
+    }
+  
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       child: Row(
@@ -400,7 +415,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${client!.firstName} ${client!.lastName}',
+                    displayName,
                     style: const TextStyle(
                       fontSize: 22,
                       color: Colors.white,
@@ -425,5 +440,5 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-}
+  
+  }
