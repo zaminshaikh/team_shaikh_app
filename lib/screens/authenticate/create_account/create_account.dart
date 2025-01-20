@@ -49,7 +49,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   String _createAccountPasswordString = '';
   String _confirmCreateAccountPasswordString = '';
   int _passwordSecurityIndicator = 0;
-
+  
   @override
   void initState() {
     super.initState();
@@ -257,181 +257,183 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
       body: Stack(
-        children: [ SingleChildScrollView
-          (
-            // Wrapping everything in a column to arrange children vertically
-            child: Column(
-              // Centering the children
-              mainAxisAlignment: MainAxisAlignment.center,
-          
-              // Making a list of child widgets in the Column
-              children: <Widget>[
-                // Logo and branding
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF0D5EAF), // Start color
-                        Color.fromARGB(255, 17, 24, 39), // End color
-                      ],
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // PNG gradient overlay
-                      Positioned.fill(
-                        child: Opacity(
-                          opacity: 0.3, // Adjust the opacity as needed
-                          child: Image.asset(
-                            'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+        children: 
+          [ 
+            SingleChildScrollView
+            (
+              // Wrapping everything in a column to arrange children vertically
+              child: Column(
+                // Centering the children
+                mainAxisAlignment: MainAxisAlignment.center,
+            
+                // Making a list of child widgets in the Column
+                children: <Widget>[
+                  // Logo and branding
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFF0D5EAF), // Start color
+                          Color.fromARGB(255, 17, 24, 39), // End color
+                        ],
                       ),
-                      Column(
-                        children: [
-                          const SizedBox(height: 60.0),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
-                            child: Align(
-                              alignment: const Alignment(-1.0, -1.0),
-                              child: Image.asset(
-                                'assets/icons/agq_logo.png',
-                                height: 50,
-                              ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // PNG gradient overlay
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.3, // Adjust the opacity as needed
+                            child: Image.asset(
+                              'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          const SizedBox(height: 40.0),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Additional container with another gradient
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color.fromARGB(255, 20, 33, 57), // End color
-                        Color.fromARGB(255, 17, 24, 39), // End color
+                        ),
+                        Column(
+                          children: [
+                            const SizedBox(height: 60.0),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+                              child: Align(
+                                alignment: const Alignment(-1.0, -1.0),
+                                child: Image.asset(
+                                  'assets/icons/agq_logo.png',
+                                  height: 50,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 40.0),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  child: Stack(
-                    children: [
-                      Column(
-                        children: [
-                              const Text(
-                                'Create An Account',
-                                style: TextStyle(
-                                  fontSize: 26,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Titillium Web',
-                                ),
-                              ),
-                          const SizedBox(height: 20.0),
-                          Row(
-                            children: [
-                              Text(''),
-                              Spacer(),
-                              Text('')
-                            ],
-                          ),
+                  
+                  // Additional container with another gradient
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color.fromARGB(255, 20, 33, 57), // End color
+                          Color.fromARGB(255, 17, 24, 39), // End color
                         ],
                       ),
-                    ],
+                    ),
+                    child: Stack(
+                      children: [
+                        Column(
+                          children: [
+                                const Text(
+                                  'Create An Account',
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Titillium Web',
+                                  ),
+                                ),
+                            const SizedBox(height: 20.0),
+                            Row(
+                              children: [
+                                Text(''),
+                                Spacer(),
+                                Text('')
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      // Client ID input field
-                      _buildClientIDField(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 40.0),
-          
-                      // Google Sign-Up button
-                      _buildGoogleSignUpButton(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 30.0),
-          
-                      // OR divider
-                      _buildOrDivider(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 30.0),
-          
-                      // Email input field
-                      _buildEmailField(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 16.0),
-          
-                      // Password input field
-                      _buildPasswordField(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 12.0),
-          
-                      // Password security indicator
-                      PasswordSecurityIndicator(
-                          strength: _passwordSecurityIndicator),
-          
-                      // Adding some space here
-                      const SizedBox(height: 20.0),
-          
-                      // Password validation checks
-                      PasswordValidation(password: _createAccountPasswordString),
-          
-                      // Adding some space here
-                      const SizedBox(height: 16.0),
-          
-                      // Confirm password input field
-                      _buildConfirmPasswordField(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 16.0),
-          
-                      // Next button
-                      _buildNextButton(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 30.0),
-          
-                      // Login option
-                      _buildLoginOption(),
-          
-                      // Adding some space here
-                      const SizedBox(height: 20.0),
-                    ],
+                  
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        // Client ID input field
+                        _buildClientIDField(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 40.0),
+            
+                        // Google Sign-Up button
+                        _buildGoogleSignUpButton(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 30.0),
+            
+                        // OR divider
+                        _buildOrDivider(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 30.0),
+            
+                        // Email input field
+                        _buildEmailField(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 16.0),
+            
+                        // Password input field
+                        _buildPasswordField(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 12.0),
+            
+                        // Password security indicator
+                        PasswordSecurityIndicator(
+                            strength: _passwordSecurityIndicator),
+            
+                        // Adding some space here
+                        const SizedBox(height: 20.0),
+            
+                        // Password validation checks
+                        PasswordValidation(password: _createAccountPasswordString),
+            
+                        // Adding some space here
+                        const SizedBox(height: 16.0),
+            
+                        // Confirm password input field
+                        _buildConfirmPasswordField(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 16.0),
+            
+                        // Next button
+                        _buildNextButton(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 30.0),
+            
+                        // Login option
+                        _buildLoginOption(),
+            
+                        // Adding some space here
+                        const SizedBox(height: 20.0),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          if (isLoading)
-            Opacity(
+            if (isLoading || isLoading) ...[
+              Opacity(
               opacity: 0.5,
               child: ModalBarrier(
                 dismissible: false,
                 color: Colors.black,
               ),
-            ),
-          if (isLoading)
-            Center(
+              ),
+              Center(
               child: CustomProgressIndicator(),
-            ),
-        ],
+              ),
+            ],
+          ],
       ),
     );
 
@@ -529,11 +531,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             ? () async {
                 // Dismiss the keyboard
                 FocusScope.of(context).unfocus();
-  
-                await GoogleAuthService().signUpWithGoogle(
-                  context,
-                  _clientIDController.text,
-                );
+                try {
+                  await GoogleAuthService().signInWithGoogle(context);
+                  // Navigate to dashboard or home
+                  // e.g., Navigator.pushReplacementNamed(context, '/dashboard');
+                } finally {
+                  setState(() => isLoading = false);
+                }
               }
             : () {
                 // Dismiss the keyboard
