@@ -1,5 +1,5 @@
 {
-    "FIRESTORE_ACTIVE_USERS_COLLECTION": "playground",
+    "FIRESTORE_ACTIVE_USERS_COLLECTION": "users",
     "ASSETS_SUBCOLLECTION": "assets",
     "NOTIFICATIONS_SUBCOLLECTION": "notifications",
     "ACTIVITIES_SUBCOLLECTION": "activities",
