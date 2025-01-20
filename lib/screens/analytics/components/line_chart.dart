@@ -180,7 +180,9 @@ class _LineChartSectionState extends State<LineChartSection> {
                       ],
                     ),
                     _buildClientAccountInfo(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 2),
+                    // Date range text
+                    _buildDateRangeText(),
                   ],
                 ),
               ),
@@ -213,9 +215,6 @@ class _LineChartSectionState extends State<LineChartSection> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              // Date range text
-              _buildDateRangeText(),
               const SizedBox(height: 20),
             ],
           ),
@@ -533,7 +532,7 @@ Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
 
 // Use selectedClient and selectedGraph to display the current selection
 Widget _buildClientAccountInfo() {
-  final clientName = selectedClient?.firstName ?? 'Unknown Client';
+  final clientName = '${selectedClient?.firstName ?? 'Unknown'} ${selectedClient?.lastName ?? 'Client'}';
   final accountName = selectedGraph?.account ?? 'No Account Selected';
 
   return Column(
@@ -592,8 +591,9 @@ String _getInitials(String name) {
             showTitles: true,
             reservedSize: 55,
             getTitlesWidget: (value, meta) {
-              if (value == 0) {
-                return const Text('');
+              // Hide top (max) and bottom (min) labels
+              if (value == meta.min || value == meta.max) {
+                return const SizedBox.shrink();
               }
               return Padding(
                 padding: const EdgeInsets.only(right: 5),
@@ -616,6 +616,12 @@ String _getInitials(String name) {
           ),
         ),
       );
+
+
+
+
+
+
 
   /// Builds the line chart bar data, which defines the appearance and behavior of the line.
   ///
@@ -819,49 +825,45 @@ String _getInitials(String name) {
   
     return Container(
       color: Colors.transparent,
-      child: Align(
-        alignment: Alignment.center,
-        child: Padding(
-          padding: const EdgeInsets.only(right: 20.0),
-          child: Column(
-            children: [
-              // Display the date range text
-              Text(
-                displayText,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Titillium Web',
+      child: Padding(
+        padding: const EdgeInsets.only(right: 20.0),
+        child: Column(
+          children: [
+            // Display the date range text
+            Text(
+              displayText,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+              ),
+            ),
+            // Show a message if no data is available
+            if (spots.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 25),
+                child: Row(
+                  children: [
+                    SizedBox(width: 10),
+                    Icon(
+                      Icons.circle,
+                      size: 20,
+                      color: AppColors.defaultBlue500,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'No data available for this time period',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w300,
+                        fontFamily: 'Titillium Web',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Show a message if no data is available
-              if (spots.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 25),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 10),
-                      Icon(
-                        Icons.circle,
-                        size: 20,
-                        color: AppColors.defaultBlue500,
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        'No data available for this time period',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w300,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );
