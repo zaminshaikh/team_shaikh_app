@@ -23,30 +23,40 @@ class ActivityDetailsModal extends StatelessWidget {
 
     return FractionallySizedBox(
       heightFactor: 0.67,
+      child: ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(30.0),
+        topRight: Radius.circular(30.0),
+      ),
       child: Container(
         color: AppColors.defaultBlueGray800,
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildModalHeader(context),
-              _buildModalBody(activity),
-            ],
-          ),
+        child: Column(
+          children: [
+          _buildModalHeader(context),
+          _buildModalBody(activity),
+          ],
         ),
+        ),
+      ),
       ),
     );
   }
 
   Widget _buildModalHeader(BuildContext context) => Column(
       children: [
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Color.fromARGB(171, 255, 255, 255)),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.close_rounded,
+                    color: Color.fromARGB(171, 255, 255, 255)),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
         ),
         const Text(
           'Activity Details',
@@ -59,6 +69,8 @@ class ActivityDetailsModal extends StatelessWidget {
         ),
       ],
     );
+
+
 
   Widget _buildModalBody(Activity activity) {
     String date = dateFormat.format(activity.time);

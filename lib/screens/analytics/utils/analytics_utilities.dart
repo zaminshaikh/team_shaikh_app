@@ -28,8 +28,16 @@ double calculateXValue(DateTime dateTime, String dropdownValue) {
       totalPeriod = 180;
       break;
     case 'last-year':
+      startDate = DateTime(now.year - 1, now.month, now.day);
+      totalPeriod = now.difference(startDate).inDays.toDouble();
+      break;
+    case 'year-to-date':
       startDate = DateTime(now.year, 1, 1);
-      totalPeriod = 365;
+      totalPeriod = now.difference(startDate).inDays.toDouble();
+      break;
+    case 'last-2-years':
+      startDate = DateTime(now.year - 2, now.month, now.day);
+      totalPeriod = now.difference(startDate).inDays.toDouble();
       break;
     default:
       return -1.0;  // Return -1.0 if the range is not recognized.
@@ -74,8 +82,16 @@ DateTime calculateDateTimeFromXValue(double xValue, String dropdownValue) {
       endDate = now;
       break;
     case 'last-year':
+      startDate = DateTime(now.year - 1, now.month, now.day);
+      endDate = now;
+      break;
+    case 'year-to-date':
       startDate = DateTime(now.year, 1, 1);
-      endDate = DateTime(now.year, 12, 31);
+      endDate = now;
+      break;
+    case 'last-2-years':
+      startDate = DateTime(now.year - 2, now.month, now.day);
+      endDate = now;
       break;
     default:
       return DateTime.now();
@@ -140,9 +156,7 @@ String abbreviateNumber(double value) {
 ///   - The adjusted maximum Y value for the chart.
 double calculateMaxY(double value) {
   double increment = 1.0;
-  if (value >= 100000000) {
-    increment = 10000000;
-  } else if (value >= 10000000) {
+  if (value >= 10000000) {
     increment = 1000000;
   } else if (value >= 1000000) {
     increment = 100000;
@@ -155,7 +169,25 @@ double calculateMaxY(double value) {
   } else if (value >= 500) {
     increment = 50;
   }
+
   return ((value / increment).ceil() * increment).toDouble();
+}
+
+/// Calculate a dynamic lower bound for the Y-axis.
+/// If the minAmount is 0 or less, we simply return 0.
+/// Otherwise, we subtract 10% of minAmount or 50k, whichever is smaller.
+double calculateDynamicMin(double minAmount) {
+  if (minAmount <= 0) return 0;
+  // Subtract 10% or 50k (whichever is smaller)
+  return minAmount - (minAmount * 0.1).clamp(0, 50000);
+}
+
+/// Calculate a dynamic upper bound for the Y-axis.
+/// We add 10% of maxAmount or 500k, whichever is smaller.
+/// (No more calls to calculateMaxY.)
+double calculateDynamicMax(double maxAmount) {
+  double buffer = (maxAmount * 0.1).clamp(0, 500000);
+  return maxAmount + buffer;
 }
 
 /// Determine the interval at which to show axis titles based on the chart's x-axis range.

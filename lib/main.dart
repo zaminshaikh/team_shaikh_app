@@ -61,7 +61,7 @@ Future<void> _initializeServices() async {
   await ScreenUtil.ensureScreenSize();
 
   // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
 
   // Initialize push notifications
   await PushNotificationService().initialize();
