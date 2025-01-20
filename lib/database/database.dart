@@ -97,8 +97,8 @@ class DatabaseService {
     db.assetsSubCollection = usersCollection
         .doc(db.cid)
         .collection(Config.get('ASSETS_SUBCOLLECTION'));
-    db.graphPointsSubCollection = db.assetsSubCollection
-        ?.doc(Config.get('ASSETS_GENERAL_DOC_ID'))
+    db.graphPointsSubCollection = usersCollection
+        .doc(db.cid)
         .collection(Config.get('GRAPHPOINTS_SUBCOLLECTION'));
     db.activitiesSubCollection = usersCollection
         .doc(db.cid)
