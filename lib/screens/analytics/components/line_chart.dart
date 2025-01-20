@@ -32,7 +32,7 @@ class _LineChartSectionState extends State<LineChartSection> {
   // Variables for the line chart data
   List<FlSpot> spots = [];
   double maxAmount = 0.0;
-  String dropdownValue = 'last-week';
+  String dropdownValue = 'last-2-years';
 
   // New state variables for account selection
   String? selectedAccount;
