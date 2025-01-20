@@ -33,6 +33,7 @@ final emailController = TextEditingController();
 final passwordController = TextEditingController();
 
 String? email = '';
+bool _isLoading = false;
 
 // State class for the LoginPage
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
@@ -138,431 +139,452 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   // The build method for the login screen widget
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-            // Logo and branding
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF0D5EAF), // Start color
-                    Color.fromARGB(255, 17, 24, 39), // End color
-                  ],
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // PNG gradient overlay
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.3, // Adjust the opacity as needed
-                      child: Image.asset(
-                        'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
-                        fit: BoxFit.cover,
-                      ),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                // Logo and branding
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF0D5EAF), // Start color
+                        Color.fromARGB(255, 17, 24, 39), // End color
+                      ],
                     ),
                   ),
-                  Column(
+                  child: Stack(
                     children: [
-                      const SizedBox(height: 60.0),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
-                        child: Align(
-                          alignment: const Alignment(-1.0, -1.0),
+                      // PNG gradient overlay
+                      Positioned.fill(
+                        child: Opacity(
+                          opacity: 0.3, // Adjust the opacity as needed
                           child: Image.asset(
-                            'assets/icons/agq_logo.png',
-                            height: 50,
+                            'assets/icons/total_assets_gradient.png', // Path to your PNG gradient
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 40.0),
+                      Column(
+                        children: [
+                          const SizedBox(height: 60.0),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+                            child: Align(
+                              alignment: const Alignment(-1.0, -1.0),
+                              child: Image.asset(
+                                'assets/icons/agq_logo.png',
+                                height: 50,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 40.0),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            
-            // Additional container with another gradient
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color.fromARGB(255, 20, 33, 57), // End color
-                    Color.fromARGB(255, 17, 24, 39), // End color
-                  ],
                 ),
-              ),
-              child: Stack(
-                children: [
-                  Column(
+                
+                // Additional container with another gradient
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.fromARGB(255, 20, 33, 57), // End color
+                        Color.fromARGB(255, 17, 24, 39), // End color
+                      ],
+                    ),
+                  ),
+                  child: Stack(
                     children: [
-                          const Text(
-                            'Login to Your Account',
-                            style: TextStyle(
-                              fontSize: 26,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Titillium Web',
-                            ),
-                          ),
-                      const SizedBox(height: 20.0),
-                      Row(
+                      Column(
                         children: [
-                          Text(''),
-                          Spacer(),
-                          Text('')
+                              const Text(
+                                'Login to Your Account',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titillium Web',
+                                ),
+                              ),
+                          const SizedBox(height: 20.0),
+                          Row(
+                            children: [
+                              Text(''),
+                              Spacer(),
+                              Text('')
+                            ],
+                          ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+                
             
-
-
-
-
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  children: [
-
-                    // Email input field
-                    Container(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'Email',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontFamily: 'Titillium Web'),
-                          ),
-                          const SizedBox(height: 10.0),
-                          TextField(
-                            controller: emailController,
-                            style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontFamily: 'Titillium Web'),
-                            // Input field styling
-                            decoration: InputDecoration(
-                              hintText: 'Enter your email',
-                              hintStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 122, 122, 122),
-                                  fontFamily: 'Titillium Web'),
-                              // Border and focus styling
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(11),
+            
+            
+            
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Column(
+                      children: [
+            
+                        // Email input field
+                        Container(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Text(
+                                'Email',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web'),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(11),
-                                borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 27, 123, 201)),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 14),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                emailController.text = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Spacing
-                    const SizedBox(height: 16.0),
-
-                    // Password input field
-                    Container(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'Password',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontFamily: 'Titillium Web'),
-                          ),
-                          const SizedBox(height: 10.0),
-                          TextField(
-                            controller: passwordController,
-                            style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontFamily: 'Titillium Web'),
-                            // Input field styling with password visibility toggle
-                            decoration: InputDecoration(
-                              hintText: 'Enter your password',
-                              hintStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 122, 122, 122),
-                                  fontFamily: 'Titillium Web'),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(11),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(11),
-                                borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 27, 123, 201)),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 14),
-                              suffixIcon: GestureDetector(
-                                onTap: () {
+                              const SizedBox(height: 10.0),
+                              TextField(
+                                controller: emailController,
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web'),
+                                // Input field styling
+                                decoration: InputDecoration(
+                                  hintText: 'Enter your email',
+                                  hintStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 122, 122, 122),
+                                      fontFamily: 'Titillium Web'),
+                                  // Border and focus styling
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(11),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(11),
+                                    borderSide: const BorderSide(
+                                        color: Color.fromARGB(255, 27, 123, 201)),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 14, horizontal: 14),
+                                ),
+                                onChanged: (value) {
                                   setState(() {
-                                    hidePassword = !hidePassword;
+                                    emailController.text = value;
                                   });
                                 },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(0.0),
-                                  child: Icon(
-                                    hidePassword
-                                        ? Icons.remove_red_eye_outlined
-                                        : Icons.remove_red_eye_rounded,
-                                    size: 25,
-                                    color: const Color.fromARGB(
-                                        255, 154, 154, 154),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Spacing
+                        const SizedBox(height: 16.0),
+            
+                        // Password input field
+                        Container(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Text(
+                                'Password',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web'),
+                              ),
+                              const SizedBox(height: 10.0),
+                              TextField(
+                                controller: passwordController,
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontFamily: 'Titillium Web'),
+                                // Input field styling with password visibility toggle
+                                decoration: InputDecoration(
+                                  hintText: 'Enter your password',
+                                  hintStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 122, 122, 122),
+                                      fontFamily: 'Titillium Web'),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(11),
                                   ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(11),
+                                    borderSide: const BorderSide(
+                                        color: Color.fromARGB(255, 27, 123, 201)),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 14, horizontal: 14),
+                                  suffixIcon: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        hidePassword = !hidePassword;
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(0.0),
+                                      child: Icon(
+                                        hidePassword
+                                            ? Icons.remove_red_eye_outlined
+                                            : Icons.remove_red_eye_rounded,
+                                        size: 25,
+                                        color: const Color.fromARGB(
+                                            255, 154, 154, 154),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                obscureText: hidePassword,
+                                onChanged: (value) {
+                                  setState(() {
+                                    passwordController.text = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Spacing
+                        const SizedBox(height: 20.0),
+            
+                        // Remember Me and Forgot Password section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // GestureDetector(
+                            //   onTap: () {
+                            //     setState(() {
+                            //       rememberMe = !rememberMe;
+                            //     });
+                            //   },
+                            //   child: Padding(
+                            //     padding: const EdgeInsets.all(6.0),
+                            //     child: Icon(
+                            //       rememberMe ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                            //       size: 24,
+                            //       color: Colors.white,
+                            //     ),
+                            //   ),
+                            // ),
+                            // const Text('Remember Me',
+                            //   style: TextStyle(
+                            //     fontSize: 16,
+                            //     color: Colors.white,
+                            //     fontFamily: 'Titillium Web'
+                            //   )
+                            // ),
+                            // const SizedBox(width: 100),
+            
+                            // Forgot Password link
+                            GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ForgotPasswordPage()), // Navigate to the Log In page
+                                );
+                              },
+                              child: const TextButton(
+                                onPressed: null,
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                      fontFamily: 'Titillium Web'),
                                 ),
                               ),
                             ),
-                            obscureText: hidePassword,
-                            onChanged: (value) {
-                              setState(() {
-                                passwordController.text = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Spacing
-                    const SizedBox(height: 20.0),
-
-                    // Remember Me and Forgot Password section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // GestureDetector(
-                        //   onTap: () {
-                        //     setState(() {
-                        //       rememberMe = !rememberMe;
-                        //     });
-                        //   },
-                        //   child: Padding(
-                        //     padding: const EdgeInsets.all(6.0),
-                        //     child: Icon(
-                        //       rememberMe ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                        //       size: 24,
-                        //       color: Colors.white,
-                        //     ),
-                        //   ),
-                        // ),
-                        // const Text('Remember Me',
-                        //   style: TextStyle(
-                        //     fontSize: 16,
-                        //     color: Colors.white,
-                        //     fontFamily: 'Titillium Web'
-                        //   )
-                        // ),
-                        // const SizedBox(width: 100),
-
-                        // Forgot Password link
+                          ],
+                        ),
+                        // Spacing
+                        const SizedBox(height: 20.0),
+            
+                        // Login Button
                         GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const ForgotPasswordPage()), // Navigate to the Log In page
-                            );
-                          },
-                          child: const TextButton(
-                            onPressed: null,
-                            child: Text(
-                              'Forgot Password?',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                  fontFamily: 'Titillium Web'),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Spacing
-                    const SizedBox(height: 20.0),
-
-                    // Login Button
-                    GestureDetector(
-                      onTap: () async {
-                        bool success = await signUserIn(context);
-                        if (success) {
-                          String? token;
-                          try {
-                            token = await FirebaseMessaging.instance.getToken();
-                          } catch (e) {
-                            log('Error fetching token: $e');
-                            token = await FirebaseMessaging.instance.getAPNSToken();
-                            log('APNS Token found: $token');
-                          }
-                          if (token != null) {
-                            User? user = FirebaseAuth.instance.currentUser;
-                            // If we do not have a user and the context is valid
-                            if (user == null && mounted) {
-                              log('login.dart: User is not logged in');
-                              await Navigator.pushReplacementNamed(
-                                  context, '/login');
-                            }
-                            // Fetch CID using async constructor
-                            DatabaseService? db =
-                                await DatabaseService.fetchCID(user!.uid, context);
-
-                            if (db != null) {
+                          onTap: () async {
+                            bool success = await signUserIn(context);
+                            if (success) {
+                              String? token;
                               try {
-                                List<dynamic> tokens =
-                                    (await db.getField('tokens') ?? []);
-
-                                if (!tokens.contains(token)) {
-                                  tokens = [...tokens, token];
-                                  await db.updateField('tokens', tokens);
-                                }
+                                token = await FirebaseMessaging.instance.getToken();
                               } catch (e) {
-                                log('login.dart: Error fetching tokens: $e');
+                                log('Error fetching token: $e');
+                                token = await FirebaseMessaging.instance.getAPNSToken();
+                                log('APNS Token found: $token');
                               }
+                              if (token != null) {
+                                User? user = FirebaseAuth.instance.currentUser;
+                                // If we do not have a user and the context is valid
+                                if (user == null && mounted) {
+                                  log('login.dart: User is not logged in');
+                                  await Navigator.pushReplacementNamed(
+                                      context, '/login');
+                                }
+                                // Fetch CID using async constructor
+                                DatabaseService? db =
+                                    await DatabaseService.fetchCID(user!.uid, context);
+            
+                                if (db != null) {
+                                  try {
+                                    List<dynamic> tokens =
+                                        (await db.getField('tokens') ?? []);
+            
+                                    if (!tokens.contains(token)) {
+                                      tokens = [...tokens, token];
+                                      await db.updateField('tokens', tokens);
+                                    }
+                                  } catch (e) {
+                                    log('login.dart: Error fetching tokens: $e');
+                                  }
+                                }
+                              }
+                              await Navigator.pushReplacement(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation1, animation2) =>
+                                      const DashboardPage(),
+                                  transitionDuration: Duration.zero,
+                                ),
+                              );
                             }
-                          }
-                          await Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation1, animation2) =>
-                                  const DashboardPage(),
-                              transitionDuration: Duration.zero,
+                          },
+                          child: Container(
+                            height: 55,
+                            decoration: BoxDecoration(
+                              color: passwordController.text.isNotEmpty &&
+                                      emailController.text.isNotEmpty
+                                  ? const Color.fromARGB(255, 30, 75, 137)
+                                  : const Color.fromARGB(255, 85, 86, 87),
+                              borderRadius: BorderRadius.circular(25),
                             ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: passwordController.text.isNotEmpty &&
-                                  emailController.text.isNotEmpty
-                              ? const Color.fromARGB(255, 30, 75, 137)
-                              : const Color.fromARGB(255, 85, 86, 87),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Login',
-                            style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Titillium Web'),
+                            child: const Center(
+                              child: Text(
+                                'Login',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Titillium Web'),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    // Spacing
-                    const SizedBox(height: 20.0),
-
-                    GestureDetector(
-                      onTap: () =>
-                          GoogleAuthService().signInWithGoogle(context),
-                      child: Container(
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                              color: const Color.fromARGB(255, 30, 75, 137),
-                              width: 4),
+                        // Spacing
+                        const SizedBox(height: 20.0),
+            
+                        GestureDetector(
+                          onTap: () async {
+                            setState(() => _isLoading = true);
+                            try {
+                              await GoogleAuthService().signInWithGoogle(context);
+                              // Navigate to dashboard or home
+                              // e.g., Navigator.pushReplacementNamed(context, '/dashboard');
+                            } finally {
+                              setState(() => _isLoading = false);
+                            }
+                          },
+                          child: Container(
+                            height: 55,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                  color: const Color.fromARGB(255, 30, 75, 137),
+                                  width: 4),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.google,
+                                  color: Colors.blue,
+                                ),
+                                SizedBox(width: 15),
+                                Text(
+                                  'Sign in with Google',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Titillium Web'),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: const Row(
+            
+                        const SizedBox(height: 40.0),
+            
+                        // Sign-Up Section
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              FontAwesomeIcons.google,
-                              color: Colors.blue,
-                            ),
-                            SizedBox(width: 15),
-                            Text(
-                              'Sign in with Google',
+                            const Text(
+                              'Don\'t have an account?',
                               style: TextStyle(
                                   fontSize: 18,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                   fontFamily: 'Titillium Web'),
+                            ),
+                            GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder:
+                                        (context, animation, secondaryAnimation) =>
+                                            const CreateAccountPage(),
+                                    transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) =>
+                                        child,
+                                  ),
+                                );
+                              },
+                              child: const TextButton(
+                                onPressed: null,
+                                child: Text(
+                                  'Sign Up',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Titillium Web'),
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 40.0),
-
-                    // Sign-Up Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Don\'t have an account?',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontFamily: 'Titillium Web'),
-                        ),
-                        GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        const CreateAccountPage(),
-                                transitionsBuilder: (context, animation,
-                                        secondaryAnimation, child) =>
-                                    child,
-                              ),
-                            );
-                          },
-                          child: const TextButton(
-                            onPressed: null,
-                            child: Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Titillium Web'),
-                            ),
-                          ),
-                        ),
+                        // Spacing
+                        const SizedBox(height: 20.0),
                       ],
                     ),
-                    // Spacing
-                    const SizedBox(height: 20.0),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+            // A loading overlay that covers the screen when _isLoading is true
+            if (_isLoading)
+              Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
                 ),
               ),
-            ],
-          ),
+
+          ],
         ),
       );
 }
