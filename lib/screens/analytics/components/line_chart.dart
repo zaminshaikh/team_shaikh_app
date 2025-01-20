@@ -31,7 +31,8 @@ class LineChartSection extends StatefulWidget {
 class _LineChartSectionState extends State<LineChartSection> {
   // Variables for the line chart data
   List<FlSpot> spots = [];
-  double maxAmount = 0.0;
+  double _minAmount = double.maxFinite;
+  double _maxAmount = 0.0;
   String dropdownValue = 'last-2-years';
 
   // New state variables for account selection
@@ -64,29 +65,27 @@ class _LineChartSectionState extends State<LineChartSection> {
   /// x and y values, and populates the [spots] list with [FlSpot] instances.
   /// It also calculates the maximum amount for setting the y-axis limit.
   void _prepareGraphPoints() {
-    spots.clear();
-    maxAmount = 0.0;
+  spots.clear();
+  
+  // Track min and max amounts
+  double localMinAmount = double.maxFinite;
+  double localMaxAmount = 0.0;
 
-    double yValue;
+  if (selectedGraph != null && selectedGraph!.graphPoints.isNotEmpty) {
+    for (var point in selectedGraph!.graphPoints) {
+      final DateTime dateTime = point.time;
+      final double amount = point.amount;
 
-    if (selectedGraph != null && selectedGraph!.graphPoints.isNotEmpty) {
-      // There are data points available
-      for (var point in selectedGraph!.graphPoints) {
-        DateTime dateTime = point.time;
-        double amount = point.amount;
-
-        // Calculate the x-value based on the date and selected time frame
-        double xValue = calculateXValue(dateTime, dropdownValue);
-        if (xValue >= 0) {
-          spots.add(FlSpot(xValue, amount));
-          if ((amount * 1.2) > maxAmount) {
-            maxAmount = amount * 1.2;
-          }
-        }
+      // Compute the x position for the point based on the filter
+      final double xValue = calculateXValue(dateTime, dropdownValue);
+      if (xValue >= 0) {
+        spots.add(FlSpot(xValue, amount));
+        
       }
+    }
 
-      // Ensure the spots are sorted by x-value
-      spots.sort((a, b) => a.x.compareTo(b.x));
+    // Sort spots by x
+    spots.sort((a, b) => a.x.compareTo(b.x));
 
       // Add a starting data point at x=0 if needed
       if (spots.isNotEmpty && spots.first.x > 0) {
@@ -105,6 +104,7 @@ class _LineChartSectionState extends State<LineChartSection> {
         // Insert the starting spot at the beginning
         FlSpot startingSpot = FlSpot(0, startingY);
         spots.insert(0, startingSpot);
+
       }
 
       // Add an ending data point at the max x-axis value if needed
@@ -118,23 +118,30 @@ class _LineChartSectionState extends State<LineChartSection> {
         GraphPoint mostRecentSpot = selectedGraph!.graphPoints.last;
         spots.add(FlSpot(0, mostRecentSpot.amount));
         spots.add(FlSpot(maxXValue, mostRecentSpot.amount));
-        maxAmount = (mostRecentSpot.amount) * 1.5;
+        _maxAmount = (mostRecentSpot.amount) * 1.5;
       }
     } else {
-      // No data points available
-      yValue = 0.0;
+    // No data points
+    localMinAmount = 0.0;
+    localMaxAmount = 100000.0;
+    spots.add(FlSpot(0, 0));
+    spots.add(FlSpot(maxX(dropdownValue), 0));
+  }
 
-      // Set a default maximum amount for the y-axis
-      if (yValue == 0.0) {
-        maxAmount = 100000.0; // Default max Y value
-      } else {
-        maxAmount = yValue * 1.5;
+    for(var spot in spots) {
+      if (spot.y < localMinAmount) {
+        localMinAmount = spot.y;
       }
-
-      // Create default spots with y-value set to 0
-      spots.add(FlSpot(0, yValue));
-      spots.add(FlSpot(maxX(dropdownValue), yValue));
+      if (spot.y > localMaxAmount) {
+        localMaxAmount = spot.y;
+      }
     }
+
+    // Finally, store them in class-level variables (so we can use them in the build method)
+    setState(() {
+      _minAmount = localMinAmount;
+      _maxAmount = localMaxAmount;
+    });
   }
 
   @override
@@ -197,8 +204,8 @@ class _LineChartSectionState extends State<LineChartSection> {
                         borderData: FlBorderData(show: false),
                         minX: 0,
                         maxX: maxX(dropdownValue),
-                        minY: 0,
-                        maxY: calculateMaxY(maxAmount),
+                        minY: calculateDynamicMin(_minAmount),
+                        maxY: calculateDynamicMax(_maxAmount),
                         lineBarsData: [_buildLineChartBarData()],
                         lineTouchData: _buildLineTouchData(),
                       ),
@@ -622,7 +629,7 @@ String _getInitials(String name) {
         color: AppColors.defaultBlue300,
         isStrokeCapRound: true,
         dotData: FlDotData(
-          show: true,
+          show: false,
           getDotPainter: (spot, percent, barData, index) {
             if (spot.x == 0 || spot.x == maxX(dropdownValue)) {
               // Hide dots for the starting and ending points

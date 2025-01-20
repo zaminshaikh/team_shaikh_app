@@ -173,6 +173,23 @@ double calculateMaxY(double value) {
   return ((value / increment).ceil() * increment).toDouble();
 }
 
+/// Calculate a dynamic lower bound for the Y-axis.
+/// If the minAmount is 0 or less, we simply return 0.
+/// Otherwise, we subtract 10% of minAmount or 50k, whichever is smaller.
+double calculateDynamicMin(double minAmount) {
+  if (minAmount <= 0) return 0;
+  // Subtract 10% or 50k (whichever is smaller)
+  return minAmount - (minAmount * 0.1).clamp(0, 50000);
+}
+
+/// Calculate a dynamic upper bound for the Y-axis.
+/// We add 10% of maxAmount or 500k, whichever is smaller.
+/// (No more calls to calculateMaxY.)
+double calculateDynamicMax(double maxAmount) {
+  double buffer = (maxAmount * 0.1).clamp(0, 500000);
+  return maxAmount + buffer;
+}
+
 /// Determine the interval at which to show axis titles based on the chart's x-axis range.
 ///
 /// This function determines the spacing between labels on the x-axis based on the selected time range,
