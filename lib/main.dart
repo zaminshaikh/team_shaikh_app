@@ -194,6 +194,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             // DatabaseService not found
             yield null;
           } else {
+            await db.updateField('lastLoggedIn', Timestamp.now());  
             // Yield Client stream from DatabaseService
             yield* db.getClientStream();
           }
