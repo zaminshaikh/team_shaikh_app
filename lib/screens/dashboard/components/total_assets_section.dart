@@ -66,12 +66,12 @@ class TotalAssetsSection extends StatelessWidget {
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         SvgPicture.asset(
                           'assets/icons/YTD.svg',
-                          height: 13,
+                          height: 16,
                           color: const Color.fromRGBO(74, 222, 128, 1),
                         ),
                         const SizedBox(width: 5),
@@ -84,91 +84,89 @@ class TotalAssetsSection extends StatelessWidget {
                             fontFamily: 'Titillium Web',
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                backgroundColor: AppColors.defaultBlueGray800,
+                                content: SingleChildScrollView(
+                                  child: ListBody(
+                                    children: <Widget>[
+                                      const SizedBox(height: 5),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 5),
+                                        child: Row(
+                                          children: <Widget>[
+                                            Text('What is', style: Theme.of(context).textTheme.titleLarge),
+                                            const SizedBox(width: 5),
+                                            SvgPicture.asset('assets/icons/YTD.svg', height: 17),
+                                            const SizedBox(width: 5),
+                                            Text('?', style: Theme.of(context).textTheme.titleLarge),
+                                          ],
+                                        ),
+                                      ),
+                                      const Text(
+                                          'YTD stands for Year-To-Date. It is a financial term that describes the amount of income accumulated over the period of time from the beginning of the current year to the present date.'),
+                                      const SizedBox(height: 20),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 5),
+                                        child: Row(
+                                          children: <Widget>[
+                                            Text('What are my total assets?', style: Theme.of(context).textTheme.titleLarge),
+                                          ],
+                                        ),
+                                      ),
+                                      const Text(
+                                          'Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all IRAs, Nuview Cash, and assets in both AGQ and AK1.'),
+                                    ],
+                                  ),
+                                ),
+                                actions: <Widget>[
+                                  GestureDetector(
+                                    onTap: () => Navigator.of(context).pop(),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(255, 30, 75, 137),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Text(
+                                        'Continue',
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 3.0),
+                            child: const Icon(
+                              Icons.info_outline_rounded,
+                              size: 24,
+                              color: Color.fromARGB(71, 255, 255, 255),
+                            ),
+                          ),
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ],
             ),
           ),
           Positioned(
-            bottom: 5,
-            right: 5,
-            child: IconButton(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              icon: const Icon(Icons.info_outline_rounded,
-                  color: Color.fromARGB(71, 255, 255, 255)),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    backgroundColor: AppColors.defaultBlueGray800,
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: <Widget>[
-                          const SizedBox(height: 5),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: Row(
-                              children: <Widget>[
-                                Text('What is',
-                                    style:
-                                        Theme.of(context).textTheme.titleLarge),
-                                const SizedBox(width: 5),
-                                SvgPicture.asset(
-                                  'assets/icons/YTD.svg',
-                                  height: 20,
-                                ),
-                                const SizedBox(width: 5),
-                                Text('?',
-                                    style:
-                                        Theme.of(context).textTheme.titleLarge),
-                              ],
-                            ),
-                          ),
-                          const Text(
-                              'YTD stands for Year-To-Date. It is a financial term that describes the amount of income accumulated over the period of time from the beginning of the current year to the present date.'),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: Row(
-                              children: <Widget>[
-                                Text('What are my total assets?',
-                                    style:
-                                        Theme.of(context).textTheme.titleLarge),
-                              ],
-                            ),
-                          ),
-                          const Text(
-                              'Total assets are the sum of all assets in your account, including the assets of your connected users. This includes all IRAs, Nuview Cash, and assets in both AGQ and AK1.'),
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 30, 75, 137),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Continue',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                );
-              },
+            bottom: 15,
+            right: 15,
+            child: SvgPicture.asset(
+              'assets/icons/agq_logo.svg',
+              height: 25,
             ),
-          ),
+          )
         ],
       );
     }
