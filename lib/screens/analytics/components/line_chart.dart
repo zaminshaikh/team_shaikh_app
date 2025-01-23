@@ -445,13 +445,24 @@ class _LineChartSectionState extends State<LineChartSection> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 0),
-                  child: Text(
-                    displayName.length > 20 ? getInitials(displayName) : displayName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w300,
-                    ),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/single_person.svg',
+                        width: 16,
+                        height: 16,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        displayName.length > 20 ? getInitials(displayName) : displayName,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w300,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
