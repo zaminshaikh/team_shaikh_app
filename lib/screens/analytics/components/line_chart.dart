@@ -149,6 +149,7 @@ class _LineChartSectionState extends State<LineChartSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 8),
             // Client selection buttons
             buildClientButtonsRow(
               context,
@@ -164,7 +165,7 @@ class _LineChartSectionState extends State<LineChartSection> {
               },
               _getInitials,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(15),
@@ -327,6 +328,14 @@ class _LineChartSectionState extends State<LineChartSection> {
   }
   
   void _showAccountModalSheet(BuildContext context, List<Graph> graphs) {
+    // Create a copy of the graphs list to modify
+    List<Graph> availableGraphs = List.from(graphs);
+  
+    // If the user has only 2 accounts, remove the one titled "Cumulative"
+    if (availableGraphs.length == 2) {
+      availableGraphs = availableGraphs.where((g) => g.account.toLowerCase() != 'cumulative').toList();
+    }
+  
     showModalBottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -348,13 +357,13 @@ class _LineChartSectionState extends State<LineChartSection> {
               ),
             ),
             child: ListView.builder(
-              itemCount: graphs.length,
+              itemCount: availableGraphs.length,
               itemBuilder: (context, index) {
-                final g = graphs[index];
+                final g = availableGraphs[index];
                 final accountLabel =
                     g.account.length > 20 ? _getInitials(g.account) : g.account;
                 final isSelected = (selectedAccount == g.account);
-              
+  
                 return ListTile(
                   title: Text(
                     accountLabel,
@@ -438,7 +447,6 @@ class _LineChartSectionState extends State<LineChartSection> {
     );
   }
 
-
   /// 3) Row with "Asset Timeline" label and a date/time dropdown to its right
   Widget _buildAssetTimelineRow() => Row(
       children: [
@@ -462,7 +470,6 @@ class _LineChartSectionState extends State<LineChartSection> {
         _buildTimeFilter(context),
       ],
     );
-
 
   /// Custom "time filter" widget that shows a bottom sheet when tapped.
   Widget _buildTimeFilter(BuildContext context) {
@@ -575,8 +582,6 @@ class _LineChartSectionState extends State<LineChartSection> {
     );
   }
 
-
-
   /// Returns the label for the selected time filter option.
   /// 
   /// This method returns a human-readable label for the selected time filter option.
@@ -591,7 +596,6 @@ class _LineChartSectionState extends State<LineChartSection> {
     }
   }
 
-
   /// Returns the initials for the given name.
   /// 
   String _getInitials(String name) {
@@ -603,7 +607,6 @@ class _LineChartSectionState extends State<LineChartSection> {
     String lastInitial = names.length > 1 ? '${names.last[0].toUpperCase()}.' : '';
     return '$firstName $lastInitial';
   }
-
 
   /// Builds the grid data for the line chart.
   ///
