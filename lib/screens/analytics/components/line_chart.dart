@@ -222,6 +222,7 @@ class _LineChartSectionState extends State<LineChartSection> {
                       ),
                     ),
                   ),
+                  // Date range text
                   const SizedBox(height: 20),
                   keyAndLogoRow(),
                   
@@ -233,41 +234,55 @@ class _LineChartSectionState extends State<LineChartSection> {
         ),
       );
 
-      Widget keyAndLogoRow() {
-        return Padding(
+      Widget keyAndLogoRow() => Padding(
           padding: const EdgeInsets.fromLTRB(10.0, 0, 10, 10),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end, // Align children to the bottom
             children: [
-              // Blue rectangle as the key
-              Container(
-                width: 40,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: AppColors.defaultBlue300,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const SizedBox(width: 18),
-              const Text(
-                'Chart Key',
-                style: TextStyle(
-                  fontFamily: 'Titillium Web',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Blue rectangle as the key
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: AppColors.defaultBlue300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Text(
+                        'Chart Key',
+                        style: TextStyle(
+                          fontFamily: 'Titillium Web',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Date range text
+                  _buildDateRangeText(),
+                ],
               ),
               const Spacer(),
-              // Logo 
-              SvgPicture.asset(
-                'assets/icons/agq_logo.svg',
-                width: 25, 
-                height: 25
+              // Logo aligned to the bottom
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0), // Optional: Adjust padding as needed
+                child: SvgPicture.asset(
+                  'assets/icons/agq_logo.svg',
+                  width: 25, 
+                  height: 25,
+                ),
               ),
             ],
           ),
         );
-      }
 
   /// Button that opens a bottom sheet for account selection.
   Widget _buildAccountModalButton() {
@@ -450,11 +465,11 @@ class _LineChartSectionState extends State<LineChartSection> {
   /// 3) Row with "Asset Timeline" label and a date/time dropdown to its right
   Widget _buildAssetTimelineRow() => Row(
       children: [
-        Column(
+        const Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Asset Timeline',
               style: TextStyle(
                 color: Colors.white,
@@ -462,8 +477,6 @@ class _LineChartSectionState extends State<LineChartSection> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
-            _buildDateRangeText(),
           ],
         ),
         const Spacer(),
