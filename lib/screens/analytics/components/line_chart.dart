@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
 import 'package:team_shaikh_app/database/models/graph_model.dart'; // Import Graph class
@@ -35,11 +34,11 @@ class _LineChartSectionState extends State<LineChartSection> {
   double _maxAmount = 0.0;
   String dropdownValue = 'last-2-years';
 
-  // New state variables for account selection
+  // Variables for account selection
   String? selectedAccount;
   Graph? selectedGraph;
 
-  // New state variables for client selection
+  // Variables for client selection
   late final List<Client> allClients;
   Client? selectedClient;
 
@@ -147,424 +146,463 @@ class _LineChartSectionState extends State<LineChartSection> {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 25),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 30, 41, 59),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // Align to start
-            children: [
-              const SizedBox(height: 10),
-              // Header section with title and dropdowns
-              Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Client selection buttons
+            buildClientButtonsRow(
+              context,
+              allClients,
+              selectedClient,
+              (client) {
+                setState(() {
+                  selectedClient = client;
+                  selectedGraph = client.graphs?.first;
+                  selectedAccount = selectedGraph?.account;
+                  _prepareGraphPoints();
+                });
+              },
+              _getInitials,
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 30, 41, 59),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, // Align to start
+                children: [
+                  const SizedBox(height: 10),
+                  // Header section with title and dropdowns
+                  Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Asset Timeline',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: 'Titillium Web',
-                          ),
-                        ),
-                        const Spacer(),
-                        _buildUnifiedDropdownButton(),
+            
+                        // 1) Row with "Asset Timeline" label and a date/time dropdown to its right
+                        _buildAssetTimelineRow(),
+                        const SizedBox(height: 28),
+                        // 2) Row with "Account" label and a dropdown button to its right
+                        _buildAccountModalButton(),
+                        const SizedBox(height: 15),
                       ],
                     ),
-                    _buildClientAccountInfo(),
-                    const SizedBox(height: 2),
-                    // Date range text
-                    _buildDateRangeText(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Line chart container
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(right: 20, bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: LineChart(
-                      LineChartData(
-                        gridData: _buildGridData(),
-                        titlesData: titlesData,
-                        borderData: FlBorderData(show: false),
-                        minX: 0,
-                        maxX: maxX(dropdownValue),
-                        minY: calculateDynamicMin(_minAmount),
-                        maxY: calculateDynamicMax(_maxAmount),
-                        lineBarsData: [_buildLineChartBarData()],
-                        lineTouchData: _buildLineTouchData(),
+                  ),
+                  const SizedBox(height: 20),
+                  // Line chart container
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.only(right: 20, bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: LineChart(
+                          LineChartData(
+                            gridData: _buildGridData(),
+                            titlesData: titlesData,
+                            borderData: FlBorderData(show: false),
+                            minX: 0,
+                            maxX: maxX(dropdownValue),
+                            minY: calculateDynamicMin(_minAmount),
+                            maxY: calculateDynamicMax(_maxAmount),
+                            lineBarsData: [_buildLineChartBarData()],
+                            lineTouchData: _buildLineTouchData(),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  keyAndLogoRow(),
+                  
+            
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 
-  Widget _buildUnifiedDropdownButton() {
-    // Pick a base blue color for icon/text:
-    const baseBlue = Color.fromARGB(255, 0, 121, 220);
-
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        // Make the background a semi‑transparent blue
-        backgroundColor: baseBlue.withOpacity(0.15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: BorderSide.none,
-        ),
-        elevation: 0, // Keep it flat if you like
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-      ),
-      onPressed: () => _showBlurredDropdownModal(context),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            'assets/icons/filter.svg',
-            colorFilter: const ColorFilter.mode(baseBlue, BlendMode.srcIn),
-            height: 18,
-            width: 18,
-          ),
-          SizedBox(width: 8),
-          Text(
-            'Filters',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: baseBlue,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// When tapped, this function shows a modal with a blurred background.
-  /// Inside, you'll see three sections: Time Period, By Client, By Account.
-  /// There's also a floating X button at the bottom that closes the modal.
-  void _showBlurredDropdownModal(BuildContext context) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,    // Disables closing by tapping outside
-        builder: (BuildContext dialogContext) => Material(
-          color: Colors.transparent,
-          child: Stack(
+      Widget keyAndLogoRow() {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(10.0, 0, 10, 10),
+          child: Row(
             children: [
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    color: const Color.fromARGB(255, 93, 93, 93).withOpacity(0.6),
+              // Blue rectangle as the key
+              Container(
+                width: 40,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: AppColors.defaultBlue300,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(width: 18),
+              const Text(
+                'Chart Key',
+                style: TextStyle(
+                  fontFamily: 'Titillium Web',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                ),
+              ),
+              const Spacer(),
+              // Logo 
+              SvgPicture.asset(
+                'assets/icons/agq_logo.svg',
+                width: 25, 
+                height: 25
+              ),
+            ],
+          ),
+        );
+      }
+
+  /// Button that opens a bottom sheet for account selection.
+  Widget _buildAccountModalButton() {
+    // If no client or no graphs, just show "No accounts"
+    if (selectedClient == null ||
+        selectedClient!.graphs == null ||
+        selectedClient!.graphs!.isEmpty) {
+      return const Text(
+        'No accounts',
+        style: TextStyle(color: Colors.white),
+      );
+    }
+  
+    final graphs = selectedClient!.graphs!;
+    if (selectedAccount == null) {
+      selectedAccount = graphs.first.account;
+      selectedGraph = graphs.first;
+    }
+  
+    final currentAccountLabel = selectedAccount!.length > 20
+        ? _getInitials(selectedAccount!)
+        : selectedAccount!;
+  
+    return GestureDetector(
+      onTap: () => _showAccountModalSheet(context, graphs),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white30, width: 2),
+        ),
+        child: Row(
+          children: [
+            Text(
+              currentAccountLabel,
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'Titillium Web',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            const RotatedBox(
+              quarterTurns: 3,
+              child: Icon(
+                Icons.arrow_back_ios_rounded,
+                color: Colors.white30,
+                size: 22,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void _showAccountModalSheet(BuildContext context, List<Graph> graphs) {
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      backgroundColor: AppColors.defaultBlueGray800,
+      context: context,
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Container(
+            height: MediaQuery.of(ctx).size.height * 0.5,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: ListView.builder(
+              itemCount: graphs.length,
+              itemBuilder: (context, index) {
+                final g = graphs[index];
+                final accountLabel =
+                    g.account.length > 20 ? _getInitials(g.account) : g.account;
+                final isSelected = (selectedAccount == g.account);
+              
+                return ListTile(
+                  title: Text(
+                    accountLabel,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontFamily: 'Titillium Web',
+                      fontSize: 18,
+                    ),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      selectedAccount = g.account;
+                      selectedGraph = g;
+                      _prepareGraphPoints();
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+  Widget buildClientButtonsRow(
+    BuildContext context,
+    List<Client> allClients,
+    Client? selectedClient,
+    Function(Client) onClientSelected,
+    String Function(String) getInitials,
+  ) {
+    if (allClients.isEmpty) {
+      return const Text(
+        'No clients available',
+        style: TextStyle(color: Colors.white),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: allClients.map((clientItem) {
+          final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
+          final isSelected = (selectedClient == clientItem);
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: InkWell(
+              onTap: () => onClientSelected(clientItem),
+              borderRadius: BorderRadius.circular(30),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.defaultBlue500 : Colors.transparent,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: isSelected ? AppColors.defaultBlue500 : Colors.white30,
+                    width: 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 0),
+                  child: Text(
+                    displayName.length > 20 ? getInitials(displayName) : displayName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w300,
+                    ),
                   ),
                 ),
               ),
-              StatefulBuilder(
-                builder: (ctx, setState) => Stack(
-                  children: [
-                    // 2) Actual content
-                    Center(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 30),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
-                              _buildModalTitle('Client'),
-                              _buildClientOptions(setState),
-                              const SizedBox(height: 30),
-                              _buildModalTitle('Account'),
-                              _buildAccountOptions(setState),
-                              const SizedBox(height: 30),
-                              _buildModalTitle('Time Period'),
-                              _buildTimeOptions(setState),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-  
-                    // 3) Floating X Button at bottom center
-                    Positioned(
-                      bottom: 20,
-                      left: 0,
-                      right: 0,
-                        child: Center(
-                        child: FloatingActionButton(
-                          shape: const CircleBorder(),
-                          backgroundColor: AppColors.defaultBlueGray100,
-                          child: const Icon(
-                            Icons.close,
-                            color: Color.fromARGB(255, 65, 65, 65),
-                          ),
-                          onPressed: () => Navigator.pop(dialogContext),
-                        ),
-                      ),
-                    ),
-                  ],
+
+  /// 3) Row with "Asset Timeline" label and a date/time dropdown to its right
+  Widget _buildAssetTimelineRow() => Row(
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Asset Timeline',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            _buildDateRangeText(),
+          ],
+        ),
+        const Spacer(),
+        _buildTimeFilter(context),
+      ],
+    );
+
+
+  /// Custom "time filter" widget that shows a bottom sheet when tapped.
+  Widget _buildTimeFilter(BuildContext context) {
+    // Display text for the currently selected option
+    final selectedText = _getTimeLabel(dropdownValue);
+
+    return GestureDetector(
+      onTap: () => _showTimeOptionsBottomSheet(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.defaultBlueGray500, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Row(
+            children: [
+              Text(
+                selectedText,
+                style: const TextStyle(
+                  fontFamily: 'Titillium Web',
+                  color: AppColors.defaultBlueGray100,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const RotatedBox(
+                quarterTurns: 3,
+                child: Icon(
+                  Icons.arrow_back_ios_rounded, 
+                  color: AppColors.defaultBlueGray500,
+                  size: 16,
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Displays a bottom sheet with all the available time filter options.
+  void _showTimeOptionsBottomSheet(BuildContext context) {
+    var timeOptions = ['last-week', 'last-month', 'last-year', 'year-to-date', 'last-2-years'];
+  
+    showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      backgroundColor: AppColors.defaultBlueGray800,
+      context: context,
+      isScrollControlled: true, // allows the sheet to size itself appropriately
+      builder: (BuildContext ctx) => SafeArea(
+          top: false,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.defaultBlueGray800,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            // Use a Column with mainAxisSize.min so the modal only grows as tall as needed
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                // Here we use ListView with shrinkWrap and no Expanded
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: timeOptions.length,
+                    itemBuilder: (context, index) {
+                      final option = timeOptions[index];
+                      final textLabel = _getTimeLabel(option);
+                      final isSelected = (dropdownValue == option);
+                    
+                      return ListTile(
+                        title: Text(
+                          textLabel,
+                          style: TextStyle(
+                            fontFamily: 'Titillium Web',
+                            color: isSelected ? Colors.white : Colors.white70,
+                            fontSize: 16,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          setState(() {
+                            dropdownValue = option;
+                            _prepareGraphPoints();
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
     );
   }
 
 
-Widget _buildModalTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 4.0),
-    child: Text(
-      title,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    ),
-  );
 
-
-Widget _buildTimeOptions(void Function(void Function()) modalSetState) {
-  // Added 'year-to-date' and 'last-2-years'
-  const timeOptions = [
-    'last-week',
-    'last-month',
-    'last-year',
-    'year-to-date',
-    'last-2-years'
-  ];
-
-  return Column(
-    children: timeOptions.map((option) {
-      final displayText = _getTimeLabel(option); // e.g. 'Last Week', 'Year to Date', etc.
-      final isSelected = (dropdownValue == option);
-
-      return ListTile(
-        title: isSelected 
-          ? Container(
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue500,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Text(
-                    displayText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.check_rounded, color: Colors.white),
-                ],
-              ),
-            )
-          : Text(
-              displayText,
-              style: const TextStyle(color: Colors.white),
-            ),
-        splashColor: Colors.transparent,
-        selectedTileColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        onTap: () {
-          modalSetState(() {
-            setState(() {
-              dropdownValue = option;
-              // ...existing state changes...
-              _prepareGraphPoints();
-            });
-          });
-        },
-      );
-    }).toList(),
-  );
-}
-
-// You’ll also need to update your _getTimeLabel method to include label strings for the new filters, for example:
-String _getTimeLabel(String option) {
-  switch (option) {
-    case 'last-week': return 'Last Week';
-    case 'last-month': return 'Last Month';
-    case 'last-year': return 'Last Year';
-    case 'year-to-date': return 'Year-to-Date';
-    case 'last-2-years': return 'Last 2 Years';
-    default: return 'Unknown';
-  }
-}
-
-// Called when the user taps a client in the client list
-Widget _buildClientOptions(void Function(void Function()) modalSetState) {
-  if (allClients.isEmpty) {
-    return const Text(
-      'No clients available',
-      style: TextStyle(color: Colors.white),
-    );
+  /// Returns the label for the selected time filter option.
+  /// 
+  /// This method returns a human-readable label for the selected time filter option.
+  String _getTimeLabel(String option) {
+    switch (option) {
+      case 'last-week': return 'Last Week';
+      case 'last-month': return 'Last Month';
+      case 'last-year': return 'Last Year';
+      case 'year-to-date': return 'Year-to-Date';
+      case 'last-2-years': return 'Last 2 Years';
+      default: return 'Unknown';
+    }
   }
 
-  return Column(
-    children: allClients.map((clientItem) {
-      final displayName = '${clientItem.firstName} ${clientItem.lastName}'.trim();
-      final isSelected = (selectedClient == clientItem);
 
-      return ListTile(
-        title: isSelected 
-          ? Container(
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue500,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Text(
-                    displayName.length > 20 ? _getInitials(displayName) : displayName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.check_rounded, color: Colors.white),
-                ],
-              ),
-            )
-          : Text(
-              displayName, 
-              style: const TextStyle(color: Colors.white),
-            ),
-        onTap: () {
-          modalSetState(() {
-            setState(() {
-              selectedClient = clientItem;  // Update selected client
-              // Clear out any previously selected account or graph
-              selectedAccount = null;
-              selectedGraph = null;
-              // Refresh the chart or data points as needed
-              _prepareGraphPoints();
-            });
-          });
-        },
-      );
-    }).toList(),
-  );
-}
-
-// Called when the user taps an account in the account list
-Widget _buildAccountOptions(void Function(void Function()) modalSetState) {
-  if (selectedClient == null || selectedClient!.graphs == null || selectedClient!.graphs!.isEmpty) {
-    return const Text(
-      'No accounts',
-      style: TextStyle(color: Colors.white),
-    );
+  /// Returns the initials for the given name.
+  /// 
+  String _getInitials(String name) {
+    List<String> names = name.split(' ');
+    if (names.length == 1) {
+      return names[0];
+    }
+    String firstName = names.first;
+    String lastInitial = names.length > 1 ? '${names.last[0].toUpperCase()}.' : '';
+    return '$firstName $lastInitial';
   }
-
-  final graphs = selectedClient!.graphs!;
-  return Column(
-    children: graphs.map((graph) {
-      final isSelected = (selectedAccount == graph.account);
-
-      return ListTile(
-        title: isSelected 
-          ? Container(
-              decoration: BoxDecoration(
-                color: AppColors.defaultBlue500,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Text(
-                    graph.account.length > 20 ? _getInitials(graph.account) : graph.account,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.check_rounded, color: Colors.white),
-                ],
-              ),
-            )
-          : Text(
-              graph.account, 
-              style: const TextStyle(color: Colors.white),
-            ),
-        onTap: () {
-          modalSetState(() {
-            setState(() {
-              selectedAccount = graph.account;  // Update selected account
-              selectedGraph = graph;            // Update selected graph
-              _prepareGraphPoints();
-            });
-          });
-        },
-      );
-    }).toList(),
-  );
-}
-
-// Use selectedClient and selectedGraph to display the current selection
-Widget _buildClientAccountInfo() {
-  final clientName = '${selectedClient?.firstName ?? 'Unknown'} ${selectedClient?.lastName ?? 'Client'}';
-  final accountName = selectedGraph?.account ?? 'No Account Selected';
-
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.start,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        '$clientName – $accountName',
-        style: const TextStyle(
-          fontSize: 16,
-          color: Colors.white,
-          fontWeight: FontWeight.w400,
-          fontFamily: 'Titillium Web',
-        ),
-      ),
-    ],
-  );
-}
-
-// ...rest of your line_chart.dart file...
-
-
-
-String _getInitials(String name) {
-  List<String> names = name.split(' ');
-  if (names.length == 1) {
-    return names[0];
-  }
-  String firstName = names.first;
-  String lastInitial = names.length > 1 ? '${names.last[0].toUpperCase()}.' : '';
-  return '$firstName $lastInitial';
-}
 
 
   /// Builds the grid data for the line chart.
@@ -616,11 +654,6 @@ String _getInitials(String name) {
           ),
         ),
       );
-
-
-
-
-
 
 
   /// Builds the line chart bar data, which defines the appearance and behavior of the line.
