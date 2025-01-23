@@ -194,6 +194,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             // DatabaseService not found
             yield null;
           } else {
+            // await db.updateField('lastLoggedIn', Timestamp.now());  
             // Yield Client stream from DatabaseService
             yield* db.getClientStream();
           }
@@ -206,6 +207,13 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     print('AppLifecycleState changed: $state');
   
     if (state == AppLifecycleState.resumed) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) { return; }
+      DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
+      if (db != null) { 
+        unawaited(db.updateField('lastLoggedIn', Timestamp.now()));
+      }
+      
       // Cancel the timer when the app is resumed
       _inactivityTimer?.cancel();
       print('Timer cancelled on app resume');
