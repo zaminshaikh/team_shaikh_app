@@ -137,6 +137,31 @@ class _DashboardPageState extends State<DashboardPage>
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> fundCharts = [];
+    final funds = client?.assets?.funds ?? {};
+
+  // Loop through each fund to see if it has a non-zero total
+  funds.forEach((fundName, fund) {
+    final totalAssets = fund.assets.values.fold(0.0, (sum, asset) => sum + asset.amount);
+    if (totalAssets > 0) {
+      fundCharts.add(
+        Column(
+          children: [
+            SlideTransition(
+              position: _offsetAnimation,
+              child: AssetsStructureSection(
+                client: client!,
+                fundName: fundName, // Dynamically pass each fund's name
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      );
+    }
+  });
+
+
     if (client == null) {
       return const CustomProgressIndicatorPage();
     }
@@ -177,11 +202,8 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                       const SizedBox(height: 42),
                       // Assets structure section (pie chart)
-                      SlideTransition(
-                        position: _offsetAnimation,
-                        child: AssetsStructureSection(client: client!),
-                      ),
-                      const SizedBox(height: 132),
+                      ...fundCharts,
+                      const SizedBox(height: 102),
                     ],
                   ),
                 ),
