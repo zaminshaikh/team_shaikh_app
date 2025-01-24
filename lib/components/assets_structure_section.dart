@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 class AssetsStructureSection extends StatelessWidget {
@@ -20,6 +21,9 @@ class AssetsStructureSection extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1) Gather all the account amounts across this client and any connected users
     double overallTotal = 0;
+
+    // Threshold for displaying a slice in the pie chart
+    final double thresholdPercent = 2.0;
 
     // Helper to add the specified fund’s assets to the map
     void addFundAssetsFromClient(Client c) {
@@ -50,49 +54,71 @@ class AssetsStructureSection extends StatelessWidget {
     final List<PieChartSectionData> sections = [];
     final List<_AccountSlice> sliceData = [];
 
+    // 3) Add a “hidden” slice for any accounts below the threshold
+    final List<_AccountSlice> hiddenSliceData = [];
+
+
     // Provide a color palette for slices 
     final colorPalette = <Color>[
-      const Color(0xFF0D5EAF), // AppColors.defaultBlue500
-      const Color(0xFF3199DD), // AppColors.defaultBlue300
-      const Color(0xFF0D4C7A),
+      const Color(0xFF0D5EAF), 
+      const Color(0xFF3199DD),
+      const Color.fromARGB(255, 103, 187, 243),
+      const Color.fromARGB(255, 39, 71, 100),
+      const Color.fromARGB(255, 30, 116, 84),
+      const Color.fromARGB(255, 135, 141, 115),
+      const Color.fromARGB(255, 12, 78, 18),
+      const Color.fromARGB(255, 91, 11, 55),
+      const Color.fromARGB(255, 141, 141, 141),
       const Color(0xFF0D3B5F),
-      const Color(0xFF136CC1),
-      const Color(0xFF2798E4),
       const Color(0xFF5BB7F0),
       const Color(0xFF0B2E47),
-      const Color(0xFF4CABEC),
-      const Color(0xFF70C2F3),
       const Color(0xFF90D5F7),
-      const Color(0xFFB2E4FB),
-      const Color(0xFFD3EEFF), // AppColors.defaultBlue100
+      const Color(0xFFD3EEFF), 
     ];
 
+
+    // Two separate indices: one for visible slices, one for hidden slices
+    int visibleIdx = 0;
+    int hiddenIdx = 0;
+    
     if (overallTotal > 0) {
-      int idx = 0;
-      // Loop over "displayTitle" keys rather than "accountKey"
+      // Loop over "displayNameSums" and decide which slices are hidden vs visible
       displayNameSums.forEach((displayName, sum) {
         final percent = (sum / overallTotal) * 100;
-        final color = colorPalette[idx % colorPalette.length];
-        idx++;
-
-        // Add to the pie chart sections
-        sections.add(
-          PieChartSectionData(
-            color: color,
-            radius: 25,
-            value: percent,
-            showTitle: false,
-          ),
-        );
-
-        // Save slice info to show in the legend row
-        sliceData.add(
-          _AccountSlice(
-            accountName: displayName,  // This is the actual asset.displayTitle
-            color: color,
-            percentage: percent,
-          ),
-        );
+    
+        if (percent < thresholdPercent) {
+          // Get color from the back of the palette for hidden slices
+          final color = colorPalette[colorPalette.length - 1 - (hiddenIdx % colorPalette.length)];
+          hiddenIdx++;
+    
+          hiddenSliceData.add(
+            _AccountSlice(
+              accountName: displayName,
+              color: color,
+              percentage: percent,
+            ),
+          );
+        } else {
+          // Get color from the front of the palette for visible slices
+          final color = colorPalette[visibleIdx % colorPalette.length];
+          visibleIdx++;
+    
+          sections.add(
+            PieChartSectionData(
+              color: color,
+              radius: 25,
+              value: percent,
+              showTitle: false,
+            ),
+          );
+          sliceData.add(
+            _AccountSlice(
+              accountName: displayName,
+              color: color,
+              percentage: percent,
+            ),
+          );
+        }
       });
     }
 
@@ -108,9 +134,9 @@ class AssetsStructureSection extends StatelessWidget {
           Row(
             children: [
               const SizedBox(width: 5),
-              Text(
+              const Text(
                   'Assets Structure',
-                  style: const TextStyle(
+                  style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -269,6 +295,79 @@ class AssetsStructureSection extends StatelessWidget {
               }).toList(),
             ),
           ],
+          if (hiddenSliceData.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            const Row(
+              children: [
+                SizedBox(width: 30),
+                Text(
+                  'Not Shown',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color.fromARGB(255, 216, 216, 216),
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  '%',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color.fromARGB(255, 216, 216, 216),
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                SizedBox(width: 10),
+              ],
+            ),
+            const SizedBox(height: 5),
+            const Divider(
+              thickness: 1.2,
+              height: 1,
+              color: Color.fromARGB(255, 102, 102, 102),
+            ),
+            const SizedBox(height: 10),
+
+            Column(
+              children: hiddenSliceData.map((slice) {
+                final pctString = slice.percentage.toStringAsFixed(1);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 20,
+                        color: slice.color,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        slice.accountName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$pctString%',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+
         ],
       ),
     );
