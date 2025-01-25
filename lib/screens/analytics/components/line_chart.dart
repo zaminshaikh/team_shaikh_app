@@ -235,51 +235,37 @@ class _LineChartSectionState extends State<LineChartSection> {
       );
 
       Widget keyAndLogoRow() => Padding(
-          padding: const EdgeInsets.fromLTRB(10.0, 0, 10, 10),
+          padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end, // Align children to the bottom
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
                   // Blue rectangle as the key
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: AppColors.defaultBlue300,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      const Text(
-                        'Chart Key',
-                        style: TextStyle(
-                          fontFamily: 'Titillium Web',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                  Container(
+                    width: 40,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: AppColors.defaultBlue300,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  // Date range text
-                  _buildDateRangeText(),
+                  const SizedBox(width: 14),
+                  const Text(
+                    'Chart Key',
+                    style: TextStyle(
+                      fontFamily: 'Titillium Web',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
+              const SizedBox(height: 8),
               const Spacer(),
-              // Logo aligned to the bottom
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4.0), // Optional: Adjust padding as needed
-                child: SvgPicture.asset(
-                  'assets/icons/agq_logo.svg',
-                  width: 25, 
-                  height: 25,
-                ),
-              ),
+              // Date range text
+              _buildDateRangeText(),
             ],
           ),
         );
@@ -843,7 +829,7 @@ class _LineChartSectionState extends State<LineChartSection> {
   Widget _buildDateRangeText() {
     String displayText = '';
     DateTime now = DateTime.now();
-    DateFormat dateFormat = DateFormat('MMM. dd, yyyy');
+    DateFormat dateFormat = DateFormat('MMM. dd, yy');
   
     switch (dropdownValue) {
       case 'last-week':
@@ -895,6 +881,7 @@ class _LineChartSectionState extends State<LineChartSection> {
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.white,
+                fontWeight: FontWeight.bold,
                 fontFamily: 'Titillium Web',
               ),
             ),
