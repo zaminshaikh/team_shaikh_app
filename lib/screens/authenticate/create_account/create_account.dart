@@ -532,7 +532,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 // Dismiss the keyboard
                 FocusScope.of(context).unfocus();
                 try {
-                  await GoogleAuthService().signInWithGoogle(context);
+                  await GoogleAuthService().signUpWithGoogle(context, _cid);
                   // Navigate to dashboard or home
                   // e.g., Navigator.pushReplacementNamed(context, '/dashboard');
                 } finally {
