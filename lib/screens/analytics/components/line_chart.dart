@@ -270,7 +270,6 @@ class _LineChartSectionState extends State<LineChartSection> {
           ),
         );
 
-  /// Button that opens a bottom sheet for account selection.
   Widget _buildAccountModalButton() {
     // If no client or no graphs, just show "No accounts"
     if (selectedClient == null ||
@@ -283,6 +282,19 @@ class _LineChartSectionState extends State<LineChartSection> {
     }
   
     final graphs = selectedClient!.graphs!;
+  
+    // If there are exactly 2 graphs, pick the non-cumulative one by default
+    if (graphs.length == 2) {
+      // For example, we assume the 'title' or 'name' can identify cumulative
+      // Adjust the check as needed based on your graph model
+      final nonCumulative = graphs.firstWhere(
+        (graph) => graph.account.toLowerCase() != 'cumulative',
+        orElse: () => graphs.first,
+      );
+      selectedAccount = nonCumulative.account;
+      selectedGraph = nonCumulative;
+    }
+    // Otherwise, fall back to the original logic if selectedAccount is still null
     if (selectedAccount == null) {
       selectedAccount = graphs.first.account;
       selectedGraph = graphs.first;
@@ -293,7 +305,9 @@ class _LineChartSectionState extends State<LineChartSection> {
         : selectedAccount!;
   
     return GestureDetector(
-      onTap: () => _showAccountModalSheet(context, graphs),
+      onTap: graphs.length == 2
+        ? null
+        : () => _showAccountModalSheet(context, graphs),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -314,20 +328,25 @@ class _LineChartSectionState extends State<LineChartSection> {
               ),
             ),
             const Spacer(),
-            const RotatedBox(
-              quarterTurns: 3,
-              child: Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Colors.white30,
-                size: 22,
-              ),
-            ),
+            if (graphs.length > 2) 
+              const RotatedBox(
+                quarterTurns: 3,
+                child: Icon(
+                  Icons.arrow_back_ios_rounded,
+                  color: Colors.white30,
+                  size: 22,
+                ),
+              )
+            else
+              const SizedBox(width: 10),
           ],
         ),
       ),
     );
   }
-  
+
+
+
   void _showAccountModalSheet(BuildContext context, List<Graph> graphs) {
     // Create a copy of the graphs list to modify
     List<Graph> availableGraphs = List.from(graphs);
