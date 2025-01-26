@@ -525,61 +525,59 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       ),
     );
 
-  /// Builds the Google Sign-Up button.
   Widget _buildGoogleSignUpButton() => GestureDetector(
-        onTap: _isButtonEnabled
-            ? () async {
-                // Dismiss the keyboard
-                FocusScope.of(context).unfocus();
-                try {
-                  await GoogleAuthService().signUpWithGoogle(context, _cid);
-                  // Navigate to dashboard or home
-                  // e.g., Navigator.pushReplacementNamed(context, '/dashboard');
-                } finally {
-                  setState(() => isLoading = false);
-                }
-              }
-            : () {
-                // Dismiss the keyboard
-                FocusScope.of(context).unfocus();
+    onTap: _isButtonEnabled
+        ? () async {
+            // Dismiss the keyboard
+            FocusScope.of(context).unfocus();
+            try {
+              setState(() => isLoading = true);
+              await GoogleAuthService().signUpWithGoogle(context, _cid);
+            } finally {
+              setState(() => isLoading = false);
+            }
+          }
+        : () {
+            // Dismiss the keyboard
+            FocusScope.of(context).unfocus();
   
-                CustomAlertDialog.showAlertDialog(
-                  context,
-                  'Please enter your CID',
-                  'We need your CID to authenticate with Google. Please enter your CID to continue.',
-                );
-              },
-        child: Container(
-          height: 55,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color.fromARGB(255, 30, 75, 137),
-              width: 4,
+            CustomAlertDialog.showAlertDialog(
+              context,
+              'Please enter your CID',
+              'We need your CID to authenticate with Google. Please enter your CID to continue.',
+            );
+          },
+    child: Container(
+      height: 55,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color.fromARGB(255, 30, 75, 137),
+          width: 4,
+        ),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.google,
+            color: Colors.blue,
+          ),
+          SizedBox(width: 15),
+          Text(
+            'Sign up with Google',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
             ),
           ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                FontAwesomeIcons.google,
-                color: Colors.blue,
-              ),
-              SizedBox(width: 15),
-              Text(
-                'Sign up with Google',
-                style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Titillium Web'),
-              ),
-            ],
-          ),
-        ),
-      );
-
+        ],
+      ),
+    ),
+  );
 
 
   /// Builds the OR divider.
