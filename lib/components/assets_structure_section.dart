@@ -1,35 +1,127 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
+import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 class AssetsStructureSection extends StatelessWidget {
   final Client client;
+  final String fundName;
+  final Map<String, double> displayNameSums = {};
 
-  const AssetsStructureSection({
-    Key? key,
+
+  AssetsStructureSection({
+    super.key,
     required this.client,
-  }) : super(key: key);
+    required this.fundName, 
+  });
 
   @override
   Widget build(BuildContext context) {
-    double totalAGQ = client.assets?.funds['agq']?.total ?? 0;
-    double totalAK1 = client.assets?.funds['ak1']?.total ?? 0;
-    double totalAssets = client.assets?.totalAssets ?? 0;
+    // 1) Gather all the account amounts across this client and any connected users
+    double overallTotal = 0;
 
-    // Include connected users' total assets
+    // Threshold for displaying a slice in the pie chart
+    final double thresholdPercent = 2.0;
+
+    // Helper to add the specified fund’s assets to the map
+    void addFundAssetsFromClient(Client c) {
+      final fund = c.assets?.funds[fundName];
+      if (fund == null) return;
+
+      fund.assets.forEach((_, asset) {
+        final amt = asset.amount;
+        final name = asset.displayTitle;    // <- use the asset’s displayTitle
+        displayNameSums[name] = (displayNameSums[name] ?? 0) + amt;
+        overallTotal += amt;
+      });
+    }
+
+    // Main client
+    addFundAssetsFromClient(client);
+
+    // Connected users
     if (client.connectedUsers != null) {
-      for (var user in client.connectedUsers!) {
+      for (final user in client.connectedUsers!) {
         if (user != null) {
-          totalAGQ += user.assets?.funds['agq']?.total ?? 0;
-          totalAK1 += user.assets?.funds['ak1']?.total ?? 0;
-          totalAssets += user.assets?.totalAssets ?? 0;
+          addFundAssetsFromClient(user);
         }
       }
     }
 
-    double percentageAGQ = totalAGQ / totalAssets * 100;
-    double percentageAK1 = totalAK1 / totalAssets * 100;
+    // 2) Convert each account to a pie slice
+    final List<PieChartSectionData> sections = [];
+    final List<_AccountSlice> sliceData = [];
+
+    // 3) Add a “hidden” slice for any accounts below the threshold
+    final List<_AccountSlice> hiddenSliceData = [];
+
+
+    // Provide a color palette for slices 
+    final colorPalette = <Color>[
+      const Color(0xFF0D5EAF), 
+      const Color(0xFF3199DD),
+      const Color.fromARGB(255, 103, 187, 243),
+      const Color.fromARGB(255, 39, 71, 100),
+      const Color.fromARGB(255, 30, 116, 84),
+      const Color.fromARGB(255, 12, 78, 18),
+      const Color.fromARGB(255, 91, 11, 14),
+      AppColors.defaultRed400,
+      const Color.fromARGB(255, 141, 141, 141),
+      const Color.fromARGB(255, 115, 128, 141),
+      const Color(0xFF0D3B5F),
+      const Color(0xFF5BB7F0),
+      const Color(0xFF0B2E47),
+      const Color(0xFF90D5F7),
+      const Color(0xFFD3EEFF), 
+    ];
+
+
+    // Two separate indices: one for visible slices, one for hidden slices
+    int visibleIdx = 0;
+    int hiddenIdx = 0;
+    
+    if (overallTotal > 0) {
+      // Loop over "displayNameSums" and decide which slices are hidden vs visible
+      displayNameSums.forEach((displayName, sum) {
+        final percent = (sum / overallTotal) * 100;
+    
+        if (percent < thresholdPercent) {
+          // Get color from the back of the palette for hidden slices
+          final color = colorPalette[colorPalette.length - 1 - (hiddenIdx % colorPalette.length)];
+          hiddenIdx++;
+    
+          hiddenSliceData.add(
+            _AccountSlice(
+              accountName: displayName,
+              color: color,
+              percentage: percent,
+            ),
+          );
+        } else {
+          // Get color from the front of the palette for visible slices
+          final color = colorPalette[visibleIdx % colorPalette.length];
+          visibleIdx++;
+    
+          sections.add(
+            PieChartSectionData(
+              color: color,
+              radius: 25,
+              value: percent,
+              showTitle: false,
+            ),
+          );
+          sliceData.add(
+            _AccountSlice(
+              accountName: displayName,
+              color: color,
+              percentage: percent,
+            ),
+          );
+        }
+      });
+    }
 
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 15, 15, 20),
@@ -40,29 +132,52 @@ class AssetsStructureSection extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 10),
-          const Row(
+          Row(
             children: [
-              SizedBox(width: 5),
-              Text(
-                'Assets Structure',
-                style: TextStyle(
+              const SizedBox(width: 5),
+              const Text(
+                  'Assets Structure',
+                  style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   fontFamily: 'Titillium Web',
                 ),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  if (fundName.toLowerCase() == 'agq')
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10, top: 5),
+                      child: SvgPicture.asset(
+                        'assets/icons/agq_logo.svg',
+                        color: Colors.white,
+                        height: 25,
+                        width: 25,
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10, top: 5),
+                      child: SvgPicture.asset(
+                        'assets/icons/ak1_logo.svg',
+                        color: Colors.white,
+                        height: 25,
+                        width: 25,
+                      ),
+                    ),
+                ],
               )
             ],
           ),
+          
           const SizedBox(height: 60),
-          Container(
+
+          // Pie chart with a center label
+          SizedBox(
             width: 250,
             height: 250,
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(15),
-            ),
             child: Stack(
               children: [
                 PieChart(
@@ -70,24 +185,10 @@ class AssetsStructureSection extends StatelessWidget {
                     startDegreeOffset: 120,
                     centerSpaceRadius: 100,
                     sectionsSpace: 10,
-                    sections: [
-                      if (percentageAGQ > 0)
-                        PieChartSectionData(
-                          color: const Color.fromARGB(255, 12, 94, 175),
-                          radius: 25,
-                          value: percentageAGQ,
-                          showTitle: false,
-                        ),
-                      if (percentageAK1 > 0)
-                        PieChartSectionData(
-                          color: const Color.fromARGB(255, 49, 153, 221),
-                          radius: 25,
-                          value: percentageAK1,
-                          showTitle: false,
-                        ),
-                    ],
+                    sections: sections, // Our newly built list
                   ),
                 ),
+                // “Total” in the center
                 Align(
                   alignment: Alignment.center,
                   child: Column(
@@ -102,7 +203,7 @@ class AssetsStructureSection extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        currencyFormat(totalAssets),
+                        currencyFormat(overallTotal),
                         style: const TextStyle(
                           fontSize: 22,
                           color: Colors.white,
@@ -117,12 +218,20 @@ class AssetsStructureSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 30),
-          if (percentageAGQ > 0 || percentageAK1 > 0) ...[
+
+          // If we have no data, show a “No data” message
+          if (overallTotal == 0)
+            const Text(
+              'No data available for this fund',
+              style: TextStyle(color: Colors.white),
+            )
+          else ...[
+            // Otherwise, show the table of slices
             const Row(
               children: [
                 SizedBox(width: 30),
                 Text(
-                  'Type',
+                  'Account',
                   style: TextStyle(
                     fontSize: 16,
                     color: Color.fromARGB(255, 216, 216, 216),
@@ -149,19 +258,21 @@ class AssetsStructureSection extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Column(
-              children: [
-                if (percentageAGQ > 0)
-                  Row(
+              children: sliceData.map((slice) {
+                final pctString = slice.percentage.toStringAsFixed(1);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.circle,
                         size: 20,
-                        color: Color.fromARGB(255, 12, 94, 175),
+                        color: slice.color,
                       ),
                       const SizedBox(width: 10),
-                      const Text(
-                        'AGQ Fund',
-                        style: TextStyle(
+                      Text(
+                        slice.accountName,
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -170,7 +281,7 @@ class AssetsStructureSection extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '${percentageAGQ.toStringAsFixed(1)}%',
+                        '$pctString%',
                         style: const TextStyle(
                           fontSize: 15,
                           color: Colors.white,
@@ -181,44 +292,97 @@ class AssetsStructureSection extends StatelessWidget {
                       const SizedBox(width: 10),
                     ],
                   ),
-                if (percentageAGQ > 0 && percentageAK1 > 0)
-                  const SizedBox(height: 20),
-                if (percentageAK1 > 0)
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.circle,
-                        size: 20,
-                        color: Color.fromARGB(255, 49, 153, 221),
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        'AK1 Fund',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${percentageAK1.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Titillium Web',
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
-              ],
+                );
+              }).toList(),
             ),
           ],
+          if (hiddenSliceData.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            const Row(
+              children: [
+                SizedBox(width: 30),
+                Text(
+                  'Not Shown',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color.fromARGB(255, 216, 216, 216),
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  '%',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color.fromARGB(255, 216, 216, 216),
+                    fontFamily: 'Titillium Web',
+                  ),
+                ),
+                SizedBox(width: 10),
+              ],
+            ),
+            const SizedBox(height: 5),
+            const Divider(
+              thickness: 1.2,
+              height: 1,
+              color: Color.fromARGB(255, 102, 102, 102),
+            ),
+            const SizedBox(height: 10),
+
+            Column(
+              children: hiddenSliceData.map((slice) {
+                final pctString = slice.percentage.toStringAsFixed(1);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 20,
+                        color: slice.color,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        slice.accountName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$pctString%',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Titillium Web',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+
         ],
       ),
     );
   }
+}
+
+/// Helper class for building the “legend” of accounts below the chart.
+class _AccountSlice {
+  final String accountName;
+  final Color color;
+  final double percentage;
+  _AccountSlice({
+    required this.accountName,
+    required this.color,
+    required this.percentage,
+  });
 }
