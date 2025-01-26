@@ -290,12 +290,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) => StreamBuilder<ConnectivityResult>(
       stream: Connectivity().onConnectivityChanged.map((result) => result.first),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active &&
-            snapshot.data == ConnectivityResult.none) {
+        if (snapshot.hasData && snapshot.data == ConnectivityResult.none) {
           return MaterialApp(
-            home: const NoInternetScreen(),
+            home: NoInternetScreen(),
           );
-        }
+        } 
+
   
         return StreamBuilder<User?>(
           stream: FirebaseAuth.instance.userChanges(),
