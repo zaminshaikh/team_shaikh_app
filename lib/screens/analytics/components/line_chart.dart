@@ -236,37 +236,15 @@ class _LineChartSectionState extends State<LineChartSection> {
 
       Widget keyAndLogoRow() => Padding(
           padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end, // Align children to the bottom
-            children: [
-              Row(
-                children: [
-                  // Blue rectangle as the key
-                  Container(
-                    width: 40,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: AppColors.defaultBlue300,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Text(
-                    'Chart Key',
-                    style: TextStyle(
-                      fontFamily: 'Titillium Web',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Spacer(),
-              // Date range text
-              _buildDateRangeText(),
-            ],
+          child: Center(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end, // Align children to the bottom
+              mainAxisAlignment: MainAxisAlignment.center, // Center horizontally
+              children: [
+                // Date range text
+                _buildDateRangeText(),
+              ],
+            )
           ),
         );
 
@@ -898,7 +876,7 @@ class _LineChartSectionState extends State<LineChartSection> {
             Text(
               displayText,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 18,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Titillium Web',
