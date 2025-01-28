@@ -33,7 +33,7 @@ import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:team_shaikh_app/screens/utils/push_notification.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
-import 'firebase_options.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
