@@ -288,13 +288,13 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<ConnectivityResult>(
-      stream: Connectivity().onConnectivityChanged.map((result) => result.first),
+      stream: Connectivity().onConnectivityChanged.expand((results) => results),
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data == ConnectivityResult.none) {
-          return MaterialApp(
+          return const MaterialApp(
             home: NoInternetScreen(),
           );
-        } 
+        }
 
   
         return StreamBuilder<User?>(
@@ -310,6 +310,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               },
               initialData: null,
               child: MaterialApp(
+                initialRoute: '/',
                 navigatorKey: navigatorKey,
                 builder: (context, child) => MediaQuery(
                   data: MediaQuery.of(context).copyWith(
