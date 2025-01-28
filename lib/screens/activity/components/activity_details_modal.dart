@@ -1,4 +1,3 @@
-// widgets/activity_details_modal.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -13,64 +12,74 @@ final DateFormat dayHeaderFormat = DateFormat('MMMM d, yyyy');
 
 class ActivityDetailsModal extends StatelessWidget {
   final Activity activity;
+  final bool isFromAGQ; // make it final
 
-  const ActivityDetailsModal({required this.activity, Key? key})
-      : super(key: key);
+  // The constructor no longer accepts isFromAGQ
+  ActivityDetailsModal({
+    required this.activity,
+    Key? key,
+  })  : isFromAGQ = (activity.fund == 'AGQ'),  // automatically sets based on fund
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    DateFormat('EEEE, MMM. d, yyyy').format(activity.time);
-
     return FractionallySizedBox(
       heightFactor: 0.67,
       child: ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(30.0),
-        topRight: Radius.circular(30.0),
-      ),
-      child: Container(
-        color: AppColors.defaultBlueGray800,
-        child: SingleChildScrollView(
-        child: Column(
-          children: [
-          _buildModalHeader(context),
-          _buildModalBody(activity),
-          ],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30.0),
+          topRight: Radius.circular(30.0),
         ),
+        child: Container(
+          color: AppColors.defaultBlueGray800,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildModalHeader(context, isFromAGQ),
+                _buildModalBody(activity),
+              ],
+            ),
+          ),
         ),
-      ),
       ),
     );
   }
 
-  Widget _buildModalHeader(BuildContext context) => Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.close_rounded,
-                    color: Color.fromARGB(171, 255, 255, 255)),
-                onPressed: () => Navigator.pop(context),
+  Widget _buildModalHeader(BuildContext context, bool isFromAGQ) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close_rounded,
+                      color: Color.fromARGB(171, 255, 255, 255)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          if (isFromAGQ)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 25.0),
+              child: SvgPicture.asset(
+                'assets/icons/agq_logo.svg',
+                width: 40,
+                height: 40,
               ),
-            ],
+            ),
+          const Text(
+            'Activity Details',
+            style: TextStyle(
+              fontSize: 25.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: 'Titillium Web',
+            ),
           ),
-        ),
-        const Text(
-          'Activity Details',
-          style: TextStyle(
-            fontSize: 25.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            fontFamily: 'Titillium Web',
-          ),
-        ),
-      ],
-    );
-
-
+        ],
+      );
 
   Widget _buildModalBody(Activity activity) {
     String date = dateFormat.format(activity.time);
@@ -206,8 +215,8 @@ class ActivityDetailsModal extends StatelessWidget {
         ),
       );
 
-    // Activity details modal
-  void _showActivityDetailsModal(BuildContext context, Activity activity) {
+  // Activity details modal
+  void _showActivityDetailsModal(BuildContext context, Activity activity, bool isFromAGQ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -224,7 +233,7 @@ class ActivityDetailsModal extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  _buildModalHeader(context),
+                  _buildModalHeader(context, isFromAGQ),
                   _buildModalBody(activity),
                 ],
               ),
@@ -234,5 +243,4 @@ class ActivityDetailsModal extends StatelessWidget {
       ),
     );
   }
-
 }
