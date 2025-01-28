@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:developer';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -52,7 +53,7 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => AuthState(),
-      child: const MyApp(),
+      child: Phoenix(child: const MyApp()),
     ),
   );
 }
@@ -464,13 +465,21 @@ class _AuthCheckState extends State<AuthCheck> {
           final user = snapshot.data!;
           log('AuthCheck: User is logged in as ${user.email}');
 
+          final authState = Provider.of<AuthState>(context, listen: false);
+
+
           // Use the stored future
           return FutureBuilder<bool>(
             future: _isAuthenticatedAndVerifiedFuture,
             builder: (context, authSnapshot) {
               if (authSnapshot.connectionState == ConnectionState.waiting) {
                 log('AuthCheck: FutureBuilder waiting for authentication check.');
-                return const Center(child: CustomProgressIndicator());
+                if (authState.forceDashboard) {
+                  log('AuthCheck: User is not authenticated or linked, but has reloaded the app from the no internet screen. Navigating to DashboardPage.');
+                  return const DashboardPage();
+                } else {
+                  return const Center(child: CustomProgressIndicator());
+                }
               } else if (authSnapshot.hasError) {
                 log('AuthCheck: FutureBuilder error: ${authSnapshot.error}');
                 return Center(child: Text('Error: ${authSnapshot.error}'));
@@ -500,11 +509,14 @@ class _AuthCheckState extends State<AuthCheck> {
                   },
                 );
               } else {
-                log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
-                // FirebaseAuth.instance.currentUser?.delete();
-                return const OnboardingPage();
+                if (!authState.forceDashboard) {
+                  log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
+                  return const OnboardingPage();
+                } else {
+                  return const DashboardPage();
+                }
               }
-            },
+            }
           );
         } else {
           log('AuthCheck: User is not logged in yet.');

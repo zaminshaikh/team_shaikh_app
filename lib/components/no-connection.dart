@@ -1,11 +1,34 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:provider/provider.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 
 class NoInternetScreen extends StatelessWidget {
   const NoInternetScreen({super.key});
 
-  void _reload(BuildContext context) {
-    // Implement your reload logic here
-    print('Reload button pressed');
+  Future<void> _reload(BuildContext context) async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.none) {
+      print('Reload button pressed');
+      final authState = Provider.of<AuthState>(context, listen: false);
+      authState.setForceDashboard(true);
+      Phoenix.rebirth(context);
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Internet Connection'),
+          content: const Text('Please check your internet connection and try again.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
