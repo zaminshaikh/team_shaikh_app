@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:team_shaikh_app/main.dart';
+import 'package:team_shaikh_app/my_app.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
 import 'dart:async';
