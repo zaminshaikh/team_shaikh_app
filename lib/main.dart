@@ -214,7 +214,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (user == null) { return; }
       DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
       if (db != null) { 
-        unawaited(db.updateField('lastLoggedIn', Timestamp.now()));
+        await db.updateField('lastLoggedIn', Timestamp.now());
       }
       
       // Cancel the timer when the app is resumed
