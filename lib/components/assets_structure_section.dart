@@ -8,7 +8,7 @@ import 'package:team_shaikh_app/screens/utils/utilities.dart';
 class AssetsStructureSection extends StatelessWidget {
   final Client client;
   final String fundName;
-  final Map<String, double> displayNameSums = {};
+  final Map<String, double> accountSums = {};
 
 
   AssetsStructureSection({
@@ -26,15 +26,15 @@ class AssetsStructureSection extends StatelessWidget {
     final double thresholdPercent = 2.0;
 
     // Helper to add the specified fund’s assets to the map
-    void addFundAssetsFromClient(Client c) {
-      final fund = c.assets?.funds[fundName];
+    void addFundAssetsFromClient(Client client) {
+      final fund = client.assets?.funds[fundName];
       if (fund == null) return;
 
       fund.assets.forEach((_, asset) {
-        final amt = asset.amount;
-        final name = asset.displayTitle;    // <- use the asset’s displayTitle
-        displayNameSums[name] = (displayNameSums[name] ?? 0) + amt;
-        overallTotal += amt;
+        final amount = asset.amount;
+        final accountName = client.firstName + ' ' + client.lastName + ' - ' + asset.displayTitle;    // <- use the asset’s displayTitle
+        accountSums[accountName] = (accountSums[accountName] ?? 0) + amount;
+        overallTotal += amount;
       });
     }
 
@@ -84,7 +84,7 @@ class AssetsStructureSection extends StatelessWidget {
     
     if (overallTotal > 0) {
       // Loop over "displayNameSums" and decide which slices are hidden vs visible
-      displayNameSums.forEach((displayName, sum) {
+      accountSums.forEach((displayName, sum) {
         final percent = (sum / overallTotal) * 100;
     
         if (percent < thresholdPercent) {
