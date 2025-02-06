@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
@@ -482,8 +483,13 @@ class DatabaseService {
     }
   }
 
-  /// Calls the Cloud Function `isUIDLinked` to check if a UID is linked.
   Future<bool> isUIDLinked(String uid) async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      print('No network detected. Returning false immediately.');
+      return false; // or handle it differently
+    }
+
     try {
       // Initialize the callable function
       final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(

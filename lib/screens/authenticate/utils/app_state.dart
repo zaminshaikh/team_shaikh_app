@@ -7,6 +7,8 @@ class AuthState extends ChangeNotifier {
   bool _isAppLockEnabled = false;
   String _selectedTimeOption = '1 minute';
   double _selectedTimeInMinutes = 1.0;
+  bool _forceDashboard = false;
+
 
   // Getter for _hasNavigatedToFaceIDPage
   bool get hasNavigatedToFaceIDPage => _hasNavigatedToFaceIDPage;
@@ -25,6 +27,9 @@ class AuthState extends ChangeNotifier {
 
   // Getter for _selectedTimeInMinutes
   double get selectedTimeInMinutes => _selectedTimeInMinutes;
+
+  // Getter for _forceDashboard
+  bool get forceDashboard => _forceDashboard;
 
   // Setter for _hasNavigatedToFaceIDPage
   void setHasNavigatedToFaceIDPage(bool value) {
@@ -57,6 +62,12 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Setter for _forceDashboard
+  void setForceDashboard(bool value) {
+    _forceDashboard = value;
+    notifyListeners();
+  }
+  
   double _getTimeInMinutes(String timeOption) {
     switch (timeOption) {
       case 'Immediately':
