@@ -437,11 +437,11 @@ class _AuthCheckState extends State<AuthCheck> {
       return false;
     }
 
-    await user.reload(); // Ensure the latest user state
+    await user.reload(); 
 
-    // if (!user.emailVerified) {
-    //   return false;
-    // }
+    if (!user.emailVerified) {
+      return false;
+    }
 
     String uid = user.uid;
 
