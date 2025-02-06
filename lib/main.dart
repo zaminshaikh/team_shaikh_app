@@ -3,8 +3,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:developer';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Firebase packages
 import 'package:firebase_core/firebase_core.dart';
@@ -14,6 +16,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Third-party packages
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:team_shaikh_app/components/no-connection.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 
 // Local packages
@@ -50,7 +53,7 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => AuthState(),
-      child: const MyApp(),
+      child: Phoenix(child: const MyApp()),
     ),
   );
 }
@@ -285,45 +288,60 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.userChanges(),
-      builder: (context, authSnapshot) {
-        final user = authSnapshot.data;
-        return StreamProvider<Client?>(
-          key: ValueKey(user?.uid),
-          create: (_) => getClientStream(),
-          catchError: (context, error) {
-            log('main.dart: Error in fetching client stream: $error');
-            return null;
-          },
-          initialData: null,
-          child: MaterialApp(
-            navigatorKey: navigatorKey,
-            builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                boldText: false,
-                textScaler: const TextScaler.linear(1),
+  Widget build(BuildContext context) => StreamBuilder<ConnectivityResult>(
+      stream: Connectivity().onConnectivityChanged.expand((results) => results),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data == ConnectivityResult.none) {
+          return const MaterialApp(
+            home: NoInternetScreen(),
+          );
+        }
+
+  
+        return StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.userChanges(),
+          builder: (context, authSnapshot) {
+            final user = authSnapshot.data;
+            return StreamProvider<Client?>(
+              key: ValueKey(user?.uid),
+              create: (_) => getClientStream(),
+              catchError: (context, error) {
+                log('main.dart: Error in fetching client stream: $error');
+                return null;
+              },
+              initialData: null,
+              child: MaterialApp(
+                initialRoute: '/',
+                navigatorKey: navigatorKey,
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    boldText: false,
+                    textScaler: const TextScaler.linear(1),
+                  ),
+                  child: child!,
+                ),
+                title: 'AGQ Investments',
+                theme: _buildAppTheme(),
+                // home: const AuthCheck(),
+                routes: {
+                  '/': (context) => const AuthCheck(),
+                  '/create_account': (context) => const CreateAccountPage(),
+                  '/login': (context) => const LoginPage(),
+                  '/forgot_password': (context) => const ForgotPasswordPage(),
+                  '/dashboard': (context) => const DashboardPage(),
+                  '/analytics': (context) => const AnalyticsPage(),
+                  '/activity': (context) => const ActivityPage(),
+                  '/profile': (context) => const ProfilePage(),
+                  '/notification': (context) => const NotificationPage(),
+                  '/onboarding': (context) => const OnboardingPage(),
+                },
               ),
-              child: child!,
-            ),
-            title: 'AGQ Investments',
-            theme: _buildAppTheme(),
-            // home: const AuthCheck(),
-            routes: {
-              '/': (context) => const AuthCheck(),
-              '/create_account': (context) => const CreateAccountPage(),
-              '/login': (context) => const LoginPage(),
-              '/forgot_password': (context) => const ForgotPasswordPage(),
-              '/dashboard': (context) => const DashboardPage(),
-              '/analytics': (context) => const AnalyticsPage(),
-              '/activity': (context) => const ActivityPage(),
-              '/profile': (context) => const ProfilePage(),
-              '/notification': (context) => const NotificationPage(),
-              '/onboarding': (context) => const OnboardingPage(),
-            },
-          ),
+            );
+          },
         );
-      });
+      },
+    );
+
 
   /// Build the application theme
   ThemeData _buildAppTheme() => ThemeData(
@@ -419,11 +437,11 @@ class _AuthCheckState extends State<AuthCheck> {
       return false;
     }
 
-    await user.reload(); // Ensure the latest user state
+    await user.reload(); 
 
-    // if (!user.emailVerified) {
-    //   return false;
-    // }
+    if (!user.emailVerified) {
+      return false;
+    }
 
     String uid = user.uid;
 
@@ -447,13 +465,21 @@ class _AuthCheckState extends State<AuthCheck> {
           final user = snapshot.data!;
           log('AuthCheck: User is logged in as ${user.email}');
 
+          final authState = Provider.of<AuthState>(context, listen: false);
+
+
           // Use the stored future
           return FutureBuilder<bool>(
             future: _isAuthenticatedAndVerifiedFuture,
             builder: (context, authSnapshot) {
               if (authSnapshot.connectionState == ConnectionState.waiting) {
                 log('AuthCheck: FutureBuilder waiting for authentication check.');
-                return const Center(child: CustomProgressIndicator());
+                if (authState.forceDashboard) {
+                  log('AuthCheck: User is not authenticated or linked, but has reloaded the app from the no internet screen. Navigating to DashboardPage.');
+                  return const DashboardPage();
+                } else {
+                  return const Center(child: CustomProgressIndicator());
+                }
               } else if (authSnapshot.hasError) {
                 log('AuthCheck: FutureBuilder error: ${authSnapshot.error}');
                 return Center(child: Text('Error: ${authSnapshot.error}'));
@@ -483,11 +509,14 @@ class _AuthCheckState extends State<AuthCheck> {
                   },
                 );
               } else {
-                log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
-                // FirebaseAuth.instance.currentUser?.delete();
-                return const OnboardingPage();
+                if (!authState.forceDashboard) {
+                  log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
+                  return const OnboardingPage();
+                } else {
+                  return const DashboardPage();
+                }
               }
-            },
+            }
           );
         } else {
           log('AuthCheck: User is not logged in yet.');
@@ -496,3 +525,4 @@ class _AuthCheckState extends State<AuthCheck> {
       },
     );
 }
+
