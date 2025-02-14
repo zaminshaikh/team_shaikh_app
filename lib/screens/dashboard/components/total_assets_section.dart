@@ -23,7 +23,7 @@ class TotalAssetsSection extends StatelessWidget {
     return Stack(
         children: [
           Container(
-            width: 400,
+            width: double.infinity,
             height: 160,
             padding: const EdgeInsets.only(left: 12, top: 10),
             decoration: BoxDecoration(
