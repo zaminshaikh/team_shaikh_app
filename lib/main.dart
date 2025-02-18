@@ -188,19 +188,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         // Fetch DatabaseService for the authenticated user
         DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
         if (db == null) {
-          // DatabaseService not found
+          // CID doc not found
           yield null;
         } else {
-          // Fetch DatabaseService for the authenticated user
-          DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
-          if (db == null) {
-            // DatabaseService not found
-            yield null;
-          } else {
-            // await db.updateField('lastLoggedIn', Timestamp.now());  
-            // Yield Client stream from DatabaseService
-            yield* db.getClientStream();
-          }
+          yield* db.getClientStream();
         }
       }});
 
