@@ -80,7 +80,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
             child: ListBody(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Row(
                     children: <Widget>[
                       Text(
@@ -98,15 +98,8 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                   ),
                 ),
                 const Text('Are you sure you want to permanently delete your account?'), // Updated message
-                Padding( // New widget to display cid
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Text(
-                    'Your CID: ${widget.client.cid}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
-                  ),
-                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                   child: Text(
                     'Type your CID to confirm deletion:',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
@@ -116,7 +109,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                   controller: _clientIdController,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'CID',
+                    hintText: 'Your CID: ${widget.client.cid}',
                     hintStyle: const TextStyle(color: Colors.white70),
                     enabledBorder: OutlineInputBorder(
                       borderSide: const BorderSide(color: Colors.white),
