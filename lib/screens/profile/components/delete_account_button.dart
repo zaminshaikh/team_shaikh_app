@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
+import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 class DeleteAccountButton extends StatefulWidget { // Renamed widget
   final Client client;
@@ -184,16 +186,32 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
   }
 
   void _deleteAccount() async { // Renamed method
-    log('delete_account_button.dart: Deleting account...'); // Updated log message
-    // ...existing code for navigating away or confirming deletion...
-    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
-    if (!mounted) {
-      return;
+    log('delete_account_button.dart: Deleting account...'); 
+
+    Future<void> handleDeleteAccount() async {
+      await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
+      await FirebaseAuth.instance.signOut();
+
+      HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('unlinkUser');
+      final response = await callable.call({
+        'uid': widget.client.uid,
+        'cid': widget.client.cid,
+        'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION'),
+      });
+      log('Cloud function unlinkUser called successfully: ${response.data}');
+
+      if (!mounted) {
+        return;
+      }
+
+      assert(FirebaseAuth.instance.currentUser == null);
     }
-    // Optionally add account deletion logic here. For example:
-    // await AuthHelper.deleteAccount(widget.client);
-    await FirebaseAuth.instance.signOut();
-    assert(FirebaseAuth.instance.currentUser == null);
+
+    Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
+     
+    await handleDeleteAccount();
+
     return;
   }
 }
