@@ -780,6 +780,52 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           LogoutButton(client: client!),
+          const Padding(
+            padding: EdgeInsets.only(left: 20, right: 20),
+            child: 
+              Column(
+                children: [
+                  SizedBox(height: 50),
+                  Divider(
+                          color: Colors.white,
+                          thickness: 0.2,
+                          height: 20,
+                        ),
+                  
+                  SizedBox(height: 15),
+                  
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Delete your account',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            'Delete your account. This cannot be undone.',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontFamily: 'Titillium Web',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ),
+          const SizedBox(height: 20),
+          // LogoutButton(client: client!),
           const SizedBox(height: 50),
         ],
       );
