@@ -19,6 +19,14 @@ class DeleteAccountButton extends StatefulWidget { // Renamed widget
 }
 
 class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed state class
+  final TextEditingController _clientIdController = TextEditingController();
+
+  @override
+  void dispose() {
+    _clientIdController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -90,27 +98,63 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                   ),
                 ),
                 const Text('Are you sure you want to permanently delete your account?'), // Updated message
+                Padding( // New widget to display cid
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    'Your CID: ${widget.client.cid}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    'Type your CID to confirm deletion:',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+                TextField(
+                  controller: _clientIdController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'CID',
+                    hintStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
           actions: <Widget>[
             GestureDetector(
               onTap: () {
-                Navigator.of(context).pop(); 
+                if (_clientIdController.text != widget.client.cid) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('CID does not match.')),
+                  );
+                  return;
+                }
+                Navigator.of(context).pop();
                 _deleteAccount();
               },
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.red, // Solid red background
+                  color: Colors.red.withOpacity(0.2), // Solid red background
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text(
                   'Delete',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white, // Updated text color for contrast
+                    color: Colors.red, // Updated text color for contrast
                     fontWeight: FontWeight.bold
                   ),
                 ),
