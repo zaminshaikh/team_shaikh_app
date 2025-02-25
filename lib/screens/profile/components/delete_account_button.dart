@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -190,7 +191,6 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
 
     Future<void> handleDeleteAccount() async {
       await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
-      await FirebaseAuth.instance.signOut();
 
       HttpsCallable callable =
           FirebaseFunctions.instance.httpsCallable('unlinkUser');
@@ -201,17 +201,19 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
       });
       log('Cloud function unlinkUser called successfully: ${response.data}');
 
-      if (!mounted) {
-        return;
-      }
+      await FirebaseAuth.instance.signOut();
 
       assert(FirebaseAuth.instance.currentUser == null);
     }
 
-    Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
-     
-    await handleDeleteAccount();
+    unawaited(handleDeleteAccount());
 
+    if (!mounted) {
+        return;
+    }
+
+    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
+     
     return;
   }
 }

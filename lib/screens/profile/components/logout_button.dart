@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -148,20 +149,21 @@ class _LogoutButtonState extends State<LogoutButton> {
   }
 
   void _logout() async {
-    log('Profiles.dart: Signing out...');
+    log('settings.dart: Signing out...');
 
     Future<void> handleLogout() async {
       // Continue sign out asynchronously.
       await deleteFirebaseMessagingToken(FirebaseAuth.instance.currentUser, context);
       await FirebaseAuth.instance.signOut();
       assert(FirebaseAuth.instance.currentUser == null);
+      log('settings.dart: Successfully signed out');
       return;
     }
+    unawaited(handleLogout());
     // Immediately navigate away to avoid security rules issues when signed out.
-    Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
+    await Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
 
     // Continue sign out asynchronously.
-    await handleLogout();
     return;
   }
 }
