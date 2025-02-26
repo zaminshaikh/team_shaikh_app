@@ -23,6 +23,7 @@ class DeleteAccountButton extends StatefulWidget { // Renamed widget
 
 class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed state class
   final TextEditingController _clientIdController = TextEditingController();
+  String? _errorText; // Added error text state variable
 
   @override
   void dispose() {
@@ -74,115 +75,131 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
       );
 
   void _showDeleteAccountDialog(BuildContext context) { // Renamed method
+    // Reset error text when dialog opens
+    setState(() {
+      _errorText = null;
+    });
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) => AlertDialog(
-          backgroundColor: AppColors.defaultBlueGray800,
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        'Confirm Delete Account', // Updated dialog title
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(width: 10),
-                      SvgPicture.asset(
-                        'assets/icons/delete.svg', // Updated icon asset
-                        width: 24,
-                        height: 24,
-                        color: Colors.white, 
-                      ),
-                    ],
-                  ),
-                ),
-                const Text('Are you sure you want to permanently delete your account?'), // Updated message
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                  child: Text(
-                    'Type your CID to confirm deletion:',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
-                  ),
-                ),
-                TextField(
-                  controller: _clientIdController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Your CID: ${widget.client.cid}',
-                    hintStyle: const TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(10),
+      builder: (BuildContext dialogContext) => StatefulBuilder( // Use StatefulBuilder to update dialog content
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: AppColors.defaultBlueGray800,
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Row(
+                      children: <Widget>[
+                        Text(
+                          'Confirm Delete Account', // Updated dialog title
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(width: 10),
+                        SvgPicture.asset(
+                          'assets/icons/delete.svg', // Updated icon asset
+                          width: 24,
+                          height: 24,
+                          color: Colors.white, 
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const Text('Are you sure you want to permanently delete your account?'), // Updated message
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    child: Text(
+                      'Type your CID to confirm deletion:',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  TextField(
+                    controller: _clientIdController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Your CID: ${widget.client.cid}',
+                      hintStyle: const TextStyle(color: Colors.white70),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: _errorText != null ? Colors.red : Colors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: _errorText != null ? Colors.red : Colors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      errorText: _errorText,
+                      errorStyle: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          actions: <Widget>[
-            GestureDetector(
-              onTap: () {
-                if (_clientIdController.text != widget.client.cid) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('CID does not match.')),
-                  );
-                  return;
-                }
-                Navigator.of(context).pop();
-                _deleteAccount();
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.2), // Solid red background
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'Delete',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.red, // Updated text color for contrast
-                    fontWeight: FontWeight.bold
+            actions: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  if (_clientIdController.text != widget.client.cid) {
+                    // Update error message within the dialog using StatefulBuilder
+                    setDialogState(() {
+                      _errorText = 'CID does not match, please enter the correct CID';
+                    });
+                    return;
+                  }
+                  Navigator.of(context).pop();
+                  _deleteAccount();
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(         
+                    color: Colors.red.withOpacity(0.2), // Solid red background
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Delete',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.red, // Updated text color for contrast
+                      fontWeight: FontWeight.bold
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10), 
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop(); 
-              },
-              child: Container(
-                width: double.infinity, 
-                padding: const EdgeInsets.symmetric(vertical: 10), 
-                decoration: BoxDecoration(
-                  color: Colors.transparent, 
-                  border: Border.all(
-                    color: Colors.white, 
-                    width: 1, 
+              const SizedBox(height: 10), 
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop(); 
+                },
+                child: Container(
+                  width: double.infinity, 
+                  padding: const EdgeInsets.symmetric(vertical: 10), 
+                  decoration: BoxDecoration(
+                    color: Colors.transparent, 
+                    border: Border.all(
+                      color: Colors.white, 
+                      width: 1, 
+                    ),
+                    borderRadius: BorderRadius.circular(10), 
                   ),
-                  borderRadius: BorderRadius.circular(10), 
-                ),
-                child: const Text(
-                  'Cancel',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white, 
+                  child: const Text(
+                    'Cancel',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white, 
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        },
+      ),
     );
   }
 

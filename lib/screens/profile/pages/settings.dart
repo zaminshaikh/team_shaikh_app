@@ -786,7 +786,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: 
               Column(
                 children: [
-                  SizedBox(height: 50),
+                  SizedBox(height: 20),
                   Divider(
                           color: Colors.white,
                           thickness: 0.2,
