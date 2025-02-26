@@ -278,9 +278,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                       vertical: 14, horizontal: 14),
                                 ),
                                 onChanged: (value) {
-                                  setState(() {
-                                    emailController.text = value;
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      emailController.text = value;
+                                    });
+                                  }
                                 },
                               ),
                             ],
@@ -327,9 +329,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                       vertical: 14, horizontal: 14),
                                   suffixIcon: GestureDetector(
                                     onTap: () {
-                                      setState(() {
-                                        hidePassword = !hidePassword;
-                                      });
+                                      if (mounted) {
+                                        setState(() {
+                                          hidePassword = !hidePassword;
+                                        });
+                                      }
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(0.0),
@@ -346,9 +350,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                 ),
                                 obscureText: hidePassword,
                                 onChanged: (value) {
-                                  setState(() {
-                                    passwordController.text = value;
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      passwordController.text = value;
+                                    });
+                                  }
                                 },
                               ),
                             ],
@@ -488,13 +494,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             
                         GestureDetector(
                           onTap: () async {
-                            setState(() => _isLoading = true);
+                            if (mounted) setState(() => _isLoading = true);
                             try {
                               await GoogleAuthService().signInWithGoogle(context);
                               // Navigate to dashboard or home
                               // e.g., Navigator.pushReplacementNamed(context, '/dashboard');
                             } finally {
-                              setState(() => _isLoading = false);
+                              if (mounted) setState(() => _isLoading = false);
                             }
                           },
                           child: Container(
