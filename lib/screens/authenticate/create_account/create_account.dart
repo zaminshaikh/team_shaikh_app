@@ -487,6 +487,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           const SizedBox(height: 10.0),
           TextField(
             controller: _clientIDController,
+            keyboardType: TextInputType.number,
             style: const TextStyle(
               fontSize: 16,
               color: Colors.white,
