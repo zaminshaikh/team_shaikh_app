@@ -325,10 +325,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                     ),
                     child: Stack(
-                      children: [
+                      children: const [
                         Column(
                           children: [
-                                const Text(
+                                Text(
                                   'Create An Account',
                                   style: TextStyle(
                                     fontSize: 26,
@@ -337,7 +337,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                                     fontFamily: 'Titillium Web',
                                   ),
                                 ),
-                            const SizedBox(height: 20.0),
+                            SizedBox(height: 20.0),
                             Row(
                               children: [
                                 Text(''),
@@ -623,6 +623,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           const SizedBox(height: 10.0),
           TextField(
             controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
             style: const TextStyle(
                 fontSize: 16, color: Colors.white, fontFamily: 'Titillium Web'),
             decoration: InputDecoration(
