@@ -33,6 +33,11 @@
 				</array>
 			</dict>
 		</array>
+		<!-- Add Sign In with Apple capability -->
+		<key>com.apple.developer.applesignin</key>
+		<array>
+			<string>Default</string>
+		</array>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>FirebaseMessagingAutoInitEnabled</key>

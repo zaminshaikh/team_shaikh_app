@@ -16,6 +16,7 @@ import 'package:team_shaikh_app/screens/authenticate/create_account/components/p
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/apple_auth_service.dart';
 
 /// A StatefulWidget representing the Create Account page.
 class CreateAccountPage extends StatefulWidget {
@@ -363,6 +364,12 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             
                         // Google Sign-Up button
                         _buildGoogleSignUpButton(),
+
+                        // Adding some space here
+                        const SizedBox(height: 16.0),
+
+                        // Apple Sign-Up button
+                        _buildAppleSignUpButton(),
             
                         // Adding some space here
                         const SizedBox(height: 30.0),
@@ -580,6 +587,60 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     ),
   );
 
+  /// Builds the Apple Sign-Up button.
+  Widget _buildAppleSignUpButton() => GestureDetector(
+    onTap: _isButtonEnabled
+        ? () async {
+            // Dismiss the keyboard
+            FocusScope.of(context).unfocus();
+            try {
+              setState(() => isLoading = true);
+              await AppleAuthService().signUpWithApple(context, _cid);
+            } finally {
+              setState(() => isLoading = false);
+            }
+          }
+        : () {
+            // Dismiss the keyboard
+            FocusScope.of(context).unfocus();
+  
+            CustomAlertDialog.showAlertDialog(
+              context,
+              'Please enter your CID',
+              'We need your CID to authenticate with Apple. Please enter your CID to continue.',
+            );
+          },
+    child: Container(
+      height: 55,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color.fromARGB(255, 30, 75, 137),
+          width: 4,
+        ),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.apple,
+            color: Colors.white,
+          ),
+          SizedBox(width: 15),
+          Text(
+            'Sign up with Apple',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Titillium Web',
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
   /// Builds the OR divider.
   Widget _buildOrDivider() => Row(
