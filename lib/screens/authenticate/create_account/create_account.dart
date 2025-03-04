@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
@@ -595,9 +596,61 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             FocusScope.of(context).unfocus();
             try {
               setState(() => isLoading = true);
+              log('Apple Sign In button pressed, checking availability...');
+              
+              // Check if Sign In with Apple is available first
+              final isAvailable = await SignInWithApple.isAvailable();
+              log('Apple Sign In available: $isAvailable');
+              
+              if (!isAvailable) {
+                if (mounted) {
+                  await CustomAlertDialog.showAlertDialog(
+                    context,
+                    'Not Available',
+                    'Sign in with Apple is not available on this device or simulator. Please try on a real iOS device.',
+                  );
+                }
+                return;
+              }
+              
+              log('Starting Apple sign in process with CID: $_cid');
               await AppleAuthService().signUpWithApple(context, _cid);
+            } on FirebaseAuthException catch (e) {
+              log('Firebase Auth Error in Apple sign-in: ${e.code} - ${e.message}', stackTrace: StackTrace.current);
+              if (mounted) {
+                String message = 'Authentication failed';
+                switch (e.code) {
+                  case 'invalid-credential':
+                    message = 'Invalid authentication. Please try again or use another method.';
+                    break;
+                  case 'user-disabled':
+                    message = 'This user account has been disabled.';
+                    break;
+                  case 'operation-not-allowed':
+                    message = 'Apple Sign In is not enabled for this project.';
+                    break;
+                  default:
+                    message = 'Authentication failed: ${e.message}';
+                }
+                await CustomAlertDialog.showAlertDialog(
+                  context,
+                  'Sign In Failed',
+                  message,
+                );
+              }
+            } catch (e) {
+              log('Error in Apple sign-in button: $e', stackTrace: StackTrace.current);
+              if (mounted) {
+                await CustomAlertDialog.showAlertDialog(
+                  context,
+                  'Apple Sign In Failed',
+                  'There was a problem signing in with Apple. Please try again later.',
+                );
+              }
             } finally {
-              setState(() => isLoading = false);
+              if (mounted) {
+                setState(() => isLoading = false);
+              }
             }
           }
         : () {
