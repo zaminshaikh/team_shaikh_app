@@ -13,7 +13,134 @@ import 'package:provider/provider.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 
 class AppleAuthService {
-  /// Sign up with Apple account
+  /// Sign in with Apple (without CID - for login)
+  Future<bool> signInWithApple(BuildContext context) async {
+    try {
+      // Check if Apple Sign In is available on this platform
+      final isAvailable = await SignInWithApple.isAvailable();
+      if (!isAvailable) {
+        if (context.mounted) {
+          await CustomAlertDialog.showAlertDialog(
+            context,
+            'Not Available',
+            'Sign in with Apple is not available on this device.',
+            icon: const Icon(Icons.error_outline, color: Colors.red),
+          );
+        }
+        return false;
+      }
+
+      log('Starting Apple sign in process (login flow)');
+      
+      // Generate secure nonce - MUST follow Firebase requirements
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+      
+      log('Generated nonce for Apple Sign In');
+
+      // Request credential from Apple
+      try {
+        final appleCredential = await SignInWithApple.getAppleIDCredential(
+          scopes: [
+            AppleIDAuthorizationScopes.email,
+            AppleIDAuthorizationScopes.fullName,
+          ],
+          nonce: nonce,
+        );
+        
+        log('Got Apple credential with identity token length: ${appleCredential.identityToken?.length ?? 0}');
+        
+        if (appleCredential.identityToken == null) {
+          log('Error: Identity token is null');
+          throw FirebaseAuthException(
+            code: 'invalid-credential',
+            message: 'Apple Sign In failed: Identity token is null',
+          );
+        }
+
+        // Create OAuthCredential
+        final oauthCredential = OAuthProvider('apple.com').credential(
+          idToken: appleCredential.identityToken!,
+          rawNonce: rawNonce,
+          accessToken: appleCredential.authorizationCode,
+        );
+        
+        log('Created OAuth credential for Firebase');
+
+        // Sign in with Firebase
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+        final user = userCredential.user;
+        
+        if (user == null) {
+          log('Error: Firebase user is null after sign in');
+          throw FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'Failed to get user after Apple sign in',
+          );
+        }
+        
+        log('Successfully signed in with Firebase using Apple ID: ${user.uid}');
+
+        // Update display name if needed
+        if (appleCredential.givenName != null && appleCredential.familyName != null) {
+          String fullName = '${appleCredential.givenName} ${appleCredential.familyName}';
+          if (user.displayName == null || user.displayName!.isEmpty) {
+            await user.updateDisplayName(fullName);
+          }
+        }
+        
+        // Check if this user has a linked CID
+        final db = DatabaseService(user.uid);
+        final isLinked = await db.isUIDLinked(user.uid);
+        
+        if (!isLinked) {
+          log('User is not linked to any CID');
+          if (context.mounted) {
+            await CustomAlertDialog.showAlertDialog(
+              context,
+              'Account Not Found',
+              'This Apple ID is not linked to any account. Please create an account first.',
+              icon: const Icon(Icons.error_outline, color: Colors.red),
+            );
+          }
+          await FirebaseAuth.instance.signOut();
+          return false;
+        }
+        
+        // Update Firebase messaging token
+        await updateFirebaseMessagingToken(user, context);
+        
+        if (context.mounted) {
+          // Show success message
+          await CustomAlertDialog.showAlertDialog(
+            context,
+            'Success',
+            'You have successfully signed in.',
+            icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green),
+          );
+        }
+        
+        return true;
+      } catch (signInError) {
+        log('Error during Apple Sign In process: $signInError');
+        rethrow;
+      }
+    } catch (e) {
+      log('Error in Apple sign in: $e', stackTrace: StackTrace.current);
+      if (context.mounted) {
+        String message = 'Failed to sign in with Apple';
+        if (e.toString().contains('canceled')) {
+          message = 'Sign in was canceled';
+        } else if (e.toString().contains('invalid-credential')) {
+          message = 'Authentication failed. Please try again or use another method.';
+        }
+        await _showError(context, message);
+      }
+      return false;
+    }
+  }
+
+  /// Sign up with Apple account (with CID)
   Future<void> signUpWithApple(BuildContext context, String cid) async {
     try {
       // Check if Apple Sign In is available on this platform

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
@@ -19,6 +20,7 @@ import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
+import 'package:team_shaikh_app/screens/authenticate/utils/apple_auth_service.dart';
 
 // Creating a stateful widget for the Login page
 class LoginPage extends StatefulWidget {
@@ -136,6 +138,58 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       await Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } else {
       // Handle failed authentication
+    }
+  }
+
+  // Add method to handle Apple sign-in
+  Future<void> _signInWithApple() async {
+    log('login.dart: Attempting to sign in with Apple...');
+    try {
+      setState(() => _isLoading = true);
+      
+      // Check if Sign In with Apple is available first
+      final isAvailable = await SignInWithApple.isAvailable();
+      log('login.dart: Apple Sign In available: $isAvailable');
+      
+      if (!isAvailable) {
+        if (mounted) {
+          await CustomAlertDialog.showAlertDialog(
+            context,
+            'Not Available',
+            'Sign in with Apple is not available on this device or simulator.',
+          );
+        }
+        return;
+      }
+
+      // Generate secure nonce
+      final AppleAuthService appleAuthService = AppleAuthService();
+      final isSignedIn = await appleAuthService.signInWithApple(context);
+      
+      if (isSignedIn) {
+        log('login.dart: Apple Sign In successful');
+        // Set initiallyAuthenticated to true
+        Provider.of<AuthState>(context, listen: false)
+            .setInitiallyAuthenticated(true);
+        
+        // Navigate to dashboard
+        if (mounted) {
+          await Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+        }
+      }
+    } catch (e) {
+      log('login.dart: Error signing in with Apple: $e', stackTrace: StackTrace.current);
+      if (mounted) {
+        await CustomAlertDialog.showAlertDialog(
+          context, 
+          'Sign In Failed', 
+          'There was an error signing in with Apple. Please try again or use another method.'
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -526,6 +580,42 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   style: TextStyle(
                                       fontSize: 18,
                                       color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Titillium Web'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Add spacing before Apple Sign In button
+                        const SizedBox(height: 16.0),
+
+                        // Apple Sign In Button
+                        GestureDetector(
+                          onTap: _signInWithApple,
+                          child: Container(
+                            height: 55,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                  color: const Color.fromARGB(255, 30, 75, 137),
+                                  width: 4),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.apple,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 15),
+                                Text(
+                                  'Sign in with Apple',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'Titillium Web'),
                                 ),
