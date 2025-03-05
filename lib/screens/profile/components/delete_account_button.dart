@@ -118,6 +118,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                   ),
                   TextField(
                     controller: _clientIdController,
+                    keyboardType: TextInputType.number,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Your CID: ${widget.client.cid}',
