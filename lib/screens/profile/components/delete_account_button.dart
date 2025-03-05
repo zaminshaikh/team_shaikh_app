@@ -23,11 +23,13 @@ class DeleteAccountButton extends StatefulWidget { // Renamed widget
 
 class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed state class
   final TextEditingController _clientIdController = TextEditingController();
+  final FocusNode _clientIdFocusNode = FocusNode(); // Add a FocusNode
   String? _errorText; // Added error text state variable
 
   @override
   void dispose() {
     _clientIdController.dispose();
+    _clientIdFocusNode.dispose(); // Dispose the FocusNode
     super.dispose();
   }
 
@@ -118,8 +120,15 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                   ),
                   TextField(
                     controller: _clientIdController,
+                    focusNode: _clientIdFocusNode, // Use the focus node
                     keyboardType: TextInputType.number,
                     style: const TextStyle(color: Colors.white),
+                    onChanged: (value) {
+                      // Lose focus after 8 digits
+                      if (value.length >= 8) {
+                        _clientIdFocusNode.unfocus();
+                      }
+                    },
                     decoration: InputDecoration(
                       hintText: 'Your CID: ${widget.client.cid}',
                       hintStyle: const TextStyle(color: Colors.white70),
