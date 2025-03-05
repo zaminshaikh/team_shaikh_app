@@ -51,7 +51,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SvgPicture.asset(
-                        'assets/icons/delete.svg', // Updated icon asset (ensure it's available)
+                        'assets/icons/trash.svg', // Updated icon asset (ensure it's available)
                         color: Colors.red,
                         height: 20,
                       ),
@@ -100,7 +100,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                         ),
                         const SizedBox(width: 10),
                         SvgPicture.asset(
-                          'assets/icons/delete.svg', // Updated icon asset
+                          'assets/icons/trash.svg', // Updated icon asset
                           width: 24,
                           height: 24,
                           color: Colors.white, 
