@@ -109,17 +109,7 @@ class AppleAuthService {
         
         // Update Firebase messaging token
         await updateFirebaseMessagingToken(user, context);
-        
-        if (context.mounted) {
-          // Show success message
-          await CustomAlertDialog.showAlertDialog(
-            context,
-            'Success',
-            'You have successfully signed in.',
-            icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green),
-          );
-        }
-        
+                
         return true;
       } catch (signInError) {
         log('Error during Apple Sign In process: $signInError');
