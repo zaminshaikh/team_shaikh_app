@@ -600,8 +600,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                               color: Colors.transparent,
                               borderRadius: BorderRadius.circular(25),
                               border: Border.all(
-                                  color: const Color.fromARGB(255, 30, 75, 137),
-                                  width: 4),
+                                color: Colors.white.withOpacity(0.3),
+                                width: 4,
+                              ),
                             ),
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,

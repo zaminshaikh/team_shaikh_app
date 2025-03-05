@@ -361,7 +361,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         _buildClientIDField(),
             
                         // Adding some space here
-                        const SizedBox(height: 40.0),
+                        const SizedBox(height: 32.0),
             
                         // Google Sign-Up button
                         _buildGoogleSignUpButton(),
@@ -373,13 +373,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         _buildAppleSignUpButton(),
             
                         // Adding some space here
-                        const SizedBox(height: 30.0),
+                        const SizedBox(height: 32.0),
             
                         // OR divider
                         _buildOrDivider(),
             
                         // Adding some space here
-                        const SizedBox(height: 30.0),
+                        const SizedBox(height: 32.0),
             
                         // Email input field
                         _buildEmailField(),
@@ -669,7 +669,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color.fromARGB(255, 30, 75, 137),
+          color: Colors.white.withOpacity(0.3),
           width: 4,
         ),
       ),
