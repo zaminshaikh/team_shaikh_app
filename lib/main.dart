@@ -284,6 +284,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data == ConnectivityResult.none) {
           return const MaterialApp(
+            debugShowCheckedModeBanner: false,
             home: NoInternetScreen(),
           );
         }
@@ -302,6 +303,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               },
               initialData: null,
               child: MaterialApp(
+                debugShowCheckedModeBanner: false,
                 initialRoute: '/',
                 navigatorKey: navigatorKey,
                 builder: (context, child) => MediaQuery(
