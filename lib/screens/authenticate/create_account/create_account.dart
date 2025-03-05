@@ -38,6 +38,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       TextEditingController();
   final TextEditingController _confirmCreateAccountPasswordController =
       TextEditingController();
+  
+  // Focus node for Client ID field
+  final FocusNode _clientIDFocusNode = FocusNode();
 
   // Firebase and app state.
   late DatabaseService db;
@@ -78,6 +81,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   void dispose() async {
     _clientIDController.removeListener(_checkIfFilled);
     _clientIDController.dispose();
+    _clientIDFocusNode.dispose(); // Dispose focus node
     super.dispose();
     if (!(await isAuthenticated())) {
       await FirebaseAuth.instance.signOut();
@@ -495,6 +499,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           const SizedBox(height: 10.0),
           TextField(
             controller: _clientIDController,
+            focusNode: _clientIDFocusNode, // Add focus node
             keyboardType: TextInputType.number,
             style: const TextStyle(
               fontSize: 16,
@@ -523,10 +528,15 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             ),
             inputFormatters: <TextInputFormatter>[
               FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(8), // Limit to 8 digits
             ],
             onChanged: (value) {
               setState(() {
                 _cid = value;
+                // Auto-unfocus when 8 digits are entered
+                if (value.length == 8) {
+                  _clientIDFocusNode.unfocus();
+                }
               });
             },
           ),
