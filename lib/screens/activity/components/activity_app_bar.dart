@@ -68,6 +68,7 @@ class _ActivityAppBarState extends State<ActivityAppBar> {
                         color: Colors.transparent,
                         padding: const EdgeInsets.all(10.0),
                         child: Stack(
+                          clipBehavior: Clip.none,
                           alignment: Alignment.center,
                           children: <Widget>[
                             SvgPicture.asset(
@@ -80,7 +81,7 @@ class _ActivityAppBarState extends State<ActivityAppBar> {
                             ),
                             Positioned(
                               right: 0,
-                              top: 5,
+                              top: -6, // Changed from 0 to -5 to move the badge higher
                               child: (widget.client.numNotifsUnread ?? 0) > 0
                                   ? Container(
                                       decoration: BoxDecoration(
