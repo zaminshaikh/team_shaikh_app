@@ -142,7 +142,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
             children: [
               SvgPicture.asset(
                 'assets/icons/face_id.svg',
-: Colors.white,
+                color: Colors.white,
                 height: 40,
                 width: 40,
               ),
