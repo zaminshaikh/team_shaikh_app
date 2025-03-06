@@ -105,7 +105,7 @@ class _FaceIdPageState extends State<FaceIdPage> with WidgetsBindingObserver {
         });
       }
 
-      if (mounted) {
+      if (context.mounted) {
         await Navigator.pushReplacement(
           context,
           PageRouteBuilder(

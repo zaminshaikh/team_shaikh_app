@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/database/models/activity_model.dart';
 import 'package:team_shaikh_app/database/models/graph_point_model.dart';
@@ -11,7 +10,6 @@ import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
-import 'package:team_shaikh_app/screens/authenticate/onboarding.dart';
 
 
 /// A service class for interacting with the Firestore database.
@@ -397,9 +395,9 @@ class DatabaseService {
         'uid': uid,
         'usersCollectionID': Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')
       });
-      print('Function result: ${result.data}');
+      log('Function result: ${result.data}');
     } catch (e) {
-      print('Error calling cloud function: $e');
+      log('Error calling cloud function: $e');
     }
   }
 
@@ -437,7 +435,7 @@ class DatabaseService {
       return result.data['exists'] as bool;
     } catch (e) {
       // Log any errors encountered during the function call
-      print('Error calling function: $e');
+      log('Error calling function: $e');
 
       // Return false by default if an error occurs to handle the error gracefully
       return false;
@@ -476,7 +474,7 @@ class DatabaseService {
       return result.data['isLinked'] as bool;
     } catch (e) {
       // Log any errors encountered during the function call
-      print('Error calling function: $e');
+      log('Error calling function: $e');
 
       // Return true by default if an error occurs to handle the error gracefully
       return true;
@@ -485,8 +483,8 @@ class DatabaseService {
 
   Future<bool> isUIDLinked(String uid) async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      print('No network detected. Returning false immediately.');
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      log('No network detected. Returning false immediately.');
       return false; // or handle it differently
     }
 
@@ -512,11 +510,11 @@ class DatabaseService {
       return isLinked;
     } on FirebaseFunctionsException catch (e) {
       // Handle Firebase Functions errors
-      print('Firebase Functions Exception: ${e.code} - ${e.message}');
+      log('Firebase Functions Exception: ${e.code} - ${e.message}');
       return false;
     } catch (e) {
       // Handle other errors
-      print('Unknown error occurred while calling isUIDLinked: $e');
+      log('Unknown error occurred while calling isUIDLinked: $e');
       return false;
     }
   }

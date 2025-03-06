@@ -5,12 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
-import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 
 // Creating a stateful widget for the Forgot Password page
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({Key? key}) : super(key: key);
+  const ForgotPasswordPage({super.key});
 
   @override
   _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
@@ -99,11 +98,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ],
                 ),
               ),
-              child: Stack(
+              child: const Stack(
                 children: [
                   Column(
                     children: [
-                          const Text(
+                          Text(
                             'Forgot Password?',
                             style: TextStyle(
                               fontSize: 26,
@@ -112,7 +111,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               fontFamily: 'Titillium Web',
                             ),
                           ),
-                      const SizedBox(height: 20.0),
+                      SizedBox(height: 20.0),
                       Row(
                         children: [
                           Text(''),

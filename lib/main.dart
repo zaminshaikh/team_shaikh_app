@@ -16,7 +16,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Third-party packages
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:team_shaikh_app/components/no-connection.dart';
+import 'package:team_shaikh_app/components/no_connection.dart';
 import 'package:team_shaikh_app/components/progress_indicator.dart';
 
 // Local packages
@@ -36,7 +36,6 @@ import 'package:team_shaikh_app/screens/notifications/notifications.dart';
 import 'package:team_shaikh_app/screens/profile/profile.dart';
 import 'package:team_shaikh_app/screens/utils/push_notification.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -128,8 +127,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     setState(() {
       selectedTimeOption = prefs.getString('selectedTimeOption') ?? '1 minute';
       selectedTimeInMinutes = _getTimeInMinutes(selectedTimeOption!);
-      print('Selected time option: $selectedTimeOption');
-      print('Timer duration in minutes: $selectedTimeInMinutes');
+      log('Selected time option: $selectedTimeOption');
+      log('Timer duration in minutes: $selectedTimeInMinutes');
     });
   }
 
@@ -137,17 +136,17 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isAppLockEnabled = prefs.getBool('isAppLockEnabled') ?? false;
-      print('Bruh Loaded app lock state: $_isAppLockEnabled');
+      log('Bruh Loaded app lock state: $_isAppLockEnabled');
     });
-  
+    if (!mounted) return;
     final appState = Provider.of<AuthState>(context, listen: false);
     if (!_isAppLockEnabled) {
       appState.setInitiallyAuthenticated(true);
-      print('App lock is disabled. Setting initiallyAuthenticated to true.');
-      print('initiallyAuthenticated: ${appState.initiallyAuthenticated}');
+      log('App lock is disabled. Setting initiallyAuthenticated to true.');
+      log('initiallyAuthenticated: ${appState.initiallyAuthenticated}');
     } else {
       appState.setInitiallyAuthenticated(false);
-      print('App lock is enabled. Setting initiallyAuthenticated to false.');
+      log('App lock is enabled. Setting initiallyAuthenticated to false.');
     }
   }
 
@@ -173,7 +172,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Remove this widget from the observer list
     WidgetsBinding.instance.removeObserver(this);
     _inactivityTimer?.cancel();
-    print('Timer cancelled in dispose');
+    log('Timer cancelled in dispose');
     super.dispose();
   }
 
@@ -184,7 +183,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (user == null) {
         // User is not authenticated
         yield null;
-      } else {
+      } else if (mounted) {
         // Fetch DatabaseService for the authenticated user
         DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
         if (db == null) {
@@ -198,7 +197,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     final appState = Provider.of<AuthState>(context, listen: false);
-    print('AppLifecycleState changed: $state');
+    log('AppLifecycleState changed: $state');
   
     if (state == AppLifecycleState.resumed) {
       final user = FirebaseAuth.instance.currentUser;
@@ -210,7 +209,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       
       // Cancel the timer when the app is resumed
       _inactivityTimer?.cancel();
-      print('Timer cancelled on app resume');
+      log('Timer cancelled on app resume');
     } else if ((state == AppLifecycleState.paused ||
                 state == AppLifecycleState.inactive ||
                 state == AppLifecycleState.hidden) &&
@@ -218,12 +217,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             await isAuthenticated() &&
             appState.initiallyAuthenticated &&
             appState.isAppLockEnabled) {
-      // Print when all conditions are met
-      print('All conditions met: Navigating to FaceIdPage after timer');
+      // log when all conditions are met
+      log('All conditions met: Navigating to FaceIdPage after timer');
   
       // Start a timer for the selected amount of time
       _inactivityTimer?.cancel();
-      print('Timer cancelled');
+      log('Timer cancelled');
       _inactivityTimer = Timer(Duration(minutes: appState.selectedTimeInMinutes.toInt()), () {
         // Navigate to FaceIdPage when the timer completes
         appState.setHasNavigatedToFaceIDPage(true);
@@ -234,24 +233,24 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
         );
       });
-      print('Timer started for ${appState.selectedTimeInMinutes} minutes');
+      log('Timer started for ${appState.selectedTimeInMinutes} minutes');
     } else {
       if (state != AppLifecycleState.paused &&
           state != AppLifecycleState.inactive &&
           state != AppLifecycleState.hidden) {
-        print('Condition not met: AppLifecycleState is not paused, inactive, or hidden');
+        log('Condition not met: AppLifecycleState is not paused, inactive, or hidden');
       }
       if (appState.hasNavigatedToFaceIDPage) {
-        print('Condition not met: hasNavigatedToFaceIDPage is true');
+        log('Condition not met: hasNavigatedToFaceIDPage is true');
       }
       if (!(await isAuthenticated())) {
-        print('Condition not met: User is not authenticated');
+        log('Condition not met: User is not authenticated');
       }
       if (!appState.initiallyAuthenticated) {
-        print('Condition not met: initiallyAuthenticated is false');
+        log('Condition not met: initiallyAuthenticated is false');
       }
       if (!appState.isAppLockEnabled) {
-        print('Condition not met: isAppLockEnabled is false');
+        log('Condition not met: isAppLockEnabled is false');
       }
     }
   
@@ -259,8 +258,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       // Reset navigation flags when the user has just authenticated
       appState.setHasNavigatedToFaceIDPage(false);
       appState.setJustAuthenticated(false);
-      print('Reset navigation flags after authentication');
-      print('Reset navigation flags after authentication');
+      log('Reset navigation flags after authentication');
+      log('Reset navigation flags after authentication');
     }
   }
 
@@ -401,7 +400,7 @@ Future<bool> isAuthenticated() async {
 }
 
 class AuthCheck extends StatefulWidget {
-  const AuthCheck({Key? key}) : super(key: key);
+  const AuthCheck({super.key});
 
   @override
   State<AuthCheck> createState() => _AuthCheckState();

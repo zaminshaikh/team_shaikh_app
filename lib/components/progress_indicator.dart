@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async'; // Import for Timer
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import for FirebaseAuth
@@ -5,7 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class CustomProgressIndicator extends StatelessWidget {
-  const CustomProgressIndicator({Key? key}) : super(key: key);
+  const CustomProgressIndicator({super.key});
 
   @override
   Widget build(BuildContext context) => const CircularProgressIndicator(
@@ -15,14 +17,14 @@ class CustomProgressIndicator extends StatelessWidget {
 }
 
 class CustomProgressIndicatorPage extends StatefulWidget {
-  const CustomProgressIndicatorPage({Key? key}) : super(key: key);
+  const CustomProgressIndicatorPage({super.key});
 
   @override
-  _CustomProgressIndicatorPageState createState() =>
-      _CustomProgressIndicatorPageState();
+  CustomProgressIndicatorPageState createState() =>
+      CustomProgressIndicatorPageState();
 }
 
-class _CustomProgressIndicatorPageState
+class CustomProgressIndicatorPageState
     extends State<CustomProgressIndicatorPage> {
   Timer? _timer;
 
@@ -83,7 +85,7 @@ class _CustomProgressIndicatorPageState
                 // Sign out the user
                 await FirebaseAuth.instance.signOut();
                 // Navigate to the login page or any other desired page
-                if (!mounted) {
+                if (!context.mounted) {
                   return;
                 }
                 await Navigator.of(context).pushNamedAndRemoveUntil(
@@ -127,5 +129,5 @@ class _CustomProgressIndicatorPageState
   }
 
   @override
-  Widget build(BuildContext context) => Center(child: CustomProgressIndicator());
+  Widget build(BuildContext context) => const Center(child: CustomProgressIndicator());
 }

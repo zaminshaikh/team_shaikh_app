@@ -21,14 +21,14 @@ import 'package:team_shaikh_app/screens/authenticate/utils/apple_auth_service.da
 
 /// A StatefulWidget representing the Create Account page.
 class CreateAccountPage extends StatefulWidget {
-  const CreateAccountPage({Key? key}) : super(key: key);
+  const CreateAccountPage({super.key});
 
   @override
-  _CreateAccountPageState createState() => _CreateAccountPageState();
+  CreateAccountPageState createState() => CreateAccountPageState();
 }
 
 /// State class for the CreateAccountPage.
-class _CreateAccountPageState extends State<CreateAccountPage> {
+class CreateAccountPageState extends State<CreateAccountPage> {
   bool isLoading = false;
 
   // Controllers for text fields.
@@ -177,6 +177,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       await db.linkNewUser(user.email!);
       log('User $uid connected to Client ID $_cid');
 
+      if (!mounted) return true;
       await updateFirebaseMessagingToken(user, context);
 
       if (!mounted) return true;
@@ -330,8 +331,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         ],
                       ),
                     ),
-                    child: Stack(
-                      children: const [
+                    child: const Stack(
+                      children: [
                         Column(
                           children: [
                                 Text(
@@ -434,14 +435,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               ),
             ),
             if (isLoading || isLoading) ...[
-              Opacity(
+              const Opacity(
               opacity: 0.5,
               child: ModalBarrier(
                 dismissible: false,
                 color: Colors.black,
               ),
               ),
-              Center(
+              const Center(
               child: CustomProgressIndicator(),
               ),
             ],
@@ -624,6 +625,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               }
               
               log('Starting Apple sign in process with CID: $_cid');
+              if (!mounted) return;
               await AppleAuthService().signUpWithApple(context, _cid);
             } on FirebaseAuthException catch (e) {
               log('Firebase Auth Error in Apple sign-in: ${e.code} - ${e.message}', stackTrace: StackTrace.current);

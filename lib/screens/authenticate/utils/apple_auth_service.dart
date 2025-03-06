@@ -106,7 +106,7 @@ class AppleAuthService {
           await FirebaseAuth.instance.signOut();
           return false;
         }
-        
+        if (!context.mounted) return false;
         // Update Firebase messaging token
         await updateFirebaseMessagingToken(user, context);
                 
@@ -207,7 +207,7 @@ class AppleAuthService {
             await user.updateDisplayName(displayName);
           }
         }
-        
+        if (!context.mounted) return;
         // Process sign-up with database
         await _processSignUp(context, userCredential, cid);
       } catch (signInError) {
@@ -257,7 +257,7 @@ class AppleAuthService {
       final db = DatabaseService.withCID(user.uid, cid);
 
       // Check if CID exists
-      if (!(await db.checkDocumentExists(cid))) {
+      if (!(await db.checkDocumentExists(cid)) && context.mounted) {
         log('No record found for Client ID: $cid');
         await _showError(context,
             'No record found for Client ID $cid. Please contact support.');
@@ -267,7 +267,7 @@ class AppleAuthService {
 
       // Check if CID is already linked
       if (await db.checkDocumentLinked(cid)) {
-        if (!isNewUser) {
+        if (!isNewUser && context.mounted) {
           // User is logging in with existing account
           log('Existing user logging in with Apple ID');
           await updateFirebaseMessagingToken(user, context);
@@ -277,7 +277,7 @@ class AppleAuthService {
             await Navigator.of(context)
                 .pushNamedAndRemoveUntil('/dashboard', (route) => false);
           }
-        } else {
+        } else if (context.mounted) {
           // Someone else has already linked with this CID
           log('CID already linked to another account: $cid');
           await _showError(context,
@@ -292,6 +292,7 @@ class AppleAuthService {
       // Use displayName if available, otherwise email or a default
       final userIdentifier = user.displayName ?? user.email ?? 'Apple User';
       await db.linkNewUser(userIdentifier);
+      if (!context.mounted) return;
       await updateFirebaseMessagingToken(user, context);
 
       // Notify user of success
@@ -303,7 +304,7 @@ class AppleAuthService {
           icon: const Icon(Icons.check_circle_outline_rounded,
               color: Colors.green),
         );
-
+        if (!context.mounted) return;
         // Update app state and navigate to dashboard
         Provider.of<AuthState>(context, listen: false)
             .setInitiallyAuthenticated(true);

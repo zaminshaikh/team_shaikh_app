@@ -1,8 +1,4 @@
-// Importing Flutter Library & Google button Library
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, deprecated_member_use, empty_catches
-
 import 'dart:developer';
-import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,11 +8,9 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
-import 'package:team_shaikh_app/screens/authenticate/login/auth_service.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/authenticate/login/forgot_password.dart';
 import 'package:team_shaikh_app/screens/dashboard/dashboard.dart';
-import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/google_auth_service.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
@@ -26,10 +20,10 @@ import 'package:team_shaikh_app/screens/authenticate/utils/apple_auth_service.da
 class LoginPage extends StatefulWidget {
   final bool showAlert;
 
-  const LoginPage({Key? key, this.showAlert = false}) : super(key: key);
+  const LoginPage({super.key, this.showAlert = false});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
 // Controllers to store login email and password
@@ -40,7 +34,7 @@ String? email = '';
 bool _isLoading = false;
 
 // State class for the LoginPage
-class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
+class LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   // Boolean variable to set password visibility to hidden
   bool hidePassword = true;
   // Boolean variable to set the remember me checkbox to unchecked, and initializing that the user does not want the app to remember them
@@ -78,11 +72,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         email: emailController.text,
         password: passwordController.text,
       );
+      if (!context.mounted) return false;
       await updateFirebaseMessagingToken(userCredential.user, context);
       log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output
       log('login.dart: Sign in successful, proceeding to dashboard...'); // Debugging output
 
       // Set initiallyAuthenticated to true
+      if (!context.mounted) return false;
       Provider.of<AuthState>(context, listen: false)
           .setInitiallyAuthenticated(true);
 
@@ -121,7 +117,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           stickyAuth: true,
         ),
       );
-    } catch (e) {}
+    } catch (e) {
+      log('login.dart: Error authenticating: $e');
+    }
 
     if (authenticated) {
       // ignore: unawaited_futures
@@ -134,7 +132,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       //         child,
       //   ),
       // );
-
+      if (!context.mounted) return;
       await Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } else {
       // Handle failed authentication
@@ -164,11 +162,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
       // Generate secure nonce
       final AppleAuthService appleAuthService = AppleAuthService();
+      if (!mounted) return;
       final isSignedIn = await appleAuthService.signInWithApple(context);
       
       if (isSignedIn) {
         log('login.dart: Apple Sign In successful');
         // Set initiallyAuthenticated to true
+        if (!mounted) return;
         Provider.of<AuthState>(context, listen: false)
             .setInitiallyAuthenticated(true);
         
@@ -258,11 +258,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                       ],
                     ),
                   ),
-                  child: Stack(
+                  child: const Stack(
                     children: [
                       Column(
                         children: [
-                              const Text(
+                              Text(
                                 'Login to Your Account',
                                 style: TextStyle(
                                   fontSize: 26,
@@ -271,7 +271,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   fontFamily: 'Titillium Web',
                                 ),
                               ),
-                          const SizedBox(height: 20.0),
+                          SizedBox(height: 20.0),
                           Row(
                             children: [
                               Text(''),
@@ -490,11 +490,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                               if (token != null) {
                                 User? user = FirebaseAuth.instance.currentUser;
                                 // If we do not have a user and the context is valid
-                                if (user == null && mounted) {
+                                if (user == null && context.mounted) {
                                   log('login.dart: User is not logged in');
                                   await Navigator.pushReplacementNamed(
                                       context, '/login');
                                 }
+                                if (!context.mounted) return;
                                 // Fetch CID using async constructor
                                 DatabaseService? db =
                                     await DatabaseService.fetchCID(user!.uid, context);
@@ -513,6 +514,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   }
                                 }
                               }
+                              if (!context.mounted) return;
                               await Navigator.pushReplacement(
                                 context,
                                 PageRouteBuilder(

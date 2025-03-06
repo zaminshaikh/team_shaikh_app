@@ -1,6 +1,4 @@
-// line_chart_section.dart
-
-import 'dart:ui';
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -21,13 +19,13 @@ class LineChartSection extends StatefulWidget {
   final Client client;
 
   /// Creates a new instance of [LineChartSection].
-  const LineChartSection({Key? key, required this.client}) : super(key: key);
+  const LineChartSection({super.key, required this.client});
 
   @override
-  _LineChartSectionState createState() => _LineChartSectionState();
+  LineChartSectionState createState() => LineChartSectionState();
 }
 
-class _LineChartSectionState extends State<LineChartSection> {
+class LineChartSectionState extends State<LineChartSection> {
   // Variables for the line chart data
   List<FlSpot> spots = [];
   double _minAmount = double.maxFinite;
@@ -123,7 +121,7 @@ class _LineChartSectionState extends State<LineChartSection> {
     // No data points
     localMinAmount = 0.0;
     localMaxAmount = 100000.0;
-    spots.add(FlSpot(0, 0));
+    spots.add(const FlSpot(0, 0));
     spots.add(FlSpot(maxX(dropdownValue), 0));
   }
 
@@ -343,8 +341,7 @@ class _LineChartSectionState extends State<LineChartSection> {
       ),
       backgroundColor: AppColors.defaultBlueGray800,
       context: context,
-      builder: (BuildContext ctx) {
-        return Padding(
+      builder: (BuildContext ctx) => Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: Container(
             height: MediaQuery.of(ctx).size.height * 0.5,
@@ -384,8 +381,7 @@ class _LineChartSectionState extends State<LineChartSection> {
               },
             ),
           ),
-        );
-      },
+        ),
     );
   }
 

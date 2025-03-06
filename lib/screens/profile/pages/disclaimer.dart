@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 
 class DisclaimerPage extends StatefulWidget {
-  const DisclaimerPage({Key? key}) : super(key: key);
+  const DisclaimerPage({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _DisclaimerPageState createState() => _DisclaimerPageState();

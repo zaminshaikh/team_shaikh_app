@@ -15,11 +15,11 @@ class EmailVerificationDialog extends StatefulWidget {
   });
 
   @override
-  _EmailVerificationDialogState createState() =>
-      _EmailVerificationDialogState();
+  EmailVerificationDialogState createState() =>
+      EmailVerificationDialogState();
 }
 
-class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
+class EmailVerificationDialogState extends State<EmailVerificationDialog> {
   bool isLoading = false;
 
   /// Handles the Continue button press.
@@ -41,6 +41,7 @@ class _EmailVerificationDialogState extends State<EmailVerificationDialog> {
     } catch (e) {
       // Handle any errors here (optional).
       // For example, show an error message to the user.
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('An error occurred: $e'),

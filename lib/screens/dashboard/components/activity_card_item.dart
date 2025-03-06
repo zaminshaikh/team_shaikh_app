@@ -1,3 +1,5 @@
+// ignore_for_file: sized_box_for_whitespace, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +25,7 @@ class ActivityCardItem extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width * 0.6, // Set a fixed width
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(12.0),
@@ -36,9 +38,9 @@ class ActivityCardItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildActivityDetails(),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   _buildActivityAmountAndRecipient(time),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   _buildActivityDateTime(date, time),
                 ],
               ),
@@ -54,22 +56,22 @@ class ActivityCardItem extends StatelessWidget {
         children: [
           Text(
             date,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: Colors.white,
               fontFamily: 'Titillium Web',
             ),
           ),
-          SizedBox(width: 2),
+          const SizedBox(width: 2),
           SvgPicture.asset(
             'assets/icons/line.svg',
             color: Colors.white,
             height: 15,
           ),
-          SizedBox(width: 2),
+          const SizedBox(width: 2),
           Text(
             time,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: Colors.white,
               fontFamily: 'Titillium Web',

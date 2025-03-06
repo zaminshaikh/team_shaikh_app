@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,7 +25,7 @@ class AssetsStructureSection extends StatelessWidget {
     double overallTotal = 0;
 
     // Threshold for displaying a slice in the pie chart
-    final double thresholdPercent = 2.0;
+    const double thresholdPercent = 2.0;
 
     // Helper to add the specified fund’s assets to the map
     void addFundAssetsFromClient(Client client) {
@@ -32,7 +34,7 @@ class AssetsStructureSection extends StatelessWidget {
 
       fund.assets.forEach((_, asset) {
         final amount = asset.amount;
-        final accountName = client.firstName + ' ' + client.lastName + ' - ' + asset.displayTitle;    // <- use the asset’s displayTitle
+        final accountName = '${client.firstName} ${client.lastName} - ${asset.displayTitle}';    // <- use the asset’s displayTitle
         accountSums[accountName] = (accountSums[accountName] ?? 0) + amount;
         overallTotal += amount;
       });

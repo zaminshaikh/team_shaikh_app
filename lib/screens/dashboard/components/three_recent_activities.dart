@@ -7,13 +7,13 @@ import 'package:team_shaikh_app/screens/utils/resources.dart';
 class ActivityTilesSection extends StatefulWidget {
   final List<Activity> activities;
 
-  const ActivityTilesSection({required this.activities, Key? key}) : super(key: key);
+  const ActivityTilesSection({required this.activities, super.key});
 
   @override
-  _ActivityTilesSectionState createState() => _ActivityTilesSectionState();
+  ActivityTilesSectionState createState() => ActivityTilesSectionState();
 }
 
-class _ActivityTilesSectionState extends State<ActivityTilesSection> {
+class ActivityTilesSectionState extends State<ActivityTilesSection> {
   final ScrollController _scrollController = ScrollController();
   double _gradientOpacity = 0.8;
 
@@ -53,6 +53,7 @@ class _ActivityTilesSectionState extends State<ActivityTilesSection> {
       return Container();
     }
 
+    // ignore: sized_box_for_whitespace
     return Container(
       width: double.infinity, // Ensure the container takes up the full width
       height: 200, // Adjust the height as needed
@@ -78,7 +79,7 @@ class _ActivityTilesSectionState extends State<ActivityTilesSection> {
                           Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => ActivityPage(),
+                              pageBuilder: (context, animation, secondaryAnimation) => const ActivityPage(),
                               transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
                             ),
                           );
@@ -86,7 +87,7 @@ class _ActivityTilesSectionState extends State<ActivityTilesSection> {
                         child: Container(
                           color: Colors.transparent,
                           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0), // Add padding to the container
-                          child: Row(
+                          child: const Row(
                             children: [
                               Text(
                                 'View All',
@@ -96,7 +97,7 @@ class _ActivityTilesSectionState extends State<ActivityTilesSection> {
                                   fontSize: 16,
                                 ),
                               ),
-                              const SizedBox(width: 2),
+                              SizedBox(width: 2),
                               Icon(
                                 Icons.arrow_forward_ios,
                                 size: 15,
@@ -116,10 +117,10 @@ class _ActivityTilesSectionState extends State<ActivityTilesSection> {
             alignment: Alignment.centerRight,
             child: AnimatedOpacity(
               opacity: _gradientOpacity,
-              duration: Duration(milliseconds: 300), // Adjust the duration as needed
+              duration: const Duration(milliseconds: 300), // Adjust the duration as needed
               child: Container(
                 width: 50, // Adjust the width of the gradient
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,

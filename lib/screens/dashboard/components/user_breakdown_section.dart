@@ -1,11 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/screens/dashboard/components/asset_tile.dart';
-import 'package:team_shaikh_app/screens/dashboard/utils/dashboard_helper.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 // ignore: must_be_immutable
@@ -14,7 +11,7 @@ class UserBreakdownSection extends StatelessWidget {
   final Client client;
   bool isConnectedUser;
   
-  UserBreakdownSection({Key? key, required this.client, this.isConnectedUser = false}) : super(key: key);
+  UserBreakdownSection({super.key, required this.client, this.isConnectedUser = false});
 
   @override
   Widget build(BuildContext context)  {
@@ -28,7 +25,6 @@ class UserBreakdownSection extends StatelessWidget {
 
       for (var entry in fund.assets.entries) {
         final key = entry.key;
-        final asset = entry.value;
 
         // NOTE: Uncomment the following line if you want to filter out assets with amount 0
         // if (asset.amount != 0) {

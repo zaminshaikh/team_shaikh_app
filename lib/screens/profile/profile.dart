@@ -18,7 +18,7 @@ import 'package:team_shaikh_app/screens/profile/pages/settings.dart';
 import 'package:team_shaikh_app/screens/profile/pages/profiles.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _ProfilePageState createState() => _ProfilePageState();

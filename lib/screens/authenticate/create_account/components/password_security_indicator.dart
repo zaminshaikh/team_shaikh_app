@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 class PasswordSecurityIndicator extends StatelessWidget {
   final int strength;
 
-  const PasswordSecurityIndicator({Key? key, required this.strength})
-      : super(key: key);
+  const PasswordSecurityIndicator({super.key, required this.strength});
 
   @override
   Widget build(BuildContext context) {

@@ -23,10 +23,10 @@ class ActivityPage extends StatefulWidget {
   const ActivityPage({super.key});
 
   @override
-  _ActivityPageState createState() => _ActivityPageState();
+  ActivityPageState createState() => ActivityPageState();
 }
 
-class _ActivityPageState extends State<ActivityPage> {
+class ActivityPageState extends State<ActivityPage> {
   Client? client;
   List<Activity> activities = [];
   List<String> allRecipients = [];
@@ -306,7 +306,7 @@ class _ActivityPageState extends State<ActivityPage> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

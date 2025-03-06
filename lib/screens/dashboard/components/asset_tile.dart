@@ -1,10 +1,6 @@
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/assets_model.dart';
-import 'package:team_shaikh_app/screens/dashboard/utils/dashboard_helper.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 // ignore: constant_identifier_names
@@ -17,7 +13,7 @@ class AssetTile extends StatelessWidget {
   final FundName fund;
   final String? companyName;
 
-  AssetTile({super.key, required this.asset, required this.fund, this.companyName,});
+  const AssetTile({super.key, required this.asset, required this.fund, this.companyName,});
 
   @override
   Widget build(BuildContext context) {

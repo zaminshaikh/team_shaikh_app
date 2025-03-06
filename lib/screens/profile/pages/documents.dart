@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore, prefer_expression_function_bodies, unused_catch_clause, empty_catches
 
+import 'dart:developer';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart'; // Added for CupertinoSearchTextField
@@ -17,7 +18,7 @@ import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 
 class DocumentsPage extends StatefulWidget {
-  const DocumentsPage({Key? key}) : super(key: key);
+  const DocumentsPage({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _DocumentsPageState createState() => _DocumentsPageState();
@@ -69,13 +70,13 @@ class _DocumentsPageState extends State<DocumentsPage> {
           // Use Share.shareFiles to share the file
           await Share.shareXFiles([XFile(filePath)]);
         } else {
-          print('File does not exist.');
+          log('File does not exist.');
         }
       } else {
-        print('File path is empty.');
+        log('File path is empty.');
       }
     } catch (e) {
-      print('Error sharing file: $e');
+      log('Error sharing file: $e');
     }
   }
   
@@ -84,10 +85,10 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
   
   Future<void> showDocumentsSection() async {
-    print('Showing documents section...');
+    log('Showing documents section...');
     // Update the state to indicate that the 'documents' button is selected
     setState(() {
-      print('Documents button selected.');
+      log('Documents button selected.');
     });
   
     // List the PDF files available
@@ -96,24 +97,24 @@ class _DocumentsPageState extends State<DocumentsPage> {
     // List the PDF files for connected users
     await listPDFFilesConnectedUsers();
   
-    // Combine and print both lists of PDF files
-    printCombinedPdfFiles();
-    print('Documents section shown.');
+    // Combine and log both lists of PDF files
+    logCombinedPdfFiles();
+    log('Documents section shown.');
   }
   
   Future<void> listPDFFiles() async {
-    print('Listing PDF files for the current user...');
+    log('Listing PDF files for the current user...');
     // Get the user's folder identifier
     final String userFolder = client!.cid;
-    print('User folder: $userFolder');
+    log('User folder: $userFolder');
   
     // List all files in the user's document folder
     final ListResult result = await storage.ref('${Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')}/$userFolder').listAll();
-    print('Files listed in user folder.');
+    log('Files listed in user folder.');
   
     // Filter the list to include only PDF files
     final List<Reference> userPdfFiles = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
-    print('Filtered PDF files: ${userPdfFiles.map((file) => file.name).toList()}');
+    log('Filtered PDF files: ${userPdfFiles.map((file) => file.name).toList()}');
   
     // Update the state with the list of PDF files
     if (mounted) {
@@ -121,37 +122,37 @@ class _DocumentsPageState extends State<DocumentsPage> {
         pdfFiles = userPdfFiles;
         filteredPdfFiles = userPdfFiles;
         allFiles.addAll(userPdfFiles);
-        print('State updated with user PDF files.');
+        log('State updated with user PDF files.');
       });
     }
   
-    // Print the names of the PDF files for debugging purposes
-    print('User PDF files: ${pdfFiles.map((file) => file.name).toList()}');
+    // log the names of the PDF files for debugging purposes
+    log('User PDF files: ${pdfFiles.map((file) => file.name).toList()}');
   }
   
   Future<void> listPDFFilesConnectedUsers() async {
-    print('Listing PDF files for connected users...');
+    log('Listing PDF files for connected users...');
     // Initialize a list to hold all PDF files from connected users
     List<PDF> allConnectedFiles = [];
   
     // Iterate over each connected user's folder
     for (String folder in client!.connectedUsers!.whereType<Client>().map((client) => client.cid)) {
-      print('Listing files in connected user folder: $folder');
+      log('Listing files in connected user folder: $folder');
       // List all files in the connected user's document folder
       final ListResult result = await storage.ref('${Config.get('FIRESTORE_ACTIVE_USERS_COLLECTION')}/$folder').listAll();
-      print('Files listed in connected user folder.');
+      log('Files listed in connected user folder.');
   
       // Filter the list to include only PDF files
       final List<Reference> pdfFilesInFolder = result.items.where((ref) => ref.name.endsWith('.pdf')).toList();
-      print('Filtered PDF files in connected user folder: ${pdfFilesInFolder.map((file) => file.name).toList()}');
+      log('Filtered PDF files in connected user folder: ${pdfFilesInFolder.map((file) => file.name).toList()}');
   
       // Convert List<Reference> to List<PDF> with the connected user's folder identifier
       final List<PDF> pdfFilesWithCid = pdfFilesInFolder.map((file) => PDF(file, folder)).toList();
-      print('Converted PDF files with CID.');
+      log('Converted PDF files with CID.');
   
       // Add the PDF files to the list of all connected files
       allConnectedFiles.addAll(pdfFilesWithCid);
-      print('Added PDF files to all connected files.');
+      log('Added PDF files to all connected files.');
     }
   
     // Update the state with the list of PDF files from connected users
@@ -159,42 +160,42 @@ class _DocumentsPageState extends State<DocumentsPage> {
       setState(() {
         // Use a Set to keep track of already added files
         final existingFiles = pdfFilesConnectedUsers.map((pdfFileWithCid) => pdfFileWithCid.file.name).toSet();
-        print('Existing files: $existingFiles');
+        log('Existing files: $existingFiles');
   
         // Add only the new files that are not already in the list
         final newFiles = allConnectedFiles.where((pdfFileWithCid) => !existingFiles.contains(pdfFileWithCid.file.name)).toList();
-        print('New files to add: ${newFiles.map((file) => file.file.name).toList()}');
+        log('New files to add: ${newFiles.map((file) => file.file.name).toList()}');
   
         pdfFilesConnectedUsers.addAll(newFiles);
         filteredPdfFilesConnectedUsers = pdfFilesConnectedUsers;
         allFiles.addAll(newFiles.map((pdf) => pdf.file));
-        print('State updated with connected users PDF files.');
+        log('State updated with connected users PDF files.');
   
         // Add filteredPdfFilesConnectedUsers to filteredPdfFiles if not empty
         if (filteredPdfFilesConnectedUsers.isNotEmpty) {
           filteredPdfFiles.addAll(filteredPdfFilesConnectedUsers.map((pdf) => pdf.file));
-          print('Added filteredPdfFilesConnectedUsers to filteredPdfFiles.');
+          log('Added filteredPdfFilesConnectedUsers to filteredPdfFiles.');
         }
       });
     }
-    print('Connected users PDF files listed.');
+    log('Connected users PDF files listed.');
   }
 
 
 
-  void printCombinedPdfFiles() {
+  void logCombinedPdfFiles() {
     // Combine the lists of PDF files from the current user and connected users
     final combinedPdfFiles = allFiles.map((file) => file.name).toList();
   
-    // Print the combined list of PDF files
-    print('Combined PDF files: $combinedPdfFiles');
+    // log the combined list of PDF files
+    log('Combined PDF files: $combinedPdfFiles');
   }
   
   Future<Map<String, dynamic>> getFileMetadata(Reference file) async {
-    print('Getting metadata for file: ${file.name}');
+    log('Getting metadata for file: ${file.name}');
     // Get the metadata for the given file
     final FullMetadata metadata = await file.getMetadata();
-    print('Metadata retrieved for file: ${file.name}');
+    log('Metadata retrieved for file: ${file.name}');
   
     // Return a map containing the file name and the date it was added
     return {
@@ -204,16 +205,16 @@ class _DocumentsPageState extends State<DocumentsPage> {
   }
   
   void _filterPdfFiles(String query) {
-    print('Filtering PDF files with query: $query');
+    log('Filtering PDF files with query: $query');
     // Update the state with the filtered list of PDF files based on the query
     setState(() {
       filteredPdfFiles = allFiles.where((file) => file.name.toLowerCase().contains(query.toLowerCase())).toList();
-      print('Filtered PDF files: ${filteredPdfFiles.map((file) => file.name).toList()}');
+      log('Filtered PDF files: ${filteredPdfFiles.map((file) => file.name).toList()}');
     });
   }
   
   void _sortPdfFiles(bool ascending) async {
-    print('Sorting PDF files in ${ascending ? 'ascending' : 'descending'} order...');
+    log('Sorting PDF files in ${ascending ? 'ascending' : 'descending'} order...');
     // Initialize a list to hold the metadata for each PDF file
     List<Map<String, dynamic>> pdfFilesWithMetadata = [];
   
@@ -221,7 +222,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
     for (var file in filteredPdfFiles) {
       final metadata = await getFileMetadata(file);
       pdfFilesWithMetadata.add(metadata);
-      print('Metadata added for file: ${file.name}');
+      log('Metadata added for file: ${file.name}');
     }
   
     // Sort the list of metadata based on the date added
@@ -231,13 +232,13 @@ class _DocumentsPageState extends State<DocumentsPage> {
       if (dateA == null || dateB == null) return 0;
       return ascending ? dateA.compareTo(dateB) : dateB.compareTo(dateA);
     });
-    print('PDF files sorted.');
+    log('PDF files sorted.');
   
     // Update the state with the sorted list of PDF files
     setState(() {
       filteredPdfFiles = pdfFilesWithMetadata.map((e) => allFiles.firstWhere((file) => file.name == e['name'])).toList();
       isSortAscending = ascending;
-      print('State updated with sorted PDF files.');
+      log('State updated with sorted PDF files.');
     });
   }
 
@@ -286,7 +287,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
               ),
             ),
           ),
-          SizedBox(width: 10.0),
+          const SizedBox(width: 10.0),
           _buildSortButton(context),
         ],
       ),
@@ -317,19 +318,19 @@ class _DocumentsPageState extends State<DocumentsPage> {
   void _showSortOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
       builder: (BuildContext context) {
         return ClipRRect(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
           child: Container(
             color: AppColors.defaultBlueGray800,
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
+                const Row(
                   children: [
                     SizedBox(width: 8.0),
                     Text(
@@ -342,15 +343,15 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 ListTile(
                   title: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
                     decoration: BoxDecoration(
                       color: !isSortAscending ? AppColors.defaultBlue500 : Colors.transparent,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
                         SizedBox(width: 8.0),
                         Text(
@@ -367,12 +368,12 @@ class _DocumentsPageState extends State<DocumentsPage> {
                 ),
                 ListTile(
                   title: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
                     decoration: BoxDecoration(
                       color: isSortAscending ? AppColors.defaultBlue500 : Colors.transparent,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
                         SizedBox(width: 8.0),
                         Text(
@@ -387,7 +388,7 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     Navigator.pop(context);
                   },
                 ),
-                SizedBox(height: 40.0),
+                const SizedBox(height: 40.0),
               ],
             ),
           ),

@@ -9,7 +9,7 @@ import 'package:team_shaikh_app/screens/analytics/components/line_chart.dart';
 
 
 class AnalyticsPage extends StatefulWidget {
-  const AnalyticsPage({Key? key}) : super(key: key);
+  const AnalyticsPage({super.key});
 
   @override
   AnalyticsPageState createState() => AnalyticsPageState();

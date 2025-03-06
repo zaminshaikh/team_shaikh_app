@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 class PasswordValidation extends StatelessWidget {
   final String password;
 
-  const PasswordValidation({Key? key, required this.password})
-      : super(key: key);
+  const PasswordValidation({super.key, required this.password});
 
   @override
   Widget build(BuildContext context) => Column(

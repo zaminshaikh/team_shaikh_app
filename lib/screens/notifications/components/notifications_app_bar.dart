@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class NotificationsAppBar extends StatelessWidget {
-  const NotificationsAppBar({Key? key}) : super(key: key);
+  const NotificationsAppBar({super.key});
 
   @override
   Widget build(BuildContext context) => SliverAppBar(

@@ -1,27 +1,26 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/utils/utilities.dart';
 
 class DeleteAccountButton extends StatefulWidget { // Renamed widget
   final Client client;
 
-  const DeleteAccountButton({Key? key, required this.client}) : super(key: key);
+  const DeleteAccountButton({super.key, required this.client});
 
   @override
-  _DeleteAccountButtonState createState() => _DeleteAccountButtonState(); // Renamed state class
+  DeleteAccountButtonState createState() => DeleteAccountButtonState(); // Renamed state class
 }
 
-class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed state class
+class DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed state class
   final TextEditingController _clientIdController = TextEditingController();
   final FocusNode _clientIdFocusNode = FocusNode(); // Add a FocusNode
   String? _errorText; // Added error text state variable
@@ -86,8 +85,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) => StatefulBuilder( // Use StatefulBuilder to update dialog content
-        builder: (context, setDialogState) {
-          return AlertDialog(
+        builder: (context, setDialogState) => AlertDialog(
             backgroundColor: AppColors.defaultBlueGray800,
             content: SingleChildScrollView(
               child: ListBody(
@@ -207,8 +205,7 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> { // Renamed 
                 ),
               ),
             ],
-          );
-        },
+          ),
       ),
     );
   }

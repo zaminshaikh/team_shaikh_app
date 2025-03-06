@@ -8,10 +8,10 @@ class ActivitySortModal extends StatelessWidget {
   final Function(SortOrder) onSelect;
 
   const ActivitySortModal({
-    Key? key,
+    super.key,
     required this.currentOrder,
     required this.onSelect,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) => SingleChildScrollView(

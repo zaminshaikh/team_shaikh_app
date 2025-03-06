@@ -61,7 +61,7 @@ class Fund {
   ///
   /// This method parses each asset in the map and constructs [Asset] objects.
   factory Fund.fromMap(Map<String, dynamic> data) {
-    final d = data;
+    // final d = data;
     final assets = <String, Asset>{};
     String name = '';
     double total = 0.0;

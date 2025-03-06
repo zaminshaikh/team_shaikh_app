@@ -9,10 +9,10 @@ class MarkAllAsReadButton extends StatelessWidget {
   final VoidCallback onRefresh;
 
   const MarkAllAsReadButton({
-    Key? key,
+    super.key,
     required this.client,
     required this.onRefresh,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

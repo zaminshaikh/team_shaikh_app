@@ -5,16 +5,16 @@ class CustomExpansionTile extends StatefulWidget {
   final String content;
 
   const CustomExpansionTile({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
-  }) : super(key: key);
+  });
 
   @override
-  _CustomExpansionTileState createState() => _CustomExpansionTileState();
+  CustomExpansionTileState createState() => CustomExpansionTileState();
 }
 
-class _CustomExpansionTileState extends State<CustomExpansionTile> {
+class CustomExpansionTileState extends State<CustomExpansionTile> {
   bool _isExpanded = false;
 
   @override

@@ -10,7 +10,7 @@ import 'package:team_shaikh_app/screens/notifications/components/notification_ca
 import 'package:team_shaikh_app/screens/notifications/components/notifications_app_bar.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({Key? key}) : super(key: key);
+  const NotificationPage({super.key});
   @override
   _NotificationPageState createState() => _NotificationPageState();
 }
@@ -52,7 +52,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     // Get the notification data
                     Notif notification = notifications[index];
                     // Get the previous notification date
-                    DateTime previousNotificationDate = index > 0 ? (notifications[index - 1].time): DateTime(0);
+                    // DateTime previousNotificationDate = index > 0 ? (notifications[index - 1].time): DateTime(0);
                     // Check if the current notification is on a different day than the previous one
                     return NotificationCard(notification: notification, client: client!);
                   },

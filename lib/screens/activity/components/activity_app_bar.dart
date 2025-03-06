@@ -19,13 +19,13 @@ class ActivityAppBar extends StatefulWidget implements PreferredSizeWidget {
   });
 
   @override
-  _ActivityAppBarState createState() => _ActivityAppBarState();
+  ActivityAppBarState createState() => ActivityAppBarState();
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight + 95);
 }
 
-class _ActivityAppBarState extends State<ActivityAppBar> {
+class ActivityAppBarState extends State<ActivityAppBar> {
   @override
   Widget build(BuildContext context) => SliverAppBar(
         backgroundColor: const Color.fromARGB(255, 30, 41, 59),
@@ -54,7 +54,7 @@ class _ActivityAppBarState extends State<ActivityAppBar> {
                         fontFamily: 'Titillium Web',
                       ),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -112,7 +112,7 @@ class _ActivityAppBarState extends State<ActivityAppBar> {
                   ],
                 ),
 
-                Spacer(),
+                const Spacer(),
 
                 // Filter and Sort Buttons
                 Padding(

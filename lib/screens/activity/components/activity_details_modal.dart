@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -17,13 +19,11 @@ class ActivityDetailsModal extends StatelessWidget {
   // The constructor no longer accepts isFromAGQ
   ActivityDetailsModal({
     required this.activity,
-    Key? key,
-  })  : isFromAGQ = (activity.fund == 'AGQ'),  // automatically sets based on fund
-        super(key: key);
+    super.key,
+  })  : isFromAGQ = (activity.fund == 'AGQ');
 
   @override
-  Widget build(BuildContext context) {
-    return FractionallySizedBox(
+  Widget build(BuildContext context) => FractionallySizedBox(
       heightFactor: 0.67,
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
@@ -43,7 +43,6 @@ class ActivityDetailsModal extends StatelessWidget {
         ),
       ),
     );
-  }
 
   Widget _buildModalHeader(BuildContext context, bool isFromAGQ) => Column(
         children: [
@@ -216,31 +215,32 @@ class ActivityDetailsModal extends StatelessWidget {
       );
 
   // Activity details modal
-  void _showActivityDetailsModal(BuildContext context, Activity activity, bool isFromAGQ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) => ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-        child: FractionallySizedBox(
-          heightFactor: 0.67,
-          child: Container(
-            color: AppColors.defaultBlueGray800,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  _buildModalHeader(context, isFromAGQ),
-                  _buildModalBody(activity),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // void _showActivityDetailsModal(BuildContext context, Activity activity, bool isFromAGQ) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (BuildContext context) => ClipRRect(
+  //       borderRadius: const BorderRadius.only(
+  //         topLeft: Radius.circular(20.0),
+  //         topRight: Radius.circular(20.0),
+  //       ),
+  //       child: FractionallySizedBox(
+  //         heightFactor: 0.67,
+  //         child: Container(
+  //           color: AppColors.defaultBlueGray800,
+  //           child: SingleChildScrollView(
+  //             child: Column(
+  //               children: <Widget>[
+  //                 _buildModalHeader(context, isFromAGQ),
+  //                 _buildModalBody(activity),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
 }

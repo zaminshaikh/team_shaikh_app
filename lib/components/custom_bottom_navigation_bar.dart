@@ -11,9 +11,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
   final NavigationItem currentItem;
 
   const CustomBottomNavigationBar({
-    Key? key,
+    super.key,
     required this.currentItem,
-  }) : super(key: key);
+  });
 
   void _onItemTapped(BuildContext context, NavigationItem item) {
     if (item == currentItem) {

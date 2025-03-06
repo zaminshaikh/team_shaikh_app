@@ -6,7 +6,7 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 
 class ProfilesPage extends StatefulWidget {
-  const ProfilesPage({Key? key}) : super(key: key);
+  const ProfilesPage({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _ProfilesPageState createState() => _ProfilesPageState();

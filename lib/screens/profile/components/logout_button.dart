@@ -1,25 +1,24 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:team_shaikh_app/database/auth_helper.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
-import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class LogoutButton extends StatefulWidget {
   final Client client;
 
-  const LogoutButton({Key? key, required this.client}) : super(key: key);
+  const LogoutButton({super.key, required this.client});
 
   @override
-  _LogoutButtonState createState() => _LogoutButtonState();
+  LogoutButtonState createState() => LogoutButtonState();
 }
 
-class _LogoutButtonState extends State<LogoutButton> {
+class LogoutButtonState extends State<LogoutButton> {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),

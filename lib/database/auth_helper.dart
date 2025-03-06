@@ -1,12 +1,9 @@
 import 'dart:developer';
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/database/database.dart';
-import 'package:team_shaikh_app/screens/authenticate/login/auth_service.dart';
 
 /// Deletes any user currently in the Firebase Auth buffer.
 Future<void> deleteUserInBuffer() async {
@@ -28,7 +25,7 @@ Future<void> deleteUserInBuffer() async {
 Future<void> handleFirebaseAuthException(
     BuildContext context, FirebaseAuthException e, String email) async {
   String errorMessage = 'Failed to sign up. Please try again.';
-  String? temp = FirebaseAuth.instance.currentUser?.email;
+  // String? temp = FirebaseAuth.instance.currentUser?.email;
   switch (e.code) {
     case 'email-already-in-use':
       if (FirebaseAuth.instance.currentUser?.email == email) {
@@ -48,6 +45,9 @@ Future<void> handleFirebaseAuthException(
     default:
       log('FirebaseAuthException: $e');
   }
+  if (!context.mounted) {
+    return;
+  }
   await CustomAlertDialog.showAlertDialog(context, 'Error', errorMessage,
       icon: const Icon(Icons.error, color: Colors.red));
 }
@@ -65,7 +65,7 @@ Future<void> updateFirebaseMessagingToken(User? user, BuildContext context) asyn
     token = await FirebaseMessaging.instance.getAPNSToken();
     log('APNS Token found: $token');
   }
-  if (token != null) {
+  if (token != null && context.mounted) {
     // Fetch CID using async constructor
     DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
 
@@ -101,7 +101,7 @@ Future<void> deleteFirebaseMessagingToken(User? user, BuildContext context) asyn
     log('APNS Token found: $token');
   }
 
-  if (token != null) {
+  if (token != null && context.mounted) {
     // Fetch the DatabaseService instance for the user
     DatabaseService? db = await DatabaseService.fetchCID(user.uid, context);
 

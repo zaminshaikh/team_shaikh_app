@@ -21,10 +21,10 @@ class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, this.fromFaceIdPage = false});
 
   @override
-  _DashboardPageState createState() => _DashboardPageState();
+  DashboardPageState createState() => DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage>
+class DashboardPageState extends State<DashboardPage>
     with SingleTickerProviderStateMixin {
   AuthState? authState;
   Client? client;
@@ -74,8 +74,9 @@ class _DashboardPageState extends State<DashboardPage>
   Future<void> _loadAppLockState() async {
     final prefs = await SharedPreferences.getInstance();
     final isEnabled = prefs.getBool('isAppLockEnabled') ?? false;
+    if (!mounted) return;
     context.read<AuthState>().setAppLockEnabled(isEnabled);
-    print('Loaded app lock state: $isEnabled');
+    log('Loaded app lock state: $isEnabled');
   }
 
   void _updateAuthState() {
@@ -222,12 +223,11 @@ class _DashboardPageState extends State<DashboardPage>
     );
   }
   
-  Widget buildRecentTransactionsSection(BuildContext context) {
-    return Column(
+  Widget buildRecentTransactionsSection(BuildContext context) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
           child: Text(
             'Recent Transactions',
             style: TextStyle(
@@ -242,7 +242,6 @@ class _DashboardPageState extends State<DashboardPage>
         ActivityTilesSection(activities: activities),
       ],
     );
-  }
   
   Widget _buildConnectedUsersSection() => Column(
         children: [

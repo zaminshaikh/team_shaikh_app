@@ -132,11 +132,10 @@ class Client {
         .where((notif) => !notif.isRead)
         .length;
 
-    final unreadConnected = (connectedUsers ?? []).fold<int>(0, (sum, c) {
-      return sum + ((c?.notifications ?? [])
+    // ignore: avoid_types_as_parameter_names
+    final unreadConnected = (connectedUsers ?? []).fold<int>(0, (sum, c) => sum + ((c?.notifications ?? [])
           .where((notif) => !notif.isRead)
-          .length);
-    });
+          .length));
 
     return Client(
       cid: data['cid'] ?? cid ?? '',
@@ -158,7 +157,7 @@ class Client {
           .toList(),
       connectedUsers: connectedUsers ?? [],
       activities: activities ?? [],
-      graphs: graphs ?? [],
+      graphs: graphs,
       assets: assets,
       notifications: notifications ?? [],
     );

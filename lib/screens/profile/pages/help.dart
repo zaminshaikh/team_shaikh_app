@@ -8,7 +8,7 @@ import 'package:team_shaikh_app/screens/profile/components/custom_expansion_tile
 import 'package:url_launcher/url_launcher.dart';
 
 class HelpPage extends StatefulWidget {
-  const HelpPage({Key? key}) : super(key: key);
+  const HelpPage({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _HelpPageState createState() => _HelpPageState();
@@ -121,7 +121,7 @@ class _HelpPageState extends State<HelpPage> {
                         Container(
                           width: 50, // Set desired width
                           height: 50, // Set desired height
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,// Circular border
                             image: DecorationImage(
                               image: AssetImage('assets/icons/sonny_headshot.png'),
@@ -271,7 +271,7 @@ class _HelpPageState extends State<HelpPage> {
                         Container(
                           width: 50, // Set desired width
                           height: 50, // Set desired height
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,// Circular border
                             image: DecorationImage(
                               image: AssetImage('assets/icons/kash_headshot.png'),

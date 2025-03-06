@@ -1,4 +1,6 @@
 // widgets/activity_list_item.dart
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -12,8 +14,7 @@ class ActivityListItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const ActivityListItem(
-      {required this.activity, required this.onTap, Key? key})
-      : super(key: key);
+      {required this.activity, required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {

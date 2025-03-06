@@ -7,9 +7,9 @@ class DashboardAppBar extends StatelessWidget {
   final Client client;
 
   const DashboardAppBar({
-    Key? key,
+    super.key,
     required this.client,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

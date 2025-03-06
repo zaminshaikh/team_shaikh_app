@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
@@ -8,7 +10,7 @@ class TotalAssetsSection extends StatelessWidget {
 
   final Client client;
 
-  const TotalAssetsSection({Key? key, required this.client}) : super(key: key);
+  const TotalAssetsSection({super.key, required this.client});
 
   @override
   Widget build(BuildContext context) {

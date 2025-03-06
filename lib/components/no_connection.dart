@@ -1,21 +1,20 @@
 import 'dart:async';
-
+import 'dart:developer';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:provider/provider.dart';
-import 'package:team_shaikh_app/components/alert_dialog.dart';
 import 'package:team_shaikh_app/screens/authenticate/utils/app_state.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 
 class NoInternetScreen extends StatefulWidget {
-  const NoInternetScreen({Key? key}) : super(key: key);
+  const NoInternetScreen({super.key});
 
   @override
-  _NoInternetScreenState createState() => _NoInternetScreenState();
+  NoInternetScreenState createState() => NoInternetScreenState();
 }
 
-class _NoInternetScreenState extends State<NoInternetScreen> {
+class NoInternetScreenState extends State<NoInternetScreen> {
   // We'll keep track of the connectivity status as a single value.
   ConnectivityResult _connectionStatus = ConnectivityResult.none;
   final Connectivity _connectivity = Connectivity();
@@ -43,7 +42,7 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
       // Choose the first result if available; otherwise, default to none.
       _connectionStatus = results.isNotEmpty ? results.first : ConnectivityResult.none;
     });
-    print('Initial connectivity: $_connectionStatus');
+    log('Initial connectivity: $_connectionStatus');
   }
 
 
@@ -51,13 +50,11 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
   // Since the stream now provides a List, we pick one result.
   void _updateConnectionStatus(List<ConnectivityResult> results) {
     // Here, we choose the first element if available; otherwise, we assume none.
-    final ConnectivityResult result =
-        results.isNotEmpty ? results.first : ConnectivityResult.none;
     setState(() {
       _connectionStatus = ConnectivityResult.wifi;
     });
-    print('Connectivity List: $results');
-    print('Connectivity changed: $_connectionStatus');
+    log('Connectivity List: $results');
+    log('Connectivity changed: $_connectionStatus');
   }
 
   @override
@@ -68,12 +65,12 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
 
   Future<void> _reload(BuildContext context) async {
     if (_connectionStatus != ConnectivityResult.none) {
-      print('Reload button pressed - connection available: $_connectionStatus');
+      log('Reload button pressed - connection available: $_connectionStatus');
       final authState = Provider.of<AuthState>(context, listen: false);
       authState.setForceDashboard(true);
       Phoenix.rebirth(context);
     } else {
-      showDialog(
+      await showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text(
@@ -161,7 +158,7 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                 ),
               ),
               onPressed: () async {
-                print('Current connectivity: $_connectionStatus');
+                log('Current connectivity: $_connectionStatus');
                 if (_connectionStatus == ConnectivityResult.wifi ||
                     _connectionStatus == ConnectivityResult.mobile) {
                   await _reload(context);

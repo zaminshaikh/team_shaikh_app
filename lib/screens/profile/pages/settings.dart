@@ -14,18 +14,17 @@ import 'package:team_shaikh_app/screens/profile/components/logout_button.dart';
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  SettingsPageState createState() => SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class SettingsPageState extends State<SettingsPage> {
     Client? client;
     bool notifsSwitchValue = false;
 
@@ -35,14 +34,14 @@ class _SettingsPageState extends State<SettingsPage> {
         _loadSwitchValue();
     }
 
-    Future<void> _checkNotificationPermission() async {
-        // Fetch the current notification permission status
-        var status = await Permission.notification.status;
-        setState(() {
-            // Update the switch based on whether permission is granted
-            notifsSwitchValue = status.isGranted;
-        });
-    }
+    // Future<void> _checkNotificationPermission() async {
+    //     // Fetch the current notification permission status
+    //     var status = await Permission.notification.status;
+    //     setState(() {
+    //         // Update the switch based on whether permission is granted
+    //         notifsSwitchValue = status.isGranted;
+    //     });
+    // }
 
     void _showPermissionDeniedDialog() {
       showCupertinoDialog(
@@ -94,56 +93,56 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
 
-    Future<void> _requestNotificationPermission() async {
-        // Request the notification permission if it's not granted
-        var status = await Permission.notification.request();
+    // Future<void> _requestNotificationPermission() async {
+    //     // Request the notification permission if it's not granted
+    //     var status = await Permission.notification.request();
 
-        if (status.isGranted) {
-            // Update the state if permission is granted
-            setState(() {
-            notifsSwitchValue = true;
-            _saveSwitchValue(notifsSwitchValue);
-            });
-            _showCupertinoDialog('Notifications enabled');
-        } else {
-            // If denied, show a message and provide an option to go to settings
-            _showCupertinoDialog('Notification permission denied. Please enable it in settings.');
-        }
-    }
+    //     if (status.isGranted) {
+    //         // Update the state if permission is granted
+    //         setState(() {
+    //         notifsSwitchValue = true;
+    //         _saveSwitchValue(notifsSwitchValue);
+    //         });
+    //         _showCupertinoDialog('Notifications enabled');
+    //     } else {
+    //         // If denied, show a message and provide an option to go to settings
+    //         _showCupertinoDialog('Notification permission denied. Please enable it in settings.');
+    //     }
+    // }
 
-    void _showCupertinoDialog(String message) {
-        showCupertinoDialog(
-            context: context,
-            builder: (BuildContext context) {
-                return CupertinoAlertDialog(
-                title: const Text('Notification Permission'),
-                content: Text(message),
-                actions: <Widget>[
-                    CupertinoDialogAction(
-                    child: const Text('OK'),
-                    onPressed: () {
-                        Navigator.of(context).pop();
-                    },
-                    ),
-                    if (message.contains('denied'))
-                    CupertinoDialogAction(
-                        child: const Text('Settings'),
-                        onPressed: () {
-                        Navigator.of(context).pop();
-                        _openAppSettings();
-                        },
-                    ),
-                ],
-                );
-            },
-        );
-    }
+    // void _showCupertinoDialog(String message) {
+    //     showCupertinoDialog(
+    //         context: context,
+    //         builder: (BuildContext context) {
+    //             return CupertinoAlertDialog(
+    //             title: const Text('Notification Permission'),
+    //             content: Text(message),
+    //             actions: <Widget>[
+    //                 CupertinoDialogAction(
+    //                 child: const Text('OK'),
+    //                 onPressed: () {
+    //                     Navigator.of(context).pop();
+    //                 },
+    //                 ),
+    //                 if (message.contains('denied'))
+    //                 CupertinoDialogAction(
+    //                     child: const Text('Settings'),
+    //                     onPressed: () {
+    //                     Navigator.of(context).pop();
+    //                     _openAppSettings();
+    //                     },
+    //                 ),
+    //             ],
+    //             );
+    //         },
+    //     );
+    // }
 
 
-  Future<void> _openAppSettings() async {
-    // Open app settings to manually enable notifications
-    await openAppSettings();
-  }
+  // Future<void> _openAppSettings() async {
+  //   // Open app settings to manually enable notifications
+  //   await openAppSettings();
+  // }
 
   @override
   void didChangeDependencies() {

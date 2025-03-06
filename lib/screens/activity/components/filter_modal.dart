@@ -25,7 +25,7 @@ class ActivityFilterModal extends StatefulWidget {
   ) onApply;
 
   const ActivityFilterModal({
-    Key? key,
+    super.key,
     required this.typeFilter,
     required this.recipientsFilter,
     required this.allRecipients,
@@ -36,13 +36,13 @@ class ActivityFilterModal extends StatefulWidget {
 
     required this.selectedDates,
     required this.onApply,
-  }) : super(key: key);
+  });
 
   @override
-  _ActivityFilterModalState createState() => _ActivityFilterModalState();
+  ActivityFilterModalState createState() => ActivityFilterModalState();
 }
 
-class _ActivityFilterModalState extends State<ActivityFilterModal> {
+class ActivityFilterModalState extends State<ActivityFilterModal> {
   late List<String> _typeFilter;
   late List<String> _recipientsFilter;
 
@@ -145,7 +145,7 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
               builder: (BuildContext context, Widget? child) => Theme(
                 data: Theme.of(context).copyWith(
                   scaffoldBackgroundColor: AppColors.defaultBlueGray800,
-                  colorScheme: ColorScheme.dark().copyWith(
+                  colorScheme: const ColorScheme.dark().copyWith(
                     brightness: Brightness.dark,
                     primary: Colors.white,
                     onPrimary: AppColors.altBlueGray800,
@@ -358,5 +358,6 @@ class _ActivityFilterModalState extends State<ActivityFilterModal> {
         ],
       );
 
-  bool _allSelected = false; // Add this state variable
+  // ignore: unused_field
+  bool _allSelected = false; // Add this state 
 }

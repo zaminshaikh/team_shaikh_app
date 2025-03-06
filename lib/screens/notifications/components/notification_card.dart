@@ -1,53 +1,42 @@
 // notification_card.dart
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
 import 'package:team_shaikh_app/screens/profile/pages/documents.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/models/notification_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/utils/resources.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
-import 'package:team_shaikh_app/screens/notifications/notifications.dart';
-import 'package:team_shaikh_app/screens/profile/profile.dart'; // Update with the correct import path
+// Update with the correct import path
 
 class NotificationCard extends StatelessWidget {
   final Notif notification;
   final Client client;
 
   const NotificationCard({
-    Key? key,
+    super.key,
     required this.notification,
     required this.client,
-  }) : super(key: key);
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return _buildNotification(context, notification);
-  }
+  Widget build(BuildContext context) => _buildNotification(context, notification);
 
   Widget _buildNotification(BuildContext context, Notif notification) {
     String title;
-    Widget route;
-    Color? color = Colors.grey[200];
     switch (notification.type) {
       case 'activity':
         title = 'New Activity';
-        route =
-            const ActivityPage(); // Replace with your actual Activity page widget
+// Replace with your actual Activity page widget
         break;
       case 'statement':
         title = 'New Statement';
-        route =
-            const ProfilePage(); // Replace with your actual Profile page widget
+// Replace with your actual Profile page widget
         break;
       default:
         title = 'New Notification';
-        route =
-            const NotificationPage(); // Replace with your actual Notification page widget
+// Replace with your actual Notification page widget
         break;
     }
 
@@ -141,7 +130,7 @@ class NotificationCard extends StatelessWidget {
                               ? const ActivityPage()
                               : const DocumentsPage();
                         
-                          Navigator.pushReplacement(
+                          await Navigator.pushReplacement(
                             context,
                             PageRouteBuilder(
                               pageBuilder: (context, animation, secondaryAnimation) => targetPage,
@@ -188,7 +177,7 @@ class NotificationCard extends StatelessWidget {
             ],
           ),
         ),
-        Divider(thickness: 0.5,),
+        const Divider(thickness: 0.5,),
       ],
     );
   }

@@ -101,35 +101,35 @@ class PushNotificationService {
     }
   }
 
-  Future<void> _showNotification(RemoteNotification notification) async {
-    log('Showing notification with title: ${notification.title} and body: ${notification.body}');
+  // Future<void> _showNotification(RemoteNotification notification) async {
+  //   log('Showing notification with title: ${notification.title} and body: ${notification.body}');
 
-    const notifications.AndroidNotificationDetails androidPlatformChannelSpecifics =
-        notifications.AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      channelDescription: 'your_channel_description',
-      importance: notifications.Importance.max,
-      priority: notifications.Priority.high,
-      showWhen: false,
-    );
+  //   const notifications.AndroidNotificationDetails androidPlatformChannelSpecifics =
+  //       notifications.AndroidNotificationDetails(
+  //     'your_channel_id',
+  //     'your_channel_name',
+  //     channelDescription: 'your_channel_description',
+  //     importance: notifications.Importance.max,
+  //     priority: notifications.Priority.high,
+  //     showWhen: false,
+  //   );
 
-    const notifications.NotificationDetails platformChannelSpecifics =
-        notifications.NotificationDetails(android: androidPlatformChannelSpecifics);
+  //   const notifications.NotificationDetails platformChannelSpecifics =
+  //       notifications.NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    try {
-      await _flutterLocalNotificationsPlugin.show(
-        0,
-        notification.title,
-        notification.body,
-        platformChannelSpecifics,
-        payload: 'item x',
-      );
-      log('Notification shown successfully');
-    } catch (e) {
-      log('Error showing notification: $e');
-    }
-  }
+  //   try {
+  //     await _flutterLocalNotificationsPlugin.show(
+  //       0,
+  //       notification.title,
+  //       notification.body,
+  //       platformChannelSpecifics,
+  //       payload: 'item x',
+  //     );
+  //     log('Notification shown successfully');
+  //   } catch (e) {
+  //     log('Error showing notification: $e');
+  //   }
+  // }
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
