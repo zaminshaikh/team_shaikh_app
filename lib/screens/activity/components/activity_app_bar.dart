@@ -36,22 +36,24 @@ class ActivityAppBarState extends State<ActivityAppBar> {
         floating: true,
         pinned: true,
         flexibleSpace: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric( horizontal: 20, vertical: 15),
-            // Put a Row with Activity Title + Notification icon on the left,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Activity Title + Bell icon
-                Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Activity Title + Bell icon
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 17, right: 15),
+                child: Row(
                   children: [
-                    const Text(
-                      'Activity',
-                      style: TextStyle(
-                        fontSize: 27,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Titillium Web',
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: const Text(
+                        'Activity',
+                        style: TextStyle(
+                          fontSize: 27,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Titillium Web',
+                        ),
                       ),
                     ),
                     const Spacer(),
@@ -66,7 +68,6 @@ class ActivityAppBarState extends State<ActivityAppBar> {
                       },
                       child: Container(
                         color: Colors.transparent,
-                        padding: const EdgeInsets.all(10.0),
                         child: Stack(
                           clipBehavior: Clip.none,
                           alignment: Alignment.center,
@@ -111,22 +112,22 @@ class ActivityAppBarState extends State<ActivityAppBar> {
                     ),
                   ],
                 ),
+              ),
 
-                const Spacer(),
+              const Spacer(),
 
-                // Filter and Sort Buttons
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: Row(
-                    children: [
-                      Expanded(child: _buildFilterButton()),
-                      const SizedBox(width: 10),
-                      Expanded(child: _buildSortButton()),
-                    ],
-                  ),
+              // Filter and Sort Buttons
+              Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15.0),
+                child: Row(
+                  children: [
+                    Expanded(child: _buildFilterButton()),
+                    const SizedBox(width: 10),
+                    Expanded(child: _buildSortButton()),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
