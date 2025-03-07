@@ -16,7 +16,7 @@ class MarkAllAsReadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool hasUnreadNotifications = (client.numNotifsUnread ?? 0) > 1;
+    bool hasUnreadNotifications = (client.numNotifsUnread ?? 0) > 0;
 
     if (!hasUnreadNotifications) {
       return Container(); // Return an empty container if there are no unread notifications
