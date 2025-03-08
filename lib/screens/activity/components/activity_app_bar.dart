@@ -82,7 +82,7 @@ class ActivityAppBarState extends State<ActivityAppBar> {
                             ),
                             Positioned(
                               right: 0,
-                              top: -6, // Changed from 0 to -5 to move the badge higher
+                              top: -6, 
                               child: (widget.client.numNotifsUnread ?? 0) > 0
                                   ? Container(
                                       decoration: BoxDecoration(
