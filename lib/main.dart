@@ -501,12 +501,7 @@ class _AuthCheckState extends State<AuthCheck> {
                   },
                 );
               } else {
-                if (!authState.forceDashboard) {
-                  log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
-                  return const OnboardingPage();
-                } else {
-                  return const DashboardPage();
-                }
+                return const DashboardPage();
               }
             }
           );
