@@ -194,7 +194,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         }
       }});
 
-    @override
+  @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     final appState = Provider.of<AuthState>(context, listen: false);
     log('AppLifecycleState changed: $state');
