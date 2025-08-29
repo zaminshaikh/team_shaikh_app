@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Fail this script if any subcommand fails.
 set -e
