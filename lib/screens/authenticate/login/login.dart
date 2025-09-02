@@ -72,6 +72,22 @@ class LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         email: emailController.text,
         password: passwordController.text,
       );
+      
+      // Check if email is verified
+      await userCredential.user?.reload();
+      final user = FirebaseAuth.instance.currentUser;
+      
+      if (user != null && !user.emailVerified) {
+        log('login.dart: User email not verified, showing verification screen');
+        if (!context.mounted) return false;
+        await Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/email_verification',
+          (route) => false,
+        );
+        return false; // Don't proceed to dashboard
+      }
+      
       if (!context.mounted) return false;
       await updateFirebaseMessagingToken(userCredential.user, context);
       log('login.dart: Signed in user ${userCredential.user!.uid}'); // Debugging output

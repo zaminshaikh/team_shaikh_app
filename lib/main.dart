@@ -23,6 +23,7 @@ import 'package:team_shaikh_app/components/progress_indicator.dart';
 import 'package:team_shaikh_app/database/models/client_model.dart';
 import 'package:team_shaikh_app/database/database.dart';
 import 'package:team_shaikh_app/screens/authenticate/create_account/create_account.dart';
+import 'package:team_shaikh_app/screens/authenticate/email_verification_screen.dart';
 import 'package:team_shaikh_app/screens/activity/activity.dart';
 import 'package:team_shaikh_app/screens/analytics/analytics.dart';
 import 'package:team_shaikh_app/screens/authenticate/initial_face_id.dart';
@@ -320,6 +321,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   '/create_account': (context) => const CreateAccountPage(),
                   '/login': (context) => const LoginPage(),
                   '/forgot_password': (context) => const ForgotPasswordPage(),
+                  '/email_verification': (context) => const EmailVerificationScreen(),
                   '/dashboard': (context) => const DashboardPage(),
                   '/analytics': (context) => const AnalyticsPage(),
                   '/activity': (context) => const ActivityPage(),
@@ -408,12 +410,14 @@ class AuthCheck extends StatefulWidget {
 
 class _AuthCheckState extends State<AuthCheck> {
   late Future<bool> _isAuthenticatedAndVerifiedFuture;
+  late Future<bool> _isSignedInButNotVerifiedFuture;
   late Future<bool> _loadAppLockStateFuture;
 
   @override
   void initState() {
     super.initState();
     _isAuthenticatedAndVerifiedFuture = isAuthenticatedAndVerified();
+    _isSignedInButNotVerifiedFuture = isSignedInButNotVerified();
     _loadAppLockStateFuture = _loadAppLockState();
   }
 
@@ -442,6 +446,18 @@ class _AuthCheckState extends State<AuthCheck> {
     bool isLinked = await db.isUIDLinked(uid);
 
     return isLinked;
+  }
+
+  /// Check if user is signed in but email not verified
+  Future<bool> isSignedInButNotVerified() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+
+    await user.reload();
+
+    return !user.emailVerified;
   }
 
   @override
@@ -501,12 +517,30 @@ class _AuthCheckState extends State<AuthCheck> {
                   },
                 );
               } else {
-                if (!authState.forceDashboard) {
-                  log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
-                  return const OnboardingPage();
-                } else {
-                  return const DashboardPage();
-                }
+                // Check if user is signed in but not verified
+                return FutureBuilder<bool>(
+                  future: _isSignedInButNotVerifiedFuture,
+                  builder: (context, verificationSnapshot) {
+                    if (verificationSnapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CustomProgressIndicator());
+                    } else if (verificationSnapshot.hasError) {
+                      log('AuthCheck: FutureBuilder error: ${verificationSnapshot.error}');
+                      return Center(child: Text('Error: ${verificationSnapshot.error}'));
+                    } else if (verificationSnapshot.hasData && verificationSnapshot.data == true) {
+                      // User is signed in but email not verified
+                      log('AuthCheck: User is signed in but email not verified. Navigating to EmailVerificationScreen.');
+                      return const EmailVerificationScreen();
+                    } else {
+                      // User is not authenticated or linked
+                      if (!authState.forceDashboard) {
+                        log('AuthCheck: User is not authenticated or linked. Navigating to OnboardingPage.');
+                        return const OnboardingPage();
+                      } else {
+                        return const DashboardPage();
+                      }
+                    }
+                  },
+                );
               }
             }
           );

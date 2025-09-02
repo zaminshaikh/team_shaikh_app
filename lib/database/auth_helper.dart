@@ -124,3 +124,84 @@ Future<void> deleteFirebaseMessagingToken(User? user, BuildContext context) asyn
     }
   }
 }
+
+/// Resends email verification to the current user.
+Future<bool> resendEmailVerification(BuildContext context) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      if (context.mounted) {
+        await CustomAlertDialog.showAlertDialog(
+          context,
+          'Error',
+          'No user is currently signed in.',
+        );
+      }
+      return false;
+    }
+
+    if (user.emailVerified) {
+      if (context.mounted) {
+        await CustomAlertDialog.showAlertDialog(
+          context,
+          'Already Verified',
+          'Your email is already verified.',
+          icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.green),
+        );
+      }
+      return true;
+    }
+
+    await user.sendEmailVerification();
+    
+    if (context.mounted) {
+      await CustomAlertDialog.showAlertDialog(
+        context,
+        'Verification Email Sent',
+        'A verification email has been sent to ${user.email}. Please check your email and click the verification link.',
+        icon: const Icon(Icons.email_outlined, color: Colors.blue),
+      );
+    }
+    
+    return true;
+  } on FirebaseAuthException catch (e) {
+    log('Error resending verification email: $e');
+    String errorMessage = 'Failed to send verification email. Please try again.';
+    
+    switch (e.code) {
+      case 'too-many-requests':
+        errorMessage = 'Too many requests. Please wait before requesting another verification email.';
+        break;
+      case 'invalid-email':
+        errorMessage = 'The email address is invalid.';
+        break;
+      case 'user-not-found':
+        errorMessage = 'No user found. Please sign in again.';
+        break;
+    }
+    
+    if (context.mounted) {
+      await CustomAlertDialog.showAlertDialog(
+        context,
+        'Error',
+        errorMessage,
+        icon: const Icon(Icons.error, color: Colors.red),
+      );
+    }
+    
+    return false;
+  } catch (e) {
+    log('Unexpected error resending verification email: $e');
+    
+    if (context.mounted) {
+      await CustomAlertDialog.showAlertDialog(
+        context,
+        'Error',
+        'An unexpected error occurred. Please try again.',
+        icon: const Icon(Icons.error, color: Colors.red),
+      );
+    }
+    
+    return false;
+  }
+}
