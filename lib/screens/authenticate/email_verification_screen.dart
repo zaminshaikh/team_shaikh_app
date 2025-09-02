@@ -115,7 +115,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         
         // Start cooldown
         setState(() {
-          _resendCooldown = 60; // 60 seconds cooldown
+          _resendCooldown = 5; // 5 seconds cooldown
         });
         
         _cooldownTimer = Timer.periodic(
